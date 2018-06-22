@@ -37,7 +37,7 @@ config:
 
 database:
   provider: NEO4J
-  embedded: true
+  embedded: false
   # Set an environment variable NEO4J_HOST if running Neo4J as a standalone host
   # This variable is set from the docker-compose.yml with the Neo4J service name
   host: localhost
@@ -123,7 +123,7 @@ config:
 
 database:
   provider: NEO4J
-  embedded: true
+  embedded: false
   # Set an environment variable NEO4J_HOST if running Neo4J as a standalone host
   # This variable is set from the docker-compose.yml with the Neo4J service name
   host: localhost
