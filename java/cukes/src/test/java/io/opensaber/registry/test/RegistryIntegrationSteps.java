@@ -6,11 +6,14 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.util.ResourceUtils;
 import org.json.JSONObject;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -53,6 +56,7 @@ public class RegistryIntegrationSteps extends RegistryTestBase {
 	private static String duplicateLabel;
 	private HttpHeaders headers;
 	private String updateId;
+	private Map<String,String> IDMap = new HashMap<>();
 
     Type type = new TypeToken<Map<String, String>>() {
     }.getType();
@@ -110,18 +114,28 @@ public class RegistryIntegrationSteps extends RegistryTestBase {
 	
 	@When("^issuing the record into the registry")
 	public void addEntity(){
-		response = callRegistryCreateAPI();
+		callRegistryCreateAPI();
 	}
-	
-	@When("^an entity for the record is issued into the registry$")
+
+    private void extractAndMapIDfromResponse() {
+        String newid = extractID(String.valueOf(response.getBody().getResult().get("entity")));
+        mapID(id,newid);
+    }
+
+    private void mapID(String id, String newid) {
+	    IDMap.put(baseUrl+id,baseUrl+newid);
+	    IDMap.put(baseUrl+newid,baseUrl+id);
+    }
+
+    @When("^an entity for the record is issued into the registry$")
 	public void add_entity_to_existing_record_in_registry(){
 		jsonldData(ENTITY_JSONLD);
-		response = callRegistryCreateAPI(baseUrl+updateId,baseUrl+"basicProficiencyLevel");
+		callRegistryCreateAPI(baseUrl+updateId,baseUrl+"basicProficiencyLevel");
 	}
 	
 	@When("^the same entity for the record is issued into the registry$")
 	public void add_existing_entity_to_existing_record_in_registry(){
-		response = callRegistryCreateAPI(baseUrl+updateId,baseUrl+"basicProficiencyLevel");
+		callRegistryCreateAPI(baseUrl+updateId,baseUrl+"basicProficiencyLevel");
 	}
 	
 	public void jsonldData(String filename){
@@ -130,28 +144,28 @@ public class RegistryIntegrationSteps extends RegistryTestBase {
 		assertNotNull(jsonld);
 	}
 
-	private ResponseEntity<Response> callRegistryCreateAPI() {
+	private void callRegistryCreateAPI() {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		HttpEntity<String> entity = new HttpEntity<String>(jsonld,headers);
-		ResponseEntity<Response> response = restTemplate.postForEntity(
+		response = restTemplate.postForEntity(
 				baseUrl+ADD_ENTITY,
 				entity,
-				Response.class);	
-		return response;
+				Response.class);
+        extractAndMapIDfromResponse();
 	}
 	
-	private ResponseEntity<Response> callRegistryCreateAPI(String entityLabel, String property) {
+	private void callRegistryCreateAPI(String entityLabel, String property) {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		HttpEntity<String> entity = new HttpEntity<String>(jsonld,headers);
 		Map<String,String> uriVariables = new HashMap<String,String>();
-		uriVariables.put("id", entityLabel);
+		uriVariables.put("id", getMappedID(entityLabel));
 		uriVariables.put("prop", property);
-		ResponseEntity<Response> response = restTemplate.postForEntity(
+		response = restTemplate.postForEntity(
 				baseUrl+ADD_ENTITY+"?id={id}&prop={prop}",
 				entity,
 				Response.class,
-				uriVariables);	
-		return response;
+				uriVariables);
+        extractAndMapIDfromResponse();
 	}
 	
 	@Then("^record issuing should be successful")
@@ -192,6 +206,9 @@ public class RegistryIntegrationSteps extends RegistryTestBase {
 		Model actualModel = ModelFactory.createDefaultModel();
 		String newJsonld = new JSONObject(result).toString(2);
 		RDFDataMgr.read(actualModel, new StringReader(newJsonld), null, org.apache.jena.riot.RDFLanguages.JSONLD);
+        remapURIs(expectedModel);
+//        printModel(expectedModel);
+//        printModel(actualModel);
 		assertTrue(expectedModel.isIsomorphicWith(actualModel));
 	}
 
@@ -247,12 +264,20 @@ public class RegistryIntegrationSteps extends RegistryTestBase {
 
 	private ResponseEntity<Response> callRegistryReadAPI() {
 		HttpEntity<String> entity = new HttpEntity<>(headers);
-		ResponseEntity<Response> response = restTemplate.exchange(baseUrl+"/"+id, HttpMethod.GET,entity,Response.class);
+//		String fetchID;
+//		if(updateId!=null)
+//            fetchID = updateId;
+//		else
+//		    fetchID = id;
+		ResponseEntity<Response> response = restTemplate.exchange(getMappedID(baseUrl+id), HttpMethod.GET,entity,Response.class);
 		return response;
-		
 	}
 
-	@Then("^record retrieval should be unsuccessful$")
+    private String getMappedID(String id) {
+        return IDMap.get(id);
+    }
+
+    @Then("^record retrieval should be unsuccessful$")
 	public void record_retrieval_should_be_unsuccessful() throws Exception {
 		checkUnsuccessfulResponse();
 	}
@@ -282,7 +307,7 @@ public class RegistryIntegrationSteps extends RegistryTestBase {
 			setJsonld(VALID_NEWJSONLD);
 			id=setJsonldWithNewRootLabel();	
 			setValidAuthHeader();
-			response = callRegistryCreateAPI();
+			callRegistryCreateAPI();
 		} catch (Exception e) {
 			response = null;
 		}
@@ -331,6 +356,18 @@ public class RegistryIntegrationSteps extends RegistryTestBase {
 			checkUnsuccessfulResponse();			
 		}else {
 			checkSuccessfulResponse();
+		}
+	}
+
+	private void remapURIs(Model expectedModel) {
+		Iterator<Resource> iter = expectedModel.listSubjects();
+		while(iter.hasNext()){
+			Resource subject = iter.next();
+			String oldURI = subject.getURI();
+			String newURI = IDMap.get(oldURI);
+			if(oldURI!=null&&newURI!=null){
+				ResourceUtils.renameResource(subject,newURI);
+			}
 		}
 	}
 }

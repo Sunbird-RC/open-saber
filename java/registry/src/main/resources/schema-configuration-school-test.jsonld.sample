@@ -11,16 +11,5 @@
 	"@type": "opensaber:Registry",
 	"opensaber:privateProperties": 
 	[
-		{
-			"@id": "sample:schoolName"
-		},
-
-		{
-			"@id": "sample:clusterResourceCentre"
-		},
-
-		{
-			"@id": "sample:udiseNumber"
-		}
 	]
 }

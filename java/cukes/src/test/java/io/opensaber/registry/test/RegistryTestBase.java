@@ -3,6 +3,7 @@ package io.opensaber.registry.test;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.opensaber.pojos.Response;
+import org.apache.jena.rdf.model.Model;
 import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
@@ -17,6 +18,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -160,6 +162,25 @@ public class RegistryTestBase {
 		ResponseEntity<String> response = new RestTemplate().postForEntity(url, request, String.class);
 		Map<String, String> myMap = new Gson().fromJson(response.getBody(), mapType);
 		return myMap.getOrDefault("access_token", "");
+	}
+
+	public void printModel(Model rdfModel) {
+		System.out.println("===================");
+        Iterator iter = rdfModel.listStatements();
+        while(iter.hasNext()){
+            System.out.println(iter.next());
+        }
+		System.out.println("===================");
+    }
+
+    public String extractID(String URI) {
+		String longLabel = "";
+		Pattern r = Pattern.compile(".*\\/(\\d+)");
+		Matcher m = r.matcher(URI);
+		if (m.find( )) {
+			longLabel = m.group(1);
+		}
+		return longLabel;
 	}
 
 }

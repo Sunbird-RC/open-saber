@@ -84,7 +84,9 @@ public class RegistryDaoImplTest extends RegistryTestBase {
 	@Value("${registry.context.base}")
 	private String registryContext;
 
-	
+	@Value("${authentication.enabled}")
+	private boolean authenticationEnabled;
+
     private static final String RICH_LITERAL_TTL = "rich-literal.jsonld";
 	private static final String CONTEXT_CONSTANT = "sample:";
 	
@@ -111,7 +113,7 @@ public class RegistryDaoImplTest extends RegistryTestBase {
 		graph = TinkerGraph.open();
 		MockitoAnnotations.initMocks(this);
 		TestHelper.clearData(databaseProvider);
-		databaseProvider.getGraphStore().addVertex(Constants.GRAPH_GLOBAL_CONFIG).property(Constants.PERSISTENT_GRAPH, true);
+//		databaseProvider.getGraphStore().addVertex(Constants.GRAPH_GLOBAL_CONFIG).property(Constants.PERSISTENT_GRAPH, true);
         AuthInfo authInfo = new AuthInfo();
         authInfo.setAud("aud");
         authInfo.setName("name");
@@ -266,7 +268,6 @@ public class RegistryDaoImplTest extends RegistryTestBase {
 			// Expected count of vertices is 6 with two entities with same address created
 			assertEquals(7, verticesCountAfterSharedNodesCreation);
 			assertEquals(8, edgesCountAfterSharedNodesCreation);
-
 		} catch (DuplicateRecordException | RecordNotFoundException | EncryptionException | NoSuchElementException e) {
 			e.printStackTrace();
 		} catch (AuditFailedException e) {
@@ -320,13 +321,6 @@ public class RegistryDaoImplTest extends RegistryTestBase {
 		}
 
 	}
-
-    private void printModel(Model rdfModel) {
-        Iterator iter = rdfModel.listStatements();
-        while(iter.hasNext()){
-            logger.debug("-------next iterator in printModel() : {} ",iter.next());
-}
-    }
 
     @Test
 	public void test_adding_shared_nodes_with_updated_properties() throws DuplicateRecordException, RecordNotFoundException, EncryptionException, AuditFailedException, LabelCannotBeNullException {
@@ -670,12 +664,13 @@ public class RegistryDaoImplTest extends RegistryTestBase {
             MultipleEntityException, EntityCreationException{
 
 		Model rdfModel = getNewValidRdf();
+		printModel(rdfModel);
 		Graph graph = TinkerGraph.open();
 		String rootLabel = updateGraphFromRdf(rdfModel, graph);
 		String response = registryDao.addEntity(graph, "_:"+rootLabel, null, null);
 		Graph entity = registryDao.getEntityById(response);
 		Model updateRdfModel = getNewValidRdf("add_node.jsonld");
-
+        printModel(updateRdfModel);
 		// Call add entity
 		Graph updateGraph = TinkerGraph.open();
 		String label = getRootLabel(updateRdfModel);
@@ -808,16 +803,19 @@ public class RegistryDaoImplTest extends RegistryTestBase {
 	public void savingMetaProperties() throws DuplicateRecordException, RecordNotFoundException, EncryptionException, AuditFailedException {
         Model inputModel = getNewValidRdf(RICH_LITERAL_TTL, "ex:");
         String rootLabel = updateGraphFromRdf(inputModel, graph, "http://example.org/typeProperty");
-        registryDao.addEntity(graph, rootLabel, null, null);
-        Graph entity = registryDao.getEntityById(rootLabel);
-        org.eclipse.rdf4j.model.Model model = RDF2Graph.convertGraph2RDFModel(entity, rootLabel);
+		String response = registryDao.addEntity(graph, rootLabel, null, null);
+        Graph entity = registryDao.getEntityById(response);
+        org.eclipse.rdf4j.model.Model model = RDF2Graph.convertGraph2RDFModel(entity, response);
         Model outputModel = JenaRDF4J.asJenaModel(model);
+        replaceSubjectID(outputModel,null,rootLabel);
+        printModel(inputModel);
+		printModel(outputModel);
         assertTrue(inputModel.difference(outputModel).isEmpty());
         assertTrue(outputModel.difference(inputModel).isEmpty());
 
 	}
 
-	private void updateNodeLabel(Model rdfModel, String nodeLabel) {
+    private void updateNodeLabel(Model rdfModel, String nodeLabel) {
 		String labelForUpdate = databaseProvider.getGraphStore().traversal().clone().V()
 				.has(T.label, nodeLabel)
 				.next().vertices(Direction.IN).next().label();
@@ -1100,33 +1098,37 @@ public class RegistryDaoImplTest extends RegistryTestBase {
 	
 	@Test
 	public void test_setAuthInfo_for_create(){
-		Graph graph = TinkerGraph.open();
-		Vertex v = graph.addVertex("1234");
-		registryDao.setAuditInfo(v, true);
-		assertTrue(v.property(registryContext +"createdBy").isPresent());
-		assertTrue(v.property(registryContext +"lastUpdatedBy").isPresent());
-		assertEquals(v.property(registryContext +"createdAt").value(),
-				v.property(registryContext +"lastUpdatedAt").value());
+        if(authenticationEnabled){
+            Graph graph = TinkerGraph.open();
+            Vertex v = graph.addVertex("1234");
+            registryDao.setAuditInfo(v, true);
+            assertTrue(v.property(registryContext +"createdBy").isPresent());
+            assertTrue(v.property(registryContext +"lastUpdatedBy").isPresent());
+            assertEquals(v.property(registryContext +"createdAt").value(),
+                    v.property(registryContext +"lastUpdatedAt").value());
+        }
 	}
 	
 	@Test
 	public void test_setAuthInfo_for_update(){
-		Graph graph = TinkerGraph.open();
-		Vertex v = graph.addVertex("1234");
-		registryDao.setAuditInfo(v, true);
-		assertTrue(v.property(registryContext +"createdBy").isPresent());
-		assertTrue(v.property(registryContext +"lastUpdatedBy").isPresent());
-		assertEquals(v.property(registryContext +"createdBy").value().toString(), "sub");
-		assertEquals(v.property(registryContext +"lastUpdatedBy").value().toString(), "sub");
-		assertThat(v.property(registryContext +"createdAt").value(), instanceOf(Long.class));
-		assertThat(v.property(registryContext +"lastUpdatedAt").value(), instanceOf(Long.class));
-		assertEquals(v.property(registryContext +"createdAt").value(),
-				v.property(registryContext +"lastUpdatedAt").value());
-		registryDao.setAuditInfo(v, false);
-		assertTrue(v.property(registryContext +"lastUpdatedBy").isPresent());
-		assertEquals(v.property(registryContext +"lastUpdatedBy").value().toString(), "sub");
-		assertThat(v.property(registryContext +"createdAt").value(), instanceOf(Long.class));
-		assertThat(v.property(registryContext +"lastUpdatedAt").value(), instanceOf(Long.class));
+        if(authenticationEnabled) {
+            Graph graph = TinkerGraph.open();
+            Vertex v = graph.addVertex("1234");
+            registryDao.setAuditInfo(v, true);
+            assertTrue(v.property(registryContext + "createdBy").isPresent());
+            assertTrue(v.property(registryContext + "lastUpdatedBy").isPresent());
+            assertEquals(v.property(registryContext + "createdBy").value().toString(), "sub");
+            assertEquals(v.property(registryContext + "lastUpdatedBy").value().toString(), "sub");
+            assertThat(v.property(registryContext + "createdAt").value(), instanceOf(Long.class));
+            assertThat(v.property(registryContext + "lastUpdatedAt").value(), instanceOf(Long.class));
+            assertEquals(v.property(registryContext + "createdAt").value(),
+            v.property(registryContext + "lastUpdatedAt").value());
+            registryDao.setAuditInfo(v, false);
+            assertTrue(v.property(registryContext + "lastUpdatedBy").isPresent());
+            assertEquals(v.property(registryContext + "lastUpdatedBy").value().toString(), "sub");
+            assertThat(v.property(registryContext + "createdAt").value(), instanceOf(Long.class));
+            assertThat(v.property(registryContext + "lastUpdatedAt").value(), instanceOf(Long.class));
+        }
 	}
 	
 }

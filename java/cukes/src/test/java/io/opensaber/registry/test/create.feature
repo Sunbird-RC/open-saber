@@ -1,6 +1,7 @@
 @controller @create
 Feature: Inserting a record into the registry
 
+  @issue
   Scenario: Issuing a valid record
     Given a valid record
     And a valid auth token
@@ -8,12 +9,11 @@ Feature: Inserting a record into the registry
     Then record issuing should be successful
     And fetching the record from the registry should match the issued record
 
-  Scenario: Issuing a duplicate record
+  Scenario: Issuing a duplicate record, should not be ok
     Given a record issued into the registry
     And a valid auth token
     When issuing the record into the registry again
     Then record issuing should be unsuccessful
-    And error message is Cannot insert duplicate record
 
   Scenario: Inserting second valid record into the registry
     Given a record issued into the registry

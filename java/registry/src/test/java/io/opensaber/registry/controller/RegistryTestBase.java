@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
+import java.util.Iterator;
 import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
@@ -19,6 +20,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.sparql.vocabulary.FOAF;
+import org.apache.jena.util.ResourceUtils;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -140,10 +142,32 @@ public class RegistryTestBase {
 	}
 	
 	public static String generateRandomId(){
-		return UUID.randomUUID().toString();
+		return String.valueOf((UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE));
 	}
 
 	public String getSubjectType(){
 		return environment.getProperty(Constants.SUBJECT_LABEL_TYPE);
 	}
+
+	public void printModel(Model rdfModel) {
+		Iterator iter = rdfModel.listStatements();
+		while(iter.hasNext()){
+			System.out.println(iter.next());
+		}
+	}
+
+    public void replaceSubjectID(Model model, String oldURI, String newURI) {
+        System.out.println(model);
+        Iterator<Resource> iter = model.listSubjects();
+        while(iter.hasNext()){
+            Resource subject = iter.next();
+            if(oldURI!=null){
+                if(subject.getURI().equals(oldURI))
+                    ResourceUtils.renameResource(subject,newURI);
+            } else {
+                ResourceUtils.renameResource(subject,newURI);
+            }
+        }
+        System.out.println(model);
+    }
 }

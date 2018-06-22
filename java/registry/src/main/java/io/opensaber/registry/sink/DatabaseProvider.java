@@ -8,11 +8,16 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 public abstract class DatabaseProvider {
 
     private static Logger logger = LoggerFactory.getLogger(DatabaseProvider.class);
     public abstract Graph getGraphStore();
-    public abstract  void shutdown() throws Exception;
+    public abstract void shutdown() throws Exception;
+    public abstract boolean isMultiValuedLiteralPropertySupported();
 
     /**
      * This method is used for checking database service. It fires a dummy query to check for a non-existent label
@@ -36,7 +41,7 @@ public abstract class DatabaseProvider {
      * This method is used to initialize some global graph level configuration
      */
     public void initializeGlobalGraphConfiguration() {
-        if (IteratorUtils.count(getGraphStore().traversal().V().has(T.label, Constants.GRAPH_GLOBAL_CONFIG)) == 0) {
+        if (!((getGraphStore().traversal().clone().V().has(T.label, Constants.GRAPH_GLOBAL_CONFIG)).hasNext())) {
             logger.info("Adding GRAPH_GLOBAL_CONFIG node...");
             if (getGraphStore().features().graph().supportsTransactions()) {
                 org.apache.tinkerpop.gremlin.structure.Transaction tx;
@@ -52,6 +57,16 @@ public abstract class DatabaseProvider {
                 logger.debug("Graph initialised without transaction !");
             }
         }
+
+    }
+
+    public List<String> getIDsFromLabel(String label){
+        ArrayList<String> vertexIDList = new ArrayList<>();
+        Iterator<Vertex> verticesWithLabel= getGraphStore().traversal().clone().V().hasLabel(label);
+        while(verticesWithLabel.hasNext()){
+            vertexIDList.add(String.valueOf(verticesWithLabel.next().id()));
+        }
+        return vertexIDList;
     }
 
 }

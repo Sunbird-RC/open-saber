@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import com.google.common.collect.ImmutableList;
 import io.opensaber.pojos.OpenSaberInstrumentation;
+import com.google.gson.Gson;
 import io.opensaber.registry.exception.AuditFailedException;
 import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.schema.config.SchemaConfigurator;
@@ -41,7 +42,10 @@ public class RegistryDaoImpl implements RegistryDao {
     public static final String META = "meta.";
     public static final String EMPTY_STRING = StringUtils.EMPTY;
     private static Logger logger = LoggerFactory.getLogger(RegistryDaoImpl.class);
-    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+    public static final String INTERNAL_PROPERTY_PREFIX = "@_";
+    public static final String IMPOSSIBLE_LABEL = "-1";
+
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
     @Autowired
     private DatabaseProvider databaseProvider;
@@ -73,118 +77,65 @@ public class RegistryDaoImpl implements RegistryDao {
         return null;
     }
 
-    /*@Override
-    public String addEntity(Graph entity, String label) throws DuplicateRecordException, NoSuchElementException, EncryptionException, AuditFailedException, RecordNotFoundException {
-        logger.debug("RegistryDaoImpl : Database Provider features: \n" + databaseProvider.getGraphStore().features());
-        watch.start("getGraphStore() and traversal() in addEntity() Performance Monitoring !");
-        Graph graphFromStore = databaseProvider.getGraphStore();
-        GraphTraversalSource dbGraphTraversalSource = graphFromStore.traversal();
-        watch.stop();
-        prefLogger.info(watch.prettyPrint());
-        if (dbGraphTraversalSource.clone().V().hasLabel(label).hasNext()) {
-            //closeGraph(graphFromStore);
-            throw new DuplicateRecordException(Constants.DUPLICATE_RECORD_MESSAGE);
-        }
-        String rootNodeLabel;
-        TinkerGraph graph = (TinkerGraph) entity;
-        GraphTraversalSource traversal = graph.traversal();
-        if (graphFromStore.features().graph().supportsTransactions()) {
-            org.apache.tinkerpop.gremlin.structure.Transaction tx = graphFromStore.tx();
-            tx.onReadWrite(org.apache.tinkerpop.gremlin.structure.Transaction.READ_WRITE_BEHAVIOR.AUTO);
-            //rootNodeLabel = createOrUpdateEntity(dbGraphTraversalSource, graph, label, "create");
-            watch.start("addOrUpdateVerticesAndEdges() inside addEntity() Performance Monitoring !");
-            rootNodeLabel = addOrUpdateVerticesAndEdges(dbGraphTraversalSource, traversal, label, "create");
-            watch.stop();
-            prefLogger.info(watch.prettyPrint());
-            tx.commit();
-            logger.debug("RegistryDaoImpl : Entity added for transactional DB with rootNodeLabel : {}", rootNodeLabel);
-        } else {
-            watch.start("addOrUpdateVerticesAndEdges() inside addEntity() Performance Monitoring !");
-            rootNodeLabel = addOrUpdateVerticesAndEdges(dbGraphTraversalSource, traversal, label, "create");
-            watch.stop();
-            prefLogger.info(watch.prettyPrint());
-            logger.debug("RegistryDaoImpl : Entity added for non-transactional DB with rootNodeLabel : {}", rootNodeLabel);
-        }
-        logger.info("Successfully created entity with label " + rootNodeLabel);
-        // closeGraph(graphFromStore);
-        return rootNodeLabel;
-    }*/
+	@Override
+	public String addEntity(Graph entity, String label, String rootNodeLabel, String property) throws DuplicateRecordException, RecordNotFoundException, NoSuchElementException, EncryptionException, AuditFailedException{
+		logger.debug("Database Provider features: \n" + databaseProvider.getGraphStore().features());
+		Graph graphFromStore = databaseProvider.getGraphStore();
+		if (rootNodeLabel!=null && property!=null && !doesExist(rootNodeLabel, graphFromStore)) {
+			throw new RecordNotFoundException(Constants.ENTITY_NOT_FOUND);
+		} else if (doesExist(label, graphFromStore)) {
+			throw new DuplicateRecordException(Constants.DUPLICATE_RECORD_MESSAGE);
+		}
 
-
-    @Override
-    public String addEntity(Graph entity, String label, String rootNodeLabel, String property) throws DuplicateRecordException, RecordNotFoundException, NoSuchElementException, EncryptionException, AuditFailedException {
-        logger.debug("RegistryDaoImpl : Database Provider features: \n" + databaseProvider.getGraphStore().features());
-        Graph graphFromStore = databaseProvider.getGraphStore();
-        GraphTraversalSource dbGraphTraversalSource = graphFromStore.traversal();
-        if (rootNodeLabel != null && property != null && !dbGraphTraversalSource.clone().V().hasLabel(rootNodeLabel).hasNext()) {
-            //closeGraph(graphFromStore);
-            throw new RecordNotFoundException(Constants.ENTITY_NOT_FOUND);
-        } else if (dbGraphTraversalSource.clone().V().hasLabel(label).hasNext()) {
-            //closeGraph(graphFromStore);
-            throw new DuplicateRecordException(Constants.DUPLICATE_RECORD_MESSAGE);
-        }
-
-        TinkerGraph graph = (TinkerGraph) entity;
-        GraphTraversalSource traversal = graph.traversal();
-        if (graphFromStore.features().graph().supportsTransactions()) {
-            org.apache.tinkerpop.gremlin.structure.Transaction tx = graphFromStore.tx();
-            tx.onReadWrite(org.apache.tinkerpop.gremlin.structure.Transaction.READ_WRITE_BEHAVIOR.AUTO);
-            //label = createOrUpdateEntity(graph, label, "create");
+		TinkerGraph graph = (TinkerGraph) entity;
+		GraphTraversalSource traversal = graph.traversal();
+		if (graphFromStore.features().graph().supportsTransactions()) {
+			org.apache.tinkerpop.gremlin.structure.Transaction tx = graphFromStore.tx();
+			tx.onReadWrite(org.apache.tinkerpop.gremlin.structure.Transaction.READ_WRITE_BEHAVIOR.AUTO);
             watch.start("RegistryDaoImpl.addOrUpdateVerticesAndEdges");
-            label = addOrUpdateVerticesAndEdges(dbGraphTraversalSource, traversal, label, "create");
+            label = addOrUpdateVerticesAndEdges(graphFromStore, traversal, label, "create");
             watch.stop("RegistryDaoImpl.addOrUpdateVerticesAndEdges");
-            if (rootNodeLabel != null && property != null) {
-                connectNodes(rootNodeLabel, label, property);
-            }
+            if (rootNodeLabel!=null && property!=null){
+				connectNodes(rootNodeLabel, label, property);
+			}
             tx.commit();
             logger.debug("RegistryDaoImpl : Entity added for transactional DB with rootNodeLabel : {},	label	:	{},	property	: 	{}", rootNodeLabel, label, property);
-        } else {
+		}else{
             watch.start("RegistryDaoImpl.addOrUpdateVerticesAndEdges");
-            label = addOrUpdateVerticesAndEdges(dbGraphTraversalSource, traversal, label, "create");
-            watch.stop("RegistryDaoImpl.addOrUpdateVerticesAndEdges");
+			label = addOrUpdateVerticesAndEdges(graphFromStore, traversal, label, "create");
+			watch.stop("RegistryDaoImpl.addOrUpdateVerticesAndEdges");
             logger.debug("RegistryDaoImpl : Entity added for non-transactional DB with rootNodeLabel : {},	label	:	{},	property	: 	{}", rootNodeLabel, label, property);
-            if (rootNodeLabel != null && property != null) {
-                connectNodes(rootNodeLabel, label, property);
-            }
-        }
-        logger.info("Successfully created entity with label " + label);
-        // closeGraph(graphFromStore);
-        return label;
-    }
-
-	/*
-	private void closeGraph(Graph graph) {
-		try {
-			graph.close();
-		} catch (Exception ex) {
-			logger.error("Exception when closing the database graph", ex);
+            if (rootNodeLabel!=null && property!=null){
+				connectNodes(rootNodeLabel, label, property);
+			}
 		}
+		logger.info("Successfully created entity with label " + label);
+		// closeGraph(graphFromStore);
+		return label;
 	}
-	*/
-
     private void connectNodes(String rootLabel, String label, String property) throws RecordNotFoundException, NoSuchElementException, EncryptionException, AuditFailedException {
         Graph graphFromStore = databaseProvider.getGraphStore();
-        GraphTraversalSource traversalSource = graphFromStore.traversal();
 
-        if (!traversalSource.clone().V().hasLabel(rootLabel).hasNext()) {
+        if (!doesExist(rootLabel, graphFromStore)) {
             // closeGraph(graphFromStore);
             throw new RecordNotFoundException(Constants.ENTITY_NOT_FOUND);
         }
-        if (!traversalSource.clone().V().hasLabel(label).hasNext()) {
+
+        if (!doesExist(label, graphFromStore)) {
             // closeGraph(graphFromStore);
             throw new RecordNotFoundException(Constants.ENTITY_NOT_FOUND);
         }
-        connectRootToEntity(traversalSource, rootLabel, label, property);
+        connectRootToEntity(graphFromStore, rootLabel, label, property);
 
     }
 
-    private void connectRootToEntity(GraphTraversalSource dbTraversalSource, String rootLabel, String label, String property) throws RecordNotFoundException, NoSuchElementException, EncryptionException, AuditFailedException {
-        GraphTraversal<Vertex, Vertex> rootGts = dbTraversalSource.clone().V().hasLabel(rootLabel);
-        GraphTraversal<Vertex, Vertex> entityGts = dbTraversalSource.clone().V().hasLabel(label);
+    private void connectRootToEntity(Graph dbGraph, String rootLabel, String label, String property) throws NoSuchElementException, AuditFailedException {
+        Iterator<Vertex> rootGts = getVerticesIterator(dbGraph,rootLabel);
+        Iterator<Vertex> entityGts = getVerticesIterator(dbGraph,label);
         Vertex rootVertex = rootGts.next();
         Vertex entityVertex = entityGts.next();
         rootVertex.addEdge(property, entityVertex);
-        if(auditEnabled) {
+        if(auditEnabled){
             watch.start("RegistryDaoImpl.connectRootToEntity.auditRecord");
             AuditRecord record = appContext.getBean(AuditRecord.class);
             record
@@ -195,218 +146,165 @@ public class RegistryDaoImpl implements RegistryDao {
                     .record(databaseProvider);
             watch.stop("RegistryDaoImpl.connectRootToEntity.auditRecord");
         }
-
         logger.debug("RegistryDaoImpl : Audit record generated of connectRootToEntity for rootLabel : {}, label	:	{}, property :	{}", rootLabel, label, property);
     }
 
-    /**
-     * This method is commonly used for both create and update entity
-     * @param entity
-     * @param rootLabel
-     * @throws EncryptionException
-     * @throws NoSuchElementException
-     */
-
-	/*private String createOrUpdateEntity(GraphTraversalSource dbGraphTraversalSource, Graph entity, String rootLabel, String methodOrigin) throws NoSuchElementException, EncryptionException, AuditFailedException, RecordNotFoundException{
-
-		TinkerGraph graph = (TinkerGraph) entity;
-		GraphTraversalSource traversal = graph.traversal();
-
-		// Root node label will be auto-generate if a new entity is created
-		String rootNodeLabel;
-
-		if (graphFromStore.features().graph().supportsTransactions()) {
-			org.apache.tinkerpop.gremlin.structure.Transaction tx = graphFromStore.tx();
-			tx.onReadWrite(org.apache.tinkerpop.gremlin.structure.Transaction.READ_WRITE_BEHAVIOR.AUTO);
-			rootNodeLabel = addOrUpdateVerticesAndEdges(dbGraphTraversalSource, traversal, rootLabel, methodOrigin);
-			tx.commit();
-			// tx.close();
-		} else {
-			rootNodeLabel = addOrUpdateVerticesAndEdges(dbGraphTraversalSource, traversal, rootLabel, methodOrigin);
-		}
-
-		return addOrUpdateVerticesAndEdges(dbGraphTraversalSource, traversal, rootLabel, methodOrigin);
-
-	}*/
-
-    /**
-     * This method creates the root node of the entity if it already isn't present in the graph store
-     * or updates the properties of the root node or adds new properties if the properties are not already
-     * present in the node.
-     *
-     * @param dbTraversalSource
-     * @param entitySource
-     * @param rootLabel
-     * @throws EncryptionException
-     * @throws NoSuchElementException
-     */
-    private String addOrUpdateVerticesAndEdges(GraphTraversalSource dbTraversalSource,
+	/**
+	 * This method creates the root node of the entity if it already isn't present in the graph store
+	 * or updates the properties of the root node or adds new properties if the properties are not already
+	 * present in the node.
+	 * @param dbGraph
+	 * @param entitySource
+	 * @param rootLabel
+	 * @throws EncryptionException
+	 * @throws NoSuchElementException 
+	 */
+	private String addOrUpdateVerticesAndEdges(Graph dbGraph,
                                                GraphTraversalSource entitySource, String rootLabel, String methodOrigin)
-            throws NoSuchElementException, EncryptionException, AuditFailedException, RecordNotFoundException {
+					throws NoSuchElementException, EncryptionException, AuditFailedException, RecordNotFoundException {
 
-        GraphTraversal<Vertex, Vertex> gts = entitySource.clone().V().hasLabel(rootLabel);
-        String label = rootLabel;
-        while (gts.hasNext()) {
-            Vertex v = gts.next();
-            GraphTraversal<Vertex, Vertex> hasLabel = dbTraversalSource.clone().V().hasLabel(rootLabel);
-            ImmutableTable.Builder<Vertex,Vertex,Map<String,Object>> encDecPropertyBuilder = ImmutableTable.<Vertex,Vertex,Map<String,Object>> builder();
-
-            if (hasLabel.hasNext()) {
-                logger.info(String.format("Root node label {} already exists. Updating properties for the root node.", rootLabel));
-                Vertex existingVertex = hasLabel.next();
-                setAuditInfo(v, false);
-                copyProperties(v, existingVertex, methodOrigin, encDecPropertyBuilder);
-                // watch.start("RegistryDaoImpl.addOrUpdateVertexAndEdge()");
-                addOrUpdateVertexAndEdge(v, existingVertex, dbTraversalSource, methodOrigin, encDecPropertyBuilder);
-                // watch.stop();
-            } else {
-                if (methodOrigin.equalsIgnoreCase("update")) {
-                    throw new RecordNotFoundException(Constants.ENTITY_NOT_FOUND);
-                }
-                label = generateBlankNodeLabel(rootLabel);
-                logger.info(String.format("Creating entity with label {}", rootLabel));
-                Vertex newVertex = dbTraversalSource.clone().addV(label).next();
-                setAuditInfo(v, true);
-                copyProperties(v, newVertex, methodOrigin, encDecPropertyBuilder);
-                // watch.start("RegistryDaoImpl.addOrUpdateVertexAndEdge()");
-                addOrUpdateVertexAndEdge(v, newVertex, dbTraversalSource, methodOrigin, encDecPropertyBuilder);
-                // watch.stop();
-            }
-            Table<Vertex,Vertex,Map<String,Object>>  encDecPropertyTable = encDecPropertyBuilder.build();
-            // watch.start("RegistryDaoImpl.updateEncryptedDecryptedProperties");
-            if(encDecPropertyTable.size() > 0){
-                updateEncryptedDecryptedProperties(encDecPropertyTable, methodOrigin);
-            }
-            // watch.stop();
-    }
-
-        return label;
-    }
+		GraphTraversal<Vertex, Vertex> gts = entitySource.clone().V().hasLabel(rootLabel);
+		String label = rootLabel;
+		while (gts.hasNext()) {
+			Vertex v = gts.next();
+			Iterator<Vertex> hasLabel = getVerticesIterator(dbGraph, label);
+			ImmutableTable.Builder<Vertex,Vertex,Map<String,Object>> encDecPropertyBuilder = ImmutableTable.builder();
+			if (hasLabel.hasNext()) {
+				logger.info(String.format("Root node label {} already exists. Updating properties for the root node.", rootLabel));
+				Vertex existingVertex = hasLabel.next();
+				setAuditInfo(v, false);
+				copyProperties(v, existingVertex, methodOrigin, encDecPropertyBuilder);
+				addOrUpdateVertexAndEdge(v, existingVertex, dbGraph, methodOrigin, encDecPropertyBuilder);
+			} else {
+				if(methodOrigin.equalsIgnoreCase("update")){
+					throw new RecordNotFoundException(Constants.ENTITY_NOT_FOUND);
+				}
+				logger.info(String.format("Creating entity with label {}", rootLabel));
+                Vertex newVertex = dbGraph.addVertex(rootLabel);
+                label = generateNamespacedLabel(newVertex.id().toString());
+                newVertex.property(internalPropertyKey("id"),label);
+				setAuditInfo(v, true);
+				copyProperties(v, newVertex,methodOrigin, encDecPropertyBuilder);
+				addOrUpdateVertexAndEdge(v, newVertex, dbGraph,methodOrigin, encDecPropertyBuilder);
+			}
+			Table<Vertex,Vertex,Map<String,Object>>  encDecPropertyTable = encDecPropertyBuilder.build();
+			long timestamp = System.currentTimeMillis();
+			if(encDecPropertyTable.size() > 0){
+				updateEncryptedDecryptedProperties(encDecPropertyTable, methodOrigin);
+			}
+			logger.info("Time taken to update encrypted properties:"+(System.currentTimeMillis() - timestamp));
+		}
+		return label;
+	}
 
     /**
-     * This method takes the root node of an entity and then recursively creates or updates child vertices
-     * and edges.
-     *
-     * @param v
-     * @param dbVertex
-     * @param dbGraph
-     * @throws EncryptionException
-     * @throws NoSuchElementException
-     */
-    private void addOrUpdateVertexAndEdge(Vertex v, Vertex dbVertex, GraphTraversalSource dbGraph, String methodOrigin, ImmutableTable.Builder<Vertex,Vertex,Map<String,Object>> encDecPropertyBuilder)
-            throws NoSuchElementException, EncryptionException, AuditFailedException, RecordNotFoundException {
-        Iterator<Edge> edges = v.edges(Direction.OUT);
-        Iterator<Edge> edgeList = v.edges(Direction.OUT);
-        Stack<Pair<Vertex, Vertex>> parsedVertices = new Stack<>();
-        List<Edge> dbEdgesForVertex = ImmutableList.copyOf(dbVertex.edges(Direction.OUT));
-        List<Edge> edgeVertexMatchList = new ArrayList<Edge>();
+	 * This method takes the root node of an entity and then recursively creates or updates child vertices
+	 * and edges.
+	 * @param sourceVertex
+	 * @param dbVertex
+	 * @param dbGraph
+	 * @throws EncryptionException 
+	 * @throws NoSuchElementException 
+	 */
+	private void addOrUpdateVertexAndEdge(Vertex sourceVertex, Vertex dbVertex, Graph dbGraph, String methodOrigin, ImmutableTable.Builder<Vertex,Vertex,Map<String,Object>> encDecPropertyBuilder)
+			throws NoSuchElementException, EncryptionException, AuditFailedException, RecordNotFoundException{
+		Iterator<Edge> sourceEdges1 = sourceVertex.edges(Direction.OUT);
+		Iterator<Edge> sourceEdges2 = sourceVertex.edges(Direction.OUT);
+		Stack<Pair<Vertex, Vertex>> parsedVertices = new Stack<>();
+		List<Edge> dbEdgesForVertex = ImmutableList.copyOf(dbVertex.edges(Direction.OUT));
+        List<Edge> existingEdgeList = new ArrayList<Edge>();
+        
+		while(sourceEdges2.hasNext()) {
+			Edge e = sourceEdges2.next();
+			Vertex ver = e.inVertex();
+			String edgeLabel = e.label();
+			// get the first matching edge in the DB
+			Optional<Edge> existingEdge =
+                    getFirstMatchingEdgeAndVertex(dbEdgesForVertex, ver, edgeLabel);
+			if(existingEdge.isPresent()){
+				existingEdgeList.add(existingEdge.get());
+			}
+		}
+		// existingEdgeList contains matching edges
+		logger.info("RegistryDaoImpl : Matching list size:"+existingEdgeList.size());
 
-        while (edgeList.hasNext()) {
-            Edge e = edgeList.next();
-            Vertex ver = e.inVertex();
-            String edgeLabel = e.label();
-            Optional<Edge> edgeVertexAlreadyExists =
-                    dbEdgesForVertex.stream().filter(ed -> ed.label().equalsIgnoreCase(edgeLabel) && ed.inVertex().label().equalsIgnoreCase(ver.label())).findFirst();
-            if (edgeVertexAlreadyExists.isPresent()) {
-                edgeVertexMatchList.add(edgeVertexAlreadyExists.get());
-            }
-        }
-        logger.debug("RegistryDaoImpl : Matching list size:" + edgeVertexMatchList.size());
-
-        while (edges.hasNext()) {
-            Edge e = edges.next();
-            Vertex ver = e.inVertex();
-            String edgeLabel = e.label();
-            GraphTraversal<Vertex, Vertex> gt = dbGraph.clone().V().hasLabel(ver.label());
-            Optional<Edge> edgeAlreadyExists =
-                    dbEdgesForVertex.stream().filter(ed -> ed.label().equalsIgnoreCase(e.label())).findFirst();
-            Optional<Edge> edgeVertexAlreadyExists =
-                    dbEdgesForVertex.stream().filter(ed -> ed.label().equalsIgnoreCase(edgeLabel) && ed.inVertex().label().equalsIgnoreCase(ver.label())).findFirst();
-            verifyAndDelete(dbVertex, e, edgeAlreadyExists, edgeVertexMatchList, methodOrigin);
-            if (gt.hasNext()) {
-                Vertex existingV = gt.next();
-                setAuditInfo(ver, false);
-                logger.info(String.format("Vertex with label {} already exists. Updating properties for the vertex", existingV.label()));
-                copyProperties(ver, existingV, methodOrigin, encDecPropertyBuilder);
-                if (!edgeVertexAlreadyExists.isPresent()) {
-                    Edge edgeAdded = dbVertex.addEdge(edgeLabel, existingV);
-                    edgeVertexMatchList.add(edgeAdded);
-                    if(auditEnabled) {
+		while(sourceEdges1.hasNext()) {
+			Edge sourceEdge = sourceEdges1.next();
+			Vertex sourceInVertex = sourceEdge.inVertex();
+			String edgeLabel = sourceEdge.label();
+			Iterator<Vertex> dbVertexIterator = getVerticesIterator(dbGraph,sourceInVertex.label());
+            List<String> matchedIDs;
+			if(!dbVertexIterator.hasNext()){
+                matchedIDs = databaseProvider.getIDsFromLabel(sourceInVertex.label());
+				if(!matchedIDs.isEmpty())
+                    dbVertexIterator = getVerticesIterator(dbGraph, generateNamespacedLabel(matchedIDs.get(0)));
+			}
+			Optional<Edge> existingEdge =
+					dbEdgesForVertex.stream().filter(dbEdge -> {
+					    return dbEdge.label().equalsIgnoreCase(sourceEdge.label());
+                    }).findFirst();
+			Optional<Edge> existingEdgeConnectedToExistingVertex =
+                    getFirstMatchingEdgeAndVertex(dbEdgesForVertex, sourceInVertex, edgeLabel);
+			deleteSingleValuedVertexEdge(dbVertex, sourceEdge, existingEdge, existingEdgeList, methodOrigin);
+			if (dbVertexIterator.hasNext()) {
+				Vertex existingVertex = dbVertexIterator.next();
+				setAuditInfo(sourceInVertex, false);
+				logger.info(String.format("Vertex with label {} already exists. Updating properties for the vertex", existingVertex.label()));
+				copyProperties(sourceInVertex, existingVertex,methodOrigin, encDecPropertyBuilder);
+				if(!existingEdgeConnectedToExistingVertex.isPresent()){
+					Edge edgeAdded = dbVertex.addEdge(edgeLabel, existingVertex);
+					existingEdgeList.add(edgeAdded);
+					if(auditEnabled){
                         watch.start("RegistryDaoImpl.addOrUpdateVertexAndEdge.auditRecord");
                         AuditRecord record = appContext.getBean(AuditRecord.class);
                         record
-                                .subject(dbVertex.label())
-                                .predicate(e.label())
-                                .oldObject(null)
-                                .newObject(existingV.label())
-                                .record(databaseProvider);
-                        watch.stop("RegistryDaoImpl.addOrUpdateVertexAndEdge.auditRecord");
-                    }
-                    logger.debug("RegistryDaoImpl : Audit record created for update/insert(upsert) with label : {}  ", dbVertex.label());
-                }
-                parsedVertices.push(new Pair<>(ver, existingV));
-            } else {
-                if (methodOrigin.equalsIgnoreCase("update") && !isIRI(ver.label())) {
-                    throw new RecordNotFoundException(Constants.ENTITY_NOT_FOUND);
-                }
-                String label = generateBlankNodeLabel(ver.label());
-                Vertex newV = dbGraph.addV(label).next();
-                setAuditInfo(ver, true);
-                logger.debug(String.format("RegistryDaoImpl : Adding vertex with label {} and adding properties", newV.label()));
-                copyProperties(ver, newV, methodOrigin, encDecPropertyBuilder);
-                logger.debug(String.format("RegistryDaoImpl : Adding edge with label {} for the vertex label {}.", e.label(), newV.label()));
+                            .subject(dbVertex.label())
+                            .predicate(sourceEdge.label())
+                            .oldObject(null)
+                            .newObject(existingVertex.label())
+                            .record(databaseProvider);
+                            watch.stop("RegistryDaoImpl.addOrUpdateVertexAndEdge.auditRecord");
+					}
+					logger.debug("RegistryDaoImpl : Audit record created for update/insert(upsert) with label : {}  ", dbVertex.label());
+				}
+				parsedVertices.push(new Pair<>(sourceInVertex, existingVertex));
+			} else {
+			    // did not find matching vertex in the DB
+				if(methodOrigin.equalsIgnoreCase("update") && isaBlankNode(sourceInVertex.label())){
+					throw new RecordNotFoundException(Constants.ENTITY_NOT_FOUND);
+				}
+				String label = generateBlankNodeLabel(sourceInVertex.label());
+				Vertex newDBVertex = dbGraph.addVertex(label);//dbGraph.addVertex(label);
+                newDBVertex.property(internalPropertyKey("id"),label);
+				setAuditInfo(sourceInVertex, true);
+				logger.debug(String.format("RegistryDaoImpl : Adding vertex with label {} and adding properties", newDBVertex.label()));
+				copyProperties(sourceInVertex, newDBVertex, methodOrigin, encDecPropertyBuilder);
+				logger.debug(String.format("RegistryDaoImpl : Adding edge with label {} for the vertex label {}.", sourceEdge.label(), newDBVertex.label()));
 
-                Edge edgeAdded = dbVertex.addEdge(edgeLabel, newV);
-                edgeVertexMatchList.add(edgeAdded);
-                if(auditEnabled) {
+				Edge edgeAdded = dbVertex.addEdge(edgeLabel, newDBVertex);
+				existingEdgeList.add(edgeAdded);
+				if(auditEnabled){
                     AuditRecord record = appContext.getBean(AuditRecord.class);
                     watch.start("RegistryDaoImpl.addOrUpdateVertexAndEdge.auditRecord");
                     record
-                            .subject(dbVertex.label())
-                            .predicate(e.label())
-                            .oldObject(null)
-                            .newObject(newV.label())
-                            .record(databaseProvider);
+                        .subject(dbVertex.label())
+                        .predicate(sourceEdge.label())
+                        .oldObject(null)
+                        .newObject(newDBVertex.label())
+                        .record(databaseProvider);
                     watch.stop("RegistryDaoImpl.addOrUpdateVertexAndEdge.auditRecord");
-                }
-                logger.debug("RegistryDaoImpl : Audit record created for update with label : {} ", dbVertex.label());
-                parsedVertices.push(new Pair<>(ver, newV));
-            }
-        }
-        for (Pair<Vertex, Vertex> pv : parsedVertices) {
-            addOrUpdateVertexAndEdge(pv.getValue0(), pv.getValue1(), dbGraph, methodOrigin, encDecPropertyBuilder);
-        }
-
-
-    }
-
-	/*private void deleteEdgeAndNode(Vertex dbVertex, Edge e, Optional<Edge> edgeAlreadyExists,List<Edge> edgeVertexMatchList, String methodOrigin)
-	 throws AuditFailedException, RecordNotFoundException{
-
-		Graph graphFromStore = databaseProvider.getGraphStore();
-    	GraphTraversalSource traversalSource = graphFromStore.traversal();
-    	GraphTraversal<Vertex, Vertex> dbHasLabel = traversalSource.clone().V().hasLabel(dbVertex.label());
-    	if (!dbHasLabel.hasNext()) {
-    		throw new RecordNotFoundException(Constants.ENTITY_NOT_FOUND);
-    	}
-    	boolean isSingleValued = schemaConfigurator.isSingleValued(e.label());
-    	if(dbHasLabel.hasNext()){
-    		Vertex dbSourceVertex = dbHasLabel.next();
-    		if (graphFromStore.features().graph().supportsTransactions()) {
-    			org.apache.tinkerpop.gremlin.structure.Transaction tx = graphFromStore.tx();
-    			tx.onReadWrite(org.apache.tinkerpop.gremlin.structure.Transaction.READ_WRITE_BEHAVIOR.AUTO);
-    			deleteEdgeAndNode(isSingleValued, dbSourceVertex, e, edgeAlreadyExists, edgeVertexMatchList, methodOrigin);
-    			tx.commit();
-    		}else{
-    			deleteEdgeAndNode(isSingleValued, dbSourceVertex, e, edgeAlreadyExists, edgeVertexMatchList, methodOrigin);
-    		}
-    	}
-	}*/
-
+				}
+				logger.info("Audit record created for update with label : {} ", dbVertex.label());
+				parsedVertices.push(new Pair<>(sourceInVertex, newDBVertex));
+			}
+		}
+		for(Pair<Vertex, Vertex> pv : parsedVertices) {
+			addOrUpdateVertexAndEdge(pv.getValue0(), pv.getValue1(), dbGraph,methodOrigin, encDecPropertyBuilder);
+		}
+	}
 
     /**
      * This method checks if deletion of edge and node is required based on criteria and invokes deleteEdgeAndNode method
-     *
      * @param dbSourceVertex
      * @param e
      * @param edgeAlreadyExists
@@ -414,16 +312,16 @@ public class RegistryDaoImpl implements RegistryDao {
      * @param methodOrigin
      * @throws AuditFailedException
      */
-    private void verifyAndDelete(Vertex dbSourceVertex, Edge e, Optional<Edge> edgeAlreadyExists, List<Edge> edgeVertexMatchList, String methodOrigin)
-            throws AuditFailedException {
+    private void deleteSingleValuedVertexEdge(Vertex dbSourceVertex, Edge e, Optional<Edge> edgeAlreadyExists, List<Edge> edgeVertexMatchList, String methodOrigin)
+            throws AuditFailedException{
         boolean isSingleValued = schemaConfigurator.isSingleValued(e.label());
-        if ((edgeAlreadyExists.isPresent() && methodOrigin.equalsIgnoreCase("update")) || isSingleValued) {
+        if((edgeAlreadyExists.isPresent() && methodOrigin.equalsIgnoreCase("update")) || isSingleValued){
             Iterator<Edge> edgeIter = dbSourceVertex.edges(Direction.OUT, e.label());
-            while (edgeIter.hasNext()) {
+            while(edgeIter.hasNext()){
                 Edge edge = edgeIter.next();
                 Optional<Edge> existingEdgeVertex =
-                        edgeVertexMatchList.stream().filter(ed -> ed.label().equalsIgnoreCase(edge.label()) && ed.inVertex().label().equalsIgnoreCase(edge.inVertex().label())).findFirst();
-                if (!existingEdgeVertex.isPresent()) {
+                        getFirstMatchingEdgeAndVertex(edgeVertexMatchList, edge.inVertex(), edge.label());
+                if(!existingEdgeVertex.isPresent()){
                     deleteEdgeAndNode(dbSourceVertex, edge, null);
                 }
             }
@@ -440,8 +338,6 @@ public class RegistryDaoImpl implements RegistryDao {
      */
     private void deleteEdgeAndNode(Vertex v, Edge dbEdgeToBeRemoved, Vertex dbVertexToBeDeleted) throws AuditFailedException {
         logger.info("Deleting edge and node of label : {}", dbEdgeToBeRemoved.label());
-
-
         if (dbVertexToBeDeleted == null) {
             dbVertexToBeDeleted = dbEdgeToBeRemoved.inVertex();
         }
@@ -475,28 +371,19 @@ public class RegistryDaoImpl implements RegistryDao {
 
     }
 
-
     /**
      * Blank nodes are no longer supported. If the input data has a blank node, which is identified
      * by the node's label which starts with :_, then a random UUID is used as the label for the blank node.
-     *
      * @param label
      * @return
      */
     private String generateBlankNodeLabel(String label) {
-        if (!isIRI(label)) {
+        if(isaBlankNode(label)){
             label = String.format("%s%s", registryContext, generateRandomUUID());
         }
         return label;
     }
 
-    /*private boolean isBlankNode(String label){
-        if(label.startsWith("_:")) {
-            return true;
-        }
-        return false;
-    }
-    */
     private boolean isIRI(String label) {
         UrlValidator urlValidator = new UrlValidator(UrlValidator.ALLOW_LOCAL_URLS);
         if (urlValidator.isValid(label)) {
@@ -513,43 +400,35 @@ public class RegistryDaoImpl implements RegistryDao {
     public boolean updateEntity(Graph entityForUpdate, String rootNodeLabel, String methodOrigin)
             throws RecordNotFoundException, NoSuchElementException, EncryptionException, AuditFailedException {
         Graph graphFromStore = databaseProvider.getGraphStore();
-        GraphTraversalSource dbGraphTraversalSource = graphFromStore.traversal();
         TinkerGraph graphForUpdate = (TinkerGraph) entityForUpdate;
         GraphTraversalSource traversal = graphForUpdate.traversal();
-        // Check if the root node being updated exists in the database
-        GraphTraversal<Vertex, Vertex> hasRootLabel = dbGraphTraversalSource.clone().V().hasLabel(rootNodeLabel);
+        Iterator<Vertex> hasRootLabel = getVerticesIterator(graphFromStore, rootNodeLabel);
         if (!hasRootLabel.hasNext()) {
-            // closeGraph(graphFromStore);
             throw new RecordNotFoundException(Constants.ENTITY_NOT_FOUND);
         } else {
             if (graphFromStore.features().graph().supportsTransactions()) {
                 org.apache.tinkerpop.gremlin.structure.Transaction tx = graphFromStore.tx();
                 tx.onReadWrite(org.apache.tinkerpop.gremlin.structure.Transaction.READ_WRITE_BEHAVIOR.AUTO);
-                //createOrUpdateEntity(graphForUpdate, rootNodeLabel, methodOrigin);
                 watch.start("RegistryDaoImpl.updateEntity");
-                addOrUpdateVerticesAndEdges(dbGraphTraversalSource, traversal, rootNodeLabel, methodOrigin);
+                addOrUpdateVerticesAndEdges(graphFromStore, traversal, rootNodeLabel, methodOrigin);
                 tx.commit();
                 watch.stop("RegistryDaoImpl.updateEntity");
                 logger.debug("RegistryDaoImpl : Entity Updated for transactional DB with rootNodeLabel : {}", rootNodeLabel);
-            } else {
+            }else{
                 watch.start("RegistryDaoImpl.updateEntity");
-                addOrUpdateVerticesAndEdges(dbGraphTraversalSource, traversal, rootNodeLabel, methodOrigin);
+                addOrUpdateVerticesAndEdges(graphFromStore, traversal, rootNodeLabel, methodOrigin);
                 watch.stop("RegistryDaoImpl.updateEntity");
                 logger.debug("RegistryDaoImpl : Entity Updated for non-transactional DB with rootNodeLabel : {}", rootNodeLabel);
-                //createOrUpdateEntity(graphForUpdate, rootNodeLabel, methodOrigin);
             }
-            //closeGraph(graphFromStore);
         }
         return false;
     }
 
-
     @Override
     public Graph getEntityById(String label) throws RecordNotFoundException, NoSuchElementException, EncryptionException, AuditFailedException {
         Graph graphFromStore = databaseProvider.getGraphStore();
-        GraphTraversalSource traversalSource = graphFromStore.traversal();
-        GraphTraversal<Vertex, Vertex> hasLabel = traversalSource.clone().V().hasLabel(label);
-        ImmutableTable.Builder<Vertex, Vertex, Map<String, Object>> encDecPropertyBuilder = ImmutableTable.<Vertex, Vertex, Map<String, Object>>builder();
+        Iterator<Vertex> hasLabel = getVerticesIterator(graphFromStore,label);
+        ImmutableTable.Builder<Vertex,Vertex,Map<String,Object>> encDecPropertyBuilder = ImmutableTable.<Vertex,Vertex,Map<String,Object>> builder();
         Graph parsedGraph = TinkerGraph.open();
         if (!hasLabel.hasNext()) {
             logger.info("Record not found  for label : {}", label);
@@ -557,13 +436,14 @@ public class RegistryDaoImpl implements RegistryDao {
         } else {
             logger.info("Record exists for label : {}", label);
             Vertex subject = hasLabel.next();
-            Vertex newSubject = parsedGraph.addVertex(subject.label());
-            copyProperties(subject, newSubject, "read", encDecPropertyBuilder);
+            Vertex newSubject = parsedGraph.addVertex(generateNamespacedLabel(String.valueOf(subject.id())));
+            copyProperties(subject, newSubject,"read", encDecPropertyBuilder);
             watch.start("RegistryDaoImpl.getEntityById.extractGraphFromVertex");
-            extractGraphFromVertex(parsedGraph, newSubject, subject, encDecPropertyBuilder);
+            extractGraphFromVertex(parsedGraph,newSubject,subject, encDecPropertyBuilder);
             watch.stop("RegistryDaoImpl.getEntityById.extractGraphFromVertex");
-            Table<Vertex, Vertex, Map<String, Object>> encDecPropertyTable = encDecPropertyBuilder.build();
-            if (encDecPropertyTable.size() > 0) {
+            Table<Vertex,Vertex,Map<String,Object>>  encDecPropertyTable = encDecPropertyBuilder.build();
+            long timestamp = System.currentTimeMillis();
+            if(encDecPropertyTable.size()>0){
                 watch.start("RegistryDaoImpl.getEntityById.updateEncryptedDecryptedProperties");
                 updateEncryptedDecryptedProperties(encDecPropertyTable, "read");
                 watch.stop("RegistryDaoImpl.getEntityById.updateEncryptedDecryptedProperties");
@@ -571,7 +451,6 @@ public class RegistryDaoImpl implements RegistryDao {
         }
         return parsedGraph;
     }
-
 
     private void copyProperties(Vertex subject, Vertex newSubject, String methodOrigin, ImmutableTable.Builder<Vertex, Vertex, Map<String, Object>> encDecPropertyBuilder)
             throws NoSuchElementException, EncryptionException, AuditFailedException {
@@ -581,25 +460,27 @@ public class RegistryDaoImpl implements RegistryDao {
 
         while (iter.hasNext()) {
             VertexProperty<Object> property = iter.next();
-            String tailOfPropertyKey = property.key().substring(property.key().lastIndexOf("/") + 1).trim();
-            boolean existingEncyptedPropertyKey = tailOfPropertyKey
-                    .substring(0, Math.min(tailOfPropertyKey.length(), 9)).equalsIgnoreCase("encrypted");
-            if ((methodOrigin.equalsIgnoreCase("create") || methodOrigin.equalsIgnoreCase("update")) && existingEncyptedPropertyKey) {
-                property.remove();
-            }
-            if ((methodOrigin.equalsIgnoreCase("create") || methodOrigin.equalsIgnoreCase("update")) && schemaConfigurator.isPrivate(property.key()) && !existingEncyptedPropertyKey) {
-                propertyMap.put(property.key(), property.value());
-            } else if (methodOrigin.equalsIgnoreCase("read") && schemaConfigurator.isEncrypted(tailOfPropertyKey)) {
-                propertyMap.put(property.key(), property.value());
-                String decryptedKey = property.key().replace(tailOfPropertyKey, tailOfPropertyKey.substring(9));
-                setProperty(newSubject, decryptedKey, EMPTY_STRING, methodOrigin);
-            } else if (isaMetaProperty(property.key())) {
-                buildPropertyMetaMap(propertyMetaPropertyMap, property);
-            } else {
-                if (!(methodOrigin.equalsIgnoreCase("read")
-                        && property.key().contains("@audit"))) {
-                    setProperty(newSubject, property.key(), property.value(), methodOrigin);
-                    setMetaProperty(subject, newSubject, property, methodOrigin);
+            if (!isInternalProperty(property)) {
+                String tailOfPropertyKey = property.key().substring(property.key().lastIndexOf("/") + 1).trim();
+                boolean existingEncyptedPropertyKey = tailOfPropertyKey
+                        .substring(0, Math.min(tailOfPropertyKey.length(), 9)).equalsIgnoreCase("encrypted");
+                if ((methodOrigin.equalsIgnoreCase("create") || methodOrigin.equalsIgnoreCase("update")) && existingEncyptedPropertyKey) {
+                    property.remove();
+                }
+                if ((methodOrigin.equalsIgnoreCase("create") || methodOrigin.equalsIgnoreCase("update")) && schemaConfigurator.isPrivate(property.key()) && !existingEncyptedPropertyKey) {
+                    propertyMap.put(property.key(), property.value());
+                } else if (methodOrigin.equalsIgnoreCase("read") && schemaConfigurator.isEncrypted(tailOfPropertyKey)) {
+                    propertyMap.put(property.key(), property.value());
+                    String decryptedKey = property.key().replace(tailOfPropertyKey, tailOfPropertyKey.substring(9));
+                    setProperty(newSubject, decryptedKey, EMPTY_STRING, methodOrigin);
+                } else if (isaMetaProperty(property.key())) {
+                    buildPropertyMetaMap(propertyMetaPropertyMap, property);
+                } else {
+                    if (!(methodOrigin.equalsIgnoreCase("read")
+                            && property.key().contains("@audit"))) {
+                        setProperty(newSubject, property.key(), property.value(), methodOrigin);
+                        setMetaProperty(subject, newSubject, property, methodOrigin);
+                    }
                 }
             }
         }
@@ -607,7 +488,6 @@ public class RegistryDaoImpl implements RegistryDao {
         if (propertyMap.size() > 0) {
             encDecPropertyBuilder.put(subject, newSubject, propertyMap);
         }
-
     }
 
     private boolean isaMetaProperty(String key) {
@@ -618,24 +498,36 @@ public class RegistryDaoImpl implements RegistryDao {
         if (!(methodOrigin.equalsIgnoreCase("read") && isAuditField(key))) {
             VertexProperty vp = v.property(key);
             Object oldValue = vp.isPresent() ? vp.value() : null;
-            if (oldValue != null && !methodOrigin.equalsIgnoreCase("update") && !schemaConfigurator.isSingleValued(key)) {
+            if(oldValue!=null && !methodOrigin.equalsIgnoreCase("update") && !schemaConfigurator.isSingleValued(key)){
                 List valueList = new ArrayList();
-                if (oldValue instanceof List) {
-                    valueList = (List) oldValue;
-                } else {
-                    String valueStr = (String) oldValue;
+                if(oldValue instanceof List){
+                    valueList = (List)oldValue;
+                } else{
+                    String valueStr = (String)oldValue;
                     valueList.add(valueStr);
                 }
 
-                if (newValue instanceof List) {
-                    valueList.addAll((List) newValue);
-                } else {
+                if(newValue instanceof List){
+                    valueList.addAll((List)newValue);
+                } else{
                     valueList.add(newValue);
                 }
-                // newValue = valueList;
-                newValue = processVertexProperty(valueList);
+                newValue = valueList;
+                // TODO fix multi values
+                // newValue = processVertexProperty(valueList);
             }
-            v.property(key, processVertexProperty(newValue));
+            // v.property(key, processVertexProperty(newValue));
+            if(newValue instanceof List){
+                if(databaseProvider.isMultiValuedLiteralPropertySupported()){
+                    v.property(key, newValue);
+                } else {
+                    Gson gson = new Gson();
+                    String json = gson.toJson(newValue);
+                    v.property(key, json);
+                }
+            } else {
+                v.property(key, newValue);
+            }
             if (!isAuditField(key) && auditEnabled) {
                 if (!isaMetaProperty(key) && !Objects.equals(oldValue, newValue)) {
                     GraphTraversal<Vertex, Vertex> configTraversal =
@@ -652,9 +544,9 @@ public class RegistryDaoImpl implements RegistryDao {
                                 .newObject(newValue)
                                 .record(databaseProvider);
                         watch.stop("RegistryDaoImpl.setProperty.auditRecord");
-                        logger.debug("Audit record created for {}  !", v.label());
+                        logger.info("Audit record created for {}  !", v.label());
                     } else {
-                        // System.out.println("NOT AUDITING");
+                        logger.debug("not auditing in the Application!");
                     }
                 } else {
                     logger.debug("No change found for auditing !");
@@ -682,15 +574,15 @@ public class RegistryDaoImpl implements RegistryDao {
 
     private void setMetaPropertyFromMap(Vertex newSubject, HashMap<String, HashMap<String, String>> propertyMetaPropertyMap) {
         Iterator propertyIter = propertyMetaPropertyMap.entrySet().iterator();
-        while (propertyIter.hasNext()) {
-            Map.Entry pair = (Map.Entry) propertyIter.next();
+        while(propertyIter.hasNext()){
+            Map.Entry pair = (Map.Entry)propertyIter.next();
             logger.info("PROPERTY <- " + pair.getKey());
-            HashMap<String, String> _mpmap = (HashMap<String, String>) pair.getValue();
+            HashMap<String,String> _mpmap = (HashMap<String, String>) pair.getValue();
             Iterator _mpmapIter = _mpmap.entrySet().iterator();
-            while (_mpmapIter.hasNext()) {
-                Map.Entry _pair = (Map.Entry) _mpmapIter.next();
-            logger.info("META PROPERTY <- " + _pair.getKey() + "|" + _pair.getValue() + "|" + newSubject.property(pair.getKey().toString()).isPresent());
-            newSubject.property(pair.getKey().toString()).property(_pair.getKey().toString(), _pair.getValue().toString());
+            while(_mpmapIter.hasNext()) {
+                Map.Entry _pair = (Map.Entry)_mpmapIter.next();
+                logger.info("META PROPERTY <- " + _pair.getKey() + "|" + _pair.getValue() + "|" + newSubject.property(pair.getKey().toString()).isPresent());
+                newSubject.property(pair.getKey().toString()).property(_pair.getKey().toString(),_pair.getValue().toString());
             }
         }
     }
@@ -735,80 +627,20 @@ public class RegistryDaoImpl implements RegistryDao {
         }
     }
 
-    /*@Override
-    public boolean deleteEntity (Graph entity, String rootLabel) throws RecordNotFoundException,AuditFailedException {
-    	Graph graphFromStore = databaseProvider.getGraphStore();
-    	GraphTraversalSource traversalSource = graphFromStore.traversal();
-    	GraphTraversal<Vertex, Vertex> dbHasLabel = traversalSource.clone().V().hasLabel(rootLabel);
-    	if (!dbHasLabel.hasNext()) {
-    		throw new RecordNotFoundException(Constants.ENTITY_NOT_FOUND);
-    	}
+    private boolean isaBlankNode(String label) {
+        return !isIRI(label);
+    }
 
-    	GraphTraversal<Vertex, Vertex> hasNestedLabel = traversalSource.clone().V().hasLabel(labelToBeDeleted);
-    	if (!hasNestedLabel.hasNext()) {
-			logger.info("Record not found to be deleted !");
-    		throw new RecordNotFoundException(Constants.ENTITY_NOT_FOUND);
-    	}
-    	TinkerGraph graph = (TinkerGraph) entity;
-		GraphTraversalSource traversal = graph.traversal();
-    	GraphTraversal<Vertex, Vertex> gts = traversal.clone().V().hasLabel(rootLabel);
+    private String generateNamespacedLabel(String label) {
+	    return String.format("%s%s", registryContext, label);
+    }
 
-    	if (graphFromStore.features().graph().supportsTransactions()) {
-    		org.apache.tinkerpop.gremlin.structure.Transaction tx;
-    		tx = graphFromStore.tx();
-    		tx.onReadWrite(org.apache.tinkerpop.gremlin.structure.Transaction.READ_WRITE_BEHAVIOR.AUTO);
-    		deleteEdgeAndNode(dbHasLabel.next(), gts);
-    		tx.commit();
-    		tx.close();
-    		logger.info("Entity for {} deleted !", rootLabel);
-    		return true;
-    	} else {
-    		deleteEdgeAndNode(dbHasLabel.next(), gts);
-    		logger.info("Entity for {} deleted !", rootLabel);
-    	}
-
-    	return false;
-    }*/
-
-	/*private void deleteEdgeAndNode(Vertex v, GraphTraversal<Vertex, Vertex> gts) throws AuditFailedException{
-    	List<Edge> dbEdgesForVertex = ImmutableList.copyOf(v.edges(Direction.OUT));
-    	if(gts.hasNext()){
-    		Vertex vertex = gts.next();
-    		Iterator<Edge> edgeIter = vertex.edges(Direction.OUT);
-    		while(edgeIter.hasNext()){
-    			Edge e = edgeIter.next();
-    			Optional<Edge> edgeAlreadyExists =
-    					dbEdgesForVertex.stream().filter(ed -> ed.label().equalsIgnoreCase(e.label())).findFirst();
-    			if(edgeAlreadyExists.isPresent()){
-    				Vertex vertexToBeDeleted = e.inVertex();
-    				Edge dbEdge = edgeAlreadyExists.get();
-    				Vertex dbVertexToBeDeleted = dbEdge.inVertex();
-    				if(vertexToBeDeleted.label().equalsIgnoreCase(dbVertexToBeDeleted.label())){
-    					Iterator<Edge> inEdgeIter = dbVertexToBeDeleted.edges(Direction.IN);
-    					Iterator<Edge> outEdgeIter = dbVertexToBeDeleted.edges(Direction.OUT);
-    					if(inEdgeIter.hasNext() || outEdgeIter.hasNext()){
-    						dbEdge.remove();
-    					}else{
-    						dbVertexToBeDeleted.remove();
-    						dbEdge.remove();
-    					}
-    					AuditRecord record = appContext.getBean(AuditRecord.class);
-    					String tailOfdbVertex=v.label().substring(v.label().lastIndexOf("/") + 1).trim();
-    					String auditVertexlabel= registryContext+tailOfdbVertex;
-    					record
-    					.subject(auditVertexlabel)
-    					.predicate(dbEdge.label())
-    					.oldObject(dbVertexToBeDeleted.label())
-    					.newObject(null)
-    					.record(databaseProvider);
-
-    					logger.info("Audit record created for delete with label : {} !", auditVertexlabel);
-    				}
-    			}
-    		}
-    	}
-
-    }*/
+    private boolean isInternalProperty(VertexProperty<Object> property) {
+	    boolean internalProperty = false;
+	    if(property.key().startsWith(INTERNAL_PROPERTY_PREFIX))
+	        internalProperty = true;
+	    return internalProperty;
+    }
 
 	private void extractGraphFromVertex(Graph parsedGraph,Vertex parsedGraphSubject,Vertex s, ImmutableTable.Builder<Vertex,Vertex,Map<String,Object>> encDecPropertyBuilder)
 			throws NoSuchElementException, EncryptionException, AuditFailedException {
@@ -820,6 +652,7 @@ public class RegistryDaoImpl implements RegistryDao {
 			edge = edgeIter.next();
 			Vertex o = edge.inVertex();
 			Vertex newo = parsedGraph.addVertex(o.label());
+//            newo.property(internalPropertyKey("id"),o.label());
 			copyProperties(o, newo,"read", encDecPropertyBuilder);
 			parsedGraphSubject.addEdge(edge.label(), newo);
 			vStack.push(o);
@@ -864,80 +697,120 @@ public class RegistryDaoImpl implements RegistryDao {
 
     }
 
+    private Map<String,Object> updateEncDecListMap(Map<String, Object> listPropertyMap, String methodOrigin) throws EncryptionException{
+        Map<String,Object> encDecListPropertyMap = new HashMap<String,Object>();
+        for(Map.Entry<String, Object> entry: listPropertyMap.entrySet()){
+            String k = entry.getKey();
+            Object v = entry.getValue();
+            List values = (List)v;
+            List encValues = new ArrayList();
+            for(Object listV : values){
+                String encDecValue = null;
+                if(methodOrigin.equalsIgnoreCase("create") || methodOrigin.equalsIgnoreCase("update")){
+                    encDecValue = encryptionService.encrypt(listV);
+                }else{
+                    encDecValue = encryptionService.decrypt(listV);
+                }
+                encValues.add(encDecValue);
+            }
+            encDecListPropertyMap.put(k, encValues);
+        }
+        return encDecListPropertyMap;
+    }
 
-	private Map<String,Object> updateEncDecListMap(Map<String, Object> listPropertyMap, String methodOrigin) throws EncryptionException{
-		Map<String,Object> encDecListPropertyMap = new HashMap<String,Object>();
-			for(Map.Entry<String, Object> entry: listPropertyMap.entrySet()){
-				String k = entry.getKey();
-				Object v = entry.getValue();
-				List values = (List)v;
-				List encValues = new ArrayList();
-				for(Object listV : values){
-					String encDecValue = null;
-					if(methodOrigin.equalsIgnoreCase("create") || methodOrigin.equalsIgnoreCase("update")){
-						encDecValue = encryptionService.encrypt(listV);
-					}else{
-						encDecValue = encryptionService.decrypt(listV);
-					}
-					encValues.add(encDecValue);
-				}
-				encDecListPropertyMap.put(k, encValues);
-			}
-		return encDecListPropertyMap;
-	}
+    private void setEncDecMap(Map<String,Object> encryptedMap, Table<Vertex,Vertex,Map<String,Object>> encDecPropertyTable){
+        for(Map.Entry<String, Object> entry : encryptedMap.entrySet()){
+            encDecPropertyTable.values().forEach(map -> { if(map.containsKey(entry.getKey())){
+                map.put(entry.getKey(), entry.getValue());
+            }
+            });
+        }
+    }
 
+    private void setEncryptedDecryptedProperty(Table<Vertex,Vertex,Map<String,Object>> encDecPropertyTable, String methodOrigin) throws AuditFailedException{
+        for(Table.Cell<Vertex,Vertex,Map<String,Object>> cell: encDecPropertyTable.cellSet()){
+            Vertex subject = cell.getRowKey();
+            Vertex newSubject = cell.getColumnKey();
+            for(Map.Entry<String, Object> entry : cell.getValue().entrySet()){
+                Object entryValue = entry.getValue();
+                String entryKey = entry.getKey();
+                String tailOfPropertyKey = entryKey.substring(entryKey.lastIndexOf("/") + 1).trim();
+                String newKey = null;
+                if (methodOrigin.equalsIgnoreCase("create") || methodOrigin.equalsIgnoreCase("update")){
+                    newKey = entryKey.replace(tailOfPropertyKey, "encrypted" + tailOfPropertyKey);
+                    setProperty(newSubject, newKey, entryValue, methodOrigin);
+                    VertexProperty property = subject.property(entryKey);
+                    setMetaProperty(subject, newSubject, property, methodOrigin);
+                } else if(methodOrigin.equalsIgnoreCase("read")){
+                    newKey = entryKey.replace(tailOfPropertyKey, tailOfPropertyKey.substring(9));
+                    Iterator<Property<Object>> propIter = newSubject.property(newKey).properties();
+                    setProperty(newSubject, newKey, entryValue, methodOrigin);
+                    while(propIter.hasNext()){
+                        Property<Object> propertyObj = propIter.next();
+                        newSubject.property(newKey).property(propertyObj.key(), propertyObj.value());
+                    }
+                }
 
-	private void setEncDecMap(Map<String,Object> encryptedMap, Table<Vertex,Vertex,Map<String,Object>> encDecPropertyTable){
-			for(Map.Entry<String, Object> entry : encryptedMap.entrySet()){
-				encDecPropertyTable.values().forEach(map -> { if(map.containsKey(entry.getKey())){
-					map.put(entry.getKey(), entry.getValue());
-				}
-				});
-			}
-	}
+            }
+        }
+    }
 
-	private void setEncryptedDecryptedProperty(Table<Vertex,Vertex,Map<String,Object>> encDecPropertyTable, String methodOrigin) throws AuditFailedException{
+    public void setAuditInfo(Vertex v, boolean isNew){
+        if(authenticationEnabled){
+            String userId = ((AuthInfo) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getSub();
+            long timestamp = new Date().getTime();
+            if(isNew){
+                v.property(registryContext+Constants.AuditProperties.createdBy.name(),userId);
+                v.property(registryContext+Constants.AuditProperties.createdAt.name(),timestamp);
+            }
+            v.property(registryContext+Constants.AuditProperties.lastUpdatedBy.name(),userId);
+            v.property(registryContext+Constants.AuditProperties.lastUpdatedAt.name(),timestamp);
+        }
+    }
 
-		for(Table.Cell<Vertex,Vertex,Map<String,Object>> cell: encDecPropertyTable.cellSet()){
-			Vertex subject = cell.getRowKey();
-			Vertex newSubject = cell.getColumnKey();
-			for(Map.Entry<String, Object> entry : cell.getValue().entrySet()){
-				Object entryValue = entry.getValue();
-				String entryKey = entry.getKey();
-				String tailOfPropertyKey = entryKey.substring(entryKey.lastIndexOf("/") + 1).trim();
-				String newKey = null;
-				if (methodOrigin.equalsIgnoreCase("create") || methodOrigin.equalsIgnoreCase("update")){
-					newKey = entryKey.replace(tailOfPropertyKey, "encrypted" + tailOfPropertyKey);
-					setProperty(newSubject, newKey, entryValue, methodOrigin);
-					VertexProperty property = subject.property(entryKey);
-					setMetaProperty(subject, newSubject, property, methodOrigin);
-				} else if(methodOrigin.equalsIgnoreCase("read")){
-					newKey = entryKey.replace(tailOfPropertyKey, tailOfPropertyKey.substring(9));
-					Iterator<Property<Object>> propIter = newSubject.property(newKey).properties();
-					setProperty(newSubject, newKey, entryValue, methodOrigin);
-					while(propIter.hasNext()){
-						Property<Object> propertyObj = propIter.next();
-						newSubject.property(newKey).property(propertyObj.key(), propertyObj.value());
-					}
-				}
+    private String internalPropertyKey(String key) {
+        return INTERNAL_PROPERTY_PREFIX+key;
+    }
 
-			}
-		}
-	}
+    private Iterator<Vertex> getVerticesIterator(Graph dbGraph, String label) {
+        String longLabel = IMPOSSIBLE_LABEL;
+        if(isaBlankNode(label))
+            longLabel = IMPOSSIBLE_LABEL;
+        else{
+            longLabel = extractID(label);
+            List<String> matchedIDs = databaseProvider.getIDsFromLabel(label);
+            if(!matchedIDs.isEmpty())
+                return getVerticesIterator(dbGraph, generateNamespacedLabel(matchedIDs.get(0)));
+        }
+        return dbGraph.vertices(longLabel);
+    }
 
+    private String extractID(String URI) {
+        String longLabel = IMPOSSIBLE_LABEL;
+        Pattern r = Pattern.compile(".*\\/(\\d+)");
+        Matcher m = r.matcher(URI);
+        if (m.find( )) {
+            longLabel = m.group(1);
+        }
+        return longLabel;
+    }
 
-	public void setAuditInfo(Vertex v, boolean isNew){
-		if(authenticationEnabled){
-			String userId = ((AuthInfo) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getSub();
-			long timestamp = new Date().getTime();
-			if(isNew){
-				v.property(registryContext+Constants.AuditProperties.createdBy.name(),userId);
-				v.property(registryContext+Constants.AuditProperties.createdAt.name(),timestamp);
-			}
-			v.property(registryContext+Constants.AuditProperties.lastUpdatedBy.name(),userId);
-			v.property(registryContext+Constants.AuditProperties.lastUpdatedAt.name(),timestamp);
-		}
-	}
+    private boolean doesExist(String rootNodeLabel, Graph dbGraph) {
+        if(isaBlankNode(rootNodeLabel))
+            return false;
+        try {
+            Iterator iter = getVerticesIterator(dbGraph,rootNodeLabel);
+            return iter.hasNext();
+        } catch(Exception e){
+            return false;
+        }
+    }
+
+    private Optional<Edge> getFirstMatchingEdgeAndVertex(List<Edge> dbEdgesForVertex, Vertex ver, String edgeLabel) {
+        return dbEdgesForVertex.stream().filter(ed -> {
+            return ed.label().equalsIgnoreCase(edgeLabel) && ed.inVertex().label().equalsIgnoreCase(ver.label());
+        }).findFirst();
+    }
 
 }
 

@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
+import com.google.gson.Gson;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -120,8 +121,15 @@ public final class RDF2Graph
 		Iterator<VertexProperty<String>> propertyIter = s.properties();
 		while (propertyIter.hasNext()) {
 			VertexProperty property = propertyIter.next();
-			logger.debug("ADDING Property " + property.label() + ": " + property.value());
-			Object object = property.value();
+			logger.debug("ADDING Property "+property.label()+": "+property.value());
+			Object propValue = property.value();
+			try{
+			    List list = (new Gson()).fromJson(String.valueOf(propValue), List.class);
+                propValue = list;
+            } catch(com.google.gson.JsonSyntaxException ex) {
+
+            }
+			Object object = propValue;
 			Property<Object> metaProperty = property.property("@type");
 			String type = null;
 			if (metaProperty.isPresent()) {

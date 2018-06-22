@@ -47,4 +47,9 @@ public class SqlgProvider extends DatabaseProvider {
         logger.info("**************************************************************************");
         graph.close();
     }
+
+    @Override
+    public boolean isMultiValuedLiteralPropertySupported() {
+        return false;
+    }
 }
