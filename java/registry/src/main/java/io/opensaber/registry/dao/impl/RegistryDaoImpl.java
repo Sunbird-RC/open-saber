@@ -98,7 +98,9 @@ public class RegistryDaoImpl implements RegistryDao {
             if (rootNodeLabel!=null && property!=null){
 				connectNodes(rootNodeLabel, label, property);
 			}
-            tx.commit();
+            synchronized(this){
+                tx.commit();
+            }
             logger.debug("RegistryDaoImpl : Entity added for transactional DB with rootNodeLabel : {},	label	:	{},	property	: 	{}", rootNodeLabel, label, property);
 		}else{
             watch.start("RegistryDaoImpl.addOrUpdateVerticesAndEdges");
