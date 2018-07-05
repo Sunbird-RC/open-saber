@@ -1,9 +1,6 @@
 package io.opensaber.utils.converters;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 import com.google.gson.Gson;
 import org.apache.jena.rdf.model.RDFNode;
@@ -32,6 +29,8 @@ public final class RDF2Graph
 	private RDF2Graph() {}
 
 	private static Logger logger = LoggerFactory.getLogger(RDF2Graph.class);
+	public static final String INTERNAL_PROPERTY_PREFIX = "@_";
+    public static final String IMPOSSIBLE_LABEL = "-1";
 
 	public static String getRootSubjectLabel(org.apache.jena.rdf.model.Statement rdfStatement, String type){
 		String subjectValue = rdfStatement.getSubject().toString();
@@ -93,105 +92,134 @@ public final class RDF2Graph
 	private static Vertex getExistingVertexOrAdd(String label, Graph graph){
 		GraphTraversalSource t = graph.traversal();
 		GraphTraversal<Vertex, Vertex> traversal = t.V();
-		GraphTraversal<Vertex, Vertex> hasLabel = traversal.hasLabel(label);
+		GraphTraversal<Vertex, Vertex> hasLabel = traversal.has(labelKey(),label);
 		if(hasLabel.hasNext()){
 			return hasLabel.next();
 		} else {
-			return graph.addVertex(T.label,label);
+			Vertex addedVertex = graph.addVertex();
+			setLabel(addedVertex,label);
+			return addedVertex;
 		}
 	}
 
 	public static Model convertGraph2RDFModel(Graph graph, String label) {
 		ModelBuilder builder = new ModelBuilder();
 		GraphTraversalSource t = graph.traversal();
-		GraphTraversal<Vertex, Vertex> hasLabel = t.V().hasLabel(label);
+		Boolean isGraphLabelledViaProperty = false;
+		GraphTraversal<Vertex, Vertex> hasLabel = t.V().has(labelKey(),label);
 		Vertex s;
 		if(hasLabel.hasNext()){
+            isGraphLabelledViaProperty = true;
 			s = hasLabel.next();
 			extractModelFromVertex(builder, s);
 		}
+		if(!isGraphLabelledViaProperty){
+            hasLabel = t.V().hasLabel(label);
+            if(hasLabel.hasNext()){
+                s = hasLabel.next();
+                extractModelFromVertex(builder, s);
+            }
+;        }
 		return builder.build();
 	}
 
 	private static void extractModelFromVertex(ModelBuilder builder, Vertex s) {
-		logger.debug("Vertex "+s.label());
+		logger.debug("Vertex "+getLabel(s));
 		ValueFactory vf = SimpleValueFactory.getInstance();
 		logger.debug("ADDING it as Subject");
-		builder.subject(s.label());
+		builder.subject(getLabel(s));
+        List<VertexProperty<String>> propertySortedList = new ArrayList<>();
 		Iterator<VertexProperty<String>> propertyIter = s.properties();
+        while (propertyIter.hasNext()) {
+            VertexProperty property = propertyIter.next();
+            propertySortedList.add(property);
+        }
+        propertySortedList.sort((m1,m2)->{
+            return isInternalProperty(m1)?-1:1;
+        });
+        propertyIter = propertySortedList.iterator();
 		while (propertyIter.hasNext()) {
-			VertexProperty property = propertyIter.next();
-			logger.debug("ADDING Property "+property.label()+": "+property.value());
-			Object propValue = property.value();
-			try{
-			    List list = (new Gson()).fromJson(String.valueOf(propValue), List.class);
-                propValue = list;
-            } catch(com.google.gson.JsonSyntaxException ex) {
+            VertexProperty property = propertyIter.next();
+            logger.debug("PROPERTY: " + property);
+            if (!isInternalProperty(property)) {
+                logger.debug("ADDING Property " + property.key() + " - " + property.label() + ": " + property.value());
+                Object propValue = property.value();
+                try {
+                    List list = (new Gson()).fromJson(String.valueOf(propValue), List.class);
+                    propValue = list;
+                } catch (com.google.gson.JsonSyntaxException ex) {
 
+                }
+                Object object = propValue;
+                Property<Object> metaProperty = property.property("@type");
+                String type = null;
+                if (metaProperty.isPresent()) {
+                    logger.debug("Dealing with meta property");
+                    type = metaProperty.value().toString();
+                }
+                logger.debug("TYPE is: " + type);
+                //Object object = literal;
+                if (object instanceof List) {
+                    logger.debug("Dealing with LIST");
+                    for (Object ob : (List) object) {
+                        String literal = (String) ob;
+                        Object finalObj = literal;
+                        if (type != null) {
+                            finalObj = matchAndAddStatements(type, literal, vf);
+                        }
+                        builder.add(property.label(), finalObj);
+
+                    }
+                } else if (object instanceof String[]) {
+                    logger.debug("Dealing with String[]");
+                    for (String literal : (String[]) object) {
+                        Object finalObj = literal;
+                        if (type != null) {
+                            finalObj = matchAndAddStatements(type, literal, vf);
+                        }
+                        builder.add(property.label(), finalObj);
+
+                    }
+                } else {
+                    logger.debug("Dealing Regular");
+                    String literal = (String) object;
+                    Object finalObj = literal;
+                    if (type != null) {
+                        finalObj = matchAndAddStatements(type, literal, vf);
+                    }
+                    builder.add(property.label(), finalObj);
+                }
+
+                logger.debug("OBJECT ADDED is " + object + "-" + object.getClass().getName());
+                //builder.add(property.label(), object);
             }
-			Object object = propValue;
-			Property<Object> metaProperty = property.property("@type");
-			String type = null;
-			if (metaProperty.isPresent()) {
-				type = metaProperty.value().toString();
-			}
-			logger.debug("TYPE is: " + type);
-			//Object object = literal;
-			if (object instanceof List) {
-				for (Object ob : (List) object) {
-					String literal = (String) ob;
-					Object finalObj = literal;
-					if (type != null) {
-						finalObj = matchAndAddStatements(type, literal, vf);
-					}
-					builder.add(property.label(), finalObj);
+        }
+        Iterator<Edge> edgeIter = s.edges(Direction.OUT);
+        Edge edge;
+        Stack<Vertex> vStack = new Stack<Vertex>();
+        while (edgeIter.hasNext()) {
+            edge = edgeIter.next();
+            logger.debug("Looking at edge "+edge.label());
+            s = edge.inVertex();
+            //			builder.add(edge.label(), bNode);
+            Resource node;
+            logger.debug("Node "+getLabel(s));
+            if (getLabel(s).startsWith("_:")) {
+                logger.debug("ADDING NODE - BLANK");
+                node = vf.createBNode();
+            } else {
+                node = vf.createIRI(getLabel(s));
+                logger.debug("ADDING NODE - IRI");
+            }
+            builder.add(edge.label(), node);
+            vStack.push(s);
+        }
+        Iterator<Vertex> vIterator = vStack.iterator();
+        while (vIterator.hasNext()) {
+            s = vIterator.next();
+            extractModelFromVertex(builder, s);
+        }
 
-				}
-			} else if(object instanceof String[]) {
-				for (String literal : (String[]) object) {
-					Object finalObj = literal;
-					if (type != null) {
-						finalObj = matchAndAddStatements(type, literal, vf);
-					}
-					builder.add(property.label(), finalObj);
-
-				}
-			} else {
-				String literal = (String) object;
-				Object finalObj = literal;
-				if (type != null) {
-					finalObj = matchAndAddStatements(type, literal, vf);
-				}
-				builder.add(property.label(), finalObj);
-			}
-
-			logger.debug("OBJECT ADDED is " + object + "-" + object.getClass().getName());
-			//builder.add(property.label(), object);
-
-		}
-		Iterator<Edge> edgeIter = s.edges(Direction.OUT);
-		Edge edge;
-		Stack<Vertex> vStack = new Stack<Vertex>();
-		while(edgeIter.hasNext()){
-			edge = edgeIter.next();
-			s = edge.inVertex();
-			//			builder.add(edge.label(), bNode);
-			Resource node;
-			if(s.label().startsWith("_:")){
-				logger.debug("ADDING NODE - BLANK");
-				node = vf.createBNode();
-			} else {
-				node = vf.createIRI(s.label());
-				logger.debug("ADDING NODE - IRI");
-			}
-			builder.add(edge.label(), node);
-			vStack.push(s);
-		}
-		Iterator<Vertex> vIterator = vStack.iterator();
-		while(vIterator.hasNext()){
-			s = vIterator.next();
-			extractModelFromVertex(builder,s);
-		}
 	}
 
 	private static Object matchAndAddStatements(String type, String literal, ValueFactory vf){
@@ -252,4 +280,32 @@ public final class RDF2Graph
 		}
 		return object;
 	}
+
+	private static String labelKey() {
+		return internalPropertyKey("label");
+	}
+
+	private static String internalPropertyKey(String key) {
+		return INTERNAL_PROPERTY_PREFIX+key;
+	}
+
+	private static String setLabel(Vertex vertex, String label) {
+		return vertex.property(labelKey(),label).toString();
+	}
+
+    private static String getLabel(Vertex vertex) {
+        VertexProperty<Object> property = vertex.property(labelKey());
+        if(property.isPresent()){
+            return String.valueOf(property.value());
+        } else {
+            return vertex.label();
+        }
+    }
+
+    private static boolean isInternalProperty(VertexProperty<String> property) {
+        boolean internalProperty = false;
+        if(property.key().startsWith(INTERNAL_PROPERTY_PREFIX))
+            internalProperty = true;
+        return internalProperty;
+    }
 }

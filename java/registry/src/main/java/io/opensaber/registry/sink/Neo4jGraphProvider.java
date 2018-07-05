@@ -100,7 +100,8 @@ public class Neo4jGraphProvider extends DatabaseProvider {
                 vertexIDList.add(String.valueOf(verticesWithLabel.next().id()));
             }
         } else {
-            StatementResult result = neo4JGraph.execute("MATCH (n:`"+label+"`) RETURN n");
+            System.out.println("===> "+label);
+            StatementResult result = neo4JGraph.execute("MATCH (n) WHERE n.`@_label`='"+label+"' RETURN n");
             while(result.hasNext()){
                 Record record = result.next();
                 vertexIDList.add(String.valueOf(record.get("n").get(idProvider.fieldName())));

@@ -49,6 +49,7 @@ public class RegistryTestBase {
 	private static final String REPLACING_SUBJECT_LABEL = "!samp131d";
 	private static final String VALID_JSONLD = "school.jsonld";
 	private static final String CONTEXT_CONSTANT = "sample:";
+	public static final String INTERNAL_PROPERTY_PREFIX = "@_";
 	private Graph graph;
 	
 	public void setJsonld(String filename){
@@ -170,4 +171,8 @@ public class RegistryTestBase {
         }
         System.out.println(model);
     }
+
+	protected String internalPropertyKey(String key) {
+		return INTERNAL_PROPERTY_PREFIX+key;
+	}
 }

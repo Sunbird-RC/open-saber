@@ -223,7 +223,7 @@ public class EncryptionDaoImplTest extends RegistryTestBase {
 		vertex.property(property, objectValue);
 		return vertex;
 	}
-	
+
 	public Vertex getVertexWithMultipleProperties(String subjectValue, Map<String, Object> map){
 		Vertex vertex = null;
 		graph = TinkerGraph.open();
@@ -232,8 +232,8 @@ public class EncryptionDaoImplTest extends RegistryTestBase {
 		if(hasLabel.hasNext()){
 			vertex = hasLabel.next();
 		} else {
-			vertex = graph.addVertex(
-					T.label,subjectValue);
+			vertex = graph.addVertex();
+			vertex.property(internalPropertyKey("label"),subjectValue);
 		}
 		for (Map.Entry<String, Object> entry : map.entrySet())
 		{

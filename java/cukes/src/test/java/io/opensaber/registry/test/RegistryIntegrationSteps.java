@@ -269,7 +269,11 @@ public class RegistryIntegrationSteps extends RegistryTestBase {
 //            fetchID = updateId;
 //		else
 //		    fetchID = id;
-		ResponseEntity<Response> response = restTemplate.exchange(getMappedID(baseUrl+id), HttpMethod.GET,entity,Response.class);
+		String label = getMappedID(baseUrl+id);
+		if(label==null){
+			label=baseUrl+generateRandomId();
+		}
+		ResponseEntity<Response> response = restTemplate.exchange(label, HttpMethod.GET,entity,Response.class);
 		return response;
 	}
 

@@ -116,7 +116,7 @@ public class RDF2GraphTest {
 		assertEquals(7,countGraphVertices(graph));
 		GraphTraversal<Vertex, Vertex> hasP = 
 				graphTraversal(graph)
-					.has(T.label,"http://example.org/Picasso")
+					.has("@_label","http://example.org/Picasso")
 					.out("http://example.org/creatorOf")
 					.out("http://example.org/reaction");
 		assertTrue(hasP.hasNext());
@@ -229,6 +229,7 @@ public class RDF2GraphTest {
 		Graph graph = createGraph();
         editGraph(graph, model);
         Model _model = RDF2Graph.convertGraph2RDFModel(graph,"http://example.org/someSubject");
+		dumpGraph(graph);
         Rio.write(model, System.out, RDFFormat.TURTLE);
         Rio.write(_model, System.out, RDFFormat.TURTLE);
         Assert.assertTrue(Models.isomorphic(model,_model));

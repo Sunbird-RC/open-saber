@@ -141,17 +141,26 @@ public class RegistryDaoImpl implements RegistryDao {
             watch.start("RegistryDaoImpl.connectRootToEntity.auditRecord");
             AuditRecord record = appContext.getBean(AuditRecord.class);
             record
-                    .subject(rootVertex.label())
+                    .subject(label(rootVertex))
                     .predicate(property)
                     .oldObject(null)
-                    .newObject(entityVertex.label())
+                    .newObject(label(entityVertex))
                     .record(databaseProvider);
             watch.stop("RegistryDaoImpl.connectRootToEntity.auditRecord");
         }
         logger.debug("RegistryDaoImpl : Audit record generated of connectRootToEntity for rootLabel : {}, label	:	{}, property :	{}", rootLabel, label, property);
     }
 
-	/**
+    private String label(Vertex vertex) {
+        VertexProperty<Object> label = vertex.property(internalPropertyKey("label"));
+        if(label.isPresent()){
+            return String.valueOf(label.value());
+        } else {
+            return IMPOSSIBLE_LABEL;
+        }
+    }
+
+    /**
 	 * This method creates the root node of the entity if it already isn't present in the graph store
 	 * or updates the properties of the root node or adds new properties if the properties are not already
 	 * present in the node.
@@ -165,7 +174,7 @@ public class RegistryDaoImpl implements RegistryDao {
                                                GraphTraversalSource entitySource, String rootLabel, String methodOrigin)
 					throws NoSuchElementException, EncryptionException, AuditFailedException, RecordNotFoundException {
 
-		GraphTraversal<Vertex, Vertex> gts = entitySource.clone().V().hasLabel(rootLabel);
+		GraphTraversal<Vertex, Vertex> gts = entitySource.clone().V().has(internalPropertyKey("label"),rootLabel);
 		String label = rootLabel;
 		while (gts.hasNext()) {
 			Vertex v = gts.next();
@@ -182,9 +191,10 @@ public class RegistryDaoImpl implements RegistryDao {
 					throw new RecordNotFoundException(Constants.ENTITY_NOT_FOUND);
 				}
 				logger.info(String.format("Creating entity with label {}", rootLabel));
-                Vertex newVertex = dbGraph.addVertex(rootLabel);
+                Vertex newVertex = dbGraph.addVertex();
+                newVertex.property(internalPropertyKey("label"),generateNamespacedLabel(rootLabel));
                 label = generateNamespacedLabel(newVertex.id().toString());
-                newVertex.property(internalPropertyKey("id"),label);
+//                newVertex.property(internalPropertyKey("label"),label);
 				setAuditInfo(v, true);
 				copyProperties(v, newVertex,methodOrigin, encDecPropertyBuilder);
 				addOrUpdateVertexAndEdge(v, newVertex, dbGraph,methodOrigin, encDecPropertyBuilder);
@@ -234,10 +244,10 @@ public class RegistryDaoImpl implements RegistryDao {
 			Edge sourceEdge = sourceEdges1.next();
 			Vertex sourceInVertex = sourceEdge.inVertex();
 			String edgeLabel = sourceEdge.label();
-			Iterator<Vertex> dbVertexIterator = getVerticesIterator(dbGraph,sourceInVertex.label());
+			Iterator<Vertex> dbVertexIterator = getVerticesIterator(dbGraph,label(sourceInVertex));
             List<String> matchedIDs;
 			if(!dbVertexIterator.hasNext()){
-                matchedIDs = databaseProvider.getIDsFromLabel(sourceInVertex.label());
+                matchedIDs = databaseProvider.getIDsFromLabel(label(sourceInVertex));
 				if(!matchedIDs.isEmpty())
                     dbVertexIterator = getVerticesIterator(dbGraph, generateNamespacedLabel(matchedIDs.get(0)));
 			}
@@ -251,7 +261,7 @@ public class RegistryDaoImpl implements RegistryDao {
 			if (dbVertexIterator.hasNext()) {
 				Vertex existingVertex = dbVertexIterator.next();
 				setAuditInfo(sourceInVertex, false);
-				logger.info(String.format("Vertex with label {} already exists. Updating properties for the vertex", existingVertex.label()));
+				logger.info(String.format("Vertex with label {} already exists. Updating properties for the vertex", label(existingVertex)));
 				copyProperties(sourceInVertex, existingVertex,methodOrigin, encDecPropertyBuilder);
 				if(!existingEdgeConnectedToExistingVertex.isPresent()){
 					Edge edgeAdded = dbVertex.addEdge(edgeLabel, existingVertex);
@@ -260,28 +270,28 @@ public class RegistryDaoImpl implements RegistryDao {
                         watch.start("RegistryDaoImpl.addOrUpdateVertexAndEdge.auditRecord");
                         AuditRecord record = appContext.getBean(AuditRecord.class);
                         record
-                            .subject(dbVertex.label())
+                            .subject(label(dbVertex))
                             .predicate(sourceEdge.label())
                             .oldObject(null)
-                            .newObject(existingVertex.label())
+                            .newObject(label(existingVertex))
                             .record(databaseProvider);
                             watch.stop("RegistryDaoImpl.addOrUpdateVertexAndEdge.auditRecord");
 					}
-					logger.debug("RegistryDaoImpl : Audit record created for update/insert(upsert) with label : {}  ", dbVertex.label());
+					logger.debug("RegistryDaoImpl : Audit record created for update/insert(upsert) with label : {}  ", label(dbVertex));
 				}
 				parsedVertices.push(new Pair<>(sourceInVertex, existingVertex));
 			} else {
 			    // did not find matching vertex in the DB
-				if(methodOrigin.equalsIgnoreCase("update") && isaBlankNode(sourceInVertex.label())){
+				if(methodOrigin.equalsIgnoreCase("update") && isaBlankNode(label(sourceInVertex))){
 					throw new RecordNotFoundException(Constants.ENTITY_NOT_FOUND);
 				}
-				String label = generateBlankNodeLabel(sourceInVertex.label());
+				String label = generateBlankNodeLabel(label(sourceInVertex));
 				Vertex newDBVertex = dbGraph.addVertex(label);//dbGraph.addVertex(label);
-                newDBVertex.property(internalPropertyKey("id"),label);
+                newDBVertex.property(internalPropertyKey("label"),label);
 				setAuditInfo(sourceInVertex, true);
-				logger.debug(String.format("RegistryDaoImpl : Adding vertex with label {} and adding properties", newDBVertex.label()));
+				logger.debug(String.format("RegistryDaoImpl : Adding vertex with label {} and adding properties", label(newDBVertex)));
 				copyProperties(sourceInVertex, newDBVertex, methodOrigin, encDecPropertyBuilder);
-				logger.debug(String.format("RegistryDaoImpl : Adding edge with label {} for the vertex label {}.", sourceEdge.label(), newDBVertex.label()));
+				logger.debug(String.format("RegistryDaoImpl : Adding edge with label {} for the vertex label {}.", sourceEdge.label(), label(newDBVertex)));
 
 				Edge edgeAdded = dbVertex.addEdge(edgeLabel, newDBVertex);
 				existingEdgeList.add(edgeAdded);
@@ -289,14 +299,14 @@ public class RegistryDaoImpl implements RegistryDao {
                     AuditRecord record = appContext.getBean(AuditRecord.class);
                     watch.start("RegistryDaoImpl.addOrUpdateVertexAndEdge.auditRecord");
                     record
-                        .subject(dbVertex.label())
+                        .subject(label(dbVertex))
                         .predicate(sourceEdge.label())
                         .oldObject(null)
-                        .newObject(newDBVertex.label())
+                        .newObject(label(newDBVertex))
                         .record(databaseProvider);
                     watch.stop("RegistryDaoImpl.addOrUpdateVertexAndEdge.auditRecord");
 				}
-				logger.info("Audit record created for update with label : {} ", dbVertex.label());
+				logger.info("Audit record created for update with label : {} ", label(dbVertex));
 				parsedVertices.push(new Pair<>(sourceInVertex, newDBVertex));
 			}
 		}
@@ -346,19 +356,19 @@ public class RegistryDaoImpl implements RegistryDao {
         Iterator<Edge> inEdgeIter = dbVertexToBeDeleted.edges(Direction.IN);
         Iterator<Edge> outEdgeIter = dbVertexToBeDeleted.edges(Direction.OUT);
         String edgeLabel = dbEdgeToBeRemoved.label();
-        String vertexLabel = dbVertexToBeDeleted.label();
+        String vertexLabel = label(dbVertexToBeDeleted);
         if ((inEdgeIter.hasNext() && IteratorUtils.count(inEdgeIter) > 1) || outEdgeIter.hasNext()) {
             logger.debug("RegistryDaoImpl : Deleting edge only for edge-label: {}", dbEdgeToBeRemoved.label());
             dbEdgeToBeRemoved.remove();
         } else {
-            logger.debug("RegistryDaoImpl : Deleting edge and node for edge-label: {} and vertex-label : {}", dbEdgeToBeRemoved.label(), dbVertexToBeDeleted.label());
+            logger.debug("RegistryDaoImpl : Deleting edge and node for edge-label: {} and vertex-label : {}", dbEdgeToBeRemoved.label(),label(dbVertexToBeDeleted));
             dbVertexToBeDeleted.remove();
             dbEdgeToBeRemoved.remove();
         }
         if(auditEnabled) {
             watch.start("RegistryDaoImpl.deleteEdgeAndNode.auditRecord");
             AuditRecord record = appContext.getBean(AuditRecord.class);
-            String tailOfdbVertex = v.label().substring(v.label().lastIndexOf("/") + 1).trim();
+            String tailOfdbVertex = label(v).substring(label(v).lastIndexOf("/") + 1).trim();
             String auditVertexlabel = registryContext + tailOfdbVertex;
             record
                     .subject(auditVertexlabel)
@@ -540,13 +550,13 @@ public class RegistryDaoImpl implements RegistryDao {
                         AuditRecord record = appContext.getBean(AuditRecord.class);
                         watch.start("RegistryDaoImpl.setProperty.auditRecord");
                         record
-                                .subject(v.label())
+                                .subject(label(v))
                                 .predicate(key)
                                 .oldObject(oldValue)
                                 .newObject(newValue)
                                 .record(databaseProvider);
                         watch.stop("RegistryDaoImpl.setProperty.auditRecord");
-                        logger.info("Audit record created for {}  !", v.label());
+                        logger.info("Audit record created for {}  !", label(v));
                     } else {
                         logger.debug("not auditing in the Application!");
                     }
@@ -634,6 +644,8 @@ public class RegistryDaoImpl implements RegistryDao {
     }
 
     private String generateNamespacedLabel(String label) {
+        if(label.startsWith("http"))
+            return label;
 	    return String.format("%s%s", registryContext, label);
     }
 
@@ -653,7 +665,7 @@ public class RegistryDaoImpl implements RegistryDao {
 		while(edgeIter.hasNext()){
 			edge = edgeIter.next();
 			Vertex o = edge.inVertex();
-			Vertex newo = parsedGraph.addVertex(o.label());
+			Vertex newo = parsedGraph.addVertex(label(o));
 //            newo.property(internalPropertyKey("id"),o.label());
 			copyProperties(o, newo,"read", encDecPropertyBuilder);
 			parsedGraphSubject.addEdge(edge.label(), newo);
@@ -775,15 +787,19 @@ public class RegistryDaoImpl implements RegistryDao {
     }
 
     private Iterator<Vertex> getVerticesIterator(Graph dbGraph, String label) {
-        String longLabel = IMPOSSIBLE_LABEL;
-        if(isaBlankNode(label))
-            longLabel = IMPOSSIBLE_LABEL;
-        else{
-            longLabel = extractID(label);
-            List<String> matchedIDs = databaseProvider.getIDsFromLabel(label);
-            if(!matchedIDs.isEmpty())
-                return getVerticesIterator(dbGraph, generateNamespacedLabel(matchedIDs.get(0)));
+        if(isaBlankNode(label)){
+            label = generateNamespacedLabel(label);
         }
+        String longLabel = extractID(label);
+        List<String> matchedIDs = databaseProvider.getIDsFromLabel(label);
+        if(!matchedIDs.isEmpty()){
+            if(matchedIDs.contains(longLabel)){
+                dbGraph.vertices(longLabel);
+            } else {
+                return getVerticesIterator(dbGraph, generateNamespacedLabel(matchedIDs.get(0)));
+            }
+        }
+
         return dbGraph.vertices(longLabel);
     }
 
@@ -810,7 +826,7 @@ public class RegistryDaoImpl implements RegistryDao {
 
     private Optional<Edge> getFirstMatchingEdgeAndVertex(List<Edge> dbEdgesForVertex, Vertex ver, String edgeLabel) {
         return dbEdgesForVertex.stream().filter(ed -> {
-            return ed.label().equalsIgnoreCase(edgeLabel) && ed.inVertex().label().equalsIgnoreCase(ver.label());
+            return ed.label().equalsIgnoreCase(edgeLabel) && label(ed.inVertex()).equalsIgnoreCase(label(ver));
         }).findFirst();
     }
 
