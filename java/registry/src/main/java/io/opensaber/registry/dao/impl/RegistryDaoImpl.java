@@ -191,7 +191,7 @@ public class RegistryDaoImpl implements RegistryDao {
 					throw new RecordNotFoundException(Constants.ENTITY_NOT_FOUND);
 				}
 				logger.info(String.format("Creating entity with label {}", rootLabel));
-                Vertex newVertex = dbGraph.addVertex();
+                Vertex newVertex = dbGraph.addVertex("Entity");
                 newVertex.property(internalPropertyKey("label"),generateNamespacedLabel(rootLabel));
                 label = generateNamespacedLabel(newVertex.id().toString());
 //                newVertex.property(internalPropertyKey("label"),label);
@@ -286,7 +286,7 @@ public class RegistryDaoImpl implements RegistryDao {
 					throw new RecordNotFoundException(Constants.ENTITY_NOT_FOUND);
 				}
 				String label = generateBlankNodeLabel(label(sourceInVertex));
-				Vertex newDBVertex = dbGraph.addVertex(label);//dbGraph.addVertex(label);
+				Vertex newDBVertex = dbGraph.addVertex("Entity");//dbGraph.addVertex(label);
                 newDBVertex.property(internalPropertyKey("label"),label);
 				setAuditInfo(sourceInVertex, true);
 				logger.debug(String.format("RegistryDaoImpl : Adding vertex with label {} and adding properties", label(newDBVertex)));

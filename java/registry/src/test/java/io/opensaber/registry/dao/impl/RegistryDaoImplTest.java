@@ -295,9 +295,9 @@ public class RegistryDaoImplTest extends RegistryTestBase {
 		Model newRdfModel = getNewValidRdf();
 		updateNodeLabel(newRdfModel, "http://example.com/voc/teacher/1.0.0/IndianUrbanPostalAddress");
 
-		String addressLabel = databaseProvider.getGraphStore().traversal().clone().V()
+		String addressLabel = String.valueOf(databaseProvider.getGraphStore().traversal().clone().V()
 				.has(internalPropertyKey("label"), "http://example.com/voc/teacher/1.0.0/IndianUrbanPostalAddress")
-				.next().vertices(Direction.IN).next().label();
+				.next().vertices(Direction.IN).next().property(internalPropertyKey("label")).value());
 
 		// Add a new property to the existing address node
 		Resource resource = ResourceFactory.createResource(addressLabel);
@@ -338,9 +338,9 @@ public class RegistryDaoImplTest extends RegistryTestBase {
 		updateNodeLabel(newRdfModel, "http://example.com/voc/teacher/1.0.0/IndianUrbanPostalAddress");
 		removeStatementFromModel(newRdfModel, ResourceFactory.createProperty("http://example.com/voc/teacher/1.0.0/municipality"));
 
-		String addressLabel = databaseProvider.getGraphStore().traversal().clone().V()
+		String addressLabel = String.valueOf(databaseProvider.getGraphStore().traversal().clone().V()
 				.has(internalPropertyKey("label"), "http://example.com/voc/teacher/1.0.0/IndianUrbanPostalAddress")
-				.next().vertices(Direction.IN).next().label();
+				.next().vertices(Direction.IN).next().property(internalPropertyKey("label")).value());
 
 		// Add a new property to the existing address node
 		Resource resource = ResourceFactory.createResource(addressLabel);
@@ -816,9 +816,9 @@ public class RegistryDaoImplTest extends RegistryTestBase {
 	}
 
     private void updateNodeLabel(Model rdfModel, String nodeLabel) {
-		String labelForUpdate = databaseProvider.getGraphStore().traversal().clone().V()
+		String labelForUpdate = String.valueOf(databaseProvider.getGraphStore().traversal().clone().V()
 				.has(internalPropertyKey("label"), nodeLabel)
-				.next().vertices(Direction.IN).next().label();
+				.next().vertices(Direction.IN).next().property(internalPropertyKey("label")).value());
 		RDFUtil.updateRdfModelNodeId(rdfModel,
 				ResourceFactory.createResource(nodeLabel), labelForUpdate);
 	}
