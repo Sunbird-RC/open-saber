@@ -24,6 +24,8 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class OpensaberClient implements Client<String> {
 
@@ -120,7 +122,8 @@ public class OpensaberClient implements Client<String> {
     @Override
     public ResponseData<String> readEntity(URI entity, Map<String, String> headers)
             throws TransformationException {
-        ResponseEntity<Response> response = httpClient.get(Configuration.BASE_URL + ApiEndPoints.READ +"/"+entity.toString(), createHttpHeaders(headers));
+        String entityId = extractEntityId(entity);
+        ResponseEntity<Response> response = httpClient.get(Configuration.BASE_URL + ApiEndPoints.READ +"/"+entityId, createHttpHeaders(headers));
         JsonObject responseJson = gson.toJsonTree(response.getBody()).getAsJsonObject();
         String resultNode = gson.toJson(response.getBody().getResult(), mapType);
         String transformedJson = responseTransformer.transform(new RequestData<>(resultNode)).getResponseData();
@@ -129,8 +132,9 @@ public class OpensaberClient implements Client<String> {
         return new ResponseData<>(responseJson.toString());
     }
 
-    public ResponseData<String> deleteEntity(URI property, Map<String, String> headers) {
-        ResponseEntity<Response> response = httpClient.delete(Configuration.BASE_URL + ApiEndPoints.DELETE +"/"+property.toString(),
+    public ResponseData<String> deleteEntity(URI entity, Map<String, String> headers) {
+        String entityId = extractEntityId(entity);
+        ResponseEntity<Response> response = httpClient.delete(Configuration.BASE_URL + ApiEndPoints.DELETE +"/"+entityId.toString(),
                 createHttpHeaders(headers),null);
         String result = gson.toJson(response.getBody());
         return new ResponseData<>(result);
@@ -144,5 +148,15 @@ public class OpensaberClient implements Client<String> {
         HttpHeaders httpHeaders = new HttpHeaders();
         headers.forEach((headerName, headerValue) -> httpHeaders.set(headerName, headerValue));
         return httpHeaders;
+    }
+
+    private String extractEntityId(URI entity){
+        String entityId = entity.toString();
+        Pattern pattern = Pattern.compile("^" + Pattern.quote(Configuration.BASE_URL) + "(.*?)$");
+        Matcher matcher = pattern.matcher(entityId);
+        if(matcher.find()) {
+            entityId = matcher.group(1);
+        }
+        return entityId;
     }
 }
