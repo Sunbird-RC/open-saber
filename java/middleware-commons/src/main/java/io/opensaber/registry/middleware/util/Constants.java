@@ -49,6 +49,7 @@ public class Constants {
 	public static final String AUDIT_IS_DISABLED = "Audit is disabled";
 	public static final String VALIDATION_CONFIGURATION_MISSING = "Configuration for validation file is missing";
 	public static final String SCHEMA_CONFIGURATION_MISSING = "Configuration for schema file is missing";
+	public static final String ENTITY_TYPE_NOT_PROVIDED = "Entity type is not provided in the input";
 
 	public static final String OPENSABER_REGISTRY_API_NAME = "opensaber-registry-api";
 	public static final String SUNBIRD_ENCRYPTION_SERVICE_NAME = "sunbird.encryption.service";

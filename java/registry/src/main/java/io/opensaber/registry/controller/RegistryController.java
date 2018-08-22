@@ -2,9 +2,11 @@ package io.opensaber.registry.controller;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import io.opensaber.pojos.*;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.service.RegistryElasticService;
 import io.opensaber.registry.util.JSONUtil;
 import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
@@ -22,10 +24,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
+import io.opensaber.registry.exception.AuditFailedException;
 import io.opensaber.registry.exception.DuplicateRecordException;
 import io.opensaber.registry.exception.EntityCreationException;
 import io.opensaber.registry.exception.RecordNotFoundException;
+import io.opensaber.registry.exception.TypeNotProvidedException;
 import io.opensaber.registry.service.RegistryService;
+import io.opensaber.registry.service.SearchService;
 
 @RestController
 public class RegistryController {
@@ -34,6 +40,12 @@ public class RegistryController {
 
 	@Autowired
 	private RegistryService registryService;
+	
+	@Autowired
+	private SearchService searchService;
+
+	@Autowired
+	private RegistryElasticService registryElasticService;
 
 	@Value("${registry.context.base}")
 	private String registryContext;
@@ -58,10 +70,13 @@ public class RegistryController {
 
 		try {
 			watch.start("RegistryController.addToExistingEntity");
-			String label = registryService.addEntity(rdf, id, property);
+			String label = registryService.addEntity(rdf, id, property)/*"http://localhost:8080/8f3a5b67-1f97-4d8d-89dd-83537f547b2e"*/;
 			result.put("entity", label);
 			response.setResult(result);
 			responseParams.setStatus(Response.Status.SUCCCESSFUL);
+			//new HashMap<String , Object>(requestModel.getRequestMap().get("dataObject").toString());
+            registryElasticService.addDocument(requestModel , label);
+
 			watch.stop("RegistryController.addToExistingEntity");
 			logger.debug("RegistryController : Entity with label {} added !", label);
 		} catch (DuplicateRecordException | EntityCreationException e) {
@@ -110,6 +125,72 @@ public class RegistryController {
 			response.setResult(null);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 			responseParams.setErrmsg("Ding! You encountered an error!");
+		}
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+	
+	@RequestMapping(value = "/search", method = RequestMethod.POST)
+	public ResponseEntity<Response> searchEntity(@RequestAttribute Request requestModel) {
+
+		Model rdf = (Model) requestModel.getRequestMap().get("rdf");
+		ResponseParams responseParams = new ResponseParams();
+		Response response = new Response(Response.API_ID.CREATE, "OK", responseParams);
+		Map<String, Object> result = new HashMap<>();
+
+		try {
+			watch.start("RegistryController.searchEntity");
+			org.eclipse.rdf4j.model.Model entityModel = searchService.search(rdf);
+			logger.debug("FETCHED: " + entityModel);
+			String jenaJSON = registryService.frameSearchEntity(entityModel);
+			if(jenaJSON.isEmpty()){
+				response.setResult(new HashMap<String,Object>());
+			}else{
+				response.setResult(gson.fromJson(jenaJSON, mapType));
+			}
+			responseParams.setStatus(Response.Status.SUCCCESSFUL);
+			watch.stop("RegistryController.searchEntity");
+		} catch (AuditFailedException | RecordNotFoundException | TypeNotProvidedException e) {
+			logger.error("AuditFailedException | RecordNotFoundException | TypeNotProvidedException in controller while adding entity !",e);
+			response.setResult(result);
+			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+			responseParams.setErrmsg(e.getMessage());
+		} catch (Exception e) {
+			logger.error("Exception in controller while searching entities !",e);
+			response.setResult(result);
+			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+			responseParams.setErrmsg(e.getMessage());
+		}
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@RequestMapping(value = "/elasticsearch", method = RequestMethod.POST)
+	public ResponseEntity<Response> elasticsearchEntity(@RequestAttribute Request requestModel) {
+
+		Model rdf = (Model) requestModel.getRequestMap().get("rdf");
+		ResponseParams responseParams = new ResponseParams();
+		Response response = new Response(Response.API_ID.SEARCH, "OK", responseParams);
+		Map<String, Object> result = new HashMap<>();
+
+		try {
+			watch.start("RegistryController.searchEntity");
+			Map<String, Object>  l = registryElasticService.search(requestModel);
+			if(l.isEmpty()){
+				response.setResult(new HashMap<String,Object>());
+			}else{
+				response.setResult(l);
+			}
+			responseParams.setStatus(Response.Status.SUCCCESSFUL);
+			watch.stop("RegistryController.searchEntity");
+		/*} catch (AuditFailedException | RecordNotFoundException | TypeNotProvidedException e) {
+			logger.error("AuditFailedException | RecordNotFoundException | TypeNotProvidedException in controller while adding entity !",e);
+			response.setResult(result);
+			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+			responseParams.setErrmsg(e.getMessage());
+		*/} catch (Exception e) {
+			logger.error("Exception in controller while searching entities !",e);
+			response.setResult(result);
+			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+			responseParams.setErrmsg(e.getMessage());
 		}
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

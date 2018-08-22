@@ -58,4 +58,8 @@ public class Request {
 		this.requestMap = requestMap;
 	}
 
+	public Object get(String key) {
+		return this.requestMap.get(key);
+	}
+
 }
