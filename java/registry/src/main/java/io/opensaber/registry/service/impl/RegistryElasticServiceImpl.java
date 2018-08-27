@@ -11,7 +11,6 @@ import com.google.gson.reflect.TypeToken;
 import io.opensaber.pojos.Request;
 import io.opensaber.registry.dao.RegistryElasticDAO;
 import io.opensaber.registry.service.RegistryElasticService;
-import net.sf.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpRequest;
 import org.apache.jena.ext.com.google.common.io.ByteStreams;
