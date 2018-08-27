@@ -37,6 +37,11 @@ database:
     port: ${database_port:7687}
     database_directory: ${database_directory:/data/databases/graph.db}
 
+search:
+  fields:
+    query:
+      gender.@id,disabilityType.@id,serialNum.@value
+
 ##################################################################################
 # Uncomment the following section to use Cassandra as backend store              #
 ##################################################################################
@@ -169,3 +174,8 @@ keycloak:
     publicKey:  ${sunbird_sso_publickey}
     realm:  ${sunbird_sso_realm}
     auth_server_url:  ${sunbird_sso_url}
+
+search:
+  fields:
+    query:
+      gender.@id,disabilityType.@id,serialNum.@value
