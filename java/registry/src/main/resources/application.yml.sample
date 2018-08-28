@@ -29,7 +29,7 @@ config:
 
 database:
   provider: ${database_provider:NEO4J}
-  persistence
+  persistence:
     enabled: ${database_persistence_enabled:true}
   neo4j:
     embedded: ${database_embedded:true}
