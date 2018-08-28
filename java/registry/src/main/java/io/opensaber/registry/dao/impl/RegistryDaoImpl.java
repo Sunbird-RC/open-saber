@@ -507,7 +507,7 @@ public class RegistryDaoImpl implements RegistryDao {
             Vertex newSubject = parsedGraph.addVertex(subject.label());
             copyProperties(subject, newSubject, Constants.READ_METHOD_ORIGIN, encDecPropertyBuilder);
             watch.start("RegistryDaoImpl.getEntityById.extractGraphFromVertex");
-            extractGraphFromVertex(parsedGraph, newSubject, subject, encDecPropertyBuilder, Constants.READ_METHOD_ORIGIN);
+            extractGraphFromVertex(parsedGraph, newSubject, subject, encDecPropertyBuilder);
             watch.stop("RegistryDaoImpl.getEntityById.extractGraphFromVertex");
             Table<Vertex, Vertex, Map<String, Object>> encDecPropertyTable = encDecPropertyBuilder.build();
             if (encDecPropertyTable.size() > 0) {
@@ -528,7 +528,7 @@ public class RegistryDaoImpl implements RegistryDao {
     	copyProperties(vertex, newSubject, Constants.SEARCH_METHOD_ORIGIN, null);
     	watch.stop("RegistryDaoImpl.getEntityByVertex.copyProperties");
     	watch.start("RegistryDaoImpl.getEntityByVertex.extractGraphFromVertex");
-    	extractGraphFromVertex(parsedGraph, newSubject, vertex, null, Constants.SEARCH_METHOD_ORIGIN);
+    	extractGraphFromVertex(parsedGraph, newSubject, vertex, null);
     	watch.stop("RegistryDaoImpl.getEntityByVertex.extractGraphFromVertex");
     	return parsedGraph;
     }
