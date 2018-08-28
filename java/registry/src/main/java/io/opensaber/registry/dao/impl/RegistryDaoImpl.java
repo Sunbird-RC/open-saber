@@ -203,7 +203,12 @@ public class RegistryDaoImpl implements RegistryDao {
     private void doAuditedUpdateVertex(Vertex v, Vertex existingVertex, GraphTraversalSource dbTraversalSource,
                                        ImmutableTable.Builder<Vertex, Vertex, Map<String, Object>> encDecPropertyBuilder, String methodOrigin)
             throws AuditFailedException, EncryptionException, RecordNotFoundException {
-        setAuditInfo(v, false);
+        boolean isNew = true;
+        if (methodOrigin.equalsIgnoreCase(Constants.UPDATE_METHOD_ORIGIN)) {
+            isNew = false;
+        }
+
+        setAuditInfo(v, isNew);
         copyProperties(v, existingVertex, methodOrigin, encDecPropertyBuilder);
         // watch.start("RegistryDaoImpl.addOrUpdateVertexAndEdge()");
         addOrUpdateVertexAndEdge(v, existingVertex, dbTraversalSource, methodOrigin, encDecPropertyBuilder);
@@ -227,10 +232,11 @@ public class RegistryDaoImpl implements RegistryDao {
 
         GraphTraversal<Vertex, Vertex> gts = entitySource.clone().V().hasLabel(rootLabel);
         String label = rootLabel;
-        GraphTraversal<Vertex, Vertex> traversalRoot = dbTraversalSource.clone().V().hasLabel(rootLabel);
 
         while (gts.hasNext()) {
             Vertex v = gts.next();
+            GraphTraversal<Vertex, Vertex> traversalRoot = dbTraversalSource.clone().V().hasLabel(rootLabel);
+
             ImmutableTable.Builder<Vertex, Vertex, Map<String, Object>> encDecPropertyBuilder = ImmutableTable.<Vertex, Vertex, Map<String, Object>>builder();
 
             if (traversalRoot.hasNext()) {
@@ -385,7 +391,8 @@ public class RegistryDaoImpl implements RegistryDao {
             Edge edge = edgeIter.next();
             Optional<Edge> existingEdgeVertex =
                     edgeVertexMatchList.stream().filter(ed -> ed.label().equalsIgnoreCase(edge.label()) && ed.inVertex().label().equalsIgnoreCase(edge.inVertex().label())).findFirst();
-            if (!existingEdgeVertex.isPresent()) {
+            //if (!existingEdgeVertex.isPresent())
+            {
                 deleteEdgeAndNode(edge);
 
                 if (auditEnabled) {
@@ -426,7 +433,8 @@ public class RegistryDaoImpl implements RegistryDao {
         Iterator<Edge> inEdgeIter = dbVertexToBeDeleted.edges(Direction.IN);
         Iterator<Edge> outEdgeIter = dbVertexToBeDeleted.edges(Direction.OUT);
 
-        if (!(inEdgeIter.hasNext() && IteratorUtils.count(inEdgeIter) > 1) || outEdgeIter.hasNext()) {
+        if ((inEdgeIter.hasNext() && IteratorUtils.count(inEdgeIter) > 1) ||
+                outEdgeIter.hasNext() && IteratorUtils.count(outEdgeIter) > 1) {
             dbVertexToBeDeleted.remove();
         }
 
