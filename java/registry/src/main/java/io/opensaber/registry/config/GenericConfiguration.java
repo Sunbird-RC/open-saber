@@ -66,6 +66,9 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Value("${perf.monitoring.enabled}")
 	private boolean performanceMonitoringEnabled;
 
+	@Value("${registry.system.base}")
+	private String registrySystemBase;
+
 	@Bean
 	public ObjectMapper objectMapper() {
 		ObjectMapper objectMapper = new ObjectMapper();
@@ -132,7 +135,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 		OpenSaberInstrumentation watch = instrumentationStopWatch();
 		watch.start("SchemaConfigurator.initialization");
-		SchemaConfigurator schemaConfigurator = new SchemaConfigurator(fieldConfigFileName, validationConfigFileForCreate, validationConfigFileForUpdate);
+		SchemaConfigurator schemaConfigurator = new SchemaConfigurator(fieldConfigFileName, validationConfigFileForCreate, validationConfigFileForUpdate, registrySystemBase);
 		watch.stop("SchemaConfigurator.initialization");
 		return schemaConfigurator ;
 	}
