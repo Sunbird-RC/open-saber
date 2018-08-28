@@ -38,7 +38,7 @@ public class RegistryController {
 
 	@Autowired
 	private RegistryService registryService;
-	
+
 	@Autowired
 	private SearchService searchService;
 
@@ -58,6 +58,7 @@ public class RegistryController {
 	public ResponseEntity<Response> add(@RequestAttribute Request requestModel, 
 			@RequestParam(value="id", required = false) String id, @RequestParam(value="prop", required = false) String property) {
 
+		watch.start("Add - TotalTime");
 		Model rdf = (Model) requestModel.getRequestMap().get("rdf");
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.CREATE, "OK", responseParams);
@@ -82,6 +83,7 @@ public class RegistryController {
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 			responseParams.setErrmsg(e.getMessage());
 		}
+		watch.stop("Add - TotalTime");
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
@@ -120,7 +122,7 @@ public class RegistryController {
 		}
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-	
+
 	@RequestMapping(value = "/search", method = RequestMethod.POST)
 	public ResponseEntity<Response> searchEntity(@RequestAttribute Request requestModel) {
 
@@ -154,7 +156,7 @@ public class RegistryController {
 		}
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-	
+
 	@ResponseBody
 	@RequestMapping(value = "/update", method = RequestMethod.POST)
 	public ResponseEntity<Response> update(@RequestAttribute Request requestModel) {

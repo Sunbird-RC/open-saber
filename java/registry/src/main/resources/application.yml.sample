@@ -29,6 +29,8 @@ config:
 
 database:
   provider: ${database_provider:NEO4J}
+  persistence
+    enabled: ${database_persistence_enabled:true}
   neo4j:
     embedded: ${database_embedded:true}
     # Set an environment variable NEO4J_HOST if running Neo4J as a standalone host
@@ -125,6 +127,8 @@ config:
 
 database:
   provider: TINKERGRAPH
+  persistence:
+    enabled: ${database_persistence_enabled:true}
 
 # RDF Validation Config
 validations:
