@@ -4,6 +4,7 @@ import java.io.IOException;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.authorization.KeyCloakServiceImpl;
 import io.opensaber.registry.sink.*;
+import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.jena.rdf.model.Model;
@@ -194,6 +195,11 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		}
 
 		return provider;
+	}
+
+	@Bean
+	public UrlValidator urlValidator(){
+		return new UrlValidator(UrlValidator.ALLOW_LOCAL_URLS);
 	}
 
 	@Bean
