@@ -45,6 +45,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import scala.annotation.meta.param;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -163,12 +164,35 @@ public class RegistryElasticServiceImpl implements RegistryElasticService {
         });
         Map<String, Object> reqMap = new HashMap<>();
         Map<String, Object> filterMap = new HashMap<>();
-        /*for(String key: result.keySet()){
+        for(String key: result.keySet()){
             if(key!="@type"){
-                filterMap.put(key,result.get(key));
+                if(result.get(key) instanceof  String){
+                    filterMap.put(key,result.get(key));
+                } else if(result.get(key) instanceof  ArrayList){
+                    ArrayList<Map> rsultList1 = (ArrayList<Map>)result.get(key);
+                    for(Map searchMap1 : rsultList1){
+                        for(Object searchKey1 :searchMap1.keySet()){
+                            if(!(searchMap1.get(searchKey1) instanceof ArrayList)){
+                                filterMap.put(key+"."+searchKey1.toString(),searchMap1.get(searchKey1.toString()));
+                            } else {
+                                ArrayList<Map> rsultList2 = (ArrayList<Map>)searchMap1.get(searchKey1);
+                                for(Map searchMap2 : rsultList2) {
+                                    for (Object searchKey2 : searchMap2.keySet()) {
+                                        if(searchKey2.toString() !="@type") {
+                                            filterMap.put(key + "." + searchKey1.toString()+"."+searchKey2.toString(), searchMap2.get(searchKey2.toString()));
+                                        }
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+
+                }
+
             }
-        }*/
-        if(result.size() == 2){
+        }
+        if(filterMap.size() == 1){
             simpleSearch = true;
         }
         try {
@@ -188,6 +212,8 @@ public class RegistryElasticServiceImpl implements RegistryElasticService {
 
                     }
                 }
+            } else {
+                reqMap.put("filters",filterMap);
             }
         } catch(Exception e){
             e.printStackTrace();
@@ -274,8 +300,10 @@ public class RegistryElasticServiceImpl implements RegistryElasticService {
             query = this.prepareSearchQuery(searchDTO);
         }
 
+
         searchSourceBuilder.query(query);
-        if (sortBy && !this.relevanceSort && (null == searchDTO.getSoftConstraints() || searchDTO.getSoftConstraints().isEmpty())) {
+        //Not necessary for registry, as of now we are not using sorting(appending raw keyword, which is useful for LP)
+         /*if (sortBy && !this.relevanceSort && (null == searchDTO.getSoftConstraints() || searchDTO.getSoftConstraints().isEmpty())) {
             Map<String, String> sorting = searchDTO.getSortBy();
             if (sorting == null || ((Map)sorting).isEmpty()) {
                 sorting = new HashMap();
@@ -289,7 +317,7 @@ public class RegistryElasticServiceImpl implements RegistryElasticService {
                 String key = (String)var12.next();
                 searchSourceBuilder.sort(key + ".raw", this.getSortOrder((String)((Map)sorting).get(key)));
             }
-        }
+        }*/
 
         this.setAggregations(groupByFinalList, searchSourceBuilder);
         searchSourceBuilder.trackScores(true);
@@ -654,9 +682,10 @@ public class RegistryElasticServiceImpl implements RegistryElasticService {
     }
 
     private QueryBuilder checkNestedProperty(QueryBuilder queryBuilder, String propertyName) {
-        if (propertyName.replaceAll(".raw", "").contains(".")) {
+        //This code not necessary for registry
+       /* if (propertyName.replaceAll(".raw", "").contains(".")) {
             queryBuilder = QueryBuilders.nestedQuery(propertyName.split("\\.")[0], (QueryBuilder)queryBuilder, ScoreMode.None);
-        }
+        }*/
 
         return (QueryBuilder)queryBuilder;
     }
@@ -741,7 +770,7 @@ public class RegistryElasticServiceImpl implements RegistryElasticService {
         while(var5.hasNext()) {
             Object value = var5.next();
             if (match) {
-                queryBuilder.should(QueryBuilders.matchQuery(propertyName, value));
+                queryBuilder.should(QueryBuilders.matchQuery(propertyName, value).operator(Operator.AND));
             } else {
                 queryBuilder.mustNot(QueryBuilders.matchQuery(propertyName, value));
             }
@@ -1049,7 +1078,9 @@ public class RegistryElasticServiceImpl implements RegistryElasticService {
             properties.addAll(getAdditionalFilterProperties(notExists, CompositeSearchParams.not_exists.name()));
             // Changing fields to null so that search all fields but returns
             // only the fields specified
-            properties.addAll(getSearchQueryProperties(queryString, null));
+            if(!queryString.equals("null")) {
+                properties.addAll(getSearchQueryProperties(queryString, null));
+            }
             properties.addAll(getSearchFilterProperties(filters, wordChainsRequest));
             searchObj.setSortBy(sortBy);
             searchObj.setFacets(facets);
