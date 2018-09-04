@@ -27,6 +27,7 @@ import org.ekstep.common.exception.ClientException;
 import org.ekstep.compositesearch.enums.CompositeSearchErrorCodes;
 import org.ekstep.compositesearch.enums.CompositeSearchParams;
 import org.ekstep.compositesearch.enums.Modes;
+import org.ekstep.search.actor.SearchManager;
 import org.ekstep.searchindex.dto.SearchDTO;
 import org.ekstep.searchindex.elasticsearch.ElasticSearchUtil;
 import org.ekstep.searchindex.processor.SearchProcessor;
@@ -44,8 +45,8 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
-import scala.annotation.meta.param;
+import org.springframework.stereotype.Component;/*
+import scala.annotation.meta.param;*/
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -229,14 +230,18 @@ public class RegistryElasticServiceImpl implements RegistryElasticService {
             }
         }*/
         reqMap.put("filters",filterMap);
-        Request searchRequest = new Request();
-        searchRequest.setRequestMap(reqMap);
+        org.ekstep.common.dto.Request searchRequest = new org.ekstep.common.dto.Request();
+        //Request searchRequest = new Request();
+        searchRequest.setRequest(reqMap);
         /*searchRequest.sx
         SearchDTO searchDTO = getSearchDTO(searchRequest);
         Future<Map<String, Object>> searchResult = processor.processSearch(searchDTO, true);*/
         SearchProcessor searchProcessor = new SearchProcessor("teacher");
         final List<Map<String, Object>> groupByFinalList = new ArrayList();
-        SearchSourceBuilder ssb = processSearchQuery(getSearchDTO(searchRequest), groupByFinalList,true);
+        SearchManager searchManager = new SearchManager();
+        SearchDTO searchDTO = searchManager.getSearchDTO(searchRequest);
+        //SearchSourceBuilder ssb = searchProcessor.processSearchQuery(searchDTO, groupByFinalList,true);
+        SearchSourceBuilder ssb = searchProcessor.processSearchQuery(searchDTO, groupByFinalList,true);
         List<Object> elasticSearchResponse =  registryElasticDAO.search("teacher", "doc",ssb);
         JsonLDWriteContext ctx = new JsonLDWriteContext();
         InputStream is = this.getClass().getClassLoader().getResourceAsStream(auditFrameFile);
@@ -268,7 +273,7 @@ public class RegistryElasticServiceImpl implements RegistryElasticService {
 
     }
 
-    private SearchSourceBuilder processSearchQuery(SearchDTO searchDTO, List<Map<String, Object>> groupByFinalList, boolean sortBy) {
+    /*private SearchSourceBuilder processSearchQuery(SearchDTO searchDTO, List<Map<String, Object>> groupByFinalList, boolean sortBy) {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         List<String> fields = searchDTO.getFields();
         if (null != fields && !fields.isEmpty()) {
@@ -303,7 +308,7 @@ public class RegistryElasticServiceImpl implements RegistryElasticService {
 
         searchSourceBuilder.query(query);
         //Not necessary for registry, as of now we are not using sorting(appending raw keyword, which is useful for LP)
-         /*if (sortBy && !this.relevanceSort && (null == searchDTO.getSoftConstraints() || searchDTO.getSoftConstraints().isEmpty())) {
+         *//*if (sortBy && !this.relevanceSort && (null == searchDTO.getSoftConstraints() || searchDTO.getSoftConstraints().isEmpty())) {
             Map<String, String> sorting = searchDTO.getSortBy();
             if (sorting == null || ((Map)sorting).isEmpty()) {
                 sorting = new HashMap();
@@ -317,14 +322,14 @@ public class RegistryElasticServiceImpl implements RegistryElasticService {
                 String key = (String)var12.next();
                 searchSourceBuilder.sort(key + ".raw", this.getSortOrder((String)((Map)sorting).get(key)));
             }
-        }*/
+        }*//*
 
         this.setAggregations(groupByFinalList, searchSourceBuilder);
         searchSourceBuilder.trackScores(true);
         return searchSourceBuilder;
-    }
+    }*/
 
-    private QueryBuilder prepareFilteredSearchQuery(SearchDTO searchDTO) {
+    /*private QueryBuilder prepareFilteredSearchQuery(SearchDTO searchDTO) {
         List<FilterFunctionBuilder> filterFunctionBuilder = new ArrayList();
         Map<String, Float> weightages = (Map)searchDTO.getAdditionalProperty("weightagesMap");
         if (weightages == null) {
@@ -683,9 +688,9 @@ public class RegistryElasticServiceImpl implements RegistryElasticService {
 
     private QueryBuilder checkNestedProperty(QueryBuilder queryBuilder, String propertyName) {
         //This code not necessary for registry
-       /* if (propertyName.replaceAll(".raw", "").contains(".")) {
+       *//* if (propertyName.replaceAll(".raw", "").contains(".")) {
             queryBuilder = QueryBuilders.nestedQuery(propertyName.split("\\.")[0], (QueryBuilder)queryBuilder, ScoreMode.None);
-        }*/
+        }*//*
 
         return (QueryBuilder)queryBuilder;
     }
@@ -935,7 +940,7 @@ public class RegistryElasticServiceImpl implements RegistryElasticService {
 
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private SearchDTO getSearchDTO(Request request) throws Exception {
+    *//*private SearchDTO getSearchDTO(Request request) throws Exception {
         SearchDTO searchObj = new SearchDTO();
         try {
             Map<String, Object> req = request.getRequestMap();
@@ -1104,7 +1109,7 @@ public class RegistryElasticServiceImpl implements RegistryElasticService {
                     "Invalid Input.", e);
         }
         return searchObj;
-    }
+    }*//*
 
     @SuppressWarnings("unchecked")
     private Map<String, Float> getWeightagesMap(String weightagesString)
@@ -1360,72 +1365,14 @@ public class RegistryElasticServiceImpl implements RegistryElasticService {
         }
 
         //Not necessary for Registry elastic search
-        /*if (!statusFilter && !traversal) {
+        *//*if (!statusFilter && !traversal) {
             Map<String, Object> property = new HashMap<String, Object>();
             property.put(CompositeSearchParams.operation.name(), CompositeSearchConstants.SEARCH_OPERATION_EQUAL);
             property.put(CompositeSearchParams.propertyName.name(), "status");
             property.put(CompositeSearchParams.values.name(), Arrays.asList(new String[] { "Live" }));
             properties.add(property);
-        }*/
+        }*//*
         return properties;
-    }
+    }*/
 
-
-    void addCrap(Request requestModel,  String entityId){
-
-        try{
-
-            JsonObject json = gson.fromJson(String.valueOf(requestModel.getRequestMap().get("dataObject")), JsonObject.class);
-            json.addProperty("id",entityId);
-            //String jsonLdContent = entityId, gson.toJson(json,JsonObject.class );
-            Map<String, Object> jsonObject = (Map<String, Object>) JsonUtils.fromString(gson.toJson(json,JsonObject.class));
-
-            //options.;
-            String expectedProfile = "application/ld+json";
-
-
-
-            JsonLDWriteContext ctx = new JsonLDWriteContext();
-            InputStream is = this.getClass().getClassLoader().getResourceAsStream(auditFrameFile);
-            String fileString = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
-            ctx.setFrame(fileString);
-            Model rdf = (Model) requestModel.getRequestMap().get("rdf");
-            DatasetGraph g = DatasetFactory.create(rdf).asDatasetGraph();
-            PrefixMap pm = RiotLib.prefixMap(g);
-            String base = null;
-            //RDFFormat.JSONLDVariant.class variant =
-
-            //JsonLdOptions opts2 = JsonLDWriter.getJsonLdOptions(null, ctx);
-            // RDFDataset jsonldDataset = (new JenaRDF2JSONLD()).parse(g);
-            //Object obj = (new JsonLdApi(options)).fromRDF(jsonldDataset, true);
-
-            // JsonLDWriter.toJsonLDJavaAPI(new RDFFormat.JSONLDVariant("expand pretty", true, RDFFormat.JSONLDVariant.JSONLD_FORMAT.EXPAND),g,pm,null,ctx);
-           /* Map<String, Object> profiled = JsonLdProcessor.compact(expanded, options);
-            profiled.put("@context", expectedProfile);
-            System.out.println(new ObjectMapper().writeValueAsString(profiled));*/
-            //JsonLdOptions options = new JsonLdOptions();
-            WriterDatasetRIOT w = RDFDataMgr.createDatasetWriter(org.apache.jena.riot.RDFFormat.JSONLD_EXPAND_FLAT);
-            StringWriter sWriterJena = new StringWriter();
-            w.write(sWriterJena, g, pm, base, ctx);
-            String jenaJSON = sWriterJena.toString();
-            //Map<String, Object> result  = gson.fromJson(jenaJSON, mapType);
-
-            JsonLdOptions options = new JsonLdOptions();
-            options.setCompactArrays(true);
-            //options.setExpandContext(ctx);
-            options.setRequireAll(true);
-            List<Object> expanded = JsonLdProcessor.expand(jsonObject, options);
-            String sss = gson.toJson(JsonLdProcessor.expand(jsonObject, options));
-            System.out.println("expanded json:"+sss);
-            Object s2 = JsonLdProcessor.flatten(jsonObject, options);
-
-            Object expanded1 = JsonLdProcessor.expand(expanded, options);
-            System.out.println("expanded form:"+expanded1);
-            // String ss = gson.toJson(expanded, List<H>.class);
-            addDocument("teacher", "doc", entityId, gson.toJson(json,JsonObject.class ));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
 }
