@@ -1,5 +1,8 @@
 package io.opensaber.registry.service.impl;
 
+import akka.actor.ActorRef;
+import akka.pattern.*;
+import akka.util.Timeout;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jsonldjava.core.JsonLdOptions;
@@ -23,11 +26,17 @@ import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.lucene.search.join.ScoreMode;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
+import org.ekstep.common.dto.Response;
+import org.ekstep.common.dto.ResponseParams;
 import org.ekstep.common.exception.ClientException;
+import org.ekstep.common.exception.ResponseCode;
 import org.ekstep.compositesearch.enums.CompositeSearchErrorCodes;
 import org.ekstep.compositesearch.enums.CompositeSearchParams;
 import org.ekstep.compositesearch.enums.Modes;
+import org.ekstep.compositesearch.enums.SearchActorNames;
 import org.ekstep.search.actor.SearchManager;
+import org.ekstep.search.router.SearchActorPool;
+import org.ekstep.search.router.SearchRequestRouterPool;
 import org.ekstep.searchindex.dto.SearchDTO;
 import org.ekstep.searchindex.elasticsearch.ElasticSearchUtil;
 import org.ekstep.searchindex.processor.SearchProcessor;
@@ -47,6 +56,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;/*
 import scala.annotation.meta.param;*/
+import scala.concurrent.Await;
+import scala.concurrent.Future;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,6 +66,7 @@ import java.lang.reflect.Type;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Component
@@ -238,18 +250,40 @@ public class RegistryElasticServiceImpl implements RegistryElasticService {
         Future<Map<String, Object>> searchResult = processor.processSearch(searchDTO, true);*/
         SearchProcessor searchProcessor = new SearchProcessor("teacher");
         final List<Map<String, Object>> groupByFinalList = new ArrayList();
-        SearchManager searchManager = new SearchManager();
-        SearchDTO searchDTO = searchManager.getSearchDTO(searchRequest);
+        // SearchManager searchManager = new SearchManager();
+        // SearchDTO searchDTO = searchManager.getSearchDTO(searchRequest);
+
+
+            SearchRequestRouterPool.init();
+            ActorRef router = SearchRequestRouterPool.getRequestRouter();
+            try {
+                Future<Object> future = Patterns.ask(router, searchRequest, SearchRequestRouterPool.REQ_TIMEOUT);
+                Object obj1 = Await.result(future, SearchRequestRouterPool.WAIT_TIMEOUT.duration());
+                if (obj1 instanceof Response) {
+                    return  ((Response) obj1).getResult();
+                } else {
+                    //return ERROR(CompositeSearchErrorCodes.SYSTEM_ERROR.name(), "System Error", ResponseCode.SERVER_ERROR);
+                }
+            } catch (Exception e) {
+               // return ERROR(CompositeSearchErrorCodes.SYSTEM_ERROR.name(), e.getMessage(), ResponseCode.SERVER_ERROR);
+            }
+
+
+
+        ActorRef searchManager = SearchActorPool.getActorRefFromPool(SearchActorNames.SEARCH_MANAGER.name());
+        Patterns.ask(searchManager, searchRequest, new Timeout(10, TimeUnit.SECONDS));
         //SearchSourceBuilder ssb = searchProcessor.processSearchQuery(searchDTO, groupByFinalList,true);
-        SearchSourceBuilder ssb = searchProcessor.processSearchQuery(searchDTO, groupByFinalList,true);
-        List<Object> elasticSearchResponse =  registryElasticDAO.search("teacher", "doc",ssb);
+        //SearchSourceBuilder ssb = searchProcessor.processSearchQuery(searchDTO, groupByFinalList,true);
+        //List<Object> elasticSearchResponse =  registryElasticDAO.search("teacher", "doc",ssb);
         JsonLDWriteContext ctx = new JsonLDWriteContext();
         InputStream is = this.getClass().getClassLoader().getResourceAsStream(auditFrameFile);
         //InputStream is = this.getClass().getClassLoader().getResourceAsStream(frameFile);
         String fileString = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
 
         ctx.setFrame(gson.fromJson(fileString,JsonObject.class));
-        Map<String, Object> responseLstMap = JsonLdProcessor.compact(elasticSearchResponse,gson.fromJson(json.get("@context"),Map.class),new JsonLdOptions());
+        Map<String, Object> responseLstMap = JsonLdProcessor.compact(null,gson.fromJson(json.get("@context"),Map.class),new JsonLdOptions());
+
+        //Map<String, Object> responseLstMap = JsonLdProcessor.compact(elasticSearchResponse,gson.fromJson(json.get("@context"),Map.class),new JsonLdOptions());
 
        // List<Map<String, Object>> responseLst = new LinkedList<Map<String, Object>>();
        /* for(Object map : elasticSearchResponse){
@@ -1374,5 +1408,37 @@ public class RegistryElasticServiceImpl implements RegistryElasticService {
         }*//*
         return properties;
     }*/
+
+    /**
+     * Error.
+     *
+     * @param errorCode the error code
+     * @param errorMessage the error message
+     * @param responseCode the response code
+     * @return the response
+     */
+
+    protected Response ERROR(String errorCode, String errorMessage, ResponseCode responseCode) {
+        Response response = new Response();
+        response.setParams(getErrorStatus(errorCode, errorMessage));
+        response.setResponseCode(responseCode);
+        return response;
+    }
+
+    /**
+     * Gets the error status.
+     *
+     * @param errorCode the error code
+     * @param errorMessage the error message
+     * @return the error status
+     */
+
+    private ResponseParams getErrorStatus(String errorCode, String errorMessage) {
+        ResponseParams params = new ResponseParams();
+        params.setErr(errorCode);
+        params.setStatus(ResponseParams.StatusType.failed.name());
+        params.setErrmsg(errorMessage);
+        return params;
+    }
 
 }
