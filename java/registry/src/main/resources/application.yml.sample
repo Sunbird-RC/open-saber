@@ -22,6 +22,13 @@ registry:
   system:
     base: ${registry_system_base:http://localhost:8080/opensaber/}
 
+# Elastic searcch configuration
+# ${registry_elastic_index:teacher}
+# ${registry_elastic_connection_url:http://localhost:9200/}
+elastic:
+  index: teacher
+  connection_url: localhost:9200
+
 #This refers to the opensaber schema configuration JSON-LD file
 config:
   schema:
@@ -122,6 +129,13 @@ registry:
     base: http://example.com/voc/teacher/1.0.0/
   system:
     base: http://example.com/voc/opensaber/
+
+# Elastic searcch configuration
+# ${registry_elastic_index:teacher}
+# ${registry_elastic_connection_url:http://localhost:9200/}
+elastic:
+  index: teacher
+  connection_url: localhost:9200
 
 #This refers to the opensaber schema configuration JSON-LD file
 config:

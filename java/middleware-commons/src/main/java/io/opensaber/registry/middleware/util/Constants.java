@@ -19,7 +19,6 @@ public class Constants {
 	public static final String RDF_VALIDATION_MAPPER_OBJECT = "rdfValidationMapper";
 	public static final String REGISTRY_CONTEXT_BASE = "registry.base";
 	public static final String PRIVACY_PROPERTY = "privateProperties";
-	public static final String OPENSABER_CONTEXT_BASE = "http://example.com/voc/opensaber/1.0.0/";
 
 	public static final String DATABASE_PROVIDER = "database.provider";
 	public static final String NEO4J_DIRECTORY = "database.neo4j.database_directory";
@@ -58,6 +57,12 @@ public class Constants {
 	public static final String PERSISTENT_GRAPH = "persisten_graph";
 	public static final String STATUS_INACTIVE = "false";
 	public static final String STATUS_ACTIVE = "true";
+	public static final String STATUS_KEYWORD = "@status";
+	public static final String AUDIT_KEYWORD = "@audit";
+	public static final String CREATE_METHOD_ORIGIN = "create";
+	public static final String READ_METHOD_ORIGIN = "read";
+	public static final String UPDATE_METHOD_ORIGIN = "update";
+	public static final String SEARCH_METHOD_ORIGIN = "search";
 
 	public enum GraphDatabaseProvider {
 		NEO4J("NEO4J"),

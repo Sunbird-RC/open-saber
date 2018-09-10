@@ -4,12 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.opensaber.pojos.Response;
 import org.springframework.http.*;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
@@ -149,6 +146,12 @@ public class RegistryTestBase {
 		Map<String,String> queryParams = new HashMap<String,String>();
 		queryParams.put("id", id);
 		ResponseEntity<Response> response = restTemplate.exchange(url, HttpMethod.GET, entity, Response.class,queryParams);
+		return response;
+	}
+	
+	public ResponseEntity<Response> search(String jsonldData, String url, HttpHeaders headers) {
+		HttpEntity<String> entity = new HttpEntity<>(jsonldData, headers);
+		ResponseEntity<Response> response = restTemplate.postForEntity(url, entity, Response.class);
 		return response;
 	}
 
