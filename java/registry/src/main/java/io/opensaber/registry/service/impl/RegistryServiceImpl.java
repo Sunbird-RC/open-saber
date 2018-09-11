@@ -132,9 +132,13 @@ public class RegistryServiceImpl implements RegistryService {
 		return healthCheck;
 	}
 
-	@Override
+	/*
+	 * (non-Javadoc) frameEntity as generic, moved to factory impl for jsonld.
+	 * @see io.opensaber.registry.service.RegistryService#frameEntity(org.eclipse.rdf4j.model.Model)
+	 */
+/*	@Override
 	public String frameEntity(org.eclipse.rdf4j.model.Model entityModel) throws IOException, MultipleEntityException, EntityCreationException {
-		Model jenaEntityModel = JenaRDF4J.asJenaModel(entityModel);
+		Model jenaEntityModel = JenaRDF4J.asJenaModel(entityModel);		
 		Resource root = getRootNode(jenaEntityModel);
 		String rootLabelType = getTypeForRootLabel(jenaEntityModel, root);
 		logger.debug("RegistryServiceImpl : jenaEntityModel for framing: {} \n root : {}, \n rootLabelType: {}",jenaEntityModel,root,rootLabelType);
@@ -195,7 +199,7 @@ public class RegistryServiceImpl implements RegistryService {
 		String jenaJSON = sWriterJena.toString();
 		logger.debug("RegistryServiceImpl : jenaJSON for audit-framing: {}", jenaJSON);
 		return jenaJSON;
-	}
+	}*/
 	
 	@Override
 	public org.eclipse.rdf4j.model.Model getAuditNode(String id) throws IOException, NoSuchElementException, RecordNotFoundException,
@@ -234,7 +238,9 @@ public class RegistryServiceImpl implements RegistryService {
 		}
 		return label;
 	}
-	
+	/*
+	 * to mode out in utils.
+	 */
 	private Resource getRootNode(Model entity) throws EntityCreationException, MultipleEntityException{
 		List<Resource> rootLabels = RDFUtil.getRootLabels(entity);
 		if (rootLabels.size() == 0) {
@@ -245,7 +251,7 @@ public class RegistryServiceImpl implements RegistryService {
 			return rootLabels.get(0);
 		}
 	}
-	private String getTypeForRootLabel(Model entity, Resource root) throws EntityCreationException, MultipleEntityException{
+/*	private String getTypeForRootLabel(Model entity, Resource root) throws EntityCreationException, MultipleEntityException{
 		List<String> rootLabelType = RDFUtil.getTypeForSubject(entity, root);
 		if (rootLabelType.size() == 0) {
 			throw new EntityCreationException(Constants.NO_ENTITY_AVAILABLE_MESSAGE);
@@ -264,5 +270,5 @@ public class RegistryServiceImpl implements RegistryService {
 		} else {
 			return getTypeForRootLabel(entity, rootLabels.get(0));
 		}
-	}
+	}*/
 }
