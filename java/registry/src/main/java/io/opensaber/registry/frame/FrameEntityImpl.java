@@ -1,11 +1,10 @@
-package io.opensaber.registry.response.content.impl;
+package io.opensaber.registry.frame;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,18 +27,16 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import io.opensaber.converters.JenaRDF4J;
-import io.opensaber.registry.controller.RegistryController;
 import io.opensaber.registry.exception.EntityCreationException;
 import io.opensaber.registry.exception.MultipleEntityException;
+import io.opensaber.registry.frame.FrameEntity;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.RDFUtil;
-import io.opensaber.registry.response.content.ResponseContent;
-import io.opensaber.registry.response.content.ResultContent;
 
 @Component
-public class JsonldResponseContent implements ResponseContent {
+public class FrameEntityImpl implements FrameEntity {
 
-	private static Logger logger = LoggerFactory.getLogger(JsonldResponseContent.class);
+	private static Logger logger = LoggerFactory.getLogger(FrameEntityImpl.class);
 
 	
 	@Value("${frame.file}")
@@ -50,16 +47,18 @@ public class JsonldResponseContent implements ResponseContent {
 	private Type mapType = new TypeToken<Map<String, Object>>(){}.getType();
 	
 	@Override
-	public ResultContent getContent() throws IOException, MultipleEntityException, EntityCreationException {
+	public String getContent() throws IOException, MultipleEntityException, EntityCreationException {
 		String jenaJson = frameEntity2Json(entityModel);
 	    logger.info("JsonldResponseContent: Framed Jena JSON- "+jenaJson);
 
-		ResultContent rs = new ResultContent();
+/*		ResultContent rs = new ResultContent();
 		if(jenaJson.isEmpty() || jenaJson == null)
 			rs.setResult(new HashMap<String,Object>());
 		else
 			rs.setResult(gson.fromJson(jenaJson, mapType));
-		return rs;
+		return rs;*/
+	    
+	    return jenaJson;
 	}
 	
     @Override
