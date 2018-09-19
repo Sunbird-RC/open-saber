@@ -1,10 +1,8 @@
 package io.opensaber.registry.interceptor.request.transform;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 
-@Component
 public class RequestTransformFactory {
 	
 	private static final String MEDIATYPE_APPLICATION_JSONLD = "application/ld+json";

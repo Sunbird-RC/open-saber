@@ -30,6 +30,9 @@ import io.opensaber.registry.interceptor.AuthorizationInterceptor;
 import io.opensaber.registry.interceptor.RDFConversionInterceptor;
 import io.opensaber.registry.interceptor.RDFValidationInterceptor;
 import io.opensaber.registry.interceptor.RDFValidationMappingInterceptor;
+import io.opensaber.registry.interceptor.request.transform.RequestJsonTransformer;
+import io.opensaber.registry.interceptor.request.transform.RequestJsonldTransformer;
+import io.opensaber.registry.interceptor.request.transform.RequestTransformFactory;
 import io.opensaber.registry.middleware.Middleware;
 import io.opensaber.registry.middleware.impl.RDFConverter;
 import io.opensaber.registry.middleware.impl.RDFValidationMapper;
@@ -97,6 +100,20 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Bean
 	public Middleware rdfConverter(){
 		return new RDFConverter();
+	}
+	
+	@Bean
+	public RequestTransformFactory requestTransformFactory(){
+		return new RequestTransformFactory();
+	}
+	
+	@Bean
+	public RequestJsonTransformer requestJsonTransformer(){
+		return RequestJsonTransformer.getInstance();
+	}
+	@Bean
+	public RequestJsonldTransformer requestJsonldTransformer(){
+		return new RequestJsonldTransformer();
 	}
 
     @Bean
