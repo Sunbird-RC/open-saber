@@ -46,7 +46,8 @@ public class Response {
 	}
 
 	private String responseCode;
-	private Map<String, Object> result;	
+	private Map<String, Object> result;
+	private Object content;
 
 	public void setResponseCode(String responseCode) {
 		this.responseCode = responseCode;
@@ -83,6 +84,14 @@ public class Response {
 	}	
 	public String getResponseCode() {
 		return responseCode;
+	}
+
+	public Object getContent() {
+		return content;
+	}
+
+	public void setContent(Object content) {
+		this.content = content;
 	}
 
 }
