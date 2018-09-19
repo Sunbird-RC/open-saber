@@ -1,8 +1,10 @@
 package io.opensaber.registry.interceptor.handler;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.Map.Entry;
@@ -33,6 +35,7 @@ public class BaseRequestHandler extends BaseResponseHandler{
 
 	public void setRequestWrapper() throws IOException {
 		requestWrapper = new RequestWrapper(request);
+		
 	}
 
 	public String getRequestBody() throws IOException{
@@ -111,6 +114,10 @@ public class BaseRequestHandler extends BaseResponseHandler{
 	
 	public String getRequestPath() throws IOException{
 		return request.getServletPath();
+	}
+	
+	public void setRequestBody(String requestBody){
+		requestWrapper.setBody(requestBody);
 	}
 
 }
