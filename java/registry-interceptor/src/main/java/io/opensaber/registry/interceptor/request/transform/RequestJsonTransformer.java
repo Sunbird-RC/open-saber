@@ -22,14 +22,14 @@ import io.opensaber.registry.middleware.transform.commons.TransformationExceptio
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.stereotype.Component;
+
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Component
+
 public class RequestJsonTransformer implements IRequestTransformer<String> {
 
     private static RequestJsonTransformer instance;

@@ -38,6 +38,7 @@ public class RDFConversionInterceptor implements HandlerInterceptor{
 	public RDFConversionInterceptor(Middleware rdfConverter, Gson gson){
 		this.rdfConverter = rdfConverter;
 		this.gson = gson;
+		
 	}
 
 	@Override
