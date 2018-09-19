@@ -35,4 +35,12 @@ public interface RegistryService {
 	EncryptionException, AuditFailedException;
 
 	public boolean deleteEntityById(String id) throws AuditFailedException, RecordNotFoundException;
+	
+	
+	//Added methods to support frameEntity	
+	public String getEntityFramedById(String id) throws RecordNotFoundException, EncryptionException, AuditFailedException,
+	IOException, MultipleEntityException, EntityCreationException;
+	public String getAuditNodeFramed(String id) throws IOException, NoSuchElementException, RecordNotFoundException,
+	EncryptionException, AuditFailedException,IOException, MultipleEntityException, EntityCreationException;
+	
 }

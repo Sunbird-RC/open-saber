@@ -4,9 +4,9 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import io.opensaber.pojos.*;
+import io.opensaber.registry.middleware.transform.commons.Data;
+import io.opensaber.registry.middleware.transform.commons.ResponseData;
 import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.response.content.ResponseContent;
-import io.opensaber.registry.response.content.ResponseContentFactory;
 import io.opensaber.registry.util.JSONUtil;
 
 import org.apache.jena.rdf.model.Model;
@@ -14,12 +14,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.MimeType;
-import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -28,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -38,6 +37,9 @@ import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.exception.TypeNotProvidedException;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
+import io.opensaber.registry.transform.factory.ResponseTransformFactory;
+import io.opensaber.registry.transformation.IResponseTransformer;
+
 
 @RestController
 public class RegistryController {
@@ -60,20 +62,20 @@ public class RegistryController {
 	private boolean auditEnabled;
 	
 	@Autowired
-	ResponseContentFactory responseContentFactory;
+	ResponseTransformFactory responseTransformFactory;
 
 	@Autowired
 	private OpenSaberInstrumentation watch;
-
+	
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
 	public ResponseEntity<Response> add(@RequestAttribute Request requestModel, 
 			@RequestParam(value="id", required = false) String id, @RequestParam(value="prop", required = false) String property) {
-
+		
 		Model rdf = (Model) requestModel.getRequestMap().get("rdf");
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.CREATE, "OK", responseParams);
 		Map<String, Object> result = new HashMap<>();
-
+		
 		try {
 			watch.start("RegistryController.addToExistingEntity");
 			String label = registryService.addEntity(rdf, id, property);
@@ -98,28 +100,32 @@ public class RegistryController {
 
 	@RequestMapping(value = "/read/{id}", method = RequestMethod.GET)
 	public ResponseEntity<Response> readEntity(@PathVariable("id") String id,
-			@RequestHeader HttpHeaders headers) {
+			@RequestHeader(value="Accept") MediaType accept) {
 
 		String entityId = registryContext + id;
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
-		MediaType acceptType = headers.getAccept().iterator().next();
+		logger.info("RegistryController: entity acceptType ", accept);
 		
 		try {
-			watch.start("RegistryController.readEntity");
-			org.eclipse.rdf4j.model.Model entityModel = registryService.getEntityById(entityId);
-			logger.debug("FETCHED: " + entityModel);
-			/*String jenaJSON = registryService.frameEntity(entityModel);
-			response.setResult(gson.fromJson(jenaJSON, mapType));*/
-						
-			ResponseContent responseContent = responseContentFactory.getResponseContent(acceptType.toString());
-			responseContent.setModel(entityModel);
-			response.setResult(responseContent.getContent().getResult());			
+			watch.start("RegistryController.readEntity");		
+			/*
+			 * registryService returns the String as Jena Json.
+			 * Jena Json, Passed to tranformation layer 
+			 */
+			String content = registryService.getEntityFramedById(entityId);
+			logger.info("RegistryController: Json string", content);
+			Data<String> data = new Data<String>(content);
+			//transformation for content.
+			IResponseTransformer<String> responseTransformer = responseTransformFactory.getInstance(accept);
+			ResponseData<String> resultContent = responseTransformer.transform(data);
+			
+			response.setContent(resultContent.getResponseData());	
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
 			
 			watch.stop("RegistryController.readEntity");
-			logger.info("RegistryController: entity for {} read !", response.getResult().toString());
+			//logger.info("RegistryController: entity for {} read !", response.getResult().toString());
 
 		} catch (RecordNotFoundException e) {
 			logger.error("RegistryController: RecordNotFoundException while reading entity !", e);
@@ -141,29 +147,32 @@ public class RegistryController {
 	}
 	
 	@RequestMapping(value = "/search", method = RequestMethod.POST)
-	public ResponseEntity<Response> searchEntity(@RequestAttribute Request requestModel, @RequestHeader HttpHeaders headers) {
+	public ResponseEntity<Response> searchEntity(@RequestAttribute Request requestModel, @RequestHeader(value="Accept") MediaType accept) {
 
 		Model rdf = (Model) requestModel.getRequestMap().get("rdf");
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.SEARCH, "OK", responseParams);
 		Map<String, Object> result = new HashMap<>();
-		
-		MediaType contentType = headers.getContentType();
+	
 
 		try {
 			watch.start("RegistryController.searchEntity");
-			org.eclipse.rdf4j.model.Model entityModel = searchService.search(rdf);
+			/*	org.eclipse.rdf4j.model.Model entityModel = searchService.search(rdf);
 			logger.debug("FETCHED: " + entityModel);
-/*			String jenaJSON = registryService.frameSearchEntity(entityModel);
+			String jenaJSON = registryService.frameSearchEntity(entityModel);
 			if(jenaJSON.isEmpty()){
 				response.setResult(new HashMap<String,Object>());
 			}else{
 				response.setResult(gson.fromJson(jenaJSON, mapType));
 			}*/
+
+			String jenaJson = searchService.searchFramed(rdf);
+			Data<String> data = new Data<String>(jenaJson);
+			//transformation for content.
+			IResponseTransformer<String> responseTransformer = responseTransformFactory.getInstance(accept);
+			ResponseData<String> resultContent = responseTransformer.transform(data);
 			
-			ResponseContent responseContent = responseContentFactory.getResponseContent(contentType.toString());
-			responseContent.setModel(entityModel);
-			response.setResult(responseContent.getContent().getResult());	
+			response.setContent(resultContent.getResponseData());	
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
 			watch.stop("RegistryController.searchEntity");
 		} catch (AuditFailedException | RecordNotFoundException | TypeNotProvidedException e) {
@@ -232,24 +241,25 @@ public class RegistryController {
 
 	@ResponseBody
 	@RequestMapping(value = "/fetchAudit/{id}", method = RequestMethod.GET)
-	public ResponseEntity<Response> fetchAudit(@PathVariable("id") String id, @RequestHeader HttpHeaders headers) {
+	public ResponseEntity<Response> fetchAudit(@PathVariable("id") String id, @RequestHeader(value="Accept") MediaType accept) {
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.AUDIT, "OK", responseParams);
-		MediaType acceptType = headers.getAccept().iterator().next();
 		
 		if (auditEnabled) {
 			String entityId = registryContext + id;
 
 			try {
 				watch.start("RegistryController.fetchAudit");
-				org.eclipse.rdf4j.model.Model auditModel = registryService.getAuditNode(entityId);
-				logger.debug("Audit Record model :" + auditModel);
-/*				String jenaJSON = registryService.frameAuditEntity(auditModel);
-				response.setResult(gson.fromJson(jenaJSON, mapType));
-*/				
-				ResponseContent responseContent = responseContentFactory.getResponseContent(acceptType.toString());
-				responseContent.setModel(auditModel);
-				response.setResult(responseContent.getContent().getResult());
+				//org.eclipse.rdf4j.model.Model auditModel = registryService.getAuditNode(entityId);
+				//logger.debug("Audit Record model :" + auditModel);
+			
+				String jenaJson = registryService.getAuditNodeFramed(entityId);
+				Data<String> data = new Data<String>(jenaJson);
+				//transformation for content.
+				IResponseTransformer<String> responseTransformer = responseTransformFactory.getInstance(accept);
+				ResponseData<String> resultContent = responseTransformer.transform(data);
+				
+				response.setContent(resultContent.getResponseData());
 				responseParams.setStatus(Response.Status.SUCCESSFUL);
 				watch.stop("RegistryController.fetchAudit");
 				logger.debug("Controller: audit records fetched !");

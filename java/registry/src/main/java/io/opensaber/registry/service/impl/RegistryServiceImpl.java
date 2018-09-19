@@ -10,6 +10,7 @@ import java.util.NoSuchElementException;
 import io.opensaber.pojos.ComponentHealthInfo;
 import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.registry.exception.*;
+import io.opensaber.registry.frame.FrameEntity;
 import io.opensaber.registry.sink.DatabaseProvider;
 import org.apache.jena.ext.com.google.common.io.ByteStreams;
 import org.apache.jena.query.DatasetFactory;
@@ -59,6 +60,9 @@ public class RegistryServiceImpl implements RegistryService {
 	
 	@Value("${audit.frame.file}")
 	private String auditFrameFile;
+	
+	@Autowired
+	private FrameEntity frameEntity;
 
 	@Override
 	public List getEntityList(){
@@ -271,4 +275,25 @@ public class RegistryServiceImpl implements RegistryService {
 			return getTypeForRootLabel(entity, rootLabels.get(0));
 		}
 	}*/
+
+	@Override
+	public String getEntityFramedById(String id)
+			throws RecordNotFoundException, EncryptionException, AuditFailedException, IOException, MultipleEntityException, EntityCreationException {
+		Graph graph = registryDao.getEntityById(id);
+		org.eclipse.rdf4j.model.Model model = RDF2Graph.convertGraph2RDFModel(graph, id);
+		logger.debug("RegistryServiceImpl : rdf4j model :", model);
+		frameEntity.setModel(model);
+		return frameEntity.getContent();
+	}
+
+	@Override
+	public String getAuditNodeFramed(String id) throws IOException, NoSuchElementException, RecordNotFoundException,
+			EncryptionException, AuditFailedException, MultipleEntityException, EntityCreationException {
+		String label = id + "-AUDIT";
+		Graph graph = registryDao.getEntityById(label);
+		org.eclipse.rdf4j.model.Model model = RDF2Graph.convertGraph2RDFModel(graph, label);
+		logger.debug("RegistryServiceImpl : Audit Model : " + model);
+		frameEntity.setModel(model);
+		return frameEntity.getContent();
+	}
 }
