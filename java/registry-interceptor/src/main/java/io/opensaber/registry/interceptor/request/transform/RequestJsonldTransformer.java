@@ -2,8 +2,6 @@ package io.opensaber.registry.interceptor.request.transform;
 
 
 
-import org.springframework.stereotype.Component;
-
 import io.opensaber.registry.middleware.transform.commons.Data;
 import io.opensaber.registry.middleware.transform.commons.ResponseData;
 import io.opensaber.registry.middleware.transform.commons.TransformationException;

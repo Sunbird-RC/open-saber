@@ -62,7 +62,7 @@ public class RequestJsonTransformer implements IRequestTransformer<String> {
 
     private JsonNode loadDefaultMapping() throws IOException {
         InputStreamReader in = new InputStreamReader
-        		(new ClassPathResource("context_mapping.json").getInputStream());
+        		(new ClassPathResource("frame.json").getInputStream());
         String mappingJson = CharStreams.toString(in);
         		//(new InputStreamReader(
                 //(JsonToJsonLDTransformer.class.getClassLoader().getResourceAsStream(Configuration.MAPPING_FILE), "UTF-8"));
@@ -75,16 +75,30 @@ public class RequestJsonTransformer implements IRequestTransformer<String> {
     @Override
     public ResponseData<String> transform(Data<String> data) throws TransformationException {
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode input = mapper.readTree(data.getData());
-            ObjectNode result = constructJsonLd(input, fieldMapping);
-            String jsonldResult = mapper.writeValueAsString(result);
-            return new ResponseData<>(jsonldResult);
+            ObjectMapper mapper = new ObjectMapper();           
+            JsonNode input = mapper.readTree(data.getData());          
+            //ObjectNode result = constructJsonLd(input, fieldMapping);
+            JsonNode result = constructJsonLd(input);
+            logger.info("result "+result);
+            //String jsonldResult = mapper.writeValueAsString(result);
+            return new ResponseData<>(result.toString());
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
             throw new TransformationException(ex.getMessage(), ex, ErrorCode.JSON_TO_JSONLD_TRANFORMATION_ERROR);
         }
     }
+    private JsonNode constructJsonLd(JsonNode jsonNode){
+    	
+        ObjectNode locatedNode = jsonNode.path("request").deepCopy();
+        JsonNode contextNode = fieldMapping.path("@context");
+        ObjectNode newNode = locatedNode.put("@context", contextNode.toString());
+    	
+    	
+    	return newNode;
+    }
+    
+    
+    
 
     public ObjectNode constructJsonLd(JsonNode rootDataNode, JsonNode nodeMapping)
             throws NodeMappingNotDefinedException, IOException {
