@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -118,27 +117,26 @@ public class RegistryController {
 			//transformation for content.
 			IResponseTransformer<String> responseTransformer = responseTransformFactory.getInstance(accept);
 			ResponseData<String> resultContent = responseTransformer.transform(data);		
-			response.setContent(gson.fromJson(resultContent.getResponseData().toString(), mapType));
-			
-			//response.setResult(gson.fromJson(content, mapType));
-			responseParams.setStatus(Response.Status.SUCCESSFUL);
-			
+			//response.setContent(resultContent.getResponseData().toString());	
+						
+			response.setResult(gson.fromJson(resultContent.getResponseData().toString(), mapType));
+			responseParams.setStatus(Response.Status.SUCCESSFUL);			
 			watch.stop("RegistryController.readEntity");
-			//logger.info("RegistryController: entity for {} read !", response.getResult().toString());
+			logger.info("RegistryController: entity for {} read !", response.getResult().toString());
 
 		} catch (RecordNotFoundException e) {
 			logger.error("RegistryController: RecordNotFoundException while reading entity !", e);
-			response.setResult(null);
+			response.setContent(null);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 			responseParams.setErrmsg(e.getMessage());
 		} catch (UnsupportedOperationException e) {
 			logger.error("RegistryController: UnsupportedOperationException while reading entity !", e);
-			response.setResult(null);
+			response.setContent(null);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 			responseParams.setErrmsg(e.getMessage());
 		} catch (Exception e) {
 			logger.error("RegistryController: Exception while reading entity!", e);
-			response.setResult(null);
+			response.setContent(null);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 			responseParams.setErrmsg("Ding! You encountered an error!");
 		}

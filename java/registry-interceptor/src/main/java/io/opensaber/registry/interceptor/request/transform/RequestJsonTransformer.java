@@ -34,13 +34,7 @@ public class RequestJsonTransformer implements IRequestTransformer<String> {
         }
     }
 
-    private String mappingJson;
-/*    private JsonNode fieldMapping;
-    
-
-    public JsonNode getFieldMapping() {
-        return fieldMapping;
-    }*/
+    private String context;
 
     public static RequestJsonTransformer getInstance() {
         return instance;
@@ -53,10 +47,8 @@ public class RequestJsonTransformer implements IRequestTransformer<String> {
     private void loadDefaultMapping() throws IOException {
         InputStreamReader in = new InputStreamReader
         		(new ClassPathResource("frame.json").getInputStream());
-        mappingJson = CharStreams.toString(in);
-      
-/*        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readTree(mappingJson);*/
+        context = CharStreams.toString(in);
+
     }
 
     @Override
@@ -64,18 +56,14 @@ public class RequestJsonTransformer implements IRequestTransformer<String> {
         try {
             ObjectMapper mapper = new ObjectMapper();           
             ObjectNode input =(ObjectNode) mapper.readTree(data.getData().toString());          
-            ObjectNode fieldObjects = (ObjectNode) mapper.readTree(mappingJson);
+            ObjectNode fieldObjects = (ObjectNode) mapper.readTree(context);
             
-           // ObjectNode node = (ObjectNode) new ObjectMapper().readTree(input.path("request").toString());
-
             ObjectNode requestnode = (ObjectNode) input.path("request");
             logger.info("Object requestnode "+requestnode);
-            logger.info("Object inputnode "+input);
             String type = getTypeFromNode(requestnode);
             requestnode.setAll(fieldObjects);            
 
             String jsonldResult = mapper.writeValueAsString(input);
-            //read the root node: as type[entity]            
             return new ResponseData<>(jsonldResult.replace("<@type>", type));
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
@@ -94,25 +82,8 @@ public class RequestJsonTransformer implements IRequestTransformer<String> {
 				}
 			}
     	}
-    	//requestNode.path("")set("<@type>", rootValue);
-        //String jsonldResult =new ObjectMapper().writeValueAsString(requestNode).replace("<@type>", type);
     	return rootValue;
     }
-    
-    private String getJsonldWithType(ObjectNode requestNode) throws JsonProcessingException{ 
-    	String type ="";   	
-    	if (requestNode.isObject()) {
-			Iterator<Map.Entry<String, JsonNode>> fieldsO = requestNode.fields();
 
-			while (fieldsO.hasNext()) {
-				Map.Entry<String, JsonNode> entryO = fieldsO.next();
-				if (!entryO.getValue().isValueNode()) {
-					type = entryO.getKey();
-				}
-			}
-    	}
-        String jsonldResult =new ObjectMapper().writeValueAsString(requestNode).replace("<@type>", type);
-    	return jsonldResult;
-    }
 
 }
