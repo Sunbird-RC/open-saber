@@ -113,11 +113,12 @@ public class RegistryController {
 
 			String content = registryService.getEntityFramedById(entityId);
 			logger.info("RegistryController: Json string "+ content );
+			
 			Data<String> data = new Data<String>(content);
 			//transformation for content.
 			IResponseTransformer<String> responseTransformer = responseTransformFactory.getInstance(accept);
 			ResponseData<String> resultContent = responseTransformer.transform(data);		
-			response.setContent(resultContent.getResponseData().toString());
+			response.setContent(gson.fromJson(resultContent.getResponseData().toString(), mapType));
 			
 			//response.setResult(gson.fromJson(content, mapType));
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
