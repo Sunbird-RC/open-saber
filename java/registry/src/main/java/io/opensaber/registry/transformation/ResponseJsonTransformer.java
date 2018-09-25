@@ -49,74 +49,77 @@ public class ResponseJsonTransformer implements IResponseTransformer<String> {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode input = mapper.readTree(data.getData());
             //TODO: remove prefix + add Teacher root node.
-            constructJson(input,data.getData());            
-            //String jsonldResult = mapper.writeValueAsString(result);
-            return new ResponseData<>(result.toString());
+            constructJson(input);            
+            String jsonldResult = mapper.writeValueAsString(result);
+            return new ResponseData<>(jsonldResult);
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
             throw new TransformationException(ex.getMessage(), ex, ErrorCode.JSONLD_TO_JSON_TRANFORMATION_ERROR);
         }
     }
     
-    private void constructJson(JsonNode rootDataNode,String json) throws IOException, ParseException {
+    private void constructJson(JsonNode rootDataNode) throws IOException, ParseException {
 
-    	String dataNodeType = "";
-        JsonNode framedJsonldNode = rootDataNode.path(JsonldConstants.GRAPH);
-        
+    	JsonNode framedJsonldNode = rootDataNode.path(JsonldConstants.GRAPH);
         for (JsonNode dataNode : framedJsonldNode) {
-            dataNodeType = dataNode.path(JsonldConstants.TYPE).asText();
             processObjectNode(dataNode);
             logger.info("result objectnode "+result);
         }
-
     }
-    // TODO: needs to set the root node + furthur refactor code.
-    private void processObjectNode(JsonNode node){
-		
-        	Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
 
+    private void processObjectNode(JsonNode node){
+
+        	Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
             while (fields.hasNext()) {
             	Map.Entry<String, JsonNode> entry = fields.next();
- 
-            		if(entry.getValue().isValueNode()){
-            			if(!(entry.getKey().toString().equalsIgnoreCase("@id") || entry.getKey().toString().equalsIgnoreCase("@type"))){
-                			result.set(entry.getKey().toString(), entry.getValue());
-            			}
+    			logger.info("node as object key, "+entry.getKey());
 
-            		}else if(entry.getValue().isArray()){
-            			ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
-            			for(int i=0;i< entry.getValue().size();i++){
-            				if(entry.getValue().get(i).isObject()){
-
-            					ObjectNode jsonNode= getJsonNodes(entry.getValue().get(i));
-                                arrayNode.add(jsonNode); 
-            				}
-            			}
-            			result.set(entry.getKey(), arrayNode);
-
-            		}else if(entry.getValue().isObject()){
+            	if(entry.getValue().isObject()){
             			ObjectNode jsonNode = getJsonNodes(entry.getValue());
             			result.set(entry.getKey(), jsonNode);
-            }
+            		}
+            		//else throw error.
     	}
-
     }
     
-    private ObjectNode getJsonNodes(JsonNode node){
-    	ObjectNode result = JsonNodeFactory.instance.objectNode();
-    	if(node.isObject()){
-    		Iterator<Map.Entry<String, JsonNode>> fieldsO = node.fields();
-    		
-    		while (fieldsO.hasNext()) {
-    			Map.Entry<String, JsonNode> entryO = fieldsO.next();
+	private ObjectNode getJsonNodes(JsonNode node) {
+		ObjectNode result = JsonNodeFactory.instance.objectNode();
+		if (node.isObject()) {
+			Iterator<Map.Entry<String, JsonNode>> fieldsO = node.fields();
 
-    			if (entryO.getValue().isValueNode()) {
-    				if (!(entryO.getKey().toString().equalsIgnoreCase("@id") || entryO.getKey().toString().equalsIgnoreCase("@type"))) {
-    					result.set(entryO.getKey().toString(), entryO.getValue());
-    				}
-    			}
-    		}
-    	}
-    	return result;
+			while (fieldsO.hasNext()) {
+				Map.Entry<String, JsonNode> entryO = fieldsO.next();
+				logger.info("node as key.............., " + entryO.getKey());
+				
+				if (entryO.getValue().isValueNode()) {
+					logger.info("node as value key, " + entryO.getKey());
+
+					if (!(entryO.getKey().toString().equalsIgnoreCase("@id")
+							|| entryO.getKey().toString().equalsIgnoreCase("@type"))) {
+						result.set(entryO.getKey().toString(), entryO.getValue());
+					}
+				} else if (entryO.getValue().isArray()) {
+					logger.info("node as Array key, " + entryO.getKey());
+					ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
+					for (int i = 0; i < entryO.getValue().size(); i++) {
+						if (entryO.getValue().get(i).isObject()) {
+							ObjectNode jsonNode = getJsonNodes(entryO.getValue().get(i));
+							arrayNode.add(jsonNode);
+						}else{
+							ObjectNode jsonNode = getJsonNodes(entryO.getValue());
+							arrayNode.add(jsonNode);
+						}
+					}
+					result.set(entryO.getKey(), arrayNode);
+				} else if (!entryO.getValue().isValueNode()) {
+					logger.info("node as !value key, " + entryO.getKey());
+
+					ObjectNode jsonNode = getJsonNodes(entryO.getValue());
+					result.set(entryO.getKey(), jsonNode);
+				}
+			}
+		}
+		return result;
 	}
+	
 }
