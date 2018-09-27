@@ -2,10 +2,10 @@ package io.opensaber.registry.controller;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import io.opensaber.pojos.*;
 import io.opensaber.registry.middleware.transform.commons.Data;
-import io.opensaber.registry.middleware.transform.commons.ResponseData;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.util.JSONUtil;
 
@@ -66,6 +66,8 @@ public class RegistryController {
 	@Autowired
 	private OpenSaberInstrumentation watch;
 	
+	private List<String> keyToTrim = new java.util.ArrayList<>();
+	
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
 	public ResponseEntity<Response> add(@RequestAttribute Request requestModel, 
 			@RequestParam(value="id", required = false) String id, @RequestParam(value="prop", required = false) String property) {
@@ -113,16 +115,14 @@ public class RegistryController {
 			String content = registryService.getEntityFramedById(entityId);
 			logger.info("RegistryController: Json string "+ content );
 			
-			Data<String> data = new Data<String>(content);
+			Data<Object> data = new Data<Object>(content);
 			//transformation for content.
-			IResponseTransformer<String> responseTransformer = responseTransformFactory.getInstance(accept);
-			ResponseData<String> resultContent = responseTransformer.transform(data);		
-			//response.setContent(resultContent.getResponseData().toString());	
+			IResponseTransformer<Object> responseTransformer = responseTransformFactory.getInstance(accept);
+			Data<Object> responseContent = responseTransformer.transform(data,getKeysToTrim());		
+			response.setContent(responseContent.getData());	
 						
-			response.setResult(gson.fromJson(resultContent.getResponseData().toString(), mapType));
 			responseParams.setStatus(Response.Status.SUCCESSFUL);			
 			watch.stop("RegistryController.readEntity");
-			logger.info("RegistryController: entity for {} read !", response.getResult().toString());
 
 		} catch (RecordNotFoundException e) {
 			logger.error("RegistryController: RecordNotFoundException while reading entity !", e);
@@ -164,12 +164,13 @@ public class RegistryController {
 			}*/
 
 			String jenaJson = searchService.searchFramed(rdf);
-			Data<String> data = new Data<String>(jenaJson);
+/*			Data<String> data = new Data<String>(jenaJson);
 			//transformation for content.
 			IResponseTransformer<String> responseTransformer = responseTransformFactory.getInstance(accept);
-			ResponseData<String> resultContent = responseTransformer.transform(data);
+			Data<String> resultContent = responseTransformer.transform(data,getKeysToTrim());
 			
-			response.setContent(resultContent.getResponseData());	
+			response.setContent(resultContent.getData());	*/		
+			//response.setResult(gson.fromJson(resultContent.getResponseData().toString(), mapType));
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
 			watch.stop("RegistryController.searchEntity");
 		} catch (AuditFailedException | RecordNotFoundException | TypeNotProvidedException e) {
@@ -253,10 +254,10 @@ public class RegistryController {
 				String jenaJson = registryService.getAuditNodeFramed(entityId);
 				Data<String> data = new Data<String>(jenaJson);
 				//transformation for content.
-				IResponseTransformer<String> responseTransformer = responseTransformFactory.getInstance(accept);
-				ResponseData<String> resultContent = responseTransformer.transform(data);
+/*				IResponseTransformer<String> responseTransformer = responseTransformFactory.getInstance(accept);
+				Data<String> resultContent = responseTransformer.transform(data,getKeysToTrim());
 				
-				response.setContent(resultContent.getResponseData());
+				response.setContent(resultContent.getData());*/
 				responseParams.setStatus(Response.Status.SUCCESSFUL);
 				watch.stop("RegistryController.fetchAudit");
 				logger.debug("Controller: audit records fetched !");
@@ -307,4 +308,12 @@ public class RegistryController {
 		}
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+
+	private List<String> getKeysToTrim(){
+		keyToTrim.add("@id");
+		keyToTrim.add("@type");
+		return keyToTrim;
+		
+	}
+	
 }

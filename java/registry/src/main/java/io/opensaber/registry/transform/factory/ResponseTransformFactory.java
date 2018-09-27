@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component;
 
 
 import io.opensaber.registry.transformation.IResponseTransformer;
-import io.opensaber.registry.transformation.ResponseJsonTransformer;
-import io.opensaber.registry.transformation.ResponseJsonldTransformer;
+import io.opensaber.registry.transformation.JsonToLdTransformer;
+import io.opensaber.registry.transformation.JsonldToLdTransformer;
 
 @Component
 public class ResponseTransformFactory {
@@ -17,26 +17,26 @@ public class ResponseTransformFactory {
 	
 
 	@Autowired
-	private ResponseJsonTransformer responseJsonTransformer;
+	private JsonToLdTransformer jsonTransformer;
 	
 	@Autowired
-	private ResponseJsonldTransformer responseJsonldTransformer;
+	private JsonldToLdTransformer jsonldTransformer;
 	
-	public IResponseTransformer<String> getInstance(MediaType type){
-		IResponseTransformer<String> responseTransformer = null;
+	public IResponseTransformer<Object> getInstance(MediaType type){
+		IResponseTransformer<Object> responseTransformer = null;
 
 		switch(type.toString()){
 					
 		case MEDIATYPE_APPLICATION_JSONLD:
-			responseTransformer = responseJsonldTransformer;
+			responseTransformer = jsonldTransformer;
 			break;
 			
 		case MediaType.APPLICATION_JSON_VALUE:
-			responseTransformer = responseJsonTransformer;
+			responseTransformer = jsonTransformer;
 			break;
 		
 		default:
-			responseTransformer = responseJsonldTransformer;
+			responseTransformer = jsonldTransformer;
 			//throw new NotSupportedTypeException(EXCEPTION_MESSAGE);
 		
 		}		

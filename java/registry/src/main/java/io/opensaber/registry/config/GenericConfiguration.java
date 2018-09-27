@@ -3,7 +3,8 @@ package io.opensaber.registry.config;
 import java.io.IOException;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.authorization.KeyCloakServiceImpl;
-import io.opensaber.registry.sink.*;
+import io.opensaber.registry.exception.CustomException;
+import io.opensaber.registry.exception.CustomExceptionHandler;
 
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.client.HttpClient;
@@ -24,14 +25,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import es.weso.schema.Schema;
 import io.opensaber.registry.authorization.AuthorizationFilter;
-import io.opensaber.registry.exception.CustomException;
-import io.opensaber.registry.exception.CustomExceptionHandler;
 import io.opensaber.registry.interceptor.AuthorizationInterceptor;
 import io.opensaber.registry.interceptor.RDFConversionInterceptor;
 import io.opensaber.registry.interceptor.RDFValidationInterceptor;
 import io.opensaber.registry.interceptor.RDFValidationMappingInterceptor;
-import io.opensaber.registry.interceptor.request.transform.RequestJsonTransformer;
-import io.opensaber.registry.interceptor.request.transform.RequestJsonldTransformer;
+import io.opensaber.registry.interceptor.request.transform.JsonToLdRequestTransformer;
+import io.opensaber.registry.interceptor.request.transform.JsonldToLdRequestTransformer;
 import io.opensaber.registry.interceptor.request.transform.RequestTransformFactory;
 import io.opensaber.registry.middleware.Middleware;
 import io.opensaber.registry.middleware.impl.RDFConverter;
@@ -41,6 +40,12 @@ import io.opensaber.registry.middleware.impl.JSONLDConverter;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.schema.config.SchemaConfigurator;
+import io.opensaber.registry.sink.DatabaseProvider;
+import io.opensaber.registry.sink.JanusGraphStorage;
+import io.opensaber.registry.sink.Neo4jGraphProvider;
+import io.opensaber.registry.sink.OrientDBGraphProvider;
+import io.opensaber.registry.sink.SqlgProvider;
+import io.opensaber.registry.sink.TinkerGraphProvider;
 
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.HandlerExceptionResolver;
@@ -108,12 +113,12 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 	
 	@Bean
-	public RequestJsonTransformer requestJsonTransformer(){
-		return RequestJsonTransformer.getInstance();
+	public JsonToLdRequestTransformer jsonToLdRequestTransformer(){
+		return JsonToLdRequestTransformer.getInstance();
 	}
 	@Bean
-	public RequestJsonldTransformer requestJsonldTransformer(){
-		return new RequestJsonldTransformer();
+	public JsonldToLdRequestTransformer jsonldToLdRequestTransformer(){
+		return new JsonldToLdRequestTransformer();
 	}
 
     @Bean

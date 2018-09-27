@@ -11,26 +11,26 @@ public class RequestTransformFactory {
 	
 
 	@Autowired
-	private RequestJsonTransformer resquestJsonTransformer;
+	private JsonToLdRequestTransformer jsonToLdRequestTransformer;
 	
 	@Autowired
-	private RequestJsonldTransformer requestJsonldTransformer;
+	private JsonldToLdRequestTransformer jsonldToLdRequestTransformer;
 	
-	public IRequestTransformer<String> getInstance(String type){
-		IRequestTransformer<String> responseTransformer = null;
+	public IRequestTransformer<Object> getInstance(String type){
+		IRequestTransformer<Object> responseTransformer = null;
 
 		switch(type.toLowerCase()){
 					
 		case MEDIATYPE_APPLICATION_JSONLD:
-			responseTransformer = requestJsonldTransformer;
+			responseTransformer = jsonldToLdRequestTransformer;
 			break;
 			
 		case MEDIATYPE_APPLICATION_JSON:
-			responseTransformer = resquestJsonTransformer;
+			responseTransformer = jsonToLdRequestTransformer;
 			break;
 		
 		default:
-			responseTransformer = requestJsonldTransformer;
+			responseTransformer = jsonldToLdRequestTransformer;
 			//throw new NotSupportedTypeException(EXCEPTION_MESSAGE);
 		
 		}		
