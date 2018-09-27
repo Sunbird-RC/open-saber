@@ -24,74 +24,50 @@ import java.text.ParseException;
 import java.util.*;
 
 @Component
-public class ResponseJsonTransformer implements IResponseTransformer<String> {
+public class JsonToLdTransformer implements IResponseTransformer<Object> {
 
-    private static ResponseJsonTransformer instance;
-    private static Logger logger = LoggerFactory.getLogger(ResponseJsonTransformer.class);
-    ObjectNode result = JsonNodeFactory.instance.objectNode();
-
-    static {
-        try {
-            instance = new ResponseJsonTransformer();
-        } catch (Exception ex) {
-            throw new ExceptionInInitializerError(ex);
-        }
-    }
-
-
-    public static ResponseJsonTransformer getInstance() {
-        return instance;
-    }
+    //private static ResponseJsonTransformer instance;
+    private static Logger logger = LoggerFactory.getLogger(JsonToLdTransformer.class);
+    private List<String> keysToTrim = new ArrayList<>();
     
-    
-    public ResponseData<String> transform(Data<String> data) throws TransformationException {
+    public Data<Object> transform(Data<Object> data, List<String> keysToTrim) throws TransformationException {
         try {
             ObjectMapper mapper = new ObjectMapper();
-            JsonNode input = mapper.readTree(data.getData());
+            ObjectNode input = (ObjectNode)mapper.readTree(data.getData().toString());
             //TODO: remove prefix
-            constructJson(input);                       
-            return new ResponseData<>(result.toString());
+            JsonNode jsonNode = getconstructedJson(input, keysToTrim);                       
+            return new Data<>(jsonNode);
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
             throw new TransformationException(ex.getMessage(), ex, ErrorCode.JSONLD_TO_JSON_TRANFORMATION_ERROR);
         }
     }
     
-    private void constructJson(JsonNode rootDataNode) throws IOException, ParseException {
+    private JsonNode getconstructedJson(JsonNode rootDataNode, List<String> keysToTrim) throws IOException, ParseException {
 
-    	JsonNode framedJsonldNode = rootDataNode.path(JsonldConstants.GRAPH);
-        for (JsonNode dataNode : framedJsonldNode) {
-            processObjectNode(dataNode);
-        }
+    	JsonNode graphNode = rootDataNode.path(JsonldConstants.GRAPH).get(0);  
+        setKeysToTrim(keysToTrim);
+    	if(keysToTrim.size()!=0)
+    		return trimedKeyOfNodes (graphNode);
+    	return graphNode;
     }
 
-    private void processObjectNode(JsonNode node){
-    	
-    	logger.info("node type "+node.getNodeType());
-		result = getJsonNodes(node);
-    	logger.info("construct json node, "+result);
-
-    }
-    
-	private ObjectNode getJsonNodes(JsonNode node) {
+	private ObjectNode trimedKeyOfNodes(JsonNode node) {
 		ObjectNode result = JsonNodeFactory.instance.objectNode();
 		Iterator<Map.Entry<String, JsonNode>> fieldsO = node.fields();
-
 		while (fieldsO.hasNext()) {
 			Map.Entry<String, JsonNode> entryO = fieldsO.next();
 
 			if (entryO.getValue().isValueNode()) {
-
-				if (!(entryO.getKey().toString().equalsIgnoreCase("@id")
-						|| entryO.getKey().toString().equalsIgnoreCase("@type"))) {
+				if(!keysToTrim.contains(entryO.getKey()))
 					result.set(entryO.getKey().toString(), entryO.getValue());
-				}
+
 			} else if (entryO.getValue().isArray()) {
 				ArrayNode arrayNode = getArrayNode(entryO);
 				result.set(entryO.getKey(), arrayNode);
 
 			} else if (!entryO.getValue().isValueNode()) {
-				ObjectNode jsonNode = getJsonNodes(entryO.getValue());
+				ObjectNode jsonNode = trimedKeyOfNodes(entryO.getValue());
 				result.set(entryO.getKey(), jsonNode);
 			}
 		}
@@ -103,7 +79,7 @@ public class ResponseJsonTransformer implements IResponseTransformer<String> {
 		ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
 		for (int i = 0; i < entry.getValue().size(); i++) {
 			if (entry.getValue().get(i).isObject()) {
-				ObjectNode jsonNode = getJsonNodes(entry.getValue().get(i));
+				ObjectNode jsonNode = trimedKeyOfNodes(entry.getValue().get(i));
 				arrayNode.add(jsonNode);
 			}else if(entry.getValue().get(i).isValueNode()){
 				arrayNode.add(entry.getValue().get(i));
@@ -111,6 +87,10 @@ public class ResponseJsonTransformer implements IResponseTransformer<String> {
 		}
 		
 		return  arrayNode;
+	}
+	
+	private void setKeysToTrim(List<String> keysToTrim){
+		this.keysToTrim = keysToTrim;
 	}
 
 }

@@ -1,7 +1,6 @@
 package io.opensaber.registry.interceptor.request.transform;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.io.CharStreams;
@@ -18,29 +17,26 @@ import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Iterator;
-import java.util.Map;
 
-public class RequestJsonTransformer implements IRequestTransformer<String> {
+public class JsonToLdRequestTransformer implements IRequestTransformer<Object> {
 
-    private static RequestJsonTransformer instance;
-    private static Logger logger = LoggerFactory.getLogger(RequestJsonTransformer.class);
+    private static JsonToLdRequestTransformer instance;
+    private static Logger logger = LoggerFactory.getLogger(JsonToLdRequestTransformer.class);
+    private String context;
 
+    
     static {
         try {
-            instance = new RequestJsonTransformer();
+            instance = new JsonToLdRequestTransformer();
         } catch (IOException ex) {
             throw new ExceptionInInitializerError(ex);
         }
     }
-
-    private String context;
-
-    public static RequestJsonTransformer getInstance() {
+    public static JsonToLdRequestTransformer getInstance() {
         return instance;
     }
 
-    public RequestJsonTransformer() throws IOException {
+    public JsonToLdRequestTransformer() throws IOException {
          loadDefaultMapping();
     }
 
@@ -52,7 +48,7 @@ public class RequestJsonTransformer implements IRequestTransformer<String> {
     }
 
     @Override
-    public ResponseData<String> transform(Data<String> data) throws TransformationException {
+    public Data<Object> transform(Data<Object> data) throws TransformationException {
         try {
             ObjectMapper mapper = new ObjectMapper();           
             ObjectNode input =(ObjectNode) mapper.readTree(data.getData().toString());          
@@ -64,23 +60,17 @@ public class RequestJsonTransformer implements IRequestTransformer<String> {
             requestnode.setAll(fieldObjects);            
 
             String jsonldResult = mapper.writeValueAsString(input);
-            return new ResponseData<>(jsonldResult.replace("<@type>", type));
+            return new Data<>(jsonldResult.replace("<@type>", type));
         } catch (Exception ex) {
             logger.error(ex.getMessage(), ex);
             throw new TransformationException(ex.getMessage(), ex, ErrorCode.JSON_TO_JSONLD_TRANFORMATION_ERROR);
         }
     }
     private String getTypeFromNode(ObjectNode requestNode) throws JsonProcessingException{ 
-    	String rootValue ="";   	
+    	String rootValue =""; 
     	if (requestNode.isObject()) {
-			Iterator<Map.Entry<String, JsonNode>> fieldsO = requestNode.fields();
-
-			while (fieldsO.hasNext()) {
-				Map.Entry<String, JsonNode> entryO = fieldsO.next();
-				if (!entryO.getValue().isValueNode()) {
-					rootValue = entryO.getKey();
-				}
-			}
+    		logger.info("information "+requestNode.fields().next().getKey());
+    		rootValue = requestNode.fields().next().getKey();
     	}
     	return rootValue;
     }

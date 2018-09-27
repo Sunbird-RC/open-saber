@@ -16,10 +16,7 @@ import io.opensaber.registry.interceptor.handler.BaseRequestHandler;
 import io.opensaber.registry.interceptor.request.transform.RequestTransformFactory;
 import io.opensaber.registry.middleware.Middleware;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
-import io.opensaber.registry.middleware.impl.RDFConverter;
 import io.opensaber.registry.middleware.transform.commons.Data;
-import io.opensaber.registry.middleware.transform.commons.ResponseData;
-
 import io.opensaber.registry.middleware.util.Constants;
 
 @Component
@@ -51,11 +48,11 @@ public class RDFConversionInterceptor implements HandlerInterceptor{
 			//transform request to JsonLd.
 			String json = baseRequestHandler.getRequestBody();
 			logger.info("json requestBody RDFConversionInterceptor"+ json);
-			Data<String> jsonData = new Data<String>(json);
-			ResponseData<String> jsonlsData = requestTransformFactory.getInstance(request.getContentType()).transform(jsonData);
+			Data<Object> jsonData = new Data<Object>(json);
+			Data<Object> jsonlsData = requestTransformFactory.getInstance(request.getContentType()).transform(jsonData);
 			
 			//setting the BaseRequestHandler requestBody as jsonld data. 
-			baseRequestHandler.setRequestBody(jsonlsData.getResponseData());
+			baseRequestHandler.setRequestBody(jsonlsData.getData().toString());
 			watch.start("RDFConversionInterceptor.execute");
 			Map<String, Object> attributeMap = rdfConverter.execute(baseRequestHandler.getRequestBodyMap());
 			baseRequestHandler.mergeRequestAttributes(attributeMap);
