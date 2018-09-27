@@ -107,19 +107,6 @@ public class RegistryServiceImpl implements RegistryService {
 		return model;
 	}
 
-	/*@Override
-	public boolean deleteEntity(Model rdfModel) throws AuditFailedException, RecordNotFoundException{
-		StmtIterator iterator = rdfModel.listStatements();
-		Graph graph = GraphDBFactory.getEmptyGraph();
-		while (iterator.hasNext()) {
-			Statement rdfStatement = iterator.nextStatement();
-			org.eclipse.rdf4j.model.Statement rdf4jStatement = JenaRDF4J.asrdf4jStatement(rdfStatement);
-			graph = RDF2Graph.convertRDFStatement2Graph(rdf4jStatement, graph);
-		}
-
-		return registryDao.deleteEntity(graph, "");
-	}*/
-
 	public HealthCheckResponse health() throws Exception {
 		HealthCheckResponse healthCheck;
 		boolean encryptionServiceStatusUp = encryptionService.isEncryptionServiceUp();
@@ -135,75 +122,6 @@ public class RegistryServiceImpl implements RegistryService {
 		logger.info("Heath Check :  encryptionHealthInfo  {} \n\t  databaseServiceInfo {} ", checks.get(0), checks.get(1));
 		return healthCheck;
 	}
-
-	/*
-	 * (non-Javadoc) frameEntity as generic, moved to factory impl for jsonld.
-	 * @see io.opensaber.registry.service.RegistryService#frameEntity(org.eclipse.rdf4j.model.Model)
-	 */
-/*	@Override
-	public String frameEntity(org.eclipse.rdf4j.model.Model entityModel) throws IOException, MultipleEntityException, EntityCreationException {
-		Model jenaEntityModel = JenaRDF4J.asJenaModel(entityModel);		
-		Resource root = getRootNode(jenaEntityModel);
-		String rootLabelType = getTypeForRootLabel(jenaEntityModel, root);
-		logger.debug("RegistryServiceImpl : jenaEntityModel for framing: {} \n root : {}, \n rootLabelType: {}",jenaEntityModel,root,rootLabelType);
-		DatasetGraph g = DatasetFactory.create(jenaEntityModel).asDatasetGraph();
-		JsonLDWriteContext ctx = new JsonLDWriteContext();
-		InputStream is = this.getClass().getClassLoader().getResourceAsStream(frameFile);
-		String fileString = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
-		fileString = fileString.replace("<@type>", rootLabelType);
-		ctx.setFrame(fileString);
-		WriterDatasetRIOT w = RDFDataMgr.createDatasetWriter(org.apache.jena.riot.RDFFormat.JSONLD_FRAME_FLAT);
-		PrefixMap pm = RiotLib.prefixMap(g);
-		String base = null;
-		StringWriter sWriterJena = new StringWriter();
-		w.write(sWriterJena, g, pm, base, ctx);
-		String jenaJSON = sWriterJena.toString();
-		logger.debug("RegistryServiceImpl : jenaJSON for framing : {}", jenaJSON);
-		return jenaJSON;
-	}
-	
-	@Override
-	public String frameSearchEntity(org.eclipse.rdf4j.model.Model entityModel) throws IOException, MultipleEntityException, EntityCreationException {
-		Model jenaEntityModel = JenaRDF4J.asJenaModel(entityModel);
-		String jenaJSON = "";
-		if(!jenaEntityModel.isEmpty()){
-			String rootLabelType = getTypeForSearch(jenaEntityModel);
-			logger.debug("RegistryServiceImpl : jenaEntityModel for framing: {} \n root : {}, \n rootLabelType: {}",jenaEntityModel,rootLabelType);
-			DatasetGraph g = DatasetFactory.create(jenaEntityModel).asDatasetGraph();
-			JsonLDWriteContext ctx = new JsonLDWriteContext();
-			InputStream is = this.getClass().getClassLoader().getResourceAsStream(frameFile);
-			String fileString = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
-			fileString = fileString.replace("<@type>", rootLabelType);
-			ctx.setFrame(fileString);
-			WriterDatasetRIOT w = RDFDataMgr.createDatasetWriter(org.apache.jena.riot.RDFFormat.JSONLD_FRAME_FLAT);
-			PrefixMap pm = RiotLib.prefixMap(g);
-			String base = null;
-			StringWriter sWriterJena = new StringWriter();
-			w.write(sWriterJena, g, pm, base, ctx);
-			jenaJSON = sWriterJena.toString();
-		}
-		logger.debug("RegistryServiceImpl : jenaJSON for framing : {}", jenaJSON);
-		return jenaJSON;
-	}
-	
-	@Override
-	public String frameAuditEntity(org.eclipse.rdf4j.model.Model entityModel) throws IOException {
-		Model jenaEntityModel = JenaRDF4J.asJenaModel(entityModel);
-		logger.debug("RegistryServiceImpl : jenaEntityModel for audit-framing: {} ",jenaEntityModel);
-		DatasetGraph g = DatasetFactory.create(jenaEntityModel).asDatasetGraph();
-		JsonLDWriteContext ctx = new JsonLDWriteContext();
-		InputStream is = this.getClass().getClassLoader().getResourceAsStream(auditFrameFile);
-		String fileString = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
-		ctx.setFrame(fileString);
-		WriterDatasetRIOT w = RDFDataMgr.createDatasetWriter(org.apache.jena.riot.RDFFormat.JSONLD_FRAME_FLAT);
-		PrefixMap pm = RiotLib.prefixMap(g);
-		String base = null;
-		StringWriter sWriterJena = new StringWriter();
-		w.write(sWriterJena, g, pm, base, ctx);
-		String jenaJSON = sWriterJena.toString();
-		logger.debug("RegistryServiceImpl : jenaJSON for audit-framing: {}", jenaJSON);
-		return jenaJSON;
-	}*/
 	
 	@Override
 	public org.eclipse.rdf4j.model.Model getAuditNode(String id) throws IOException, NoSuchElementException, RecordNotFoundException,
@@ -242,9 +160,7 @@ public class RegistryServiceImpl implements RegistryService {
 		}
 		return label;
 	}
-	/*
-	 * to mode out in utils.
-	 */
+
 	private Resource getRootNode(Model entity) throws EntityCreationException, MultipleEntityException{
 		List<Resource> rootLabels = RDFUtil.getRootLabels(entity);
 		if (rootLabels.size() == 0) {
@@ -255,26 +171,6 @@ public class RegistryServiceImpl implements RegistryService {
 			return rootLabels.get(0);
 		}
 	}
-/*	private String getTypeForRootLabel(Model entity, Resource root) throws EntityCreationException, MultipleEntityException{
-		List<String> rootLabelType = RDFUtil.getTypeForSubject(entity, root);
-		if (rootLabelType.size() == 0) {
-			throw new EntityCreationException(Constants.NO_ENTITY_AVAILABLE_MESSAGE);
-		} else if (rootLabelType.size() > 1) {
-			throw new MultipleEntityException(Constants.ADD_UPDATE_MULTIPLE_ENTITIES_MESSAGE);
-		} else {
-			return rootLabelType.get(0);
-		}
-	}
-	
-	
-	private String getTypeForSearch(Model entity) throws EntityCreationException, MultipleEntityException{
-		List<Resource> rootLabels = RDFUtil.getRootLabels(entity);
-		if (rootLabels.size() == 0) {
-			throw new EntityCreationException(Constants.NO_ENTITY_AVAILABLE_MESSAGE);
-		} else {
-			return getTypeForRootLabel(entity, rootLabels.get(0));
-		}
-	}*/
 
 	@Override
 	public String getEntityFramedById(String id)
