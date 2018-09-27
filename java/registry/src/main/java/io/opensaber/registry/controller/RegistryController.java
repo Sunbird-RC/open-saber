@@ -164,12 +164,12 @@ public class RegistryController {
 			}*/
 
 			String jenaJson = searchService.searchFramed(rdf);
-/*			Data<String> data = new Data<String>(jenaJson);
+			Data<Object> data = new Data<>(jenaJson);
 			//transformation for content.
-			IResponseTransformer<String> responseTransformer = responseTransformFactory.getInstance(accept);
-			Data<String> resultContent = responseTransformer.transform(data,getKeysToTrim());
+			IResponseTransformer<Object> responseTransformer = responseTransformFactory.getInstance(accept);
+			Data<Object> resultContent = responseTransformer.transform(data,getKeysToTrim());			
+			response.setContent(resultContent.getData());	
 			
-			response.setContent(resultContent.getData());	*/		
 			//response.setResult(gson.fromJson(resultContent.getResponseData().toString(), mapType));
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
 			watch.stop("RegistryController.searchEntity");
@@ -191,6 +191,7 @@ public class RegistryController {
 	@RequestMapping(value = "/update", method = RequestMethod.POST)
 	public ResponseEntity<Response> update(@RequestAttribute Request requestModel) {
 		Model rdf = (Model) requestModel.getRequestMap().get("rdf");
+		logger.info("rdf model for update "+requestModel.getRequestMap().get("rdf"));
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.UPDATE, "OK", responseParams);
 

@@ -8,6 +8,6 @@ import io.opensaber.registry.middleware.transform.commons.TransformationExceptio
 
 public interface IResponseTransformer<T> {
 
-    Data<T> transform(Data<T> data, List<String> keyToTrim) throws TransformationException, IOException;
+    Data<T> transform(Data<Object> data, List<String> keyToTrim) throws TransformationException, IOException;
 
 }
