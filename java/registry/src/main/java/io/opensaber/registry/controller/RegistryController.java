@@ -1,11 +1,12 @@
 package io.opensaber.registry.controller;
 
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import io.opensaber.pojos.*;
 import io.opensaber.registry.middleware.transform.commons.Data;
+import io.opensaber.registry.middleware.transform.commons.ErrorCode;
+import io.opensaber.registry.middleware.transform.commons.TransformationException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.util.JSONUtil;
 
@@ -26,9 +27,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
 import io.opensaber.registry.exception.AuditFailedException;
 import io.opensaber.registry.exception.DuplicateRecordException;
 import io.opensaber.registry.exception.EntityCreationException;
@@ -36,8 +34,8 @@ import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.exception.TypeNotProvidedException;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
-import io.opensaber.registry.transform.factory.ResponseTransformFactory;
 import io.opensaber.registry.transformation.IResponseTransformer;
+import io.opensaber.registry.transformation.ResponseTransformFactory;
 
 
 @RestController
@@ -53,9 +51,6 @@ public class RegistryController {
 
 	@Value("${registry.context.base}")
 	private String registryContext;
-
-	private Gson gson = new Gson();
-	private Type mapType = new TypeToken<Map<String, Object>>(){}.getType();
 	
 	@Value("${audit.enabled}")
 	private boolean auditEnabled;
@@ -98,7 +93,12 @@ public class RegistryController {
 		}
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-
+	/**
+	 * 
+	 * @param id
+	 * @param accept, only one mime type is supported.
+	 * @return
+	 */
 	@RequestMapping(value = "/read/{id}", method = RequestMethod.GET)
 	public ResponseEntity<Response> readEntity(@PathVariable("id") String id,
 			@RequestHeader(value="Accept") MediaType accept) {
@@ -106,24 +106,22 @@ public class RegistryController {
 		String entityId = registryContext + id;
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
-
 		logger.info("RegistryController: entity acceptType ", accept);
 		
 		try {
 			watch.start("RegistryController.readEntity");		
-
 			String content = registryService.getEntityFramedById(entityId);
 			logger.info("RegistryController: Json string "+ content );
 			
 			Data<Object> data = new Data<Object>(content);
 			//transformation for content.
 			IResponseTransformer<Object> responseTransformer = responseTransformFactory.getInstance(accept);
-			Data<Object> responseContent = responseTransformer.transform(data,getKeysToTrim());		
+			Data<Object> responseContent = responseTransformer.transform(data,getKeysToTrim());	
+			
 			response.setContent(responseContent.getData());	
-						
 			responseParams.setStatus(Response.Status.SUCCESSFUL);			
 			watch.stop("RegistryController.readEntity");
-
+		
 		} catch (RecordNotFoundException e) {
 			logger.error("RegistryController: RecordNotFoundException while reading entity !", e);
 			response.setContent(null);
@@ -134,6 +132,11 @@ public class RegistryController {
 			response.setContent(null);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 			responseParams.setErrmsg(e.getMessage());
+		} catch (TransformationException ex) {
+			logger.error("RegistryController: tramsformation error while reading entity !", ex);
+			response.setContent(null);
+			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+			responseParams.setErrmsg(ex.getMessage());
 		} catch (Exception e) {
 			logger.error("RegistryController: Exception while reading entity!", e);
 			response.setContent(null);
@@ -142,7 +145,12 @@ public class RegistryController {
 		}
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-	
+	/**
+	 * 
+	 * @param requestModel
+	 * @param accept: Only one media type supported
+	 * @return
+	 */
 	@RequestMapping(value = "/search", method = RequestMethod.POST)
 	public ResponseEntity<Response> searchEntity(@RequestAttribute Request requestModel, @RequestHeader(value="Accept") MediaType accept) {
 
@@ -151,29 +159,19 @@ public class RegistryController {
 		Response response = new Response(Response.API_ID.SEARCH, "OK", responseParams);
 		Map<String, Object> result = new HashMap<>();
 	
-
 		try {
 			watch.start("RegistryController.searchEntity");
-			/*	org.eclipse.rdf4j.model.Model entityModel = searchService.search(rdf);
-			logger.debug("FETCHED: " + entityModel);
-			String jenaJSON = registryService.frameSearchEntity(entityModel);
-			if(jenaJSON.isEmpty()){
-				response.setResult(new HashMap<String,Object>());
-			}else{
-				response.setResult(gson.fromJson(jenaJSON, mapType));
-			}*/
 
 			String jenaJson = searchService.searchFramed(rdf);
 			Data<Object> data = new Data<>(jenaJson);
 			//transformation for content.
 			IResponseTransformer<Object> responseTransformer = responseTransformFactory.getInstance(accept);
 			Data<Object> resultContent = responseTransformer.transform(data,getKeysToTrim());			
-			response.setContent(resultContent.getData());	
 			
-			//response.setResult(gson.fromJson(resultContent.getResponseData().toString(), mapType));
+			response.setContent(resultContent.getData());	
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
 			watch.stop("RegistryController.searchEntity");
-		} catch (AuditFailedException | RecordNotFoundException | TypeNotProvidedException e) {
+		} catch (AuditFailedException | RecordNotFoundException | TypeNotProvidedException | TransformationException e) {
 			logger.error("AuditFailedException | RecordNotFoundException | TypeNotProvidedException in controller while adding entity !",e);
 			response.setResult(result);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
@@ -237,7 +235,7 @@ public class RegistryController {
 		}
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-
+ 
 	@ResponseBody
 	@RequestMapping(value = "/fetchAudit/{id}", method = RequestMethod.GET)
 	public ResponseEntity<Response> fetchAudit(@PathVariable("id") String id, @RequestHeader(value="Accept") MediaType accept) {
@@ -248,17 +246,10 @@ public class RegistryController {
 			String entityId = registryContext + id;
 
 			try {
-				watch.start("RegistryController.fetchAudit");
-				//org.eclipse.rdf4j.model.Model auditModel = registryService.getAuditNode(entityId);
-				//logger.debug("Audit Record model :" + auditModel);
-			
+				watch.start("RegistryController.fetchAudit");			
 				String jenaJson = registryService.getAuditNodeFramed(entityId);
-				Data<String> data = new Data<String>(jenaJson);
-				//transformation for content.
-/*				IResponseTransformer<String> responseTransformer = responseTransformFactory.getInstance(accept);
-				Data<String> resultContent = responseTransformer.transform(data,getKeysToTrim());
 				
-				response.setContent(resultContent.getData());*/
+				response.setContent(jenaJson);
 				responseParams.setStatus(Response.Status.SUCCESSFUL);
 				watch.stop("RegistryController.fetchAudit");
 				logger.debug("Controller: audit records fetched !");
@@ -310,6 +301,9 @@ public class RegistryController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	/*
+	 * To set the keys(like "@id" or @"@type" to be trim of a json
+	 */
 	private List<String> getKeysToTrim(){
 		keyToTrim.add("@id");
 		keyToTrim.add("@type");

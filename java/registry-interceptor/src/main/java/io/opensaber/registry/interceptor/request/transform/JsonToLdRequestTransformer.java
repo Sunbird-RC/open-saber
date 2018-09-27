@@ -7,75 +7,73 @@ import com.google.common.io.CharStreams;
 
 import io.opensaber.registry.middleware.transform.commons.Data;
 import io.opensaber.registry.middleware.transform.commons.ErrorCode;
-import io.opensaber.registry.middleware.transform.commons.ResponseData;
 import io.opensaber.registry.middleware.transform.commons.TransformationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class JsonToLdRequestTransformer implements IRequestTransformer<Object> {
 
-    private static JsonToLdRequestTransformer instance;
-    private static Logger logger = LoggerFactory.getLogger(JsonToLdRequestTransformer.class);
-    private String context;
-    private final static String REQUEST = "request";
+	private static JsonToLdRequestTransformer instance;
+	private static Logger logger = LoggerFactory.getLogger(JsonToLdRequestTransformer.class);
+	private String context;
+	private final static String REQUEST = "request";
 
-    
-    static {
-        try {
-            instance = new JsonToLdRequestTransformer();
-        } catch (IOException ex) {
-            throw new ExceptionInInitializerError(ex);
-        }
-    }
-    public static JsonToLdRequestTransformer getInstance() {
-        return instance;
-    }
+	static {
+		try {
+			instance = new JsonToLdRequestTransformer();
+		} catch (IOException ex) {
+			throw new ExceptionInInitializerError(ex);
+		}
+	}
 
-    public JsonToLdRequestTransformer() throws IOException {
-         loadDefaultMapping();
-    }
+	public static JsonToLdRequestTransformer getInstance() {
+		return instance;
+	}
 
-    private void loadDefaultMapping() throws IOException {
-        InputStreamReader in = new InputStreamReader
-        		(new ClassPathResource("frame.json").getInputStream());
-        context = CharStreams.toString(in);
+	public JsonToLdRequestTransformer() throws IOException {
+		loadDefaultMapping();
+	}
 
-    }
+	private void loadDefaultMapping() throws IOException {
+		InputStreamReader in = new InputStreamReader(new ClassPathResource("frame.json").getInputStream());
+		context = CharStreams.toString(in);
 
-    @Override
-    public Data<Object> transform(Data<Object> data) throws TransformationException {
-        try {
-            ObjectMapper mapper = new ObjectMapper();           
-            ObjectNode input =(ObjectNode) mapper.readTree(data.getData().toString());          
-            ObjectNode fieldObjects = (ObjectNode) mapper.readTree(context);
-            
-            ObjectNode requestnode = (ObjectNode) input.path(REQUEST);
-            String type = getTypeFromNode(requestnode);
-            requestnode = (ObjectNode) requestnode.path(type);
-            requestnode.setAll(fieldObjects);     
-            input.set(REQUEST, requestnode);         
-            logger.info("Object requestnode "+requestnode);
+	}
 
-            String jsonldResult = mapper.writeValueAsString(input);
-            return new Data<>(jsonldResult.replace("<@type>", type));
-        } catch (Exception ex) {
-            logger.error(ex.getMessage(), ex);
-            throw new TransformationException(ex.getMessage(), ex, ErrorCode.JSON_TO_JSONLD_TRANFORMATION_ERROR);
-        }
-    }
-    private String getTypeFromNode(ObjectNode requestNode) throws JsonProcessingException{ 
-    	String rootValue =""; 
-    	if (requestNode.isObject()) {
-    		logger.info("information "+requestNode.fields().next().getKey());
-    		rootValue = requestNode.fields().next().getKey();
-    	}
-    	return rootValue;
-    }
+	@Override
+	public Data<Object> transform(Data<Object> data) throws TransformationException {
+		try {
+			ObjectMapper mapper = new ObjectMapper();
+			ObjectNode input = (ObjectNode) mapper.readTree(data.getData().toString());
+			ObjectNode fieldObjects = (ObjectNode) mapper.readTree(context);
+
+			ObjectNode requestnode = (ObjectNode) input.path(REQUEST);
+			String type = getTypeFromNode(requestnode);
+			requestnode = (ObjectNode) requestnode.path(type);
+			requestnode.setAll(fieldObjects);
+			input.set(REQUEST, requestnode);
+			logger.info("Object requestnode " + requestnode);
+
+			String jsonldResult = mapper.writeValueAsString(input);
+			return new Data<>(jsonldResult.replace("<@type>", type));
+		} catch (Exception ex) {
+			logger.error(ex.getMessage(), ex);
+			throw new TransformationException(ex.getMessage(), ex, ErrorCode.JSON_TO_JSONLD_TRANFORMATION_ERROR);
+		}
+	}
+
+	private String getTypeFromNode(ObjectNode requestNode) throws JsonProcessingException {
+		String rootValue = "";
+		if (requestNode.isObject()) {
+			logger.info("information " + requestNode.fields().next().getKey());
+			rootValue = requestNode.fields().next().getKey();
+		}
+		return rootValue;
+	}
 
 }
