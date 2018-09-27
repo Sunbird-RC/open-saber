@@ -23,6 +23,7 @@ public class JsonToLdRequestTransformer implements IRequestTransformer<Object> {
     private static JsonToLdRequestTransformer instance;
     private static Logger logger = LoggerFactory.getLogger(JsonToLdRequestTransformer.class);
     private String context;
+    private final static String REQUEST = "request";
 
     
     static {
@@ -54,10 +55,12 @@ public class JsonToLdRequestTransformer implements IRequestTransformer<Object> {
             ObjectNode input =(ObjectNode) mapper.readTree(data.getData().toString());          
             ObjectNode fieldObjects = (ObjectNode) mapper.readTree(context);
             
-            ObjectNode requestnode = (ObjectNode) input.path("request");
-            logger.info("Object requestnode "+requestnode);
+            ObjectNode requestnode = (ObjectNode) input.path(REQUEST);
             String type = getTypeFromNode(requestnode);
-            requestnode.setAll(fieldObjects);            
+            requestnode = (ObjectNode) requestnode.path(type);
+            requestnode.setAll(fieldObjects);     
+            input.set(REQUEST, requestnode);         
+            logger.info("Object requestnode "+requestnode);
 
             String jsonldResult = mapper.writeValueAsString(input);
             return new Data<>(jsonldResult.replace("<@type>", type));
@@ -74,6 +77,5 @@ public class JsonToLdRequestTransformer implements IRequestTransformer<Object> {
     	}
     	return rootValue;
     }
-
 
 }
