@@ -5,7 +5,6 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
 import io.opensaber.registry.middleware.transform.commons.ErrorCode;
-import io.opensaber.registry.middleware.transform.commons.NotSupportedTypeException;
 import io.opensaber.registry.middleware.transform.commons.TransformationException;
 import io.opensaber.registry.transformation.IResponseTransformer;
 import io.opensaber.registry.transformation.JsonToLdTransformer;
