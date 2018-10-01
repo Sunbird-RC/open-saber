@@ -42,6 +42,7 @@ public class JsonToLdRequestTransformer implements IRequestTransformer<Object> {
 	private void loadDefaultMapping() throws IOException {
 		InputStreamReader in = new InputStreamReader(new ClassPathResource("frame.json").getInputStream());
 		context = CharStreams.toString(in);
+		logger.info("Context modified "+context);
 
 	}
 
@@ -65,6 +66,14 @@ public class JsonToLdRequestTransformer implements IRequestTransformer<Object> {
 			logger.error(ex.getMessage(), ex);
 			throw new TransformationException(ex.getMessage(), ex, ErrorCode.JSON_TO_JSONLD_TRANFORMATION_ERROR);
 		}
+	}
+	
+	private ObjectNode addContextToRequestNode(ObjectNode requestnode) throws IOException{
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode fieldObjects = (ObjectNode) mapper.readTree(context);
+		requestnode.setAll(fieldObjects);
+		return requestnode;
+
 	}
 
 	private String getTypeFromNode(ObjectNode requestNode) throws JsonProcessingException {
