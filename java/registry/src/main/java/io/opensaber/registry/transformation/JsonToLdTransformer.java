@@ -42,10 +42,20 @@ public class JsonToLdTransformer implements IResponseTransformer<Object> {
 			throws IOException, ParseException {
 
 		JsonNode graphNode = rootDataNode.path(JsonldConstants.GRAPH).get(0);
+		JsonNode rootNode = addRootTypeNode(graphNode);
+		
 		setKeysToTrim(keysToTrim);
 		if (keysToTrim.size() != 0)
-			return trimedKeyOfNodes(graphNode);
-		return graphNode;
+			return trimedKeyOfNodes(rootNode);
+		return rootNode;
+	}
+	
+	private JsonNode addRootTypeNode(JsonNode graphNode){
+        String rootNodeType = graphNode.path(JsonldConstants.TYPE).asText();
+        ObjectNode rootNode = JsonNodeFactory.instance.objectNode();
+        rootNode.set(rootNodeType, graphNode);
+        return rootNode;
+		
 	}
 
 	private ObjectNode trimedKeyOfNodes(JsonNode node) {
