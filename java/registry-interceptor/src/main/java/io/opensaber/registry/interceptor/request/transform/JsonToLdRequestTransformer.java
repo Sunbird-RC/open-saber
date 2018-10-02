@@ -5,9 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.io.CharStreams;
 
-import io.opensaber.registry.middleware.transform.commons.Data;
-import io.opensaber.registry.middleware.transform.commons.ErrorCode;
-import io.opensaber.registry.middleware.transform.commons.TransformationException;
+import io.opensaber.registry.middleware.transform.commoms.Data;
+import io.opensaber.registry.middleware.transform.commoms.ErrorCode;
+import io.opensaber.registry.middleware.transform.commoms.TransformationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,13 +68,13 @@ public class JsonToLdRequestTransformer implements IRequestTransformer<Object> {
 		}
 	}
 	
-	private ObjectNode addContextToRequestNode(ObjectNode requestnode) throws IOException{
+/*	private ObjectNode addContextToRequestNode(ObjectNode requestnode) throws IOException{
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode fieldObjects = (ObjectNode) mapper.readTree(context);
 		requestnode.setAll(fieldObjects);
 		return requestnode;
 
-	}
+	}*/
 
 	private String getTypeFromNode(ObjectNode requestNode) throws JsonProcessingException {
 		String rootValue = "";

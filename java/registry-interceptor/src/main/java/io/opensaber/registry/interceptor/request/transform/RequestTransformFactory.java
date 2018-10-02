@@ -2,8 +2,9 @@ package io.opensaber.registry.interceptor.request.transform;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import io.opensaber.registry.middleware.transform.commons.ErrorCode;
-import io.opensaber.registry.middleware.transform.commons.TransformationException;
+import io.opensaber.registry.middleware.transform.commoms.ErrorCode;
+import io.opensaber.registry.middleware.transform.commoms.TransformationException;
+
 
 public class RequestTransformFactory {
 

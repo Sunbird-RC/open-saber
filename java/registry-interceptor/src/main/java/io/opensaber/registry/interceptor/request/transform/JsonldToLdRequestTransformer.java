@@ -5,8 +5,9 @@ import java.io.IOException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.opensaber.registry.middleware.transform.commons.Data;
-import io.opensaber.registry.middleware.transform.commons.TransformationException;
+import io.opensaber.registry.middleware.transform.commoms.Data;
+import io.opensaber.registry.middleware.transform.commoms.TransformationException;
+
 
 public class JsonldToLdRequestTransformer implements IRequestTransformer<Object> {
 
