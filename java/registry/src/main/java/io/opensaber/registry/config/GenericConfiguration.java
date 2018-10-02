@@ -10,6 +10,9 @@ import io.opensaber.registry.authorization.KeyCloakServiceImpl;
 import io.opensaber.registry.exception.CustomException;
 import io.opensaber.registry.exception.CustomExceptionHandler;
 import io.opensaber.registry.interceptor.*;
+import io.opensaber.registry.interceptor.request.transform.JsonToLdRequestTransformer;
+import io.opensaber.registry.interceptor.request.transform.JsonldToLdRequestTransformer;
+import io.opensaber.registry.interceptor.request.transform.RequestTransformFactory;
 import io.opensaber.registry.middleware.Middleware;
 import io.opensaber.registry.middleware.impl.*;
 import io.opensaber.registry.middleware.util.Constants;
@@ -99,6 +102,20 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Bean
 	public Middleware rdfConverter(){
 		return new RDFConverter();
+	}
+	
+	@Bean
+	public RequestTransformFactory requestTransformFactory(){
+		return new RequestTransformFactory();
+	}
+	
+	@Bean
+	public JsonToLdRequestTransformer jsonToLdRequestTransformer(){
+		return JsonToLdRequestTransformer.getInstance();
+	}
+	@Bean
+	public JsonldToLdRequestTransformer jsonldToLdRequestTransformer(){
+		return new JsonldToLdRequestTransformer();
 	}
 
     @Bean
