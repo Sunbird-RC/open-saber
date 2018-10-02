@@ -13,9 +13,11 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import com.google.gson.Gson;
 import io.opensaber.registry.interceptor.handler.BaseRequestHandler;
+import io.opensaber.registry.interceptor.request.transform;
 import io.opensaber.registry.middleware.Middleware;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
 import io.opensaber.registry.middleware.impl.RDFConverter;
+import io.opensaber.registry.middleware.transform.commoms.Data;
 import io.opensaber.registry.middleware.util.Constants;
 
 @Component
@@ -27,6 +29,10 @@ public class RDFConversionInterceptor implements HandlerInterceptor{
 
 	@Autowired
 	private OpenSaberInstrumentation watch;
+	
+
+	@Autowired
+	private RequestTransformFactory requestTransformFactory;
 
 	public RDFConversionInterceptor(Middleware rdfConverter, Gson gson){
 		this.rdfConverter = rdfConverter;
@@ -39,6 +45,13 @@ public class RDFConversionInterceptor implements HandlerInterceptor{
 		BaseRequestHandler baseRequestHandler = new BaseRequestHandler();
 		try{
 			baseRequestHandler.setRequest(request);
+			// transform request to JsonLd.
+			String json = baseRequestHandler.getRequestBody();
+			logger.info("json requestBody RDFConversionInterceptor" + json);
+			Data<Object> jsonData = new Data<Object>(json);
+			Data<Object> jsonlsData = requestTransformFactory.getInstance(request.getContentType()).transform(jsonData);
+			// setting the BaseRequestHandler requestBody as jsonld data.
+			baseRequestHandler.setRequestBody(jsonlsData.getData().toString());
 			watch.start("RDFConversionInterceptor.execute");
 			Map<String, Object> attributeMap = rdfConverter.execute(baseRequestHandler.getRequestBodyMap());
 			baseRequestHandler.mergeRequestAttributes(attributeMap);
