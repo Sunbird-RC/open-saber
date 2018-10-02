@@ -5,12 +5,17 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.opensaber.pojos.*;
 import io.opensaber.registry.exception.*;
+import io.opensaber.registry.middleware.transform.commoms.Constants.JsonldConstants;
+import io.opensaber.registry.middleware.transform.commoms.Data;
+import io.opensaber.registry.middleware.transform.commoms.TransformationException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.RDFUtil;
 import io.opensaber.registry.model.RegistrySignature;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
 import io.opensaber.registry.service.SignatureService;
+import io.opensaber.registry.transformation.IResponseTransformer;
+import io.opensaber.registry.transformation.ResponseTransformFactory;
 import io.opensaber.registry.util.JSONUtil;
 import org.apache.jena.ext.com.google.common.io.ByteStreams;
 import org.apache.jena.rdf.model.Model;
@@ -20,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +33,7 @@ import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -72,6 +79,11 @@ public class RegistryController {
 
 	@Autowired
 	private OpenSaberInstrumentation watch;
+	
+	@Autowired
+	ResponseTransformFactory responseTransformFactory;
+	
+	private List<String> keyToTrim = new java.util.ArrayList<>();
 
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
 	public ResponseEntity<Response> add(@RequestAttribute Request requestModel, 
@@ -117,9 +129,15 @@ public class RegistryController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	/**
+	 * 
+	 * @param id
+	 * @param accept, only one mime type is supported.
+	 * @return
+	 */
 	@RequestMapping(value = "/read/{id}", method = RequestMethod.GET)
 	public ResponseEntity<Response> readEntity(@PathVariable("id") String id,
-			@RequestParam(required = false) boolean includeSignatures) {
+			@RequestParam(required = false) boolean includeSignatures, @RequestHeader(value="Accept") MediaType accept) {
 
 		String entityId = registryContext + id;
 		ResponseParams responseParams = new ResponseParams();
@@ -127,24 +145,24 @@ public class RegistryController {
 
 		try {
 			watch.start("RegistryController.readEntity");
-			Model entityModel = registryService.getEntityById(entityId, includeSignatures);
-			logger.debug("FETCHED: " + entityModel);
-			String jenaJSON = registryService.frameEntity(entityModel);
-			response.setResult(gson.fromJson(jenaJSON, mapType));
+			String content = registryService.getEntityFramedById(entityId, includeSignatures);
+			logger.info("RegistryController: Json string "+ content );
+			
+			Data<Object> data = new Data<Object>(content);
+			//transformation for content.
+			IResponseTransformer<Object> responseTransformer = responseTransformFactory.getInstance(accept);
+			Data<Object> responseContent = responseTransformer.transform(data,getKeysToTrim());	
+			
+			response.setResult(responseContent.getData());	
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
 			watch.stop("RegistryController.readEntity");
 			logger.debug("RegistryController: entity for {} read !", entityId);
 
-		} catch (RecordNotFoundException e) {
-			logger.error("RegistryController: RecordNotFoundException while reading entity !", e);
+		} catch (RecordNotFoundException | UnsupportedOperationException | TransformationException  e) {
+			logger.error("RegistryController: Exception while reading entity !", e);
 			response.setResult(null);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg(e.getMessage());
-		} catch (UnsupportedOperationException e) {
-			logger.error("RegistryController: UnsupportedOperationException while reading entity !", e);
-			response.setResult(null);
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg(e.getMessage());
+			responseParams.setErrmsg(e.getMessage());		
 		} catch (Exception e) {
 			logger.error("RegistryController: Exception while reading entity!", e);
 			response.setResult(null);
@@ -302,5 +320,15 @@ public class RegistryController {
 			responseParams.setErrmsg("Meh ! You encountered an error!");
 		}
 		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+	
+	/*
+	 * To set the keys(like "@id" or @"@type" to be trim of a json
+	 */
+	private List<String> getKeysToTrim(){
+		keyToTrim.add(JsonldConstants.ID);
+		keyToTrim.add(JsonldConstants.TYPE);
+		return keyToTrim;
+		
 	}
 }
