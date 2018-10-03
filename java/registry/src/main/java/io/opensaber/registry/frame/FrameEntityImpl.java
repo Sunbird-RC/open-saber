@@ -1,16 +1,12 @@
 package io.opensaber.registry.frame;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
-import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.jena.ext.com.google.common.io.ByteStreams;
 import org.apache.jena.query.DatasetFactory;
@@ -25,11 +21,9 @@ import org.apache.jena.sparql.core.DatasetGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import com.google.common.io.CharStreams;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+
 
 import io.opensaber.converters.JenaRDF4J;
 import io.opensaber.registry.exception.EntityCreationException;
@@ -38,7 +32,7 @@ import io.opensaber.registry.frame.FrameEntity;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.RDFUtil;
 
-@Component
+
 public class FrameEntityImpl implements FrameEntity {
 
 	private static Logger logger = LoggerFactory.getLogger(FrameEntityImpl.class);

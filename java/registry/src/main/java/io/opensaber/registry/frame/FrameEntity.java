@@ -1,6 +1,5 @@
 package io.opensaber.registry.frame;
 
-import java.io.File;
 import java.io.IOException;
 
 import io.opensaber.registry.exception.EntityCreationException;
