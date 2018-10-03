@@ -21,7 +21,6 @@ public class JsonldToLdRequestTransformer implements ITransformer<Object> {
 
 	@Override
 	public void setPurgeData(List<String> keyToPruge) {
-		// TODO Auto-generated method stub
 		
 	}
 

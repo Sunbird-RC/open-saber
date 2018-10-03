@@ -16,7 +16,6 @@ public interface SearchService {
 	public org.eclipse.rdf4j.model.Model search(Model model)
 			throws AuditFailedException, EncryptionException, RecordNotFoundException, TypeNotProvidedException;
 
-	// Added method to support framing component
 	public String searchFramed(Model model) throws AuditFailedException, EncryptionException, RecordNotFoundException,
 			TypeNotProvidedException, IOException, MultipleEntityException, EntityCreationException;
 
