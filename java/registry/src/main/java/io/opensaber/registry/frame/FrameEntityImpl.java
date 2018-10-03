@@ -1,7 +1,11 @@
 package io.opensaber.registry.frame;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
@@ -23,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.google.common.io.CharStreams;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -115,6 +120,27 @@ public class FrameEntityImpl implements FrameEntity {
 		StringWriter sWriter = new StringWriter();
 		w.write(sWriter, g, pm, base, ctx);
 		return sWriter;
+	}
+	
+/**
+ * Frame json specific.
+ */
+	public String getFrameFileAsString(){				
+		InputStreamReader in;
+		try {			
+			in = new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream(frameFile));
+			return CharStreams.toString(in);
+			
+		} catch (FileNotFoundException  e1) {
+			e1.printStackTrace();
+			logger.info(e1.getLocalizedMessage());
+		
+		} catch (IOException e) {
+			e.printStackTrace();
+			logger.info(e.getLocalizedMessage());
+
+		}
+		return null;
 	}
 
 }

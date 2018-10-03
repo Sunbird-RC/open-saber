@@ -9,6 +9,7 @@ import io.opensaber.registry.authorization.AuthorizationFilter;
 import io.opensaber.registry.authorization.KeyCloakServiceImpl;
 import io.opensaber.registry.exception.CustomException;
 import io.opensaber.registry.exception.CustomExceptionHandler;
+import io.opensaber.registry.frame.FrameEntity;
 import io.opensaber.registry.interceptor.*;
 import io.opensaber.registry.interceptor.request.transform.JsonToLdRequestTransformer;
 import io.opensaber.registry.interceptor.request.transform.JsonldToLdRequestTransformer;
@@ -76,6 +77,9 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	
 	@Value("${signature.schema.config.name}")
 	private String signatureSchemaConfigName;
+	
+	@Autowired
+	private FrameEntity frameEntity;
 
 	@Bean
 	public ObjectMapper objectMapper() {
@@ -111,7 +115,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	
 	@Bean
 	public JsonToLdRequestTransformer jsonToLdRequestTransformer(){
-		return JsonToLdRequestTransformer.getInstance();
+		return new JsonToLdRequestTransformer(frameEntity.getFrameFileAsString());
 	}
 	@Bean
 	public JsonldToLdRequestTransformer jsonldToLdRequestTransformer(){

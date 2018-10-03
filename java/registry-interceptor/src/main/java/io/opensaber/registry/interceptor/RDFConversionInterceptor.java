@@ -18,7 +18,7 @@ import io.opensaber.registry.interceptor.request.transform.RequestTransformFacto
 import io.opensaber.registry.middleware.Middleware;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
 import io.opensaber.registry.middleware.impl.RDFConverter;
-import io.opensaber.registry.middleware.transform.commoms.Data;
+import io.opensaber.registry.middleware.transform.commons.Data;
 import io.opensaber.registry.middleware.util.Constants;
 
 @Component
@@ -34,7 +34,7 @@ public class RDFConversionInterceptor implements HandlerInterceptor{
 
 	@Autowired
 	private RequestTransformFactory requestTransformFactory;
-
+	
 	public RDFConversionInterceptor(Middleware rdfConverter, Gson gson){
 		this.rdfConverter = rdfConverter;
 		this.gson = gson;

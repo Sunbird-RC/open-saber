@@ -1,5 +1,6 @@
 package io.opensaber.registry.frame;
 
+import java.io.File;
 import java.io.IOException;
 
 import io.opensaber.registry.exception.EntityCreationException;
@@ -10,5 +11,7 @@ public interface FrameEntity {
 	public void setModel(org.eclipse.rdf4j.model.Model entityModel);
 
 	public String getContent() throws IOException, MultipleEntityException, EntityCreationException;
+	
+	public String getFrameFileAsString();
 
 }

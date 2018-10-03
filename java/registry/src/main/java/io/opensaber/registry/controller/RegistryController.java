@@ -5,16 +5,16 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.opensaber.pojos.*;
 import io.opensaber.registry.exception.*;
-import io.opensaber.registry.middleware.transform.commoms.Constants.JsonldConstants;
-import io.opensaber.registry.middleware.transform.commoms.Data;
-import io.opensaber.registry.middleware.transform.commoms.TransformationException;
+import io.opensaber.registry.middleware.transform.commons.Data;
+import io.opensaber.registry.middleware.transform.commons.ITransformer;
+import io.opensaber.registry.middleware.transform.commons.TransformationException;
+import io.opensaber.registry.middleware.transform.commons.Constants.JsonldConstants;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.RDFUtil;
 import io.opensaber.registry.model.RegistrySignature;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
 import io.opensaber.registry.service.SignatureService;
-import io.opensaber.registry.transformation.IResponseTransformer;
 import io.opensaber.registry.transformation.ResponseTransformFactory;
 import io.opensaber.registry.util.JSONUtil;
 import org.apache.jena.ext.com.google.common.io.ByteStreams;
@@ -83,7 +83,7 @@ public class RegistryController {
 	@Autowired
 	ResponseTransformFactory responseTransformFactory;
 	
-	private List<String> keyToTrim = new java.util.ArrayList<>();
+	private List<String> keyToPurge = new java.util.ArrayList<>();
 
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
 	public ResponseEntity<Response> add(@RequestAttribute Request requestModel, 
@@ -150,8 +150,9 @@ public class RegistryController {
 			
 			Data<Object> data = new Data<Object>(content);
 			//transformation for content.
-			IResponseTransformer<Object> responseTransformer = responseTransformFactory.getInstance(accept);
-			Data<Object> responseContent = responseTransformer.transform(data,getKeysToTrim());	
+			ITransformer<Object> responseTransformer = responseTransformFactory.getInstance(accept);
+			responseTransformer.setPurgeData(getKeysToPurge());
+			Data<Object> responseContent = responseTransformer.transform(data);	
 			
 			response.setResult(responseContent.getData());	
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
@@ -325,10 +326,10 @@ public class RegistryController {
 	/*
 	 * To set the keys(like "@id" or @"@type" to be trim of a json
 	 */
-	private List<String> getKeysToTrim(){
-		keyToTrim.add(JsonldConstants.ID);
-		keyToTrim.add(JsonldConstants.TYPE);
-		return keyToTrim;
+	private List<String> getKeysToPurge(){
+		keyToPurge.add(JsonldConstants.ID);
+		keyToPurge.add(JsonldConstants.TYPE);
+		return keyToPurge;
 		
 	}
 }

@@ -6,30 +6,33 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import io.opensaber.registry.middleware.transform.commoms.Constants.JsonldConstants;
-import io.opensaber.registry.middleware.transform.commoms.Data;
-import io.opensaber.registry.middleware.transform.commoms.ErrorCode;
-import io.opensaber.registry.middleware.transform.commoms.TransformationException;
+import io.opensaber.registry.middleware.transform.commons.Data;
+import io.opensaber.registry.middleware.transform.commons.ErrorCode;
+import io.opensaber.registry.middleware.transform.commons.ITransformer;
+import io.opensaber.registry.middleware.transform.commons.TransformationException;
+import io.opensaber.registry.middleware.transform.commons.Constants.JsonldConstants;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
 
 @Component
-public class JsonToLdTransformer implements IResponseTransformer<Object> {
+public class JsonToLdTransformer implements ITransformer<Object> {
 
 	private static Logger logger = LoggerFactory.getLogger(JsonToLdTransformer.class);
-	private List<String> keysToTrim = new ArrayList<>();
+	private List<String> keysToPurge = new ArrayList<>();
 
-	public Data<Object> transform(Data<Object> data, List<String> keysToTrim) throws TransformationException {
+	public Data<Object> transform(Data<Object> data) throws TransformationException {
 		try {
 			ObjectMapper mapper = new ObjectMapper();
 			ObjectNode input = (ObjectNode) mapper.readTree(data.getData().toString());
-			JsonNode jsonNode = getconstructedJson(input, keysToTrim);
+			JsonNode jsonNode = getconstructedJson(input, keysToPurge);
 			return new Data<>(jsonNode);
 		} catch (Exception ex) {
 			logger.error(ex.getMessage(), ex);
@@ -37,19 +40,19 @@ public class JsonToLdTransformer implements IResponseTransformer<Object> {
 		}
 	}
 
-	private JsonNode getconstructedJson(JsonNode rootDataNode, List<String> keysToTrim)
+	private JsonNode getconstructedJson(ObjectNode rootDataNode, List<String> keysToPurge)
 			throws IOException, ParseException {
 
 		JsonNode graphNode = rootDataNode.path(JsonldConstants.GRAPH).get(0);
-		JsonNode rootNode = addRootTypeNode(graphNode);
+		ObjectNode rootNode = addRootTypeNode(graphNode);
 		
-		setKeysToTrim(keysToTrim);
-		if (keysToTrim.size() != 0)
-			return trimedKeyOfNodes(rootNode);
+		setPurgeData(keysToPurge);
+		if (keysToPurge.size() != 0)
+			purgedKeyOfNodes(rootNode);
 		return rootNode;
 	}
 	
-	private JsonNode addRootTypeNode(JsonNode graphNode){
+	private ObjectNode addRootTypeNode(JsonNode graphNode){
         String rootNodeType = graphNode.path(JsonldConstants.TYPE).asText();
         ObjectNode rootNode = JsonNodeFactory.instance.objectNode();
         rootNode.set(rootNodeType, graphNode);
@@ -57,45 +60,29 @@ public class JsonToLdTransformer implements IResponseTransformer<Object> {
 		
 	}
 
-	private ObjectNode trimedKeyOfNodes(JsonNode node) {
-		ObjectNode result = JsonNodeFactory.instance.objectNode();
-		Iterator<Map.Entry<String, JsonNode>> fieldsO = node.fields();
-		while (fieldsO.hasNext()) {
-			Map.Entry<String, JsonNode> entryO = fieldsO.next();
-
-			if (entryO.getValue().isValueNode()) {
-				if (!keysToTrim.contains(entryO.getKey()))
-					result.set(entryO.getKey().toString(), entryO.getValue());
-
-			} else if (entryO.getValue().isArray()) {
-				ArrayNode arrayNode = getArrayNode(entryO);
-				result.set(entryO.getKey(), arrayNode);
-
-			} else if (!entryO.getValue().isValueNode()) {
-				ObjectNode jsonNode = trimedKeyOfNodes(entryO.getValue());
-				result.set(entryO.getKey(), jsonNode);
+	private void purgedKeyOfNodes(ObjectNode node) {
+		List<String> removeKeyNames = new ArrayList<String>();
+		node.fields().forEachRemaining(entry -> {
+			if (keysToPurge.contains(entry.getKey())) {
+				removeKeyNames.add(entry.getKey());
+			} else {
+				if(entry.getValue().isArray()){
+					for (int i = 0; i < entry.getValue().size(); i++) {
+						purgedKeyOfNodes((ObjectNode) entry.getValue().get(i));
+					}
+				}else if(entry.getValue().isObject()){
+					purgedKeyOfNodes((ObjectNode) entry.getValue());
+				}
 			}
-		}
-
-		return result;
+		});
+		node.remove(removeKeyNames);
 	}
 
-	private ArrayNode getArrayNode(Map.Entry<String, JsonNode> entry) {
-		ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
-		for (int i = 0; i < entry.getValue().size(); i++) {
-			if (entry.getValue().get(i).isObject()) {
-				ObjectNode jsonNode = trimedKeyOfNodes(entry.getValue().get(i));
-				arrayNode.add(jsonNode);
-			} else if (entry.getValue().get(i).isValueNode()) {
-				arrayNode.add(entry.getValue().get(i));
-			}
-		}
 
-		return arrayNode;
-	}
-
-	private void setKeysToTrim(List<String> keysToTrim) {
-		this.keysToTrim = keysToTrim;
+	@Override
+	public void setPurgeData(List<String> keyToPruge) {
+		this.keysToPurge = keyToPruge;
+		
 	}
 
 }

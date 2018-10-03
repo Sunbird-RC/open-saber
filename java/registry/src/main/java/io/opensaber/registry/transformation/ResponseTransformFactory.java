@@ -4,9 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
-import io.opensaber.registry.middleware.transform.commoms.ErrorCode;
-import io.opensaber.registry.middleware.transform.commoms.TransformationException;
-import io.opensaber.registry.transformation.IResponseTransformer;
+import io.opensaber.registry.middleware.transform.commons.ErrorCode;
+import io.opensaber.registry.middleware.transform.commons.ITransformer;
+import io.opensaber.registry.middleware.transform.commons.TransformationException;
 import io.opensaber.registry.transformation.JsonToLdTransformer;
 import io.opensaber.registry.transformation.JsonldToLdTransformer;
 
@@ -22,8 +22,8 @@ public class ResponseTransformFactory {
 	@Autowired
 	private JsonldToLdTransformer jsonldTransformer;
 
-	public IResponseTransformer<Object> getInstance(MediaType type) throws TransformationException {
-		IResponseTransformer<Object> responseTransformer = null;
+	public ITransformer<Object> getInstance(MediaType type) throws TransformationException {
+		ITransformer<Object> responseTransformer = null;
 
 		switch (type.toString()) {
 
