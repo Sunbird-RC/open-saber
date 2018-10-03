@@ -120,7 +120,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	
 	@Bean
 	public JsonToLdRequestTransformer jsonToLdRequestTransformer(){
-		return new JsonToLdRequestTransformer(frameEntity().getFrameFileAsString());
+		return new JsonToLdRequestTransformer(frameEntity().getContent());
 	}
 	@Bean
 	public JsonldToLdRequestTransformer jsonldToLdRequestTransformer(){

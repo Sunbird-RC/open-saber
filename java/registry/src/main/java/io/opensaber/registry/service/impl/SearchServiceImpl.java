@@ -66,8 +66,7 @@ public class SearchServiceImpl implements SearchService {
 				resultModel.add(aStmt);
 			});
 		});
-		frameEntity.setModel(resultModel);
-		return frameEntity.getContent();
+		return frameEntity.getContent(resultModel);
 	}
 
 }

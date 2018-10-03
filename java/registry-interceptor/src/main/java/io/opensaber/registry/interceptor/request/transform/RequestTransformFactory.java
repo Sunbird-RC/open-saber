@@ -6,7 +6,6 @@ import io.opensaber.registry.middleware.transform.commons.ErrorCode;
 import io.opensaber.registry.middleware.transform.commons.ITransformer;
 import io.opensaber.registry.middleware.transform.commons.TransformationException;
 
-
 public class RequestTransformFactory {
 
 	private static final String MEDIATYPE_APPLICATION_JSONLD = "application/ld+json";

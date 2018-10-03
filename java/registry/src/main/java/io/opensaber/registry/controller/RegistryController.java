@@ -79,15 +79,16 @@ public class RegistryController {
 
 	@Autowired
 	private OpenSaberInstrumentation watch;
-	
+
 	@Autowired
 	ResponseTransformFactory responseTransformFactory;
-	
+
 	private List<String> keyToPurge = new java.util.ArrayList<>();
 
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
-	public ResponseEntity<Response> add(@RequestAttribute Request requestModel, 
-			@RequestParam(value="id", required = false) String id, @RequestParam(value="prop", required = false) String property) {
+	public ResponseEntity<Response> add(@RequestAttribute Request requestModel,
+			@RequestParam(value = "id", required = false) String id,
+			@RequestParam(value = "prop", required = false) String property) {
 
 		Model rdf = (Model) requestModel.getRequestMap().get("rdf");
 		ResponseParams responseParams = new ResponseParams();
@@ -97,17 +98,18 @@ public class RegistryController {
 
 		try {
 			watch.start("RegistryController.addToExistingEntity");
-			//added for signing the enitity
-			if(signatureEnabled){
-				Map signReq  = new HashMap<String, Object>();
+			if (signatureEnabled) {
+				Map signReq = new HashMap<String, Object>();
 				InputStream is = this.getClass().getClassLoader().getResourceAsStream(frameFile);
 				String fileString = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
-            	Map<String, Object> reqMap = JSONUtil.frameJsonAndRemoveIds(ID_REGEX, (String)requestModel.getRequestMap().get("dataObject"), gson, fileString);
-				signReq.put("entity",reqMap);
-				Map<String, Object> entitySignMap = (Map<String, Object>)signatureService.sign(signReq);
-				entitySignMap.put("createdDate",rs.getCreatedTimestamp());
-				entitySignMap.put("keyUrl",signatureKeyURl);
-				rdf = RDFUtil.getUpdatedSignedModel(rdf,registryContext,signatureDomain,entitySignMap, ModelFactory.createDefaultModel());
+				Map<String, Object> reqMap = JSONUtil.frameJsonAndRemoveIds(ID_REGEX,
+						(String) requestModel.getRequestMap().get("dataObject"), gson, fileString);
+				signReq.put("entity", reqMap);
+				Map<String, Object> entitySignMap = (Map<String, Object>) signatureService.sign(signReq);
+				entitySignMap.put("createdDate", rs.getCreatedTimestamp());
+				entitySignMap.put("keyUrl", signatureKeyURl);
+				rdf = RDFUtil.getUpdatedSignedModel(rdf, registryContext, signatureDomain, entitySignMap,
+						ModelFactory.createDefaultModel());
 			}
 			String label = registryService.addEntity(rdf, id, property);
 			result.put("entity", label);
@@ -116,12 +118,12 @@ public class RegistryController {
 			watch.stop("RegistryController.addToExistingEntity");
 			logger.debug("RegistryController : Entity with label {} added !", label);
 		} catch (DuplicateRecordException | EntityCreationException e) {
-			logger.error("DuplicateRecordException|EntityCreationException in controller while adding entity !",e);
+			logger.error("DuplicateRecordException|EntityCreationException in controller while adding entity !", e);
 			response.setResult(result);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 			responseParams.setErrmsg(e.getMessage());
 		} catch (Exception e) {
-			logger.error("Exception in controller while adding entity !",e);
+			logger.error("Exception in controller while adding entity !", e);
 			response.setResult(result);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 			responseParams.setErrmsg(e.getMessage());
@@ -132,12 +134,14 @@ public class RegistryController {
 	/**
 	 * 
 	 * @param id
-	 * @param accept, only one mime type is supported.
+	 * @param accept,
+	 *            only one mime type is supported.
 	 * @return
 	 */
 	@RequestMapping(value = "/read/{id}", method = RequestMethod.GET)
 	public ResponseEntity<Response> readEntity(@PathVariable("id") String id,
-			@RequestParam(required = false) boolean includeSignatures, @RequestHeader(value="Accept") MediaType accept) {
+			@RequestParam(required = false) boolean includeSignatures,
+			@RequestHeader(value = "Accept") MediaType accept) {
 
 		String entityId = registryContext + id;
 		ResponseParams responseParams = new ResponseParams();
@@ -146,24 +150,22 @@ public class RegistryController {
 		try {
 			watch.start("RegistryController.readEntity");
 			String content = registryService.getEntityFramedById(entityId, includeSignatures);
-			logger.info("RegistryController: Json string "+ content );
-			
+			logger.info("RegistryController: Json string " + content);
+
 			Data<Object> data = new Data<Object>(content);
-			//transformation for content.
 			ITransformer<Object> responseTransformer = responseTransformFactory.getInstance(accept);
 			responseTransformer.setPurgeData(getKeysToPurge());
-			Data<Object> responseContent = responseTransformer.transform(data);	
-			
-			response.setResult(responseContent.getData());	
+			Data<Object> responseContent = responseTransformer.transform(data);
+			response.setResult(responseContent.getData());
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
 			watch.stop("RegistryController.readEntity");
 			logger.debug("RegistryController: entity for {} read !", entityId);
 
-		} catch (RecordNotFoundException | UnsupportedOperationException | TransformationException  e) {
+		} catch (RecordNotFoundException | UnsupportedOperationException | TransformationException e) {
 			logger.error("RegistryController: Exception while reading entity !", e);
 			response.setResult(null);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg(e.getMessage());		
+			responseParams.setErrmsg(e.getMessage());
 		} catch (Exception e) {
 			logger.error("RegistryController: Exception while reading entity!", e);
 			response.setResult(null);
@@ -186,20 +188,22 @@ public class RegistryController {
 			org.eclipse.rdf4j.model.Model entityModel = searchService.search(rdf);
 			logger.debug("FETCHED: " + entityModel);
 			String jenaJSON = registryService.frameSearchEntity(entityModel);
-			if(jenaJSON.isEmpty()){
-				response.setResult(new HashMap<String,Object>());
-			}else{
+			if (jenaJSON.isEmpty()) {
+				response.setResult(new HashMap<String, Object>());
+			} else {
 				response.setResult(gson.fromJson(jenaJSON, mapType));
 			}
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
 			watch.stop("RegistryController.searchEntity");
 		} catch (AuditFailedException | RecordNotFoundException | TypeNotProvidedException e) {
-			logger.error("AuditFailedException | RecordNotFoundException | TypeNotProvidedException in controller while adding entity !",e);
+			logger.error(
+					"AuditFailedException | RecordNotFoundException | TypeNotProvidedException in controller while adding entity !",
+					e);
 			response.setResult(result);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 			responseParams.setErrmsg(e.getMessage());
 		} catch (Exception e) {
-			logger.error("Exception in controller while searching entities !",e);
+			logger.error("Exception in controller while searching entities !", e);
 			response.setResult(result);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 			responseParams.setErrmsg(e.getMessage());
@@ -222,7 +226,9 @@ public class RegistryController {
 			watch.stop("RegistryController.update");
 			logger.debug("RegistryController: entity updated !");
 		} catch (RecordNotFoundException | EntityCreationException e) {
-			logger.error("RegistryController: RecordNotFoundException|EntityCreationException while updating entity (without id)!", e);
+			logger.error(
+					"RegistryController: RecordNotFoundException|EntityCreationException while updating entity (without id)!",
+					e);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 			responseParams.setErrmsg(e.getMessage());
 
@@ -248,8 +254,8 @@ public class RegistryController {
 			logger.debug("Application heath checked : ", healthCheckResult.toString());
 		} catch (Exception e) {
 			logger.error("Error in health checking!", e);
-			HealthCheckResponse healthCheckResult =
-					new HealthCheckResponse(Constants.OPENSABER_REGISTRY_API_NAME, false, null);
+			HealthCheckResponse healthCheckResult = new HealthCheckResponse(Constants.OPENSABER_REGISTRY_API_NAME,
+					false, null);
 			response.setResult(JSONUtil.convertObjectJsonMap(healthCheckResult));
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 			responseParams.setErrmsg("Error during health check");
@@ -295,12 +301,12 @@ public class RegistryController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@RequestMapping(value="/delete/{id}", method = RequestMethod.DELETE)
-	public ResponseEntity<Response> deleteEntity(@PathVariable("id") String id){
+	@RequestMapping(value = "/delete/{id}", method = RequestMethod.DELETE)
+	public ResponseEntity<Response> deleteEntity(@PathVariable("id") String id) {
 		String entityId = registryContext + id;
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.DELETE, "OK", responseParams);
-		try{
+		try {
 			registryService.deleteEntityById(entityId);
 			responseParams.setErrmsg("");
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
@@ -309,7 +315,7 @@ public class RegistryController {
 			response.setResult(null);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 			responseParams.setErrmsg(e.getMessage());
-		} catch (RecordNotFoundException e){
+		} catch (RecordNotFoundException e) {
 			logger.error("Controller: RecordNotFoundException while deleting entity !", e);
 			response.setResult(null);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
@@ -322,14 +328,14 @@ public class RegistryController {
 		}
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
-	
+
 	/*
 	 * To set the keys(like "@id" or @"@type" to be trim of a json
 	 */
-	private List<String> getKeysToPurge(){
+	private List<String> getKeysToPurge() {
 		keyToPurge.add(JsonldConstants.ID);
 		keyToPurge.add(JsonldConstants.TYPE);
 		return keyToPurge;
-		
+
 	}
 }

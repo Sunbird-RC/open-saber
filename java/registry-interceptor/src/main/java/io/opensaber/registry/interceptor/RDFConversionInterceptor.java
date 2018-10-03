@@ -22,7 +22,7 @@ import io.opensaber.registry.middleware.transform.commons.Data;
 import io.opensaber.registry.middleware.util.Constants;
 
 @Component
-public class RDFConversionInterceptor implements HandlerInterceptor{
+public class RDFConversionInterceptor implements HandlerInterceptor {
 
 	private static Logger logger = LoggerFactory.getLogger(RDFConversionInterceptor.class);
 	private Middleware rdfConverter;
@@ -30,12 +30,11 @@ public class RDFConversionInterceptor implements HandlerInterceptor{
 
 	@Autowired
 	private OpenSaberInstrumentation watch;
-	
 
 	@Autowired
 	private RequestTransformFactory requestTransformFactory;
-	
-	public RDFConversionInterceptor(Middleware rdfConverter, Gson gson){
+
+	public RDFConversionInterceptor(Middleware rdfConverter, Gson gson) {
 		this.rdfConverter = rdfConverter;
 		this.gson = gson;
 	}
@@ -44,14 +43,12 @@ public class RDFConversionInterceptor implements HandlerInterceptor{
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
 		BaseRequestHandler baseRequestHandler = new BaseRequestHandler();
-		try{
+		try {
 			baseRequestHandler.setRequest(request);
-			// transform request to JsonLd.
 			String json = baseRequestHandler.getRequestBody();
 			logger.info("json requestBody RDFConversionInterceptor" + json);
 			Data<Object> jsonData = new Data<Object>(json);
 			Data<Object> jsonlsData = requestTransformFactory.getInstance(request.getContentType()).transform(jsonData);
-			// setting the BaseRequestHandler requestBody as jsonld data.
 			baseRequestHandler.setRequestBody(jsonlsData.getData().toString());
 			watch.start("RDFConversionInterceptor.execute");
 			Map<String, Object> attributeMap = rdfConverter.execute(baseRequestHandler.getRequestBodyMap());
@@ -62,13 +59,13 @@ public class RDFConversionInterceptor implements HandlerInterceptor{
 				logger.debug("RDF object for conversion :" + request.getAttribute(Constants.RDF_OBJECT));
 				return true;
 			}
-		}catch(MiddlewareHaltException e){
-			logger.error("MiddlewareHaltException from RDFConversionInterceptor !"+ e);
+		} catch (MiddlewareHaltException e) {
+			logger.error("MiddlewareHaltException from RDFConversionInterceptor !" + e);
 			baseRequestHandler.setResponse(response);
 			baseRequestHandler.writeResponseObj(gson, e.getMessage());
 			response = baseRequestHandler.getResponse();
-		}catch(Exception e){
-			logger.error("Exception from RDFConversionInterceptor!"+ e);
+		} catch (Exception e) {
+			logger.error("Exception from RDFConversionInterceptor!" + e);
 			e.printStackTrace();
 			baseRequestHandler.setResponse(response);
 			baseRequestHandler.writeResponseObj(gson, Constants.JSONLD_PARSE_ERROR);
@@ -80,15 +77,12 @@ public class RDFConversionInterceptor implements HandlerInterceptor{
 	@Override
 	public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
 			ModelAndView modelAndView) throws Exception {
-		// TODO Auto-generated method stub
 
 	}
-
 
 	@Override
 	public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
 			throws Exception {
-		// TODO Auto-generated method stub
 
 	}
 

@@ -40,20 +40,13 @@ public class FrameEntityImpl implements FrameEntity {
 	@Value("${frame.file}")
 	private String frameFile;
 
-	private org.eclipse.rdf4j.model.Model entityModel;
-
 	@Override
-	public String getContent() throws IOException, MultipleEntityException, EntityCreationException {
+	public String getContent(org.eclipse.rdf4j.model.Model entityModel) throws IOException, MultipleEntityException, EntityCreationException {
 		String jenaJson = frameEntity2Json(entityModel);
 		logger.info("JsonldResponseContent: Framed Jena JSON- " + jenaJson);
 		return jenaJson;
 	}
-
-	@Override
-	public void setModel(org.eclipse.rdf4j.model.Model entityModel) {
-		this.entityModel = entityModel;
-	}
-
+	
 	/**
 	 * Helper method to convert the RDF4j model to JSONLD
 	 * 
@@ -119,7 +112,7 @@ public class FrameEntityImpl implements FrameEntity {
 /**
  * Frame json specific.
  */
-	public String getFrameFileAsString(){				
+	public String getContent(){				
 		InputStreamReader in;
 		try {			
 			in = new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream(frameFile));

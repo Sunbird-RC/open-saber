@@ -7,10 +7,9 @@ import io.opensaber.registry.exception.MultipleEntityException;
 
 public interface FrameEntity {
 
-	public void setModel(org.eclipse.rdf4j.model.Model entityModel);
+	public String getContent(org.eclipse.rdf4j.model.Model entityModel)
+			throws IOException, MultipleEntityException, EntityCreationException;
 
-	public String getContent() throws IOException, MultipleEntityException, EntityCreationException;
-	
-	public String getFrameFileAsString();
+	public String getContent();
 
 }

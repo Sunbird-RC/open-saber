@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
@@ -43,44 +42,43 @@ public class JsonToLdTransformer implements ITransformer<Object> {
 
 		JsonNode graphNode = rootDataNode.path(JsonldConstants.GRAPH).get(0);
 		ObjectNode rootNode = addRootTypeNode(graphNode);
-		
+
 		setPurgeData(keysToPurge);
 		if (keysToPurge.size() != 0)
-			purgedKeyOfNodes(rootNode);
+			purgedKeys(rootNode);
 		return rootNode;
 	}
-	
-	private ObjectNode addRootTypeNode(JsonNode graphNode){
-        String rootNodeType = graphNode.path(JsonldConstants.TYPE).asText();
-        ObjectNode rootNode = JsonNodeFactory.instance.objectNode();
-        rootNode.set(rootNodeType, graphNode);
-        return rootNode;
-		
+
+	private ObjectNode addRootTypeNode(JsonNode graphNode) {
+		String rootNodeType = graphNode.path(JsonldConstants.TYPE).asText();
+		ObjectNode rootNode = JsonNodeFactory.instance.objectNode();
+		rootNode.set(rootNodeType, graphNode);
+		return rootNode;
+
 	}
 
-	private void purgedKeyOfNodes(ObjectNode node) {
+	private void purgedKeys(ObjectNode node) {
 		List<String> removeKeyNames = new ArrayList<String>();
 		node.fields().forEachRemaining(entry -> {
 			if (keysToPurge.contains(entry.getKey())) {
 				removeKeyNames.add(entry.getKey());
 			} else {
-				if(entry.getValue().isArray()){
+				if (entry.getValue().isArray()) {
 					for (int i = 0; i < entry.getValue().size(); i++) {
-						purgedKeyOfNodes((ObjectNode) entry.getValue().get(i));
+						purgedKeys((ObjectNode) entry.getValue().get(i));
 					}
-				}else if(entry.getValue().isObject()){
-					purgedKeyOfNodes((ObjectNode) entry.getValue());
+				} else if (entry.getValue().isObject()) {
+					purgedKeys((ObjectNode) entry.getValue());
 				}
 			}
 		});
 		node.remove(removeKeyNames);
 	}
 
-
 	@Override
 	public void setPurgeData(List<String> keyToPruge) {
 		this.keysToPurge = keyToPruge;
-		
+
 	}
 
 }

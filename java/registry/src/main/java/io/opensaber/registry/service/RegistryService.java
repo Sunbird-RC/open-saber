@@ -12,10 +12,6 @@ public interface RegistryService {
 
 	public List getEntityList();
 
-	// public String addEntity(Model rdfModel) throws DuplicateRecordException,
-	// EntityCreationException, EncryptionException, AuditFailedException,
-	// MultipleEntityException, RecordNotFoundException;
-
 	public String addEntity(Model rdfModel, String subject, String property)
 			throws DuplicateRecordException, EntityCreationException, EncryptionException, AuditFailedException,
 			MultipleEntityException, RecordNotFoundException;
@@ -26,9 +22,6 @@ public interface RegistryService {
 
 	public Model getEntityById(String id, boolean includeSignatures)
 			throws RecordNotFoundException, EncryptionException, AuditFailedException;
-
-	// public boolean deleteEntity(Model rdfModel) throws AuditFailedException,
-	// RecordNotFoundException;
 
 	public HealthCheckResponse health() throws Exception;
 
@@ -44,9 +37,8 @@ public interface RegistryService {
 
 	public boolean deleteEntityById(String id) throws AuditFailedException, RecordNotFoundException;
 
-	// Added methods to support frameEntity
-	public String getEntityFramedById(String id, boolean includeSignatures) throws RecordNotFoundException, EncryptionException,
-			AuditFailedException, IOException, MultipleEntityException, EntityCreationException;
+	public String getEntityFramedById(String id, boolean includeSignatures) throws RecordNotFoundException,
+			EncryptionException, AuditFailedException, IOException, MultipleEntityException, EntityCreationException;
 
 	public String getAuditNodeFramed(String id) throws IOException, NoSuchElementException, RecordNotFoundException,
 			EncryptionException, AuditFailedException, IOException, MultipleEntityException, EntityCreationException;
