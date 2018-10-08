@@ -34,6 +34,10 @@ public class ResponseTransformFactory {
 		case MediaType.APPLICATION_JSON_VALUE:
 			responseTransformer = jsonTransformer;
 			break;
+			
+		case MediaType.ALL_VALUE:
+			responseTransformer = jsonldTransformer;
+			break;	
 
 		default:
 			throw new TransformationException(EXCEPTION_MESSAGE, ErrorCode.UNSUPPOTERTED_TYPE);

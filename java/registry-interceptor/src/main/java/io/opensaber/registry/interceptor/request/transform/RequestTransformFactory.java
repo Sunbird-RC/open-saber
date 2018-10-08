@@ -1,6 +1,7 @@
 package io.opensaber.registry.interceptor.request.transform;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 
 import io.opensaber.registry.middleware.transform.commons.ErrorCode;
 import io.opensaber.registry.middleware.transform.commons.ITransformer;
@@ -9,7 +10,6 @@ import io.opensaber.registry.middleware.transform.commons.TransformationExceptio
 public class RequestTransformFactory {
 
 	private static final String MEDIATYPE_APPLICATION_JSONLD = "application/ld+json";
-	private static final String MEDIATYPE_APPLICATION_JSON = "application/json";
 	private static final String EXCEPTION_MESSAGE = "Media type not supported";
 
 	@Autowired
@@ -27,9 +27,13 @@ public class RequestTransformFactory {
 			requestTransformer = jsonldToLdRequestTransformer;
 			break;
 
-		case MEDIATYPE_APPLICATION_JSON:
+		case MediaType.APPLICATION_JSON_VALUE:
 			requestTransformer = jsonToLdRequestTransformer;
 			break;
+			
+		case MediaType.ALL_VALUE:
+			requestTransformer = jsonldToLdRequestTransformer;
+			break;	
 
 		default:
 			throw new TransformationException(EXCEPTION_MESSAGE, ErrorCode.UNSUPPOTERTED_TYPE);
