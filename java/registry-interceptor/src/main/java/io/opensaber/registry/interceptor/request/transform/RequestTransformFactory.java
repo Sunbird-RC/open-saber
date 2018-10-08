@@ -31,10 +31,6 @@ public class RequestTransformFactory {
 			requestTransformer = jsonToLdRequestTransformer;
 			break;
 			
-		case MediaType.ALL_VALUE:
-			requestTransformer = jsonldToLdRequestTransformer;
-			break;	
-
 		default:
 			throw new TransformationException(EXCEPTION_MESSAGE, ErrorCode.UNSUPPOTERTED_TYPE);
 

@@ -132,7 +132,7 @@ public class RegistryController {
 	 * 
 	 * @param id
 	 * @param accept,
-	 *            only one mime type is supported.
+	 *            only one mime type is supported at a time.
 	 * @return
 	 */
 	@RequestMapping(value = "/read/{id}", method = RequestMethod.GET)
@@ -176,7 +176,7 @@ public class RegistryController {
 	 * 
 	 * @param id
 	 * @param accept,
-	 *            only one mime type is supported.
+	 *            only one mime type is supported at a time.
 	 * @return
 	 */
 	@RequestMapping(value = "/search", method = RequestMethod.POST)
