@@ -12,6 +12,7 @@ import io.opensaber.registry.middleware.transform.commons.Constants.JsonldConsta
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.RDFUtil;
 import io.opensaber.registry.model.RegistrySignature;
+import io.opensaber.registry.service.RegistryAuditService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
 import io.opensaber.registry.service.SignatureService;
@@ -47,13 +48,13 @@ public class RegistryController {
 	private RegistryService registryService;
 
 	@Autowired
+	private RegistryAuditService registryAuditService;
+
+	@Autowired
 	private SearchService searchService;
 
 	@Autowired
 	private SignatureService signatureService;
-
-	@Autowired
-	private ObjectMapper objectMapper;
 
 	@Value("${registry.context.base}")
 	private String registryContext;
@@ -175,8 +176,16 @@ public class RegistryController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	/**
+	 * 
+	 * @param id
+	 * @param accept,
+	 *            only one mime type is supported.
+	 * @return
+	 */
 	@RequestMapping(value = "/search", method = RequestMethod.POST)
-	public ResponseEntity<Response> searchEntity(@RequestAttribute Request requestModel) {
+	public ResponseEntity<Response> searchEntity(@RequestAttribute Request requestModel,
+			@RequestHeader(value = "Accept") MediaType accept) {
 
 		Model rdf = (Model) requestModel.getRequestMap().get("rdf");
 		ResponseParams responseParams = new ResponseParams();
@@ -185,17 +194,16 @@ public class RegistryController {
 
 		try {
 			watch.start("RegistryController.searchEntity");
-			org.eclipse.rdf4j.model.Model entityModel = searchService.search(rdf);
-			logger.debug("FETCHED: " + entityModel);
-			String jenaJSON = registryService.frameSearchEntity(entityModel);
-			if (jenaJSON.isEmpty()) {
-				response.setResult(new HashMap<String, Object>());
-			} else {
-				response.setResult(gson.fromJson(jenaJSON, mapType));
-			}
+			String jenaJson = searchService.searchFramed(rdf);
+			Data<Object> data = new Data<>(jenaJson);
+			ITransformer<Object> responseTransformer = responseTransformFactory.getInstance(accept);
+			responseTransformer.setPurgeData(getKeysToPurge());
+			Data<Object> resultContent = responseTransformer.transform(data);
+			response.setResult(resultContent.getData());
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
 			watch.stop("RegistryController.searchEntity");
-		} catch (AuditFailedException | RecordNotFoundException | TypeNotProvidedException e) {
+		} catch (AuditFailedException | RecordNotFoundException | TypeNotProvidedException
+				| TransformationException e) {
 			logger.error(
 					"AuditFailedException | RecordNotFoundException | TypeNotProvidedException in controller while adding entity !",
 					e);
@@ -274,9 +282,9 @@ public class RegistryController {
 
 			try {
 				watch.start("RegistryController.fetchAudit");
-				org.eclipse.rdf4j.model.Model auditModel = registryService.getAuditNode(entityId);
+				org.eclipse.rdf4j.model.Model auditModel = registryAuditService.getAuditNode(entityId);
 				logger.debug("Audit Record model :" + auditModel);
-				String jenaJSON = registryService.frameAuditEntity(auditModel);
+				String jenaJSON = registryAuditService.frameAuditEntity(auditModel);
 				response.setResult(gson.fromJson(jenaJSON, mapType));
 				responseParams.setStatus(Response.Status.SUCCESSFUL);
 				watch.stop("RegistryController.fetchAudit");
