@@ -25,6 +25,8 @@ public class JsonToLdTransformer implements ITransformer<Object> {
 
 	private static Logger logger = LoggerFactory.getLogger(JsonToLdTransformer.class);
 	private List<String> keysToPurge = new ArrayList<>();
+	private String prefix = "";
+	private static final String SEPERATOR = ":";
 
 	public Data<Object> transform(Data<Object> data) throws TransformationException {
 		try {
@@ -43,7 +45,7 @@ public class JsonToLdTransformer implements ITransformer<Object> {
 
 		setPurgeData(keysToPurge);
 		ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
-		for(JsonNode graphNode : rootDataNode.path(JsonldConstants.GRAPH)){
+		for (JsonNode graphNode : rootDataNode.path(JsonldConstants.GRAPH)) {
 			ObjectNode rootNode = addRootTypeNode(graphNode);
 			if (keysToPurge.size() != 0)
 				purgedKeys(rootNode);
@@ -54,6 +56,7 @@ public class JsonToLdTransformer implements ITransformer<Object> {
 
 	private ObjectNode addRootTypeNode(JsonNode graphNode) {
 		String rootNodeType = graphNode.path(JsonldConstants.TYPE).asText();
+		setPrefix(rootNodeType.toLowerCase());
 		ObjectNode rootNode = JsonNodeFactory.instance.objectNode();
 		rootNode.set(rootNodeType, graphNode);
 		return rootNode;
@@ -66,9 +69,14 @@ public class JsonToLdTransformer implements ITransformer<Object> {
 			if (keysToPurge.contains(entry.getKey())) {
 				removeKeyNames.add(entry.getKey());
 			} else {
-				if (entry.getValue().isArray()) {
+				if (entry.getValue().isValueNode()) {
+					if (entry.getValue().toString().contains(prefix))
+						entry.setValue(JsonNodeFactory.instance.objectNode().put(entry.getKey(),
+								entry.getValue().asText().replace(prefix, "")));
+
+				} else if (entry.getValue().isArray()) {
 					for (int i = 0; i < entry.getValue().size(); i++) {
-						if (entry.getValue().get(i).isObject()) 
+						if (entry.getValue().get(i).isObject())
 							purgedKeys((ObjectNode) entry.getValue().get(i));
 					}
 				} else if (entry.getValue().isObject()) {
@@ -83,6 +91,10 @@ public class JsonToLdTransformer implements ITransformer<Object> {
 	public void setPurgeData(List<String> keyToPruge) {
 		this.keysToPurge = keyToPruge;
 
+	}
+
+	private void setPrefix(String prefix) {
+		this.prefix = prefix + SEPERATOR;
 	}
 
 }
