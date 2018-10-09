@@ -36,7 +36,7 @@ public class ResponseTransformFactory {
 			break;
 			
 		case MediaType.ALL_VALUE:
-			responseTransformer = jsonldTransformer;
+			responseTransformer = jsonTransformer;
 			break;	
 
 		default:
