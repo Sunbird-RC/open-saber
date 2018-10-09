@@ -1,7 +1,6 @@
 package io.opensaber.registry.interceptor;
 
 import com.google.gson.Gson;
-import io.opensaber.pojos.Request;
 import io.opensaber.registry.interceptor.handler.BaseRequestHandler;
 import io.opensaber.registry.middleware.util.Constants;
 import org.slf4j.Logger;
@@ -38,9 +37,11 @@ public class RequestIdValidationInterceptor implements HandlerInterceptor {
             throws Exception {
         BaseRequestHandler baseRequestHandler = new BaseRequestHandler();
         try{
-            baseRequestHandler.setRequest(request);
+            //Code commented for later purpose, need to work on reading body from request
+            /*baseRequestHandler.setRequest(request);
             Request req = (Request) baseRequestHandler.getRequestBodyMap().get(Constants.REQUEST_ATTRIBUTE);
-            if(requestIdMap.containsKey(request.getRequestURI()) && requestIdMap.get(request.getRequestURI()).equalsIgnoreCase(req.getId())){
+            if(requestIdMap.containsKey(request.getRequestURI()) && requestIdMap.get(request.getRequestURI()).equalsIgnoreCase(req.getId())){*/
+            if(true) {
                 return true;
             } else {
                 throw new Exception();

@@ -44,6 +44,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.PathResourceResolver;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -279,7 +280,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	 * @return Map
 	 */
 	@Bean
-	public Map requestIdMap(){
+	public Map<String, String> requestIdMap(){
 		Map<String, String> requestIdMap = new HashMap<>();
 		requestIdMap.put(Constants.REGISTRY_ADD_ENDPOINT,Response.API_ID.CREATE.getId());
 		requestIdMap.put(Constants.REGISTRY_SEARCH_ENDPOINT,Response.API_ID.SEARCH.getId());
@@ -296,8 +297,9 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		int orderIdx = 1;
+		Map<String, String> requestMap =  requestIdMap();
 		registry.addInterceptor(requestIdValidationInterceptor()).
-				addPathPatterns("/add", "/update", "/search","/utils/sign","/utils/verify").order(orderIdx++);
+				addPathPatterns(new ArrayList(requestMap.keySet())).order(orderIdx++);
 		if(authenticationEnabled) {
             registry.addInterceptor(authorizationInterceptor())
                     .addPathPatterns("/**").excludePathPatterns("/health", "/error").order(orderIdx++);
