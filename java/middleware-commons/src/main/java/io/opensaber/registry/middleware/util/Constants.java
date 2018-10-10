@@ -54,6 +54,9 @@ public class Constants {
     public static final String SCHEMA_CONFIGURATION_MISSING = "Configuration for schema file is missing";
     public static final String ENTITY_TYPE_NOT_PROVIDED = "Entity type is not provided in the input";
     public static final String ENTITY_ID_MISMATCH = "Entity id is wrongly provided in the input";
+    public static final String SIGN_ERROR_MESSAGE = "Unable to get signature for data";
+    public static final String VERIFY_SIGN_ERROR_MESSAGE = "Unable to verify signature for data";
+    public static final String KEY_RETRIEVE_ERROR_MESSAGE = "Unable to retrieve key";
 
 
     public static final String OPENSABER_REGISTRY_API_NAME = "opensaber-registry-api";
