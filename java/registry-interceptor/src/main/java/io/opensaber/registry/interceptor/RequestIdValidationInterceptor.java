@@ -39,9 +39,8 @@ public class RequestIdValidationInterceptor implements HandlerInterceptor {
         try{
             //Code commented for later purpose, need to work on reading body from request
             /*baseRequestHandler.setRequest(request);
-            Request req = (Request) baseRequestHandler.getRequestBodyMap().get(Constants.REQUEST_ATTRIBUTE);
-            if(requestIdMap.containsKey(request.getRequestURI()) && requestIdMap.get(request.getRequestURI()).equalsIgnoreCase(req.getId())){*/
-            if(true) {
+            Request req = (Request) baseRequestHandler.getRequestBodyMap().get(Constants.REQUEST_ATTRIBUTE);*/
+            if(requestIdMap.containsKey(request.getRequestURI()) /*&& requestIdMap.get(request.getRequestURI()).equalsIgnoreCase(req.getId())*/){
                 return true;
             } else {
                 throw new Exception();
