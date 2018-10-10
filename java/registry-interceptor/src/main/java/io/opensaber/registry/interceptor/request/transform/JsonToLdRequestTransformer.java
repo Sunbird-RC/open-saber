@@ -1,10 +1,14 @@
 package io.opensaber.registry.interceptor.request.transform;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.io.CharStreams;
 
+import io.opensaber.registry.middleware.transform.commons.Constants.JsonldConstants;
 import io.opensaber.registry.middleware.transform.commons.Data;
 import io.opensaber.registry.middleware.transform.commons.ErrorCode;
 import io.opensaber.registry.middleware.transform.commons.ITransformer;
@@ -16,6 +20,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 
 public class JsonToLdRequestTransformer implements ITransformer<Object> {
@@ -23,6 +28,8 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 	private static Logger logger = LoggerFactory.getLogger(JsonToLdRequestTransformer.class);
 	private String context;
 	private final static String REQUEST = "request";
+	private List<String> nodeTypes = new ArrayList<>();
+
 
 
 	public JsonToLdRequestTransformer(String context) {
@@ -35,8 +42,9 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 			ObjectMapper mapper = new ObjectMapper();
 			ObjectNode input = (ObjectNode) mapper.readTree(data.getData().toString());
 			ObjectNode fieldObjects = (ObjectNode) mapper.readTree(context);
-
+			setNodeTypeToAppend(fieldObjects);
 			ObjectNode requestnode = (ObjectNode) input.path(REQUEST);
+			//appendSufix(requestnode);
 			String type = getTypeFromNode(requestnode);
 			requestnode = (ObjectNode) requestnode.path(type);
 			requestnode.setAll(fieldObjects);
@@ -59,6 +67,42 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 			rootValue = requestNode.fields().next().getKey();
 		}
 		return rootValue;
+	}
+	
+	private void appendSufix(ObjectNode requestNode){		
+		
+		requestNode.fields().forEachRemaining(entry->{			
+			if(entry.getValue().isValueNode() && nodeTypes.contains(entry.getKey())){
+				
+				logger.info("entry.getKey() for prepending "+entry.getKey());
+				String defaultValue=entry.getValue().asText().replaceFirst("","teacher:");
+				entry.getValue().asText(defaultValue);
+				entry.setValue(null);
+
+				/*entry.setValue(JsonNodeFactory.instance.objectNode().put(entry.getKey(),
+						entry.getValue().asText().replaceFirst("","teacher:")));*/
+			}else if(entry.getValue().isObject()){
+				appendSufix((ObjectNode)entry.getValue());
+			}else if(entry.getValue().isArray()){
+				for(int i=0; i<entry.getValue().size(); i++){
+					//appendSufix((ObjectNode)entry.getValue().get(i));
+				}
+				
+			}
+		});
+			
+	}
+	
+	private void setNodeTypeToAppend(ObjectNode fieldObjects){
+		ObjectNode context = (ObjectNode) fieldObjects.path(JsonldConstants.CONTEXT);
+		logger.info("Initial nodeType size "+nodeTypes.size());
+		context.fields().forEachRemaining(entry -> {
+			if(entry.getValue().isObject() && entry.getValue().has(JsonldConstants.TYPE)){
+				if(entry.getValue().get(JsonldConstants.TYPE).asText().equalsIgnoreCase(JsonldConstants.ID))
+					nodeTypes.add(entry.getKey());
+			}
+		});
+		logger.info("nodeType size "+nodeTypes.size());
 	}
 
 	@Override
