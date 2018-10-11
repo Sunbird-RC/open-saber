@@ -71,8 +71,7 @@ public class JsonToLdTransformer implements ITransformer<Object> {
 			} else {
 				if(entry.getValue().isValueNode()){
 					if(entry.getValue().toString().contains(prefix))
-						//entry.setValue(JsonNodeFactory.instance.objectNode());
-						entry.setValue(JsonNodeFactory.instance.objectNode().put(entry.getKey(),entry.getValue().asText().replace(prefix, "")));
+						replaceText(node,entry.getKey(),entry.getValue().asText().replace(prefix, "") );
 					
 				}else if (entry.getValue().isArray()) {
 					for (int i = 0; i < entry.getValue().size(); i++) {
@@ -85,6 +84,13 @@ public class JsonToLdTransformer implements ITransformer<Object> {
 			}
 		});
 		node.remove(removeKeyNames);
+	}
+	
+
+	public static void replaceText(JsonNode parent, String fieldName, String newText) {
+		if (parent.has(fieldName)) {
+			((ObjectNode) parent).put(fieldName, newText);
+		}
 	}
 
 	@Override
