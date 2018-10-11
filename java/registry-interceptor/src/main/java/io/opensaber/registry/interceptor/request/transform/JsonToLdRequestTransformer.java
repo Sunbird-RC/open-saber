@@ -5,27 +5,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.io.CharStreams;
 
-import io.opensaber.registry.middleware.transform.commons.Constants.JsonldConstants;
-import io.opensaber.registry.middleware.transform.commons.Data;
-import io.opensaber.registry.middleware.transform.commons.ErrorCode;
-import io.opensaber.registry.middleware.transform.commons.ITransformer;
-import io.opensaber.registry.middleware.transform.commons.TransformationException;
+import io.opensaber.registry.middleware.transform.Data;
+import io.opensaber.registry.middleware.transform.ErrorCode;
+import io.opensaber.registry.middleware.transform.ITransformer;
+import io.opensaber.registry.middleware.transform.TransformationException;
+import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 public class JsonToLdRequestTransformer implements ITransformer<Object> {
 
@@ -75,7 +67,6 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 		return rootValue;
 	}
 
-
 	private void appendSufix(JsonNode requestNode, String prefix) {
 
 		requestNode.fields().forEachRemaining(entry -> {
@@ -95,20 +86,19 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 
 				}
 				replaceArrayNode(requestNode, entry.getKey(), arrayNode);
-				
+
 			}
 
 		});
 	}
-	
 
 	public static void replaceText(JsonNode parent, String fieldName, String newText) {
 		if (parent.has(fieldName)) {
 			((ObjectNode) parent).put(fieldName, newText);
 		}
 	}
-	
-	public static void replaceArrayNode(JsonNode parent, String fieldName, ArrayNode newarrayNode ){
+
+	public static void replaceArrayNode(JsonNode parent, String fieldName, ArrayNode newarrayNode) {
 		if (newarrayNode.size() > 0)
 			((ObjectNode) parent).set(fieldName, newarrayNode);
 	}

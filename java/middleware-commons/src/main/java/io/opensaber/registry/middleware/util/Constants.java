@@ -79,6 +79,15 @@ public class Constants {
     public static final String SIGN_TYPE = "type";
     public static final String SIGN_SIGNATURE_VALUE = "signatureValue";
 
+    public static class JsonldConstants {
+        public static final String CONTEXT = "@context";
+        public static final String ID = "@id";
+        public static final String TYPE = "@type";
+        public static final String VALUE = "@value";
+        public static final String GRAPH = "@graph";
+    }
+
+    
     public enum GraphDatabaseProvider {
         NEO4J("NEO4J"),
         ORIENTDB("ORIENTDB"),

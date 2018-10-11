@@ -4,9 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
-import io.opensaber.registry.middleware.transform.commons.ErrorCode;
-import io.opensaber.registry.middleware.transform.commons.ITransformer;
-import io.opensaber.registry.middleware.transform.commons.TransformationException;
+import io.opensaber.registry.middleware.transform.ErrorCode;
+import io.opensaber.registry.middleware.transform.ITransformer;
+import io.opensaber.registry.middleware.transform.TransformationException;
 import io.opensaber.registry.transformation.JsonToLdTransformer;
 import io.opensaber.registry.transformation.JsonldToLdTransformer;
 

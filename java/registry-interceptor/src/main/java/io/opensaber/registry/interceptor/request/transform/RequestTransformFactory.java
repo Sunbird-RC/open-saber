@@ -3,9 +3,9 @@ package io.opensaber.registry.interceptor.request.transform;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 
-import io.opensaber.registry.middleware.transform.commons.ErrorCode;
-import io.opensaber.registry.middleware.transform.commons.ITransformer;
-import io.opensaber.registry.middleware.transform.commons.TransformationException;
+import io.opensaber.registry.middleware.transform.ErrorCode;
+import io.opensaber.registry.middleware.transform.ITransformer;
+import io.opensaber.registry.middleware.transform.TransformationException;
 
 public class RequestTransformFactory {
 
