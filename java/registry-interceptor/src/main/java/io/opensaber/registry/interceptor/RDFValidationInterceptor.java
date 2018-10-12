@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.ModelAndView;
 import com.google.gson.Gson;
 import io.opensaber.registry.interceptor.handler.BaseRequestHandler;
 import io.opensaber.registry.middleware.Middleware;
@@ -53,18 +52,15 @@ public class RDFValidationInterceptor implements HandlerInterceptor {
 				logger.info("RDF Validation failed!");
 				baseRequestHandler.setResponse(response);
 				baseRequestHandler.writeResponseObj(validationResponse.getError(), validationResponse);
-				response = baseRequestHandler.getResponse();
 			}
 		} catch (MiddlewareHaltException e) {
 			logger.error("MiddlewareHaltException from RDFValidationInterceptor: ", e);
 			baseRequestHandler.setResponse(response);
 			baseRequestHandler.writeResponseObj(gson, e.getMessage());
-			response = baseRequestHandler.getResponse();
 		} catch (Exception e) {
 			logger.error("Exception from RDFValidationInterceptor: ", e);
 			baseRequestHandler.setResponse(response);
 			baseRequestHandler.writeResponseObj(gson, Constants.RDF_VALIDATION_ERROR);
-			response = baseRequestHandler.getResponse();
 		}
 		return false;
 	}
