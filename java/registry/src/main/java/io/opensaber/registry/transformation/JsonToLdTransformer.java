@@ -69,16 +69,16 @@ public class JsonToLdTransformer implements ITransformer<Object> {
 			if (keysToPurge.contains(entry.getKey())) {
 				removeKeyNames.add(entry.getKey());
 			} else {
-				if (entry.getValue().isValueNode()) {
-					if (entry.getValue().toString().contains(prefix))
-						replaceText(node, entry.getKey(), entry.getValue().asText().replace(prefix, ""));
+				JsonNode entryValue = entry.getValue();
+				if (entryValue.isValueNode() && entryValue.toString().contains(prefix)) {
+					node.put(entry.getKey(), entry.getValue().asText().replace(prefix, ""));
 
-				} else if (entry.getValue().isArray()) {
-					for (int i = 0; i < entry.getValue().size(); i++) {
+				} else if (entryValue.isArray()) {
+					for (int i = 0; i < entryValue.size(); i++) {
 						if (entry.getValue().get(i).isObject()) 
 							purgedKeys((ObjectNode) entry.getValue().get(i));
 					}
-				} else if (entry.getValue().isObject()) {
+				} else if (entryValue.isObject()) {
 					purgedKeys((ObjectNode) entry.getValue());
 				}
 			}
@@ -86,11 +86,6 @@ public class JsonToLdTransformer implements ITransformer<Object> {
 		node.remove(removeKeyNames);
 	}
 
-	public static void replaceText(JsonNode parent, String fieldName, String newText) {
-		if (parent.has(fieldName)) {
-			((ObjectNode) parent).put(fieldName, newText);
-		}
-	}
 
 	@Override
 	public void setPurgeData(List<String> keyToPruge) {
