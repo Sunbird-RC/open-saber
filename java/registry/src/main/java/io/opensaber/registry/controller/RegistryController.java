@@ -11,6 +11,7 @@ import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
 import io.opensaber.registry.middleware.util.RDFUtil;
 import io.opensaber.registry.model.RegistrySignature;
+import io.opensaber.registry.service.RegistryAuditService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
 import io.opensaber.registry.service.SignatureService;
@@ -44,6 +45,9 @@ public class RegistryController {
 
 	@Autowired
 	private RegistryService registryService;
+
+	@Autowired
+	private RegistryAuditService registryAuditService;
 
 	@Autowired
 	private SearchService searchService;
@@ -176,6 +180,7 @@ public class RegistryController {
 	 * @param id
 	 * @param accept,
 	 *            only one mime type is supported at a time.
+
 	 * @return
 	 */
 	@RequestMapping(value = "/search", method = RequestMethod.POST)
@@ -277,9 +282,9 @@ public class RegistryController {
 
 			try {
 				watch.start("RegistryController.fetchAudit");
-				org.eclipse.rdf4j.model.Model auditModel = registryService.getAuditNode(entityId);
+				org.eclipse.rdf4j.model.Model auditModel = registryAuditService.getAuditNode(entityId);
 				logger.debug("Audit Record model :" + auditModel);
-				String jenaJSON = registryService.frameAuditEntity(auditModel);
+				String jenaJSON = registryAuditService.frameAuditEntity(auditModel);
 				response.setResult(gson.fromJson(jenaJSON, mapType));
 				responseParams.setStatus(Response.Status.SUCCESSFUL);
 				watch.stop("RegistryController.fetchAudit");

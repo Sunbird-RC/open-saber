@@ -10,7 +10,6 @@ import io.opensaber.registry.interceptor.handler.BaseRequestHandler;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.service.SignatureService;
 import io.opensaber.registry.util.JSONUtil;
-import io.opensaber.registry.util.ResponseUtil;
 import org.apache.jena.ext.com.google.common.io.ByteStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,8 +64,7 @@ public class RegistryUtilsController {
             BaseRequestHandler baseRequestHandler = new BaseRequestHandler();
             baseRequestHandler.setRequest(requestModel);
             Map<String,Object> requestBodyMap = baseRequestHandler.getRequestBodyMap();
-            if(requestBodyMap.containsKey(Constants.REQUEST_ATTRIBUTE) && requestBodyMap.containsKey(Constants.ATTRIBUTE_NAME)
-                    && ResponseUtil.checkApiId((Request)requestBodyMap.get(Constants.REQUEST_ATTRIBUTE),Response.API_ID.SIGN.getId())){
+            if(requestBodyMap.containsKey(Constants.REQUEST_ATTRIBUTE) && requestBodyMap.containsKey(Constants.ATTRIBUTE_NAME)){
                 Object result = signatureService.sign(gson.fromJson(requestBodyMap.get(Constants.ATTRIBUTE_NAME).toString(),mapType));
                 response.setResult(result);
                 responseParams.setErrmsg("");
@@ -77,11 +75,9 @@ public class RegistryUtilsController {
             }
         } catch (Exception e) {
             logger.error("Error in generating signature", e);
-            HealthCheckResponse healthCheckResult =
-                    new HealthCheckResponse(Constants.SUNBIRD_SIGNATURE_SERVICE_NAME, false, null);
-            response.setResult(JSONUtil.convertObjectJsonMap(healthCheckResult));
+            response.setResult(null);
             responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-            responseParams.setErrmsg("");
+            responseParams.setErrmsg(Constants.SIGN_ERROR_MESSAGE);
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -147,11 +143,9 @@ public class RegistryUtilsController {
             
         } catch (Exception e) {
             logger.error("Error in verifying signature", e);
-            HealthCheckResponse healthCheckResult =
-                    new HealthCheckResponse(Constants.SUNBIRD_SIGNATURE_SERVICE_NAME, false, null);
-            response.setResult(JSONUtil.convertObjectJsonMap(healthCheckResult));
+            response.setResult(null);
             responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-            responseParams.setErrmsg("");
+            responseParams.setErrmsg(Constants.VERIFY_SIGN_ERROR_MESSAGE);
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -169,11 +163,9 @@ public class RegistryUtilsController {
             responseParams.setStatus(Response.Status.SUCCESSFUL);
         } catch (Exception e) {
             logger.error("Error in getting key ", e);
-            HealthCheckResponse healthCheckResult =
-                    new HealthCheckResponse(Constants.SUNBIRD_SIGNATURE_SERVICE_NAME, false, null);
-            response.setResult(JSONUtil.convertObjectJsonMap(healthCheckResult));
+            response.setResult(null);
             responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-            responseParams.setErrmsg("");
+            responseParams.setErrmsg(Constants.KEY_RETRIEVE_ERROR_MESSAGE);
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

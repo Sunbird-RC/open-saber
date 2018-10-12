@@ -75,7 +75,7 @@ public class JsonToLdTransformer implements ITransformer<Object> {
 
 				} else if (entry.getValue().isArray()) {
 					for (int i = 0; i < entry.getValue().size(); i++) {
-						if (entry.getValue().get(i).isObject())
+						if (entry.getValue().get(i).isObject()) 
 							purgedKeys((ObjectNode) entry.getValue().get(i));
 					}
 				} else if (entry.getValue().isObject()) {

@@ -43,6 +43,7 @@ public class RDFValidationInterceptor implements HandlerInterceptor {
 			Map<String, Object> attributeMap = rdfValidator.execute(baseRequestHandler.getRequestAttributeMap());
 			baseRequestHandler.mergeRequestAttributes(attributeMap);
 			watch.stop("RDFValidationInterceptor.execute");
+
 			ValidationResponse validationResponse = (ValidationResponse) baseRequestHandler.getRequest()
 					.getAttribute(Constants.RDF_VALIDATION_OBJECT);
 			if (validationResponse != null && validationResponse.isValid()) {
