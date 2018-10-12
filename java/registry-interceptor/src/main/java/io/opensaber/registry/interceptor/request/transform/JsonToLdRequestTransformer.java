@@ -73,18 +73,17 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 			JsonNode entryValue = entry.getValue();
 			if (entryValue.isValueNode() && nodeTypes.contains(entry.getKey())) {
 				String defaultValue = entryValue.asText().replaceFirst("", prefix);
-				requestNode.put(entry.getKey(),defaultValue);
-				//replaceText(requestNode, entry.getKey(), defaultValue);
+				requestNode.put(entry.getKey(), defaultValue);
 
 			} else if (entryValue.isObject()) {
-				appendSufix((ObjectNode)entry.getValue(), prefix);
+				appendSufix((ObjectNode) entry.getValue(), prefix);
 			} else if (entryValue.isArray()) {
 				ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
 				for (int i = 0; i < entryValue.size(); i++) {
 					if (entryValue.get(i).isTextual())
 						arrayNode.add(entry.getValue().get(i).asText().replaceFirst("", prefix));
 					else
-						appendSufix((ObjectNode)entry.getValue().get(i), prefix);
+						appendSufix((ObjectNode) entry.getValue().get(i), prefix);
 
 				}
 				replaceArrayNode(requestNode, entry.getKey(), arrayNode);
@@ -94,12 +93,6 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 		});
 	}
 
-/*	public static void replaceText(JsonNode parent, String fieldName, String newText) {
-		if (parent.has(fieldName)) {
-			((ObjectNode) parent).put(fieldName, newText);
-		}
-	}
-*/
 	public static void replaceArrayNode(ObjectNode parent, String fieldName, ArrayNode newarrayNode) {
 		if (newarrayNode.size() > 0)
 			parent.set(fieldName, newarrayNode);
