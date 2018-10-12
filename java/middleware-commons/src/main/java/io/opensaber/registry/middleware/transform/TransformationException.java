@@ -15,4 +15,8 @@ public class TransformationException extends Exception {
         super(message);
         this.errorCode = errorCode;
     }
+    
+    public ErrorCode getErrorCode(){
+    	return errorCode;
+    }
 }

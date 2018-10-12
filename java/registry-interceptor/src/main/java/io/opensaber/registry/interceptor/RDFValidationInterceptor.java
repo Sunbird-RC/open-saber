@@ -44,8 +44,7 @@ public class RDFValidationInterceptor implements HandlerInterceptor {
 			Map<String, Object> attributeMap = rdfValidator.execute(baseRequestHandler.getRequestAttributeMap());
 			baseRequestHandler.mergeRequestAttributes(attributeMap);
 			watch.stop("RDFValidationInterceptor.execute");
-			request = baseRequestHandler.getRequest();
-			ValidationResponse validationResponse = (ValidationResponse) request
+			ValidationResponse validationResponse = (ValidationResponse) baseRequestHandler.getRequest()
 					.getAttribute(Constants.RDF_VALIDATION_OBJECT);
 			if (validationResponse != null && validationResponse.isValid()) {
 				logger.info("RDF Validated successfully !");
@@ -68,17 +67,6 @@ public class RDFValidationInterceptor implements HandlerInterceptor {
 			response = baseRequestHandler.getResponse();
 		}
 		return false;
-	}
-
-	@Override
-	public void afterCompletion(HttpServletRequest arg0, HttpServletResponse arg1, Object arg2, Exception arg3)
-			throws Exception {
-	}
-
-	@Override
-	public void postHandle(HttpServletRequest arg0, HttpServletResponse arg1, Object arg2, ModelAndView arg3)
-			throws Exception {
-
 	}
 
 }

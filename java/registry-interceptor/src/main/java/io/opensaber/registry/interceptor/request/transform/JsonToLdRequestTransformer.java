@@ -106,9 +106,9 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 	private void setNodeTypeToAppend(ObjectNode fieldObjects) {
 		ObjectNode context = (ObjectNode) fieldObjects.path(JsonldConstants.CONTEXT);
 		context.fields().forEachRemaining(entry -> {
-			if (entry.getValue().has(JsonldConstants.TYPE)) {
-				if (entry.getValue().get(JsonldConstants.TYPE).asText().equalsIgnoreCase(JsonldConstants.ID))
-					nodeTypes.add(entry.getKey());
+			if (entry.getValue().has(JsonldConstants.TYPE)
+					&& entry.getValue().get(JsonldConstants.TYPE).asText().equalsIgnoreCase(JsonldConstants.ID)) {
+				nodeTypes.add(entry.getKey());
 			}
 		});
 		logger.info("nodeType size " + nodeTypes.size());
