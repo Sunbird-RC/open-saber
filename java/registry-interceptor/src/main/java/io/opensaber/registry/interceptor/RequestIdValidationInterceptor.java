@@ -1,6 +1,7 @@
 package io.opensaber.registry.interceptor;
 
 import com.google.gson.Gson;
+import io.opensaber.pojos.Request;
 import io.opensaber.registry.interceptor.handler.BaseRequestHandler;
 import io.opensaber.registry.middleware.util.Constants;
 import org.slf4j.Logger;
@@ -38,14 +39,17 @@ public class RequestIdValidationInterceptor implements HandlerInterceptor {
         BaseRequestHandler baseRequestHandler = new BaseRequestHandler();
         try{
             //Code commented for later purpose, need to work on reading body from request
-            /*baseRequestHandler.setRequest(request);
-            Request req = (Request) baseRequestHandler.getRequestBodyMap().get(Constants.REQUEST_ATTRIBUTE);*/
-            if(requestIdMap.containsKey(request.getRequestURI()) /*&& requestIdMap.get(request.getRequestURI()).equalsIgnoreCase(req.getId())*/){
+            baseRequestHandler.setRequest(request);
+            //Request req = (Request) baseRequestHandler.getRequestBodyMap().get(Constants.REQUEST_ATTRIBUTE);
+            Map<String, Object> attributeMap = baseRequestHandler.getRequestBodyMap();
+            Request req = (Request) attributeMap.get(Constants.REQUEST_ATTRIBUTE);
+            baseRequestHandler.mergeRequestAttributes(attributeMap);
+            baseRequestHandler.setRequest(request);
+            if(requestIdMap.containsKey(request.getRequestURI()) && requestIdMap.get(request.getRequestURI()).equalsIgnoreCase(req.getId())) {
                 return true;
             } else {
                 throw new Exception();
             }
-
         }catch(Exception e){
             logger.error(" Authentication Failed !", e);
             baseRequestHandler.setResponse(response);

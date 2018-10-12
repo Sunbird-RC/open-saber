@@ -17,10 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
@@ -56,14 +53,14 @@ public class RegistryUtilsController {
 
 
     @RequestMapping(value = "/utils/sign", method = RequestMethod.POST)
-    public ResponseEntity<Response> generateSignature(HttpServletRequest requestModel) {
+    public ResponseEntity<Response> generateSignature(@RequestAttribute Request requestModel) {
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.SIGN, "OK", responseParams);
 
         try {
-            BaseRequestHandler baseRequestHandler = new BaseRequestHandler();
-            baseRequestHandler.setRequest(requestModel);
-            Map<String,Object> requestBodyMap = baseRequestHandler.getRequestBodyMap();
+            /*BaseRequestHandler baseRequestHandler = new BaseRequestHandler();
+            baseRequestHandler.setRequest(requestModel);*/
+            Map<String,Object> requestBodyMap = requestModel.getRequestMap();
             if(requestBodyMap.containsKey(Constants.REQUEST_ATTRIBUTE) && requestBodyMap.containsKey(Constants.ATTRIBUTE_NAME)){
                 Object result = signatureService.sign(gson.fromJson(requestBodyMap.get(Constants.ATTRIBUTE_NAME).toString(),mapType));
                 response.setResult(result);
