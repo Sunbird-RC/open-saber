@@ -24,8 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -135,13 +135,13 @@ public class RegistryController {
 	 * 
 	 * @param id
 	 * @param accept,
-	 *            only one mime type is supported at a time.
+	 *            only one mime type is supported at a time. Pick up the first
+	 *            mime type from the header.
 	 * @return
 	 */
 	@RequestMapping(value = "/read/{id}", method = RequestMethod.GET)
 	public ResponseEntity<Response> readEntity(@PathVariable("id") String id,
-			@RequestParam(required = false) boolean includeSignatures,
-			@RequestHeader(value = "Accept") MediaType accept) {
+			@RequestParam(required = false) boolean includeSignatures, @RequestHeader HttpHeaders header) {
 
 		String entityId = registryContext + id;
 		ResponseParams responseParams = new ResponseParams();
@@ -153,7 +153,8 @@ public class RegistryController {
 			logger.info("RegistryController: Json string " + content);
 
 			Data<Object> data = new Data<Object>(content);
-			ITransformer<Object> responseTransformer = responseTransformFactory.getInstance(accept);
+			ITransformer<Object> responseTransformer = responseTransformFactory
+					.getInstance(header.getAccept().iterator().next());
 			responseTransformer.setPurgeData(getKeysToPurge());
 			Data<Object> responseContent = responseTransformer.transform(data);
 			response.setResult(responseContent.getData());
@@ -179,13 +180,13 @@ public class RegistryController {
 	 * 
 	 * @param id
 	 * @param accept,
-	 *            only one mime type is supported at a time.
-
+	 *            only one mime type is supported at a time. Pick up the first
+	 *            mime type from the header.
 	 * @return
 	 */
 	@RequestMapping(value = "/search", method = RequestMethod.POST)
 	public ResponseEntity<Response> searchEntity(@RequestAttribute Request requestModel,
-			@RequestHeader(value = "Accept") MediaType accept) {
+			@RequestHeader HttpHeaders header) {
 
 		Model rdf = (Model) requestModel.getRequestMap().get("rdf");
 		ResponseParams responseParams = new ResponseParams();
@@ -196,7 +197,8 @@ public class RegistryController {
 			watch.start("RegistryController.searchEntity");
 			String jenaJson = searchService.searchFramed(rdf);
 			Data<Object> data = new Data<>(jenaJson);
-			ITransformer<Object> responseTransformer = responseTransformFactory.getInstance(accept);
+			ITransformer<Object> responseTransformer = responseTransformFactory
+					.getInstance(header.getAccept().iterator().next());
 			responseTransformer.setPurgeData(getKeysToPurge());
 			Data<Object> resultContent = responseTransformer.transform(data);
 			response.setResult(resultContent.getData());
