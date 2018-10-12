@@ -1,5 +1,7 @@
 package io.opensaber.registry.controller;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -8,6 +10,8 @@ import com.google.gson.reflect.TypeToken;
 import io.opensaber.pojos.*;
 import io.opensaber.registry.interceptor.handler.BaseRequestHandler;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.model.SignRequest;
+import io.opensaber.registry.model.VerifyRequest;
 import io.opensaber.registry.service.SignatureService;
 import io.opensaber.registry.util.JSONUtil;
 import org.apache.jena.ext.com.google.common.io.ByteStreams;
@@ -51,25 +55,27 @@ public class RegistryUtilsController {
     @Value("${frame.file}")
     private String frameFile;
 
+    
 
     @RequestMapping(value = "/utils/sign", method = RequestMethod.POST)
     public ResponseEntity<Response> generateSignature(@RequestAttribute Request requestModel) {
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.SIGN, "OK", responseParams);
-
+        
         try {
-            /*BaseRequestHandler baseRequestHandler = new BaseRequestHandler();
-            baseRequestHandler.setRequest(requestModel);*/
-            Map<String,Object> requestBodyMap = requestModel.getRequestMap();
-            if(requestBodyMap.containsKey(Constants.REQUEST_ATTRIBUTE) && requestBodyMap.containsKey(Constants.ATTRIBUTE_NAME)){
-                Object result = signatureService.sign(gson.fromJson(requestBodyMap.get(Constants.ATTRIBUTE_NAME).toString(),mapType));
-                response.setResult(result);
-                responseParams.setErrmsg("");
-                responseParams.setStatus(Response.Status.SUCCESSFUL);
-            } else {
-                responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-                responseParams.setErrmsg("");
-            }
+        	ObjectMapper mapper = new ObjectMapper();
+        	//mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        	mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+
+        	logger.info("print reuest "+requestModel.getRequestMap().
+            		get(Constants.REQUEST_ATTRIBUTE_NAME).toString());
+            SignRequest signRequest = mapper.readValue(requestModel.getRequestMap().
+            		get(Constants.REQUEST_ATTRIBUTE_NAME).toString(), SignRequest.class);
+            Object signResponse = signatureService.sign(signRequest);
+            response.setResult(signResponse);
+            responseParams.setErrmsg("");
+            responseParams.setStatus(Response.Status.SUCCESSFUL);
+ 
         } catch (Exception e) {
             logger.error("Error in generating signature", e);
             response.setResult(null);
@@ -80,6 +86,31 @@ public class RegistryUtilsController {
     }
 
     @RequestMapping(value = "/utils/verify", method = RequestMethod.POST)
+    public ResponseEntity<Response> verifySignature(@RequestAttribute Request request) {
+        ResponseParams responseParams = new ResponseParams();
+        Response response = new Response(Response.API_ID.VERIFY, "OK", responseParams);
+
+        try {
+        	
+        	ObjectMapper mapper = new ObjectMapper();
+        	VerifyRequest verifyRequest = mapper.readValue(request.getRequestMap().
+            		get(Constants.REQUEST_ATTRIBUTE_NAME).toString(), VerifyRequest.class);
+                Object verifyResponse = signatureService.verify(verifyRequest);
+                response.setResult(verifyResponse);
+                responseParams.setErrmsg("");
+                responseParams.setStatus(Response.Status.SUCCESSFUL);
+              
+        } catch (Exception e) {
+            logger.error("Error in verifying signature", e);
+            response.setResult(null);
+            responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+            responseParams.setErrmsg(Constants.VERIFY_SIGN_ERROR_MESSAGE);
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
+/*    @RequestMapping(value = "/utils/verify", method = RequestMethod.POST)
     public ResponseEntity<Response> verifySignature(HttpServletRequest request) {
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.VERIFY, "OK", responseParams);
@@ -166,7 +197,7 @@ public class RegistryUtilsController {
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
+*/
     @RequestMapping(value = "/utils/sign/health", method = RequestMethod.GET)
     public ResponseEntity<Response> health() {
         ResponseParams responseParams = new ResponseParams();

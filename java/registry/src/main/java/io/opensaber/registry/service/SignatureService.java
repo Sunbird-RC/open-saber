@@ -1,6 +1,8 @@
 package io.opensaber.registry.service;
 
 import io.opensaber.registry.exception.SignatureException;
+import io.opensaber.registry.model.SignRequest;
+import io.opensaber.registry.model.VerifyRequest;
 
 public interface SignatureService {
 
@@ -14,5 +16,11 @@ public interface SignatureService {
             SignatureException.KeyNotFoundException;
 
     boolean isServiceUp() throws SignatureException.UnreachableException;
+    
+    Object sign(SignRequest signatureClaim) throws SignatureException.UnreachableException,
+	SignatureException.CreationException;
+
+	Object verify(VerifyRequest verifyRequest) throws SignatureException.UnreachableException,
+	SignatureException.VerificationException;
 
 }

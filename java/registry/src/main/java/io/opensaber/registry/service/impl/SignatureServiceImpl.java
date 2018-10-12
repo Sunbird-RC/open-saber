@@ -5,6 +5,11 @@ import com.google.gson.reflect.TypeToken;
 
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.exception.SignatureException;
+import io.opensaber.registry.exception.SignatureException.CreationException;
+import io.opensaber.registry.exception.SignatureException.UnreachableException;
+import io.opensaber.registry.exception.SignatureException.VerificationException;
+import io.opensaber.registry.model.SignRequest;
+import io.opensaber.registry.model.VerifyRequest;
 import io.opensaber.registry.service.SignatureService;
 
 import java.lang.reflect.Type;
@@ -116,4 +121,34 @@ public class SignatureServiceImpl implements SignatureService {
         }
         return result;
     }
+    
+	@Override
+	public Object sign(SignRequest signatureClaim) throws UnreachableException, CreationException {
+		ResponseEntity<String> response = null;
+        try {
+            response = restTemplate.postForEntity(signURL, signatureClaim, String.class);
+        } catch (RestClientException ex) {
+            logger.error("RestClientException when signing: ", ex);
+            throw new SignatureException().new UnreachableException(ex.getMessage());
+        } catch (Exception e) {
+            logger.error("RestClientException when signing: ", e);
+            throw new SignatureException().new CreationException(e.getMessage());
+        }
+		return response;
+	}
+
+	@Override
+	public Object verify(VerifyRequest verifyRequest) throws UnreachableException, VerificationException {
+		ResponseEntity<String> response = null;
+        try {
+            response = restTemplate.postForEntity(verifyURL, verifyRequest, String.class);
+        } catch (RestClientException ex) {
+            logger.error("RestClientException when verifying: ", ex);
+            throw new SignatureException().new UnreachableException(ex.getMessage());
+        } catch (Exception e) {
+            logger.error("RestClientException when verifying: ", e);
+            throw new SignatureException().new VerificationException(e.getMessage());
+        }
+        return response;
+	}
 }
