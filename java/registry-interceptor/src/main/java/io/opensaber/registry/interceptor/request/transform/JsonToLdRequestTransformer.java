@@ -43,7 +43,7 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 
 			String type = getTypeFromNode(requestnode);
 			setSufix(type);
-			appendSufix(requestnode, sufix);
+			appendSuffix(requestnode, sufix);
 			logger.info("Appending prefix to requestNode " + requestnode);
 
 			requestnode = (ObjectNode) requestnode.path(type);
@@ -67,23 +67,23 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 		return rootValue;
 	}
 
-	private void appendSufix(ObjectNode requestNode, String prefix) {
+	private void appendSuffix(ObjectNode requestNode, String prefix) {
 
 		requestNode.fields().forEachRemaining(entry -> {
 			JsonNode entryValue = entry.getValue();
 			if (entryValue.isValueNode() && nodeTypes.contains(entry.getKey())) {
-				String defaultValue = entryValue.asText().replaceFirst("", prefix);
+				String defaultValue = prefix + entryValue.asText();
 				requestNode.put(entry.getKey(), defaultValue);
 
 			} else if (entryValue.isObject()) {
-				appendSufix((ObjectNode) entry.getValue(), prefix);
+				appendSuffix((ObjectNode) entry.getValue(), prefix);
 			} else if (entryValue.isArray()) {
 				ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
 				for (int i = 0; i < entryValue.size(); i++) {
 					if (entryValue.get(i).isTextual())
-						arrayNode.add(entry.getValue().get(i).asText().replaceFirst("", prefix));
+						arrayNode.add(entryValue.get(i).asText().replaceFirst("", prefix));
 					else
-						appendSufix((ObjectNode) entry.getValue().get(i), prefix);
+						appendSuffix((ObjectNode) entryValue.get(i), prefix);
 
 				}
 				replaceArrayNode(requestNode, entry.getKey(), arrayNode);
