@@ -4,6 +4,16 @@ import java.util.List;
 
 public class VerifyRequest {
 	
-	private List<VerifyEntity> verify;
+	private List<Verify> verify;
+
+	public List<Verify> getVerify() {
+		return verify;
+	}
+
+	public void setVerify(List<Verify> verify) {
+		this.verify = verify;
+	}
+	
+	
 
 }

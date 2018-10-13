@@ -64,13 +64,12 @@ public class RegistryUtilsController {
         
         try {
         	ObjectMapper mapper = new ObjectMapper();
-        	//mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        	mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
-        	logger.info("print reuest "+requestModel.getRequestMap().
+        	logger.info("print request for sign "+requestModel.getRequestMap().
             		get(Constants.REQUEST_ATTRIBUTE_NAME).toString());
             SignRequest signRequest = mapper.readValue(requestModel.getRequestMap().
             		get(Constants.REQUEST_ATTRIBUTE_NAME).toString(), SignRequest.class);
+            //String json = mapper.writeValueAsString(signRequest);
             Object signResponse = signatureService.sign(signRequest);
             response.setResult(signResponse);
             responseParams.setErrmsg("");
@@ -95,10 +94,10 @@ public class RegistryUtilsController {
         	ObjectMapper mapper = new ObjectMapper();
         	VerifyRequest verifyRequest = mapper.readValue(request.getRequestMap().
             		get(Constants.REQUEST_ATTRIBUTE_NAME).toString(), VerifyRequest.class);
-                Object verifyResponse = signatureService.verify(verifyRequest);
-                response.setResult(verifyResponse);
-                responseParams.setErrmsg("");
-                responseParams.setStatus(Response.Status.SUCCESSFUL);
+            Object verifyResponse = signatureService.verify(verifyRequest);
+            response.setResult(verifyResponse);
+            responseParams.setErrmsg("");
+            responseParams.setStatus(Response.Status.SUCCESSFUL);
               
         } catch (Exception e) {
             logger.error("Error in verifying signature", e);
