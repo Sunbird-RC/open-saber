@@ -432,6 +432,10 @@ public class RegistryServiceImpl implements RegistryService {
 		Graph graph = registryDao.getEntityById(id, includeSignatures);
 		org.eclipse.rdf4j.model.Model model = RDF2Graph.convertGraph2RDFModel(graph, id);
 		logger.debug("RegistryServiceImpl : rdf4j model :", model);
-		return frameEntity.getContent(model);
+		Model jenaEntityModel = JenaRDF4J.asJenaModel(model);
+		if (encryptionEnabled) {
+			decryptModel(jenaEntityModel);
+		}
+		return frameEntity(jenaEntityModel);
 	}
 }
