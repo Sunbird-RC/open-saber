@@ -12,6 +12,7 @@ import io.opensaber.registry.middleware.transform.ErrorCode;
 import io.opensaber.registry.middleware.transform.ITransformer;
 import io.opensaber.registry.middleware.transform.TransformationException;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
+import io.opensaber.registry.middleware.util.JSONUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +26,7 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 	private String context;
 	private final static String REQUEST = "request";
 	private List<String> nodeTypes = new ArrayList<>();
-	private String sufix = "";
+	private String prefix = "";
 	private static final String SEPERATOR = ":";
 
 	public JsonToLdRequestTransformer(String context) {
@@ -42,8 +43,9 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 			ObjectNode requestnode = (ObjectNode) input.path(REQUEST);
 
 			String type = getTypeFromNode(requestnode);
-			setSufix(type);
-			addPrefix(requestnode, sufix);
+			setPrefix(type);
+			//addPrefix(requestnode, sufix);
+			JSONUtil.addPrefix(requestnode, prefix, nodeTypes);
 			logger.info("Appending prefix to requestNode " + requestnode);
 
 			requestnode = (ObjectNode) requestnode.path(type);
@@ -110,8 +112,8 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 		logger.info("nodeType size " + nodeTypes.size());
 	}
 
-	private void setSufix(String type) {
-		sufix = type.toLowerCase() + SEPERATOR;
+	private void setPrefix(String type) {
+		prefix = type.toLowerCase() + SEPERATOR;
 	}
 
 	@Override

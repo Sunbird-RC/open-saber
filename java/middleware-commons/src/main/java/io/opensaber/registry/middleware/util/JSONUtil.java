@@ -1,7 +1,9 @@
-package io.opensaber.registry.util;
+package io.opensaber.registry.middleware.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.jsonldjava.core.JsonLdError;
 import com.github.jsonldjava.core.JsonLdOptions;
@@ -12,7 +14,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +31,8 @@ public class JSONUtil {
 
 
 	private final static String KEY_NULL_ERROR = "key cannot be null or empty";
+    private static final String EMPTY = "";
+
 
 	private static Type stringObjMapType = new TypeToken<Map<String, Object>>() {
 	}.getType();
@@ -62,7 +65,7 @@ public class JSONUtil {
 		options.setCompactArrays(true);
 		Map<String, Object> framedJsonLD = JsonLdProcessor.frame(reqMap, JsonUtils.fromString(replacedframe), options);
 		//json = gson.toJson(framedJsonLD);
-		String jsonld = JSONUtil.getStringWithReplacedText(gson.toJson(framedJsonLD), regex, StringUtils.EMPTY);
+		String jsonld = JSONUtil.getStringWithReplacedText(gson.toJson(framedJsonLD), regex, EMPTY);
 		logger.info("frameJsonAndRemoveIds: json - ", jsonld);
 		return gson.fromJson(jsonld, stringObjMapType);
 	}
@@ -91,12 +94,12 @@ public class JSONUtil {
 	/**
 	 * Field value to replace by new text. Replace node by given text to
 	 * Parent's hierarchy.
-	 * 
+	 * Field will not be added if not found existing already
 	 * @param parent
 	 * @param fieldName
 	 * @param newValue
 	 */
-	public static void replaceFieldText(ObjectNode parent, String fieldName, String newValue) {
+	public static void replaceField(ObjectNode parent, String fieldName, String newValue) {
 		if (parent.has(fieldName)) {
 			parent.put(fieldName, newValue);
 		}
@@ -104,10 +107,10 @@ public class JSONUtil {
 			JsonNode entryValue = entry.getValue();
 			if (entryValue.isArray()) {
 				for (int i = 0; i < entryValue.size(); i++) {
-					replaceFieldText((ObjectNode) entry.getValue(), fieldName, newValue);
+					replaceField((ObjectNode) entry.getValue(), fieldName, newValue);
 				}
 			} else if (entryValue.isObject()) {
-				replaceFieldText((ObjectNode) entry.getValue(), fieldName, newValue);
+				replaceField((ObjectNode) entry.getValue(), fieldName, newValue);
 			}
 		});
 	}
@@ -151,16 +154,21 @@ public class JSONUtil {
 				String defaultValue = prefix + entryValue.asText();
 				parent.put(entry.getKey(), defaultValue);
 			} else if (entryValue.isArray()) {
+				ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
 				for (int i = 0; i < entryValue.size(); i++) {
-					if (entry.getValue().get(i).isObject())
-						addPrefix((ObjectNode) entry.getValue().get(i), prefix, keys);
+					if (entryValue.get(i).isTextual())
+						arrayNode.add(prefix + entryValue.get(i).asText());
+					else
+						addPrefix((ObjectNode) entryValue.get(i), prefix, keys);
 				}
+				if (arrayNode.size() > 0)
+					parent.set(entry.getKey(), arrayNode);
 			} else if (entryValue.isObject()) {
 				addPrefix((ObjectNode) entry.getValue(), prefix, keys);
 			}
 		});
 	}
-
+	
 	/**
 	 * Adding a child node to Parent's hierarchy.
 	 * 

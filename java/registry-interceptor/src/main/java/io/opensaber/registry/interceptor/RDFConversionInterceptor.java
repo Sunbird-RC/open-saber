@@ -49,6 +49,7 @@ public class RDFConversionInterceptor implements HandlerInterceptor {
 			logger.info("json requestBody RDFConversionInterceptor" + json);
 			Data<Object> jsonData = new Data<Object>(json);
 			Data<Object> jsonlsData = requestTransformFactory.getInstance(request.getContentType()).transform(jsonData);
+			logger.info("jsonLd request body RDFConversionInterceptor"+jsonlsData);
 			baseRequestHandler.setRequestBody(jsonlsData.getData().toString());
 			watch.start("RDFConversionInterceptor.execute");
 			Map<String, Object> attributeMap = rdfConverter.execute(baseRequestHandler.getRequestBodyMap());

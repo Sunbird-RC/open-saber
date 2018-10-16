@@ -11,7 +11,7 @@ import io.opensaber.registry.middleware.transform.ErrorCode;
 import io.opensaber.registry.middleware.transform.ITransformer;
 import io.opensaber.registry.middleware.transform.TransformationException;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
-import io.opensaber.registry.util.JSONUtil;
+import io.opensaber.registry.middleware.util.JSONUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
