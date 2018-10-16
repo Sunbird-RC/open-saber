@@ -85,7 +85,7 @@ public class JSONUtil {
 			if (node.fieldNames().hasNext()) {
 				isJson = true;
 			}
-		} catch (java.io.IOException e) {
+		} catch (IOException e) {
 			isJson = false;
 		}
 		return isJson;

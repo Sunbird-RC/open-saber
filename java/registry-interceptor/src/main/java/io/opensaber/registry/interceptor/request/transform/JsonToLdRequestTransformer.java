@@ -1,10 +1,7 @@
 package io.opensaber.registry.interceptor.request.transform;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.opensaber.registry.middleware.transform.Data;
@@ -44,7 +41,6 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 
 			String type = getTypeFromNode(requestnode);
 			setPrefix(type);
-			//addPrefix(requestnode, sufix);
 			JSONUtil.addPrefix(requestnode, prefix, nodeTypes);
 			logger.info("Appending prefix to requestNode " + requestnode);
 
@@ -69,36 +65,6 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 		return rootValue;
 	}
 
-	private void addPrefix(ObjectNode requestNode, String prefix) {
-
-		requestNode.fields().forEachRemaining(entry -> {
-			JsonNode entryValue = entry.getValue();
-			if (entryValue.isValueNode() && nodeTypes.contains(entry.getKey())) {
-				String defaultValue = prefix + entryValue.asText();
-				requestNode.put(entry.getKey(), defaultValue);
-
-			} else if (entryValue.isObject()) {
-				addPrefix((ObjectNode) entry.getValue(), prefix);
-			} else if (entryValue.isArray()) {
-				ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
-				for (int i = 0; i < entryValue.size(); i++) {
-					if (entryValue.get(i).isTextual())
-						arrayNode.add(prefix + entryValue.asText());
-					else
-						addPrefix((ObjectNode) entryValue.get(i), prefix);
-
-				}
-				replaceArrayNode(requestNode, entry.getKey(), arrayNode);
-
-			}
-
-		});
-	}
-
-	private void replaceArrayNode(ObjectNode parent, String fieldName, ArrayNode newarrayNode) {
-		if (newarrayNode.size() > 0)
-			parent.set(fieldName, newarrayNode);
-	}
 
 	private void setNodeTypeToAppend(ObjectNode fieldObjects) {
 		ObjectNode context = (ObjectNode) fieldObjects.path(JsonldConstants.CONTEXT);
