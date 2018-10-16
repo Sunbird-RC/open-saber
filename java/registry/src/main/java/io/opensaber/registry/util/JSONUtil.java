@@ -2,8 +2,6 @@ package io.opensaber.registry.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.jsonldjava.core.JsonLdError;
 import com.github.jsonldjava.core.JsonLdOptions;
@@ -51,11 +49,11 @@ public class JSONUtil {
 		} else {
 			rootType = jsonObj.get("@type").getAsString();
 		}
-		frame = frame.replace("<@type>", rootType);
+		String replacedframe = frame.replace("<@type>", rootType);
 		// JsonUtils.fromString(frame)
 		JsonLdOptions options = new JsonLdOptions();
 		options.setCompactArrays(true);
-		Map<String, Object> framedJsonLD = JsonLdProcessor.frame(reqMap, JsonUtils.fromString(frame), options);
+		Map<String, Object> framedJsonLD = JsonLdProcessor.frame(reqMap, JsonUtils.fromString(replacedframe), options);
 		json = gson.toJson(framedJsonLD);
 		json = JSONUtil.getStringWithReplacedText(json, regex, StringUtils.EMPTY);
 		System.out.println(json);
