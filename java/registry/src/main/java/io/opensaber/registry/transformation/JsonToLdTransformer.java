@@ -11,6 +11,7 @@ import io.opensaber.registry.middleware.transform.ErrorCode;
 import io.opensaber.registry.middleware.transform.ITransformer;
 import io.opensaber.registry.middleware.transform.TransformationException;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
+import io.opensaber.registry.util.JSONUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,8 +49,9 @@ public class JsonToLdTransformer implements ITransformer<Object> {
 		for (JsonNode graphNode : rootDataNode.path(JsonldConstants.GRAPH)) {
 			ObjectNode rootNode = addRootTypeNode(graphNode);
 			if (keysToPurge.size() != 0)
-				purgedKeys(rootNode);
+				JSONUtil.removeNodes(rootNode, keysToPurge);// purgedKeys(rootNode);
 			arrayNode.add(rootNode);
+			JSONUtil.trimPrefix(rootNode, prefix);
 		}
 		return arrayNode;
 	}
@@ -62,30 +64,6 @@ public class JsonToLdTransformer implements ITransformer<Object> {
 		return rootNode;
 
 	}
-
-	private void purgedKeys(ObjectNode node) {
-		List<String> removeKeyNames = new ArrayList<String>();
-		node.fields().forEachRemaining(entry -> {
-			if (keysToPurge.contains(entry.getKey())) {
-				removeKeyNames.add(entry.getKey());
-			} else {
-				JsonNode entryValue = entry.getValue();
-				if (entryValue.isValueNode() && entryValue.toString().contains(prefix)) {
-					node.put(entry.getKey(), entry.getValue().asText().replace(prefix, ""));
-
-				} else if (entryValue.isArray()) {
-					for (int i = 0; i < entryValue.size(); i++) {
-						if (entry.getValue().get(i).isObject()) 
-							purgedKeys((ObjectNode) entry.getValue().get(i));
-					}
-				} else if (entryValue.isObject()) {
-					purgedKeys((ObjectNode) entry.getValue());
-				}
-			}
-		});
-		node.remove(removeKeyNames);
-	}
-
 
 	@Override
 	public void setPurgeData(List<String> keyToPruge) {

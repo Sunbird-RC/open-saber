@@ -43,7 +43,7 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 
 			String type = getTypeFromNode(requestnode);
 			setSufix(type);
-			appendSuffix(requestnode, sufix);
+			addPrefix(requestnode, sufix);
 			logger.info("Appending prefix to requestNode " + requestnode);
 
 			requestnode = (ObjectNode) requestnode.path(type);
@@ -67,7 +67,7 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 		return rootValue;
 	}
 
-	private void appendSuffix(ObjectNode requestNode, String prefix) {
+	private void addPrefix(ObjectNode requestNode, String prefix) {
 
 		requestNode.fields().forEachRemaining(entry -> {
 			JsonNode entryValue = entry.getValue();
@@ -76,14 +76,14 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 				requestNode.put(entry.getKey(), defaultValue);
 
 			} else if (entryValue.isObject()) {
-				appendSuffix((ObjectNode) entry.getValue(), prefix);
+				addPrefix((ObjectNode) entry.getValue(), prefix);
 			} else if (entryValue.isArray()) {
 				ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
 				for (int i = 0; i < entryValue.size(); i++) {
 					if (entryValue.get(i).isTextual())
-						arrayNode.add(entryValue.get(i).asText().replaceFirst("", prefix));
+						arrayNode.add(prefix + entryValue.asText());
 					else
-						appendSuffix((ObjectNode) entryValue.get(i), prefix);
+						addPrefix((ObjectNode) entryValue.get(i), prefix);
 
 				}
 				replaceArrayNode(requestNode, entry.getKey(), arrayNode);
@@ -93,13 +93,14 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 		});
 	}
 
-	public static void replaceArrayNode(ObjectNode parent, String fieldName, ArrayNode newarrayNode) {
+	private void replaceArrayNode(ObjectNode parent, String fieldName, ArrayNode newarrayNode) {
 		if (newarrayNode.size() > 0)
 			parent.set(fieldName, newarrayNode);
 	}
 
 	private void setNodeTypeToAppend(ObjectNode fieldObjects) {
 		ObjectNode context = (ObjectNode) fieldObjects.path(JsonldConstants.CONTEXT);
+		nodeTypes.add(JsonldConstants.ID);
 		context.fields().forEachRemaining(entry -> {
 			if (entry.getValue().has(JsonldConstants.TYPE)
 					&& entry.getValue().get(JsonldConstants.TYPE).asText().equalsIgnoreCase(JsonldConstants.ID)) {

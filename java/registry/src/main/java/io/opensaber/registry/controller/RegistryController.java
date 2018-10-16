@@ -340,10 +340,9 @@ public class RegistryController {
 	}
 
 	/*
-	 * To set the keys(like "@id" or @"@type" to be trim of a json
+	 * To set the keys(like @type to be trim of a json
 	 */
 	private List<String> getKeysToPurge() {
-		keyToPurge.add(JsonldConstants.ID);
 		keyToPurge.add(JsonldConstants.TYPE);
 		return keyToPurge;
 
