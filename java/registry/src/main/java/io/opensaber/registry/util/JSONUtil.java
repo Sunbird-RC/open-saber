@@ -10,7 +10,11 @@ import com.github.jsonldjava.utils.JsonUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+
+
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -21,6 +25,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class JSONUtil {
+	
+	private static Logger logger = LoggerFactory.getLogger(JSONUtil.class);
+
 
 	private final static String KEY_NULL_ERROR = "key cannot be null or empty";
 
@@ -54,10 +61,10 @@ public class JSONUtil {
 		JsonLdOptions options = new JsonLdOptions();
 		options.setCompactArrays(true);
 		Map<String, Object> framedJsonLD = JsonLdProcessor.frame(reqMap, JsonUtils.fromString(replacedframe), options);
-		json = gson.toJson(framedJsonLD);
-		json = JSONUtil.getStringWithReplacedText(json, regex, StringUtils.EMPTY);
-		System.out.println(json);
-		return gson.fromJson(json, stringObjMapType);
+		//json = gson.toJson(framedJsonLD);
+		String jsonld = JSONUtil.getStringWithReplacedText(gson.toJson(framedJsonLD), regex, StringUtils.EMPTY);
+		logger.info("frameJsonAndRemoveIds: json - ", jsonld);
+		return gson.fromJson(jsonld, stringObjMapType);
 	}
 
 	/**
