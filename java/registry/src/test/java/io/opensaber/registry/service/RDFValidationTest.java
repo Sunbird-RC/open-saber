@@ -106,15 +106,6 @@ public class RDFValidationTest {
 		testForSuccessfulResult(validationResponse);
 	}
 
-	private Model getModel() {
-		Model model = ModelFactory.createDefaultModel();
-		Resource subject = ResourceFactory.createResource("http://example.com/voc/teacher/1.0.0/SchoolShape");
-		Property predicate = ResourceFactory.createProperty("http://www.w3.org/ns/shacl#targetNode");
-		RDFNode object = ResourceFactory.createResource("http://example.com/voc/teacher/1.0.0/1234");
-		model.add(subject, predicate, object);
-		return model;
-	}
-
 	@Test
 	public void testIfaRealValidationFailsForAdd() throws Exception {
 		assertTrue(setup(COMPLEX_CREATE_SHEX,COMPLEX_UPDATE_SHEX));
