@@ -140,6 +140,22 @@ public class RegistryServiceImpl implements RegistryService {
 				rdfModel = RDFUtil.getUpdatedSignedModel(rdfModel, registryContext, signatureDomain, entitySignMap,
 						ModelFactory.createDefaultModel());
 			}
+			return addEntity(rdfModel, subject, property);
+
+		} catch (EntityCreationException | EncryptionException | AuditFailedException | DuplicateRecordException
+				| MultipleEntityException ex) {
+			throw ex;
+		} catch (Exception ex) {
+			logger.error("Exception when creating entity: ", ex);
+			throw ex;
+		}
+	}
+
+	@Override
+	public String addEntity(Model rdfModel, String subject, String property)
+			throws DuplicateRecordException, EntityCreationException, EncryptionException, AuditFailedException,
+			MultipleEntityException, RecordNotFoundException {
+		try {
 			Resource root = getRootNode(rdfModel);
 			String label = getRootLabel(root);
 			if (encryptionEnabled) {

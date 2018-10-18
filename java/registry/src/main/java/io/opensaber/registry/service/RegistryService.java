@@ -12,6 +12,10 @@ public interface RegistryService {
 
 	public List getEntityList();
 
+	public String addEntity(Model rdfModel, String subject, String property)
+			throws DuplicateRecordException, EntityCreationException, EncryptionException, AuditFailedException,
+			MultipleEntityException, RecordNotFoundException;
+
 	public String addEntity(Model rdfModel, String dataObject, String subject, String property)
 			throws DuplicateRecordException, EntityCreationException, EncryptionException, AuditFailedException,
 			MultipleEntityException, RecordNotFoundException, IOException, SignatureException.UnreachableException, JsonLdError, SignatureException.CreationException, RDFValidationException;
