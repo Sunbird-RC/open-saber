@@ -119,6 +119,7 @@ public class RegistryServiceImpl implements RegistryService {
 			throws DuplicateRecordException, EntityCreationException, EncryptionException, AuditFailedException,
 			MultipleEntityException, RecordNotFoundException, IOException, SignatureException.UnreachableException, JsonLdError, SignatureException.CreationException, RDFValidationException {
 		try {
+			Model signedRdfModel = null;
 			RegistrySignature rs = new RegistrySignature();
 			Schema createSchema = schemaConfigurator.getSchemaForCreate();
 			Schema updateSchema = schemaConfigurator.getSchemaForUpdate();
@@ -137,10 +138,10 @@ public class RegistryServiceImpl implements RegistryService {
 				Map<String, Object> entitySignMap = (Map<String, Object>) signatureService.sign(signReq);
 				entitySignMap.put("createdDate", rs.getCreatedTimestamp());
 				entitySignMap.put("keyUrl", signatureKeyURl);
-				rdfModel = RDFUtil.getUpdatedSignedModel(rdfModel, registryContext, signatureDomain, entitySignMap,
+				signedRdfModel = RDFUtil.getUpdatedSignedModel(rdfModel, registryContext, signatureDomain, entitySignMap,
 						ModelFactory.createDefaultModel());
 			}
-			return addEntity(rdfModel, subject, property);
+			return addEntity(signedRdfModel, subject, property);
 
 		} catch (EntityCreationException | EncryptionException | AuditFailedException | DuplicateRecordException
 				| MultipleEntityException ex) {

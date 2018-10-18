@@ -29,8 +29,6 @@ public class RDFValidationTest {
 	private static final String COMPLEX_INVALID_JSONLD_ADD = "teacher_badrecord_create.jsonld";
 	private static final String COMPLEX_CREATE_SHEX = "teacher_create.shex";
 	private static final String COMPLEX_UPDATE_SHEX = "teacher_update.shex";
-	private static final String ADD_REQUEST_PATH = "/add";
-	private static final String UPDATE_REQUEST_PATH = "/update";
 	public static final String TTL_FORMAT = "TTL";
 	public static final String JSONLD_FORMAT = "JSONLD";
 	private static final String SCHEMAFORMAT = "SHEXC";
@@ -55,7 +53,7 @@ public class RDFValidationTest {
 		return successfulInitialization;
 	}
 	
-	private boolean setup(Schema schema, String shexFileForUpdate) {
+	private boolean setup( String shexFileForUpdate) {
 		boolean successfulInitialization = true;
 		try {
 			Schema createSchema = readSchema(shexFileForUpdate, SCHEMAFORMAT, PROCESSOR);
@@ -82,8 +80,7 @@ public class RDFValidationTest {
 	public void testHaltIfSchemaIsMissing() throws IOException, RDFValidationException {
 		expectedEx.expect(RDFValidationException.class);
 		expectedEx.expectMessage("Schema for validation is missing");
-		Schema schema = null;
-		assertTrue(setup(schema,COMPLEX_UPDATE_SHEX));
+		assertTrue(setup(COMPLEX_UPDATE_SHEX));
 		rdfValidator.validateRDFWithSchema(getValidRdf(COMPLEX_TTL), Constants.CREATE_METHOD_ORIGIN);
 	}
 
@@ -92,19 +89,18 @@ public class RDFValidationTest {
 		expectedEx.expect(RDFValidationException.class);
 		expectedEx.expectMessage("Request URL is invalid");
 		assertTrue(setup(COMPLEX_CREATE_SHEX, COMPLEX_UPDATE_SHEX));
-		Model model = getModel();
 		rdfValidator.validateRDFWithSchema(getValidRdf(COMPLEX_TTL),null);
 	}
 
 	@Test
-	public void testIfComplexJSONLDIsSupportedForAdd() throws IOException, RDFValidationException {
+	public void testIfComplexJSONLDIsSupportedForAdd() throws RDFValidationException {
 		assertTrue(setup(COMPLEX_CREATE_SHEX, COMPLEX_UPDATE_SHEX));
 		ValidationResponse validationResponse =  rdfValidator.validateRDFWithSchema(getValidRdf(COMPLEX_TTL),Constants.CREATE_METHOD_ORIGIN);
 		testForSuccessfulResult(validationResponse);
 	}
 
 	@Test
-	public void testIfComplexJSONLDIsSupportedForUpdate() throws IOException, RDFValidationException {
+	public void testIfComplexJSONLDIsSupportedForUpdate() throws RDFValidationException {
 		assertTrue(setup(COMPLEX_CREATE_SHEX, COMPLEX_UPDATE_SHEX));
 		ValidationResponse validationResponse = rdfValidator.validateRDFWithSchema(getValidRdf(COMPLEX_TTL), Constants.UPDATE_METHOD_ORIGIN);
 		testForSuccessfulResult(validationResponse);
