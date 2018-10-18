@@ -9,7 +9,7 @@ import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.pojos.ValidationResponse;
 import io.opensaber.registry.dao.RegistryDao;
 import io.opensaber.registry.exception.*;
-import io.opensaber.registry.exception.ErrorConstants.ErrorConstants;
+import io.opensaber.registry.exception.errorconstants.ErrorConstants;
 import io.opensaber.registry.frame.FrameEntity;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
