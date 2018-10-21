@@ -40,7 +40,7 @@ public class RDFValidationTest {
 	private String jsonld;
 	private static final String EMPTY_STRING = "";
 	private Map<String, Object> mapData;
-	private RDFValidator rdfValidator;
+	private RdfValidator rdfValidator;
 	private Option<String> none = Option.empty();
 	
 	@Rule
@@ -51,7 +51,7 @@ public class RDFValidationTest {
 		try {
 			Schema createSchema = readSchema(shexFileForCreate, SCHEMAFORMAT, PROCESSOR);
 			Schema updateSchema = readSchema(shexFileForUpdate, SCHEMAFORMAT, PROCESSOR);
-			rdfValidator = new RDFValidator(createSchema,updateSchema);
+			rdfValidator = new RdfValidator(createSchema,updateSchema);
 		} catch (Exception e) {
 			successfulInitialization = false;
 		}
@@ -62,7 +62,7 @@ public class RDFValidationTest {
 		boolean successfulInitialization = true;
 		try {
 			Schema createSchema = readSchema(shexFileForUpdate, SCHEMAFORMAT, PROCESSOR);
-			rdfValidator = new RDFValidator(null, createSchema);
+			rdfValidator = new RdfValidator(null, createSchema);
 		} catch (Exception e) {
 			successfulInitialization = false;
 		}

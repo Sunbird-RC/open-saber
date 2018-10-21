@@ -11,14 +11,12 @@ import io.opensaber.registry.dao.RegistryDao;
 import io.opensaber.registry.exception.*;
 import io.opensaber.registry.exception.ErrorConstants.ErrorConstants;
 import io.opensaber.registry.frame.FrameEntity;
+import io.opensaber.registry.middleware.MiddlewareHaltException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.RDFUtil;
 import io.opensaber.registry.model.RegistrySignature;
 import io.opensaber.registry.schema.config.SchemaConfigurator;
-import io.opensaber.registry.service.EncryptionService;
-import io.opensaber.registry.service.RDFValidator;
-import io.opensaber.registry.service.RegistryService;
-import io.opensaber.registry.service.SignatureService;
+import io.opensaber.registry.service.*;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.util.GraphDBFactory;
 import io.opensaber.registry.util.JSONUtil;
@@ -74,6 +72,12 @@ public class RegistryServiceImpl implements RegistryService {
 	SchemaConfigurator schemaConfigurator;
 
 	@Autowired
+	RdfValidator rdfValidator;
+
+	@Autowired
+	SignatureValidator signatureValidator;
+
+	@Autowired
 	Gson gson;
 
 	@Value("${encryption.enabled}")
@@ -106,6 +110,9 @@ public class RegistryServiceImpl implements RegistryService {
 	@Value("${registry.context.base}")
 	private String registryContext;
 
+	@Value("${signature.schema.config.name}")
+	private String signatureSchemaConfigName;
+
 	@Autowired
 	private FrameEntity frameEntity;
 
@@ -117,17 +124,22 @@ public class RegistryServiceImpl implements RegistryService {
 	@Override
 	public String addEntity(Model rdfModel, String dataObject, String subject, String property)
 			throws DuplicateRecordException, EntityCreationException, EncryptionException, AuditFailedException,
-			MultipleEntityException, RecordNotFoundException, IOException, SignatureException.UnreachableException, JsonLdError, SignatureException.CreationException, RDFValidationException {
+			MultipleEntityException, RecordNotFoundException, IOException, SignatureException.UnreachableException, JsonLdError, SignatureException.CreationException, RDFValidationException, MiddlewareHaltException {
 		try {
 			RegistrySignature rs = new RegistrySignature();
 			Schema createSchema = schemaConfigurator.getSchemaForCreate();
 			Schema updateSchema = schemaConfigurator.getSchemaForUpdate();
-			RDFValidator rdfValidator = new RDFValidator(createSchema,updateSchema);
+			//validating RDF
+			//rdfValidator = new RdfValidator(createSchema,updateSchema);
 			ValidationResponse validationResponse = rdfValidator.validateRDFWithSchema(rdfModel,Constants.CREATE_METHOD_ORIGIN);
 			if(!validationResponse.isValid()) {
 				throw new RDFValidationException(ErrorConstants.RDF_VALIDATION_ERROR_MESSAGE);
 			}
+			//Validating Sign Mandatory data
+			//SignatureValidator signatureValidator = new SignatureValidator(createSchema, registryContextBase, registrySystemBase, signatureSchemaConfigName, rdfValidator.getShapeTypeMap(), schemaConfigurator.getSchemaConfig());
 			if (signatureEnabled) {
+				signatureValidator.validateMandatorySignatureFields(rdfModel);
+
 				Map signReq = new HashMap<String, Object>();
 				InputStream is = this.getClass().getClassLoader().getResourceAsStream(frameFile);
 				String fileString = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
@@ -164,14 +176,17 @@ public class RegistryServiceImpl implements RegistryService {
 	@Override
 	public boolean updateEntity(Model entity) throws RecordNotFoundException, EntityCreationException,
 			EncryptionException, AuditFailedException, MultipleEntityException, SignatureException.UnreachableException,
-			IOException, SignatureException.CreationException, RDFValidationException {
+			IOException, SignatureException.CreationException, RDFValidationException, MiddlewareHaltException {
 		boolean isUpdated;
 		Schema createSchema = schemaConfigurator.getSchemaForCreate();
 		Schema updateSchema = schemaConfigurator.getSchemaForUpdate();
-		RDFValidator rdfValidator = new RDFValidator(createSchema,updateSchema);
+		RdfValidator rdfValidator = new RdfValidator(createSchema,updateSchema);
 		ValidationResponse validationResponse = rdfValidator.validateRDFWithSchema(entity,Constants.UPDATE_METHOD_ORIGIN);
 		if(!validationResponse.isValid()) {
             throw new RDFValidationException(ErrorConstants.RDF_VALIDATION_ERROR_MESSAGE);
+		}
+		if (signatureEnabled) {
+			signatureValidator.validateMandatorySignatureFields(entity);
 		}
 		Resource root = getRootNode(entity);
 		String label = getRootLabel(root);

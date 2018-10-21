@@ -20,11 +20,11 @@ import io.opensaber.registry.middleware.Middleware;
 import io.opensaber.registry.middleware.impl.JSONLDConverter;
 import io.opensaber.registry.middleware.impl.RDFConverter;
 import io.opensaber.registry.middleware.impl.RDFValidationMapper;
-import io.opensaber.registry.middleware.impl.SignaturePresenceValidator;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.schema.config.SchemaConfigurator;
-import io.opensaber.registry.service.RDFValidator;
+import io.opensaber.registry.service.RdfValidator;
+import io.opensaber.registry.service.SignatureValidator;
 import io.opensaber.registry.sink.*;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.client.HttpClient;
@@ -150,11 +150,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		return new RDFValidationMappingInterceptor(rdfValidationMapper(), gson());
 	}
 
-	@Bean
-	public SignaturePresenceValidationInterceptor signaturePresenceValidationInterceptor() {
-		return new SignaturePresenceValidationInterceptor(signaturePresenceValidator(), gson());
-	}
-
 	/**
 	 * This methos creates bean for RequestIdValidationInterceptor
 	 * @return RequestIdValidationInterceptor
@@ -189,7 +184,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public RDFValidator rdfValidator() {
+	public RdfValidator rdfValidator() {
 		Schema schemaForCreate = null;
 		Schema schemaForUpdate = null;
 		try {
@@ -198,11 +193,11 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		} catch (Exception e) {
 			logger.error("Unable to retrieve schema for validations");
 		}
-		return new RDFValidator(schemaForCreate, schemaForUpdate);
+		return new RdfValidator(schemaForCreate, schemaForUpdate);
 	}
 	
 	@Bean
-	public Middleware signaturePresenceValidator() {
+	public SignatureValidator signatureValidator() {
 		Schema schemaForCreate = null;
 		Model schemaConfig = null;
 		try {
@@ -211,7 +206,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		} catch (Exception e) {
 			logger.error("Unable to retrieve schema for signature validations");
 		}
-		return new SignaturePresenceValidator(schemaForCreate, registryContextBase, registrySystemBase, signatureSchemaConfigName, ((RDFValidator)rdfValidator()).getShapeTypeMap(), schemaConfig);
+		return new SignatureValidator(schemaForCreate, registryContextBase, registrySystemBase, signatureSchemaConfigName, ((RdfValidator)rdfValidator()).getShapeTypeMap(), schemaConfig);
 	}
 
 
@@ -306,13 +301,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	    registry.addInterceptor(rdfConversionInterceptor())
 				.addPathPatterns("/add", "/update", "/search").order(orderIdx++);
-		/*registry.addInterceptor(rdfValidationInterceptor())
-				.addPathPatterns("/add", "/update").order(orderIdx++);*/
-
-		if (signatureEnabled) {
-			registry.addInterceptor(signaturePresenceValidationInterceptor())
-					.addPathPatterns("/add", "/update").order(orderIdx++);
-		}
 	}
 
 	@Override
