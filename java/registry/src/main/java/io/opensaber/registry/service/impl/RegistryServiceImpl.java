@@ -113,9 +113,6 @@ public class RegistryServiceImpl implements RegistryService {
 	@Value("${registry.context.base}")
 	private String registryContext;
 
-	@Value("${signature.schema.config.name}")
-	private String signatureSchemaConfigName;
-
 	@Autowired
 	private FrameEntity frameEntity;
 
@@ -131,16 +128,11 @@ public class RegistryServiceImpl implements RegistryService {
 		try {
 			Model signedRdfModel = null;
 			RegistrySignature rs = new RegistrySignature();
-			Schema createSchema = schemaConfigurator.getSchemaForCreate();
-			Schema updateSchema = schemaConfigurator.getSchemaForUpdate();
-			//validating RDF
-			//rdfValidator = new RdfValidator(createSchema,updateSchema);
 			ValidationResponse validationResponse = rdfValidator.validateRDFWithSchema(rdfModel,Constants.CREATE_METHOD_ORIGIN);
 			if(!validationResponse.isValid()) {
 				throw new RDFValidationException(ErrorConstants.RDF_VALIDATION_ERROR_MESSAGE);
 			}
 			//Validating Sign Mandatory data
-			//SignatureValidator signatureValidator = new SignatureValidator(createSchema, registryContextBase, registrySystemBase, signatureSchemaConfigName, rdfValidator.getShapeTypeMap(), schemaConfigurator.getSchemaConfig());
 			if (signatureEnabled) {
 				signatureValidator.validateMandatorySignatureFields(rdfModel);
 				Map signReq = new HashMap<String, Object>();

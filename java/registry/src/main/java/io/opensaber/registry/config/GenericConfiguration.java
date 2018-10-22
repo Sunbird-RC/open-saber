@@ -72,9 +72,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Value("${authentication.enabled}")
 	private boolean authenticationEnabled;
 
-	@Value("${signature.enabled}")
-	private boolean signatureEnabled;
-
 	@Value("${perf.monitoring.enabled}")
 	private boolean performanceMonitoringEnabled;
 	
