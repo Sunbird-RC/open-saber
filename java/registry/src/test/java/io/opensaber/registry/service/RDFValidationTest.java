@@ -8,7 +8,6 @@ import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.RDFUtil;
 import org.apache.jena.ext.com.google.common.io.ByteStreams;
 import org.apache.jena.rdf.model.Model;
-import org.apache.tomcat.jni.OS;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -181,5 +180,5 @@ public class RDFValidationTest {
 		Either<String, Schema> result = Schemas.fromString(contents,format,processor,none);
 		return result.right().get();
 	}
-	
+
 }

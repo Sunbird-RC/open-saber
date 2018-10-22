@@ -86,6 +86,9 @@ public class RegistryServiceImpl implements RegistryService {
 	@Value("${signature.enabled}")
 	private boolean signatureEnabled;
 
+	@Value("${persistence.enabled}")
+	private boolean persistenceEnabled;
+
 	@Value("${signature.domain}")
 	private String signatureDomain;
 
@@ -140,7 +143,6 @@ public class RegistryServiceImpl implements RegistryService {
 			//SignatureValidator signatureValidator = new SignatureValidator(createSchema, registryContextBase, registrySystemBase, signatureSchemaConfigName, rdfValidator.getShapeTypeMap(), schemaConfigurator.getSchemaConfig());
 			if (signatureEnabled) {
 				signatureValidator.validateMandatorySignatureFields(rdfModel);
-
 				Map signReq = new HashMap<String, Object>();
 				InputStream is = this.getClass().getClassLoader().getResourceAsStream(frameFile);
 				String fileString = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
@@ -179,8 +181,11 @@ public class RegistryServiceImpl implements RegistryService {
 			// Append _: to the root node label to create the entity as Apache
 			// Jena removes the _: for the root node label
 			// if it is a blank node
-			return registryDao.addEntity(graph, label, subject, property);
-
+			String id = "entityIdPlaceholder";
+			if (persistenceEnabled) {
+				id = registryDao.addEntity(graph, label, subject, property);
+			}
+			return id;
 		} catch (EntityCreationException | EncryptionException | AuditFailedException | DuplicateRecordException
 				| MultipleEntityException ex) {
 			throw ex;
@@ -193,36 +198,31 @@ public class RegistryServiceImpl implements RegistryService {
 	@Override
 	public boolean updateEntity(Model entity) throws RecordNotFoundException, EntityCreationException,
 			EncryptionException, AuditFailedException, MultipleEntityException, SignatureException.UnreachableException,
-			IOException, SignatureException.CreationException, RDFValidationException, MiddlewareHaltException {
-		boolean isUpdated;
-		Schema createSchema = schemaConfigurator.getSchemaForCreate();
-		Schema updateSchema = schemaConfigurator.getSchemaForUpdate();
-		RdfValidator rdfValidator = new RdfValidator(createSchema,updateSchema);
-		ValidationResponse validationResponse = rdfValidator.validateRDFWithSchema(entity,Constants.UPDATE_METHOD_ORIGIN);
-		if(!validationResponse.isValid()) {
-            throw new RDFValidationException(ErrorConstants.RDF_VALIDATION_ERROR_MESSAGE);
-		}
-		if (signatureEnabled) {
-			signatureValidator.validateMandatorySignatureFields(entity);
-		}
-		Resource root = getRootNode(entity);
-		String label = getRootLabel(root);
-		String rootType = getTypeForRootLabel(entity, root);
-		if (rootType.equalsIgnoreCase(registryContextBase + registryRootEntityType)) {
-			if (encryptionEnabled) {
-				encryptModel(entity);
+			IOException, SignatureException.CreationException, RDFValidationException {
+		boolean isUpdated = false;
+		if (persistenceEnabled) {
+			Schema createSchema = schemaConfigurator.getSchemaForCreate();
+			Schema updateSchema = schemaConfigurator.getSchemaForUpdate();
+			RdfValidator rdfValidator = new RdfValidator(createSchema, updateSchema);
+			ValidationResponse validationResponse = rdfValidator.validateRDFWithSchema(entity, Constants.UPDATE_METHOD_ORIGIN);
+			if (!validationResponse.isValid()) {
+				throw new RDFValidationException(ErrorConstants.RDF_VALIDATION_ERROR_MESSAGE);
 			}
-			Graph graph = generateGraphFromRDF(entity);
-			logger.debug("Service layer graph :", graph);
-			isUpdated = registryDao.updateEntity(graph, label, Constants.UPDATE_METHOD_ORIGIN);
-			if (signatureEnabled) {
-				getEntityAndUpdateSign(entity, label);
+			Resource root = getRootNode(entity);
+			String label = getRootLabel(root);
+			String rootType = getTypeForRootLabel(entity, root);
+			if (rootType.equalsIgnoreCase(registryContextBase + registryRootEntityType)) {
+				if (encryptionEnabled) {
+					encryptModel(entity);
+				}
+				Graph graph = generateGraphFromRDF(entity);
+				logger.debug("Service layer graph :", graph);
+				isUpdated = registryDao.updateEntity(graph, label, Constants.UPDATE_METHOD_ORIGIN);
+				if (signatureEnabled) {
+					getEntityAndUpdateSign(entity, label);
+				}
 			}
-		} else {
-			logger.error("Exception while updating entity");
-			throw new UnsupportedOperationException("Updates to child entity not supported");
 		}
-
 		return isUpdated;
 	}
 
