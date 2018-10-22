@@ -61,7 +61,7 @@ public class SignatureValidator {
 		}else if (schemaForCreate == null) {
 			throw new MiddlewareHaltException(SCHEMA_IS_NULL);
 		}else {
-			validateSignatureFileds((Model)RDF);
+			validateSignatureFields((Model)RDF);
 		}
 	}
 
@@ -112,7 +112,7 @@ public class SignatureValidator {
 		}
 	}
 
-    private void validateSignatureFileds(Model rdfModel) throws MiddlewareHaltException {
+    private void validateSignatureFields(Model rdfModel) throws MiddlewareHaltException {
 		Property property = ResourceFactory.createProperty(registrySystemBase + Constants.SIGNED_PROPERTY);
         StmtIterator rdfIter = rdfModel.listStatements();
 		Property prop = ResourceFactory.createProperty(registryContext+Constants.SIGNATURE_FOR);
