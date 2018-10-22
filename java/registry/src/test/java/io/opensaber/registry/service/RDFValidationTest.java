@@ -4,13 +4,13 @@ import es.weso.schema.Schema;
 import es.weso.schema.Schemas;
 import io.opensaber.pojos.ValidationResponse;
 import io.opensaber.registry.exception.RDFValidationException;
-import io.opensaber.registry.middleware.MiddlewareHaltException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.RDFUtil;
 import org.apache.jena.ext.com.google.common.io.ByteStreams;
-import org.apache.jena.rdf.model.*;
-import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.rdf.model.Model;
+import org.apache.tomcat.jni.OS;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import scala.Option;
 import scala.util.Either;
@@ -19,7 +19,6 @@ import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -31,16 +30,15 @@ public class RDFValidationTest {
 	private static final String COMPLEX_INVALID_JSONLD_ADD = "teacher_badrecord_create.jsonld";
 	private static final String COMPLEX_CREATE_SHEX = "teacher_create.shex";
 	private static final String COMPLEX_UPDATE_SHEX = "teacher_update.shex";
-	private static final String ADD_REQUEST_PATH = "/add";
-	private static final String UPDATE_REQUEST_PATH = "/update";
 	public static final String TTL_FORMAT = "TTL";
 	public static final String JSONLD_FORMAT = "JSONLD";
 	private static final String SCHEMAFORMAT = "SHEXC";
 	private static final String PROCESSOR 	= "shex";
 	private String jsonld;
 	private static final String EMPTY_STRING = "";
-	private Map<String, Object> mapData;
+
 	private RdfValidator rdfValidator;
+
 	private Option<String> none = Option.empty();
 	
 	@Rule
@@ -58,7 +56,7 @@ public class RDFValidationTest {
 		return successfulInitialization;
 	}
 	
-	private boolean setup(Schema schema, String shexFileForUpdate) {
+	private boolean setup( String shexFileForUpdate) {
 		boolean successfulInitialization = true;
 		try {
 			Schema createSchema = readSchema(shexFileForUpdate, SCHEMAFORMAT, PROCESSOR);
@@ -73,186 +71,57 @@ public class RDFValidationTest {
 		return this.getClass().getClassLoader().getResource(file).toURI();
 	}
 
-	//Excluded as of now, needed to fix while removing rdfconversion interceptor
-	//@Test
-	public void testHaltIfNoRDFToValidate() throws IOException, URISyntaxException, RDFValidationException {
+	@Test
+	public void testHaltIfNoRDFToValidate() throws IOException, RDFValidationException {
 		assertTrue(setup(SIMPLE_SHEX, SIMPLE_SHEX));
-		mapData = new HashMap<>();
 		expectedEx.expect(RDFValidationException.class);
 		expectedEx.expectMessage("RDF Data is missing!");
-		//middleware.execute(mapData);
 		rdfValidator.validateRDFWithSchema(null,null);
 	}
 
-	//Not necessary
-	//@Test
-	public void testHaltIfRDFpresentButInvalid() throws IOException, MiddlewareHaltException, URISyntaxException{
-		expectedEx.expect(MiddlewareHaltException.class);
-		expectedEx.expectMessage("Data validation failed!");
-		assertTrue(setup(SIMPLE_SHEX, SIMPLE_SHEX));
-		mapData = new HashMap<>();
-		mapData.put(Constants.RDF_OBJECT, "{}");
-		//middleware.execute(mapData);
-		//middleware.validateRDFWithSchema("{}","");
-	}
-	
-
-	/*@Test
-	public void testHaltIfValidationMappingMissing() throws IOException, MiddlewareHaltException, URISyntaxException{
-		expectedEx.expect(MiddlewareHaltException.class);
-		expectedEx.expectMessage("RDF validation mapping is missing!");
-		assertTrue(setup(COMPLEX_CREATE_SHEX, COMPLEX_UPDATE_SHEX));
-		mapData = new HashMap<String,Object>();
-		mapData.put(Constants.RDF_OBJECT, getValidRdf(COMPLEX_TTL));
-		middleware.execute(mapData);
-	}
-	
 	@Test
-	public void testHaltIfValidationMappingIsNull() throws IOException, MiddlewareHaltException, URISyntaxException{
-		expectedEx.expect(MiddlewareHaltException.class);
-		expectedEx.expectMessage("RDF validation mapping is missing!");
-		assertTrue(setup(COMPLEX_CREATE_SHEX, COMPLEX_UPDATE_SHEX));
-		mapData = new HashMap<String,Object>();
-		mapData.put(Constants.RDF_OBJECT, getValidRdf(COMPLEX_TTL));
-		mapData.put(Constants.RDF_VALIDATION_MAPPER_OBJECT, null);
-		middleware.execute(mapData);
-	}
-	
-	@Test
-	public void testHaltIfValidationMappingIsNotModel() throws IOException, MiddlewareHaltException, URISyntaxException{
-		expectedEx.expect(MiddlewareHaltException.class);
-		expectedEx.expectMessage("RDF validation mapping is invalid!");
-		assertTrue(setup(COMPLEX_CREATE_SHEX, COMPLEX_UPDATE_SHEX));
-		mapData = new HashMap<String,Object>();
-		mapData.put(Constants.RDF_OBJECT, getValidRdf(COMPLEX_TTL));
-		mapData.put(Constants.RDF_VALIDATION_MAPPER_OBJECT, "{}");
-		middleware.execute(mapData);
-		testForSuccessfulResult();
-	}*/
-
-	//Excluded as of now, needed to fix while removing rdfconversion interceptor
-	//@Test
-	public void testHaltIfSchemaIsMissing() throws IOException, URISyntaxException, RDFValidationException {
-		expectedEx.expect(MiddlewareHaltException.class);
+	public void testHaltIfSchemaIsMissing() throws IOException, RDFValidationException {
+		expectedEx.expect(RDFValidationException.class);
 		expectedEx.expectMessage("Schema for validation is missing");
-		Schema schema = null;
-		assertTrue(setup(schema,COMPLEX_UPDATE_SHEX));
-		mapData = new HashMap<String,Object>();
-		mapData.put(Constants.RDF_OBJECT, getValidRdf(COMPLEX_TTL));
-		mapData.put(Constants.METHOD_ORIGIN, ADD_REQUEST_PATH);
-		Model model = getModel();
-		mapData.put(Constants.RDF_VALIDATION_MAPPER_OBJECT, model);
-		//middleware.execute(mapData);
+		assertTrue(setup(COMPLEX_UPDATE_SHEX));
 		rdfValidator.validateRDFWithSchema(getValidRdf(COMPLEX_TTL), Constants.CREATE_METHOD_ORIGIN);
 	}
 
-	//Excluded as of now, needed to fix while removing rdfconversion interceptor
-	//@Test
-	public void testHaltIfMethodOriginIsMissing() throws IOException, URISyntaxException, RDFValidationException {
-		expectedEx.expect(MiddlewareHaltException.class);
+	@Test
+	public void testHaltIfMethodOriginIsMissing() throws IOException, RDFValidationException {
+		expectedEx.expect(RDFValidationException.class);
 		expectedEx.expectMessage("Request URL is invalid");
 		assertTrue(setup(COMPLEX_CREATE_SHEX, COMPLEX_UPDATE_SHEX));
-		mapData = new HashMap<String,Object>();
-		mapData.put(Constants.RDF_OBJECT, getValidRdf(COMPLEX_TTL));
-		Model model = getModel();
-		mapData.put(Constants.RDF_VALIDATION_MAPPER_OBJECT, model);
-		//middleware.execute(mapData);
-		rdfValidator.validateRDFWithSchema(getValidRdf(COMPLEX_TTL),"");
+		rdfValidator.validateRDFWithSchema(getValidRdf(COMPLEX_TTL),null);
 	}
 
-	//Excluded as of now, needed to fix while removing rdfconversion interceptor
-	//@Test
-	public void testIfComplexJSONLDIsSupportedForAdd() throws IOException, URISyntaxException, RDFValidationException {
+	@Test
+	public void testIfComplexJSONLDIsSupportedForAdd() throws RDFValidationException {
 		assertTrue(setup(COMPLEX_CREATE_SHEX, COMPLEX_UPDATE_SHEX));
-		mapData = new HashMap<String,Object>();
-		mapData.put(Constants.RDF_OBJECT, getValidRdf(COMPLEX_TTL));
-		mapData.put(Constants.METHOD_ORIGIN, ADD_REQUEST_PATH);
-		Model model = getModel();
-		mapData.put(Constants.RDF_VALIDATION_MAPPER_OBJECT, model);
-		//middleware.execute(mapData);
-		rdfValidator.validateRDFWithSchema(getValidRdf(COMPLEX_TTL),Constants.CREATE_METHOD_ORIGIN);
-		testForSuccessfulResult();
+		ValidationResponse validationResponse =  rdfValidator.validateRDFWithSchema(getValidRdf(COMPLEX_TTL),Constants.CREATE_METHOD_ORIGIN);
+		testForSuccessfulResult(validationResponse);
 	}
 
-	//Excluded as of now, needed to fix while removing rdfconversion interceptor
-	//@Test
-	public void testIfComplexJSONLDIsSupportedForUpdate() throws IOException, URISyntaxException, RDFValidationException {
+	@Test
+	public void testIfComplexJSONLDIsSupportedForUpdate() throws RDFValidationException {
 		assertTrue(setup(COMPLEX_CREATE_SHEX, COMPLEX_UPDATE_SHEX));
-		mapData = new HashMap<String,Object>();
-		mapData.put(Constants.RDF_OBJECT, getValidRdf(COMPLEX_TTL));
-		mapData.put(Constants.METHOD_ORIGIN, UPDATE_REQUEST_PATH);
-		Model model = getModel();
-		mapData.put(Constants.RDF_VALIDATION_MAPPER_OBJECT, model);
-		//middleware.execute(mapData);
-		rdfValidator.validateRDFWithSchema(getValidRdf(COMPLEX_TTL), Constants.UPDATE_METHOD_ORIGIN);
-		testForSuccessfulResult();
+		ValidationResponse validationResponse = rdfValidator.validateRDFWithSchema(getValidRdf(COMPLEX_TTL), Constants.UPDATE_METHOD_ORIGIN);
+		testForSuccessfulResult(validationResponse);
 	}
 
-	private Model generateShapeModel(Model inputRdf) throws Exception {
-		Model model = ModelFactory.createDefaultModel();
-		Map<String, String> typeValidationMap = new HashMap<>();
-		typeValidationMap.put("http://example.com/voc/teacher/1.0.0/School", "http://example.com/voc/teacher/1.0.0/SchoolShape");
-		for (Map.Entry<String, String> map : typeValidationMap.entrySet()) {
-			String key = map.getKey();
-			StmtIterator iter = filterStatement(null, RDF.type, key, inputRdf);
-			String value = map.getValue();
-			if (value == null) {
-				throw new Exception("Validation missing for type");
-			}
-			while (iter.hasNext()) {
-				Resource subjectResource = ResourceFactory.createResource(value);
-				Property predicate = ResourceFactory.createProperty("http://www.w3.org/ns/shacl#targetNode");
-				model.add(subjectResource, predicate, iter.next().getSubject());
-			}
-		}
-		return model;
-	}
-
-	private StmtIterator filterStatement(String subject, Property predicate, String object, Model resultModel) {
-		Resource subjectResource = subject != null ? ResourceFactory.createResource(subject) : null;
-		RDFNode objectResource = object != null ? ResourceFactory.createResource(object) : null;
-		StmtIterator iter = resultModel.listStatements(subjectResource, predicate, objectResource);
-		return iter;
-	}
-
-	private Model getModel() {
-		Model model = ModelFactory.createDefaultModel();
-		Resource subject = ResourceFactory.createResource("http://example.com/voc/teacher/1.0.0/SchoolShape");
-		Property predicate = ResourceFactory.createProperty("http://www.w3.org/ns/shacl#targetNode");
-		RDFNode object = ResourceFactory.createResource("http://example.com/voc/teacher/1.0.0/1234");
-		model.add(subject, predicate, object);
-		return model;
-	}
-
-	//Excluded as of now, needed to fix while removing rdfconversion interceptor
-	//@Test
+	@Test
 	public void testIfaRealValidationFailsForAdd() throws Exception {
 		assertTrue(setup(COMPLEX_CREATE_SHEX,COMPLEX_UPDATE_SHEX));
-		mapData = new HashMap<>();
-		Model dataModel = getValidRdf(COMPLEX_INVALID_JSONLD_ADD, JSONLD_FORMAT);
-		mapData.put(Constants.RDF_OBJECT, getValidRdf(COMPLEX_INVALID_JSONLD_ADD, JSONLD_FORMAT));
-		mapData.put(Constants.METHOD_ORIGIN, ADD_REQUEST_PATH);
-		Model model = generateShapeModel(dataModel);
-		mapData.put(Constants.RDF_VALIDATION_MAPPER_OBJECT, model);
-		//middleware.execute(mapData);
-		rdfValidator.validateRDFWithSchema(getValidRdf(COMPLEX_INVALID_JSONLD_ADD, JSONLD_FORMAT), Constants.CREATE_METHOD_ORIGIN);
-		ValidationResponse response = (ValidationResponse) mapData.get(Constants.RDF_VALIDATION_OBJECT);
+		ValidationResponse response = rdfValidator.validateRDFWithSchema(getValidRdf(COMPLEX_INVALID_JSONLD_ADD, JSONLD_FORMAT), Constants.CREATE_METHOD_ORIGIN);
 		assertFalse(response.isValid());
 	}
 
-	//Excluded as of now, needed to fix while removing rdfconversion interceptor
-	//@Test
+	@Test
 	public void testIfaRealValidationFailsForUpdate() throws Exception {
 		assertTrue(setup(COMPLEX_CREATE_SHEX,COMPLEX_UPDATE_SHEX));
-		mapData = new HashMap<>();
 		Model dataModel = getValidRdf(COMPLEX_INVALID_JSONLD_UPDATE, JSONLD_FORMAT);
-		mapData.put(Constants.RDF_OBJECT, getValidRdf(COMPLEX_INVALID_JSONLD_UPDATE, JSONLD_FORMAT));
-		mapData.put(Constants.METHOD_ORIGIN, UPDATE_REQUEST_PATH);
-		Model model = generateShapeModel(dataModel);
-		mapData.put(Constants.RDF_VALIDATION_MAPPER_OBJECT, model);
-		//middleware.execute(mapData);
-		ValidationResponse response = rdfValidator.validateRDFWithSchema(getValidRdf(COMPLEX_INVALID_JSONLD_UPDATE, JSONLD_FORMAT), Constants.UPDATE_METHOD_ORIGIN);
-		/*ValidationResponse response = (ValidationResponse) mapData.get(Constants.RDF_VALIDATION_OBJECT);*/
+		ValidationResponse response = rdfValidator.validateRDFWithSchema(dataModel, Constants.UPDATE_METHOD_ORIGIN);
+
 		assertFalse(response.isValid());
 		Map<String, String> errorFields = response.getFields();
 		errorFields.forEach((key, value) -> {
@@ -261,20 +130,8 @@ public class RDFValidationTest {
 		});
 	}
 
-	private void testForSuccessfulResult() {
-		ValidationResponse validationResponse = testForResult();
+	private void testForSuccessfulResult(ValidationResponse validationResponse) {
 		assertTrue(validationResponse.isValid());
-	}
-
-	private void testForUnsuccessfulResult() {
-		ValidationResponse validationResponse = testForResult();
-		assertFalse(validationResponse.isValid());
-	}
-
-	private ValidationResponse testForResult() {
-		ValidationResponse validationResponse = (ValidationResponse)mapData.get(Constants.RDF_VALIDATION_OBJECT);
-		assertNotNull(validationResponse);
-		return validationResponse;
 	}
 	
 	private void setJsonld(String filename){

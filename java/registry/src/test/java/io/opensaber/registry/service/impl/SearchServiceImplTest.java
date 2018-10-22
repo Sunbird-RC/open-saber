@@ -7,10 +7,7 @@ import io.opensaber.registry.config.GenericConfiguration;
 import io.opensaber.registry.controller.RegistryTestBase;
 import io.opensaber.registry.dao.RegistryDao;
 import io.opensaber.registry.dao.SearchDao;
-import io.opensaber.registry.exception.AuditFailedException;
-import io.opensaber.registry.exception.EncryptionException;
-import io.opensaber.registry.exception.RecordNotFoundException;
-import io.opensaber.registry.exception.TypeNotProvidedException;
+import io.opensaber.registry.exception.*;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.RDFUtil;
 import io.opensaber.registry.service.RegistryService;
@@ -22,6 +19,9 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.vocabulary.RDF;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
@@ -40,6 +40,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.Collections;
 import java.util.List;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
@@ -89,10 +90,9 @@ public class SearchServiceImplTest extends RegistryTestBase{
 		assertTrue(responseModel.isEmpty());
 	}
 
-	//RDFValidation changes, need to fix later
-	/*@Test
+	@Test
 	public void test_search_valid_response() throws AuditFailedException, EncryptionException, RecordNotFoundException,
-			TypeNotProvidedException, EntityCreationException, MultipleEntityException, DuplicateRecordException, IOException, MiddlewareHaltException {
+			TypeNotProvidedException, EntityCreationException, MultipleEntityException, DuplicateRecordException {
 		String response = addEntity();
 		Model rdf = getNewValidRdf(BASE_SEARCH_JSONLD);
 		List<Resource> subjectList = RDFUtil.getRootLabels(rdf);
@@ -102,7 +102,7 @@ public class SearchServiceImplTest extends RegistryTestBase{
 		assertFalse(responseModel.isEmpty());
 		ValueFactory vf = SimpleValueFactory.getInstance();
 		assertTrue(responseModel.contains(vf.createIRI(response), (IRI)null, (org.eclipse.rdf4j.model.Resource)null));
-	}*/
+	}
 	
 	@Test
 	public void test_search_with_no_type_provided() throws AuditFailedException, EncryptionException, RecordNotFoundException, TypeNotProvidedException {
@@ -116,10 +116,10 @@ public class SearchServiceImplTest extends RegistryTestBase{
 		searchService.search(rdf);
 	}
 	
-	/*private String addEntity() throws DuplicateRecordException, AuditFailedException,
-			EncryptionException, RecordNotFoundException, MultipleEntityException, EntityCreationException, IOException, SignatureException.UnreachableException, RDFValidationException, JsonLdError, SignatureException.CreationException {
+	private String addEntity() throws DuplicateRecordException, AuditFailedException,
+			EncryptionException, RecordNotFoundException, MultipleEntityException, EntityCreationException {
 		Model rdfModel = getNewValidRdf();
 		return registryService.addEntity(rdfModel, null, null);
-	}*/
+	}
 
 }

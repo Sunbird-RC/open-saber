@@ -9,17 +9,17 @@ import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.pojos.ValidationResponse;
 import io.opensaber.registry.dao.RegistryDao;
 import io.opensaber.registry.exception.*;
-import io.opensaber.registry.exception.ErrorConstants.ErrorConstants;
+import io.opensaber.registry.exception.errorconstants.ErrorConstants;
 import io.opensaber.registry.frame.FrameEntity;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.middleware.util.RDFUtil;
 import io.opensaber.registry.model.RegistrySignature;
 import io.opensaber.registry.schema.config.SchemaConfigurator;
 import io.opensaber.registry.service.*;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.util.GraphDBFactory;
-import io.opensaber.registry.util.JSONUtil;
 import io.opensaber.utils.converters.RDF2Graph;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.datatypes.RDFDatatype;
@@ -126,6 +126,7 @@ public class RegistryServiceImpl implements RegistryService {
 			throws DuplicateRecordException, EntityCreationException, EncryptionException, AuditFailedException,
 			MultipleEntityException, RecordNotFoundException, IOException, SignatureException.UnreachableException, JsonLdError, SignatureException.CreationException, RDFValidationException, MiddlewareHaltException {
 		try {
+			Model signedRdfModel = null;
 			RegistrySignature rs = new RegistrySignature();
 			Schema createSchema = schemaConfigurator.getSchemaForCreate();
 			Schema updateSchema = schemaConfigurator.getSchemaForUpdate();
@@ -149,9 +150,25 @@ public class RegistryServiceImpl implements RegistryService {
 				Map<String, Object> entitySignMap = (Map<String, Object>) signatureService.sign(signReq);
 				entitySignMap.put("createdDate", rs.getCreatedTimestamp());
 				entitySignMap.put("keyUrl", signatureKeyURl);
-				rdfModel = RDFUtil.getUpdatedSignedModel(rdfModel, registryContext, signatureDomain, entitySignMap,
+				signedRdfModel = RDFUtil.getUpdatedSignedModel(rdfModel, registryContext, signatureDomain, entitySignMap,
 						ModelFactory.createDefaultModel());
 			}
+			return addEntity(signedRdfModel, subject, property);
+
+		} catch (EntityCreationException | EncryptionException | AuditFailedException | DuplicateRecordException
+				| MultipleEntityException ex) {
+			throw ex;
+		} catch (Exception ex) {
+			logger.error("Exception when creating entity: ", ex);
+			throw ex;
+		}
+	}
+
+	@Override
+	public String addEntity(Model rdfModel, String subject, String property)
+			throws DuplicateRecordException, EntityCreationException, EncryptionException, AuditFailedException,
+			MultipleEntityException, RecordNotFoundException {
+		try {
 			Resource root = getRootNode(rdfModel);
 			String label = getRootLabel(root);
 			if (encryptionEnabled) {
@@ -492,6 +509,10 @@ public class RegistryServiceImpl implements RegistryService {
 		Graph graph = registryDao.getEntityById(id, includeSignatures);
 		org.eclipse.rdf4j.model.Model model = RDF2Graph.convertGraph2RDFModel(graph, id);
 		logger.debug("RegistryServiceImpl : rdf4j model :", model);
-		return frameEntity.getContent(model);
+		Model jenaEntityModel = JenaRDF4J.asJenaModel(model);
+		if (encryptionEnabled) {
+			decryptModel(jenaEntityModel);
+		}
+		return frameEntity(jenaEntityModel);
 	}
 }
