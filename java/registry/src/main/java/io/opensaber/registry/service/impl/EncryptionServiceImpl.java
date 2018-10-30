@@ -54,8 +54,8 @@ public class EncryptionServiceImpl implements EncryptionService {
 	@Autowired
 	private Gson gson;
 	
-	@Autowired
-	SchemaConfigurator schemaConfigurator;
+/*	@Autowired
+	SchemaConfigurator schemaConfigurator;*/
 
 	@Autowired
 	private OpenSaberInstrumentation watch;

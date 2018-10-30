@@ -71,8 +71,8 @@ public class EncryptionDaoImplTest extends RegistryTestBase {
 	@Mock
 	private EncryptionServiceImpl encryptionMock;
 
-	@Mock
-	private SchemaConfigurator mockSchemaConfigurator;
+/*	@Mock
+	private SchemaConfigurator mockSchemaConfigurator;*/
 
 	@Autowired
 	@InjectMocks
@@ -208,10 +208,10 @@ public class EncryptionDaoImplTest extends RegistryTestBase {
 		newMap.put("http://example.com/voc/teacher/1.0.0/encryptedclusterResourceCentre", "mockEncryptedClusterResourceCentre");
 		newMap.put("http://example.com/voc/teacher/1.0.0/encryptedudiseNumber", "mockEncryptedUdiseNumber");
 
-		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/schoolName")).thenReturn(false);
+/*		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/schoolName")).thenReturn(false);
 		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/clusterResourceCentre"))
 		.thenReturn(true);
-		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/udiseNumber")).thenReturn(true);
+		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/udiseNumber")).thenReturn(true);*/
 
 		when(encryptionMock.encrypt(map)).thenReturn(newMap);
 		//when(encryptionMock.encrypt("1234")).thenReturn("mockEncryptedUdiseNumber");
@@ -234,9 +234,9 @@ public class EncryptionDaoImplTest extends RegistryTestBase {
 		newMap.put("http://example.com/voc/teacher/1.0.0/encryptedclusterResourceCentre", "mockEncryptedClusterResourceCentre");
 		newMap.put("http://example.com/voc/teacher/1.0.0/encryptedudiseNumber", "mockEncryptedUdiseNumber");
 
-		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/schoolName")).thenReturn(false);
+/*		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/schoolName")).thenReturn(false);
 		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/clusterResourceCentre")).thenReturn(true);
-		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/udiseNumber")).thenReturn(true);
+		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/udiseNumber")).thenReturn(true);*/
 
 		when(encryptionMock.encrypt(map)).thenReturn(newMap);
 		//when(encryptionMock.encrypt("1234")).thenReturn("mockEncryptedUdiseNumber");
@@ -272,10 +272,10 @@ public class EncryptionDaoImplTest extends RegistryTestBase {
 		encryptedClassList.add("mockEncryptedClassesTaughtIII");
 		newMap.put("http://example.com/voc/teacher/1.0.0/encryptedclassesTaught", encryptedClassList);
 
-		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/schoolName")).thenReturn(false);
+/*		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/schoolName")).thenReturn(false);
 		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/clusterResourceCentre")).thenReturn(true);
 		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/udiseNumber")).thenReturn(true);
-		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/classesTaught")).thenReturn(true);
+		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/classesTaught")).thenReturn(true);*/
 
 		when(encryptionMock.encrypt(map)).thenReturn(newMap);
 		when(encryptionMock.encrypt("I")).thenReturn("mockEncryptedClassesTaughtI");
@@ -289,7 +289,7 @@ public class EncryptionDaoImplTest extends RegistryTestBase {
 		verify(encryptionMock, times(3)).encrypt(Mockito.anyString());
 	}
 
-	@Test
+/*	@Test
 	public void test_encryptionServiceCall_for_null_property() throws Exception {
 		Model rdfModel = getNewValidRdf();
 		updateGraphFromRdf(rdfModel);
@@ -306,7 +306,7 @@ public class EncryptionDaoImplTest extends RegistryTestBase {
 			}
 		}		
 		verify(encryptionMock, never()).encrypt(Mockito.anyString());
-	}
+	}*/
 
 	@Test
 	public void test_properties_single_node() throws Exception {
@@ -316,9 +316,9 @@ public class EncryptionDaoImplTest extends RegistryTestBase {
 		map.put("http://example.com/voc/teacher/1.0.0/clusterResourceCentre", "test Cluster Resource");
 		map.put("http://example.com/voc/teacher/1.0.0/udiseNumber", "1234");
 
-		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/schoolName")).thenReturn(true);
+/*		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/schoolName")).thenReturn(true);
 		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/clusterResourceCentre")).thenReturn(true);
-		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/udiseNumber")).thenReturn(true);
+		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/udiseNumber")).thenReturn(true);*/
 
 		Map<String, Object> newMap = new HashMap<String, Object>();
 		newMap.put("http://example.com/voc/teacher/1.0.0/encryptedclusterResourceCentre", "mockEncryptedClusterResourceCentre");
@@ -329,9 +329,9 @@ public class EncryptionDaoImplTest extends RegistryTestBase {
 		/* when(encryptionMock.encrypt("test Cluster Resource")).thenReturn("mockEncryptedClusterResourceCentre");
 	    when(encryptionMock.encrypt("1234")).thenReturn("mockEncryptedUdiseNumber");
 		 */
-		when(mockSchemaConfigurator.isEncrypted("encryptedschoolName")).thenReturn(true);
+/*		when(mockSchemaConfigurator.isEncrypted("encryptedschoolName")).thenReturn(true);
 		when(mockSchemaConfigurator.isEncrypted("encryptedclusterResourceCentre")).thenReturn(true);
-		when(mockSchemaConfigurator.isEncrypted("encryptedudiseNumber")).thenReturn(true);
+		when(mockSchemaConfigurator.isEncrypted("encryptedudiseNumber")).thenReturn(true);*/
 
 		when(encryptionMock.decrypt(newMap)).thenReturn(map);
 		/*when(encryptionMock.decrypt("mockEncryptedClusterResourceCentre")).thenReturn("test Cluster Resource");
@@ -356,11 +356,11 @@ public class EncryptionDaoImplTest extends RegistryTestBase {
 		Model rdfModel = getNewValidRdfFromJsonString(dataString);
 		String rootLabel = updateGraphFromRdf(rdfModel);
 
-		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/schoolName")).thenReturn(true);
+/*		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/schoolName")).thenReturn(true);
 		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/clusterResourceCentre")).thenReturn(true);
 		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/udiseNumber")).thenReturn(true);
 		when(mockSchemaConfigurator.isPrivate("http://example.com/voc/teacher/1.0.0/street")).thenReturn(true);
-
+*/
 		Map<String,Object> map=new HashMap<>();
 		map.put("http://example.com/voc/teacher/1.0.0/schoolName", "Bluebells");
 		map.put("http://example.com/voc/teacher/1.0.0/clusterResourceCentre", "some Cluster Resource");
@@ -376,12 +376,12 @@ public class EncryptionDaoImplTest extends RegistryTestBase {
 
 		when(encryptionMock.encrypt(map)).thenReturn(newMap);
 
-
+/*
 		when(mockSchemaConfigurator.isEncrypted("encryptedschoolName")).thenReturn(true);
 		when(mockSchemaConfigurator.isEncrypted("encryptedclusterResourceCentre")).thenReturn(true);
 		when(mockSchemaConfigurator.isEncrypted("encryptedudiseNumber")).thenReturn(true);
 		when(mockSchemaConfigurator.isEncrypted("encryptedStreet")).thenReturn(true);
-
+*/
 		when(encryptionMock.decrypt(newMap)).thenReturn(map);
 
 

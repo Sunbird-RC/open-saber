@@ -37,8 +37,8 @@ public class EncryptionServiceImplTest extends RegistryTestBase {
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 
-	@Mock
-	private SchemaConfigurator mockSchemaConfigurator;
+/*	@Mock
+	private SchemaConfigurator mockSchemaConfigurator;*/
 	
 	@Mock
 	private RestTemplate mockRestTemplate;

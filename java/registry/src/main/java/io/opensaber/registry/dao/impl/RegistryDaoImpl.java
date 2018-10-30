@@ -16,6 +16,12 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.NodeIterator;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.ResIterator;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -48,7 +54,11 @@ import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.schema.config.SchemaConfigurator;
+import io.opensaber.registry.schema.config.SchemaLoader;
+import io.opensaber.registry.schema.configurator.SchemaConfiguratorFactory;
+import io.opensaber.registry.schema.configurator.SchemaType;
 import io.opensaber.registry.sink.DatabaseProvider;
+import org.apache.jena.rdf.model.*;
 
 @Component
 public class RegistryDaoImpl implements RegistryDao {
@@ -65,9 +75,15 @@ public class RegistryDaoImpl implements RegistryDao {
 
     @Value("${signature.enabled}")
     private boolean signatureEnabled;
-
+/*
     @Autowired
-    SchemaConfigurator schemaConfigurator;
+    SchemaConfigurator schemaConfigurator;*/
+    
+    @Autowired
+    private SchemaLoader schemaLoader;
+    	
+	@Autowired
+	private SchemaConfiguratorFactory schemaConfiguratorFactory;
 
     @Autowired
     ApplicationContext appContext;
@@ -454,7 +470,7 @@ public class RegistryDaoImpl implements RegistryDao {
      */
     private void verifyAndDelete(Vertex dbSourceVertex, Edge e, Optional<Edge> edgeAlreadyExists, List<Edge> edgeVertexMatchList, String methodOrigin)
             throws AuditFailedException {
-        boolean isSingleValued = schemaConfigurator.isSingleValued(e.label());
+        boolean isSingleValued = isSingleValued(e.label());
         if ((edgeAlreadyExists.isPresent() && methodOrigin.equalsIgnoreCase(Constants.UPDATE_METHOD_ORIGIN)) || isSingleValued) {
             Iterator<Edge> edgeIter = dbSourceVertex.edges(Direction.OUT, e.label());
             while (edgeIter.hasNext()) {
@@ -707,7 +723,7 @@ public class RegistryDaoImpl implements RegistryDao {
         while (iter.hasNext()) {
             VertexProperty<Object> property = iter.next();
             String tailOfPropertyKey = property.key().substring(property.key().lastIndexOf("/") + 1).trim();
-            boolean existingEncyptedPropertyKey = schemaConfigurator.isEncrypted(tailOfPropertyKey);
+            boolean existingEncyptedPropertyKey = schemaConfiguratorFactory.getInstance(SchemaType.SHEX).isEncrypted(tailOfPropertyKey);
             if ((methodOrigin.equalsIgnoreCase(Constants.CREATE_METHOD_ORIGIN) || methodOrigin.equalsIgnoreCase(Constants.UPDATE_METHOD_ORIGIN))){
             	setProperty(newSubject, property.key(), property.value(), methodOrigin);
                 setMetaProperty(subject, newSubject, property, methodOrigin);
@@ -738,7 +754,7 @@ public class RegistryDaoImpl implements RegistryDao {
         if (!((methodOrigin.equalsIgnoreCase(Constants.SEARCH_METHOD_ORIGIN) || methodOrigin.equalsIgnoreCase(Constants.READ_METHOD_ORIGIN)) && isAuditField(key))) {
             VertexProperty vp = v.property(key);
             Object oldValue = vp.isPresent() ? vp.value() : null;
-            if (oldValue != null && !methodOrigin.equalsIgnoreCase(Constants.UPDATE_METHOD_ORIGIN) && !schemaConfigurator.isSingleValued(key)) {
+            if (oldValue != null && !methodOrigin.equalsIgnoreCase(Constants.UPDATE_METHOD_ORIGIN) && !isSingleValued(key)) {
                 List valueList = new ArrayList();
                 if (oldValue instanceof List) {
                     valueList = (List) oldValue;
@@ -926,6 +942,51 @@ public class RegistryDaoImpl implements RegistryDao {
 			v.property(registryContext+Constants.AuditProperties.lastUpdatedBy.name(),userId);
 			v.property(registryContext+Constants.AuditProperties.lastUpdatedAt.name(),timestamp);
 		}
+	}
+	
+	private boolean isSingleValued(String property) {
+		logger.debug("Property being verified for single-valued, multi-valued:" + property);
+		org.apache.jena.rdf.model.Property predicate = ResourceFactory.createProperty("http://shex.io/ns/shex#predicate");
+		RDFNode rdfNode = ResourceFactory.createResource(property);
+		ResIterator resIter = schemaLoader.getValidationConfig().listSubjectsWithProperty(predicate, rdfNode);
+
+		while (resIter.hasNext()) {
+			Resource subject = resIter.next();
+			Long minValue = getValueConstraint("http://shex.io/ns/shex#min", subject);
+			Long maxValue = getValueConstraint("http://shex.io/ns/shex#max", subject);
+			if (minValue == null || maxValue == null) {
+				logger.debug("Single-valued");
+				return true;
+			}
+			if (minValue > 1) {
+				logger.debug("Multi-valued");
+				return false;
+			} else if (maxValue > 1) {
+				logger.debug("Multi-valued");
+				return false;
+			} else {
+				logger.debug("Single-valued");
+				return true;
+			}
+		}
+		logger.debug("Property not matching any condition:" + property);
+		return true;
+	}
+
+	private Long getValueConstraint(String constraint, Resource subject) {
+		org.apache.jena.rdf.model.Property predicate = ResourceFactory.createProperty(constraint);
+		NodeIterator nodeIter = schemaLoader.getValidationConfig().listObjectsOfProperty(subject, predicate);
+
+		while (nodeIter.hasNext()) {
+			RDFNode node = nodeIter.next();
+			if (node.isLiteral()) {
+				Literal literal = node.asLiteral();
+				return literal.getLong();
+			} else if (node.isURIResource()) {
+				return 2L;
+			}
+		}
+		return null;
 	}
 
 }

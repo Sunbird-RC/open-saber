@@ -17,6 +17,9 @@ import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.middleware.util.RDFUtil;
 import io.opensaber.registry.model.RegistrySignature;
 import io.opensaber.registry.schema.config.SchemaConfigurator;
+import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
+import io.opensaber.registry.schema.configurator.SchemaConfiguratorFactory;
+import io.opensaber.registry.schema.configurator.SchemaType;
 import io.opensaber.registry.service.EncryptionService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SignatureService;
@@ -70,12 +73,15 @@ public class RegistryServiceImpl implements RegistryService {
 
 	@Autowired
 	SignatureService signatureService;
-
+/*
 	@Autowired
-	SchemaConfigurator schemaConfigurator;
+	SchemaConfigurator schemaConfigurator;*/
 
 	@Autowired
 	ValidateFactory validateFactory;
+	
+	@Autowired
+	private SchemaConfiguratorFactory schemaConfiguratorFactory; 
 
 	@Autowired
 	Gson gson;
@@ -419,11 +425,14 @@ public class RegistryServiceImpl implements RegistryService {
 
 	private void setModelWithEncryptedOrDecryptedAttributes(Model rdfModel, boolean isEncryptionRequired)
 			throws EncryptionException {
-		NodeIterator nodeIter = schemaConfigurator.getAllPrivateProperties();
+		//NodeIterator nodeIter = schemaConfigurator.getAllPrivateProperties();
+		List<String> privateProperties = schemaConfiguratorFactory.getInstance(SchemaType.SHEX).getAllPrivateProperties();
+
 		Map<Resource, Map<String, Object>> toBeEncryptedOrDecryptedAttributes = new HashMap<Resource, Map<String, Object>>();
 		TypeMapper tm = TypeMapper.getInstance();
-		while (nodeIter.hasNext()) {
-			RDFNode node = nodeIter.next();
+		//while (nodeIter.hasNext()) {
+		for(String propertyName: privateProperties){	 
+			RDFNode node = ResourceFactory.createResource(propertyName);//nodeIter.next();
 			String predicateStr = node.toString();
 			Property predicate = null;
 			if (!isEncryptionRequired) {
@@ -496,7 +505,7 @@ public class RegistryServiceImpl implements RegistryService {
 					if (isEncryptionRequired) {
 						predicateStr = predicateStr.replace(tailOfPredicateStr, "encrypted" + tailOfPredicateStr);
 					} else {
-						if (schemaConfigurator.isEncrypted(tailOfPredicateStr)) {
+						if (schemaConfiguratorFactory.getInstance(SchemaType.SHEX).isEncrypted(tailOfPredicateStr)) {
 							predicateStr = predicateStr.replace(tailOfPredicateStr, tailOfPredicateStr.substring(9));
 						}
 					}

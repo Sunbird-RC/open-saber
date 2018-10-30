@@ -26,19 +26,14 @@ public class ShexSchemaConfigurator implements ISchemaConfigurator {
 
 	private List<String> foundProperties = new ArrayList<>();
 
-	// TODO: schemaFile location to be passed.
 	public ShexSchemaConfigurator(String schemaFile) throws IOException {
 		schemaConfigurationNode = loadSchemaConfig(schemaFile);
-
 	}
 
 	@Override
 	public boolean isPrivate(String propertyName) {
 		foundProperties = getPrivateProperties();
-		if (foundProperties.contains(propertyName))
-			return true;
-
-		return false;
+		return foundProperties.contains(propertyName);
 	}
 
 	@Override
@@ -47,6 +42,11 @@ public class ShexSchemaConfigurator implements ISchemaConfigurator {
 			return tailPropertyKey.substring(0, Math.min(tailPropertyKey.length(), 9)).equalsIgnoreCase("encrypted");
 		} else
 			return false;
+	}
+	
+	@Override
+	public List<String> getAllPrivateProperties() {
+		return foundProperties;
 	}
 
 	@Override
@@ -74,5 +74,6 @@ public class ShexSchemaConfigurator implements ISchemaConfigurator {
 		}
 		return foundProperties;
 	}
+
 
 }

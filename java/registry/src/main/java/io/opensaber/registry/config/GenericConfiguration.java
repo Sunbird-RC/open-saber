@@ -179,7 +179,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	//TODO: to be removed.	
-	@Bean
+	/*@Bean
 	public SchemaConfigurator schemaConfiguration() throws IOException, CustomException {
 		String fieldConfigFileName = environment.getProperty(Constants.FIELD_CONFIG_SCEHEMA_FILE);
 		if (fieldConfigFileName == null) {
@@ -191,7 +191,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		SchemaConfigurator schemaConfigurator = new SchemaConfigurator(fieldConfigFileName, registrySystemBase, schemaLoader());
 		watch.stop("SchemaConfigurator.initialization");
 		return schemaConfigurator ;
-	}
+	}*/
 
 	@Bean
 	public RdfValidationServiceImpl rdfValidator() {
