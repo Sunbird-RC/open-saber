@@ -1,10 +1,7 @@
 package io.opensaber.registry.schema.configurator;
 
-import java.io.IOException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
-import io.opensaber.registry.middleware.util.Constants;
 
 public class SchemaConfiguratorFactory {
 
@@ -14,7 +11,7 @@ public class SchemaConfiguratorFactory {
 	@Autowired
 	private ShexSchemaConfigurator shexSchemaConfigurator;
 
-	public ISchemaConfigurator getInstance(SchemaType type) throws IOException {
+	public ISchemaConfigurator getInstance(SchemaType type) {
 
 		ISchemaConfigurator schemaConfigurator = null;
 
@@ -22,8 +19,6 @@ public class SchemaConfiguratorFactory {
 			schemaConfigurator = jsonSchemaConfigurator;
 		} else if (type == SchemaType.SHEX) {
 			schemaConfigurator = shexSchemaConfigurator;
-		} else {
-			throw new IOException(Constants.SCHEMA_TYPE_INVALID);
 		}
 
 		return schemaConfigurator;

@@ -1,5 +1,8 @@
 package io.opensaber.registry.schema.configurator;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class JsonSchemaConfigurator implements ISchemaConfigurator{
 
 	@Override
