@@ -4,4 +4,6 @@ public interface ISchemaConfigurator {
 	
 	public boolean isPrivate(String propertyName);
 	public boolean isEncrypted(String tailPropertyKey);
+	public String getSchemaContent();
+	
 }

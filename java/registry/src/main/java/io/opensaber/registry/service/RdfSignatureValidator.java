@@ -4,10 +4,15 @@ import es.weso.schema.Schema;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.RDFUtil;
+import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
+import io.opensaber.registry.schema.configurator.SchemaConfiguratorFactory;
+import io.opensaber.registry.schema.configurator.SchemaType;
+
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.vocabulary.RDF;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.xml.XMLConstants;
 import java.io.IOException;
@@ -33,10 +38,13 @@ public class RdfSignatureValidator {
 	private Model schemaConfig;
 	private List<String> signatureTypes = new ArrayList<String>();
 	private List<String> signatureAttributes;
+	
+	@Autowired
+	private SchemaConfiguratorFactory schemaConfiguratorFactory;
 
     // TODO: Instead of passing the ShapeType everytime, there could be a good reason
     // to read all the shapes at once and then start validating against what was read.
-    public RdfSignatureValidator(Schema schemaForCreate, String registryContext,
+/*    public RdfSignatureValidator(Schema schemaForCreate, String registryContext,
 								 String registrySystemBase, String signatureConfigName,
 								 Map<String, String> shapeTypeMap, Model schemaConfig) {
 		this.schemaForCreate = schemaForCreate;
@@ -46,6 +54,23 @@ public class RdfSignatureValidator {
 		this.registrySystemBase = registrySystemBase;
 		shapeTypeMap.forEach((type, shape)-> {
 			if(shape.equals(registryContext+signatureConfigName)){
+				signatureTypes.add(type);
+			}
+		});
+		signatureAttributes = getSignatureAttributes();
+	}*/
+    
+	public RdfSignatureValidator(Schema schemaForCreate, String registryContext, String registrySystemBase,
+			String signatureConfigName, Map<String, String> shapeTypeMap) {
+		this.schemaForCreate = schemaForCreate;
+		this.registryContext = registryContext;
+		this.signatureConfigName = signatureConfigName;
+		ISchemaConfigurator schemaConfigartor = schemaConfiguratorFactory.getInstance(SchemaType.SHEX);
+		schemaConfig = RDFUtil.getRdfModelBasedOnFormat(schemaConfigartor.getSchemaContent(), JSON_LD_FORMAT);
+		this.registrySystemBase = registrySystemBase;
+				
+		shapeTypeMap.forEach((type, shape) -> {
+			if (shape.equals(registryContext + signatureConfigName)) {
 				signatureTypes.add(type);
 			}
 		});

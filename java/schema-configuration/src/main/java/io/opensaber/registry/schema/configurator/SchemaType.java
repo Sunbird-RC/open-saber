@@ -1,6 +1,6 @@
 package io.opensaber.registry.schema.configurator;
 
-enum SchemaType {
+public enum SchemaType {
 	JSON,
 	SHEX
 }

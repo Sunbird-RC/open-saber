@@ -27,6 +27,7 @@ import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.schema.config.SchemaConfigurator;
 import io.opensaber.registry.schema.config.SchemaLoader;
+import io.opensaber.registry.schema.configurator.ShexSchemaConfigurator;
 import io.opensaber.registry.service.RdfSignatureValidator;
 import io.opensaber.registry.service.RdfValidationServiceImpl;
 import io.opensaber.registry.sink.*;
@@ -206,16 +207,24 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 	
 	@Bean
+	public ShexSchemaConfigurator shexSchemaConfigurator() throws CustomException, IOException{
+		String schemaFile = environment.getProperty(Constants.FIELD_CONFIG_SCEHEMA_FILE);
+		if (schemaFile == null) {
+			throw new CustomException(Constants.SCHEMA_CONFIGURATION_MISSING);
+		}
+		return new ShexSchemaConfigurator(schemaFile);
+	}
+	
+	@Bean
 	public RdfSignatureValidator signatureValidator() {
 		Schema schemaForCreate = null;
-		Model schemaConfig = null;
 		try {
 			schemaForCreate = schemaLoader().getSchemaForCreate();
-			schemaConfig = schemaConfiguration().getSchemaConfig();
 		} catch (Exception e) {
 			logger.error("Unable to retrieve schema for signature validations");
 		}
-		return new RdfSignatureValidator(schemaForCreate, registryContextBase, registrySystemBase, signatureSchemaConfigName, ((RdfValidationServiceImpl)rdfValidator()).getShapeTypeMap(), schemaConfig);
+		return new RdfSignatureValidator(schemaForCreate, registryContextBase, registrySystemBase,
+				signatureSchemaConfigName, ((RdfValidationServiceImpl) rdfValidator()).getShapeTypeMap());
 	}
 
 	@Bean

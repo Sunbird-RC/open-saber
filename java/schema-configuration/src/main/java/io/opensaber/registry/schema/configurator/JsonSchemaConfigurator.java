@@ -17,4 +17,10 @@ public class JsonSchemaConfigurator implements ISchemaConfigurator{
 		return false;
 	}
 
+	@Override
+	public String getSchemaContent() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
