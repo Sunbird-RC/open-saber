@@ -178,7 +178,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		return schemaLoader;
 	}
 
-	
+	//TODO: to be removed.	
 	@Bean
 	public SchemaConfigurator schemaConfiguration() throws IOException, CustomException {
 		String fieldConfigFileName = environment.getProperty(Constants.FIELD_CONFIG_SCEHEMA_FILE);
@@ -195,15 +195,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Bean
 	public RdfValidationServiceImpl rdfValidator() {
-		Schema schemaForCreate = null;
-		Schema schemaForUpdate = null;
-		try {
-			schemaForCreate = schemaLoader().getSchemaForCreate();
-			schemaForUpdate = schemaLoader().getSchemaForUpdate();
-		} catch (Exception e) {
-			logger.error("Unable to retrieve schema for validations");
-		}
-		return new RdfValidationServiceImpl(schemaForCreate, schemaForUpdate);
+		return new RdfValidationServiceImpl();
 	}
 	
 	@Bean
@@ -217,13 +209,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	
 	@Bean
 	public RdfSignatureValidator signatureValidator() {
-		Schema schemaForCreate = null;
-		try {
-			schemaForCreate = schemaLoader().getSchemaForCreate();
-		} catch (Exception e) {
-			logger.error("Unable to retrieve schema for signature validations");
-		}
-		return new RdfSignatureValidator(schemaForCreate, registryContextBase, registrySystemBase,
+		return new RdfSignatureValidator(registryContextBase, registrySystemBase,
 				signatureSchemaConfigName, ((RdfValidationServiceImpl) rdfValidator()).getShapeTypeMap());
 	}
 

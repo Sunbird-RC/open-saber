@@ -4,6 +4,7 @@ import es.weso.schema.Schema;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.RDFUtil;
+import io.opensaber.registry.schema.config.SchemaLoader;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.schema.configurator.SchemaConfiguratorFactory;
 import io.opensaber.registry.schema.configurator.SchemaType;
@@ -41,28 +42,15 @@ public class RdfSignatureValidator {
 	
 	@Autowired
 	private SchemaConfiguratorFactory schemaConfiguratorFactory;
+	
+	@Autowired
+	private SchemaLoader schemaLoader;
 
     // TODO: Instead of passing the ShapeType everytime, there could be a good reason
-    // to read all the shapes at once and then start validating against what was read.
-/*    public RdfSignatureValidator(Schema schemaForCreate, String registryContext,
-								 String registrySystemBase, String signatureConfigName,
-								 Map<String, String> shapeTypeMap, Model schemaConfig) {
-		this.schemaForCreate = schemaForCreate;
-		this.registryContext = registryContext;
-		this.signatureConfigName = signatureConfigName;
-		this.schemaConfig = schemaConfig;
-		this.registrySystemBase = registrySystemBase;
-		shapeTypeMap.forEach((type, shape)-> {
-			if(shape.equals(registryContext+signatureConfigName)){
-				signatureTypes.add(type);
-			}
-		});
-		signatureAttributes = getSignatureAttributes();
-	}*/
-    
-	public RdfSignatureValidator(Schema schemaForCreate, String registryContext, String registrySystemBase,
+    // to read all the shapes at once and then start validating against what was read.   
+	public RdfSignatureValidator(String registryContext, String registrySystemBase,
 			String signatureConfigName, Map<String, String> shapeTypeMap) {
-		this.schemaForCreate = schemaForCreate;
+		this.schemaForCreate = schemaLoader.getSchemaForCreate();
 		this.registryContext = registryContext;
 		this.signatureConfigName = signatureConfigName;
 		ISchemaConfigurator schemaConfigartor = schemaConfiguratorFactory.getInstance(SchemaType.SHEX);
