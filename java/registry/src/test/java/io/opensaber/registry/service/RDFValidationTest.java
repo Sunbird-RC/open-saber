@@ -55,7 +55,7 @@ public class RDFValidationTest {
 		try {
 			Schema createSchema = readSchema(shexFileForCreate, SCHEMAFORMAT, PROCESSOR);
 			Schema updateSchema = readSchema(shexFileForUpdate, SCHEMAFORMAT, PROCESSOR);
-			rdfValidationServiceImpl = new RdfValidationServiceImpl(createSchema,updateSchema);
+			rdfValidationServiceImpl = new RdfValidationServiceImpl();
 		} catch (Exception e) {
 			successfulInitialization = false;
 		}
@@ -66,7 +66,7 @@ public class RDFValidationTest {
 		boolean successfulInitialization = true;
 		try {
 			Schema createSchema = readSchema(shexFileForUpdate, SCHEMAFORMAT, PROCESSOR);
-			rdfValidationServiceImpl = new RdfValidationServiceImpl(null, createSchema);
+			rdfValidationServiceImpl = new RdfValidationServiceImpl();
 		} catch (Exception e) {
 			successfulInitialization = false;
 		}
