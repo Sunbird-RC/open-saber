@@ -28,7 +28,7 @@ public class ShexSchemaConfiguratorTest {
 	}
 	
 	@Test
-	public void test_isEncrypted() throws Exception {
+	public void testIsEncrypted() throws Exception {
 		byte[] array = new byte[7];
 		new Random().nextBytes(array);
 		String randomString = new String(array, Charset.forName("UTF-8"));

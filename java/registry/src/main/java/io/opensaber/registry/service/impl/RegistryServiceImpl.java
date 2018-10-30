@@ -1,38 +1,28 @@
 package io.opensaber.registry.service.impl;
 
-import com.github.jsonldjava.core.JsonLdError;
-import com.google.gson.Gson;
-import io.opensaber.converters.JenaRDF4J;
-import io.opensaber.pojos.ComponentHealthInfo;
-import io.opensaber.pojos.HealthCheckResponse;
-import io.opensaber.pojos.ValidationResponse;
-import io.opensaber.registry.dao.RegistryDao;
-import io.opensaber.registry.exception.*;
-import io.opensaber.registry.exception.errorconstants.ErrorConstants;
-import io.opensaber.registry.factory.ValidateFactory;
-import io.opensaber.registry.frame.FrameEntity;
-import io.opensaber.registry.middleware.MiddlewareHaltException;
-import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.middleware.util.JSONUtil;
-import io.opensaber.registry.middleware.util.RDFUtil;
-import io.opensaber.registry.model.RegistrySignature;
-import io.opensaber.registry.schema.config.SchemaConfigurator;
-import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
-import io.opensaber.registry.schema.configurator.SchemaConfiguratorFactory;
-import io.opensaber.registry.schema.configurator.SchemaType;
-import io.opensaber.registry.service.EncryptionService;
-import io.opensaber.registry.service.RegistryService;
-import io.opensaber.registry.service.SignatureService;
-import io.opensaber.registry.service.ValidationService;
-import io.opensaber.registry.sink.DatabaseProvider;
-import io.opensaber.registry.util.GraphDBFactory;
-import io.opensaber.utils.converters.RDF2Graph;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
 import org.apache.jena.ext.com.google.common.io.ByteStreams;
 import org.apache.jena.query.DatasetFactory;
-import org.apache.jena.rdf.model.*;
+import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.riot.JsonLDWriteContext;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.WriterDatasetRIOT;
@@ -46,14 +36,40 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.github.jsonldjava.core.JsonLdError;
+import com.google.gson.Gson;
+
+import io.opensaber.converters.JenaRDF4J;
+import io.opensaber.pojos.ComponentHealthInfo;
+import io.opensaber.pojos.HealthCheckResponse;
+import io.opensaber.pojos.ValidationResponse;
+import io.opensaber.registry.dao.RegistryDao;
+import io.opensaber.registry.exception.AuditFailedException;
+import io.opensaber.registry.exception.DuplicateRecordException;
+import io.opensaber.registry.exception.EncryptionException;
+import io.opensaber.registry.exception.EntityCreationException;
+import io.opensaber.registry.exception.MultipleEntityException;
+import io.opensaber.registry.exception.RDFValidationException;
+import io.opensaber.registry.exception.RecordNotFoundException;
+import io.opensaber.registry.exception.SignatureException;
+import io.opensaber.registry.exception.ValidationFactoryException;
+import io.opensaber.registry.exception.errorconstants.ErrorConstants;
+import io.opensaber.registry.factory.ValidateFactory;
+import io.opensaber.registry.frame.FrameEntity;
+import io.opensaber.registry.middleware.MiddlewareHaltException;
+import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.JSONUtil;
+import io.opensaber.registry.middleware.util.RDFUtil;
+import io.opensaber.registry.model.RegistrySignature;
+import io.opensaber.registry.schema.configurator.SchemaConfiguratorFactory;
+import io.opensaber.registry.schema.configurator.SchemaType;
+import io.opensaber.registry.service.EncryptionService;
+import io.opensaber.registry.service.RegistryService;
+import io.opensaber.registry.service.SignatureService;
+import io.opensaber.registry.service.ValidationService;
+import io.opensaber.registry.sink.DatabaseProvider;
+import io.opensaber.registry.util.GraphDBFactory;
+import io.opensaber.utils.converters.RDF2Graph;
 
 @Component
 public class RegistryServiceImpl implements RegistryService {
@@ -73,15 +89,15 @@ public class RegistryServiceImpl implements RegistryService {
 
 	@Autowired
 	SignatureService signatureService;
-/*
-	@Autowired
-	SchemaConfigurator schemaConfigurator;*/
+	/*
+	 * @Autowired SchemaConfigurator schemaConfigurator;
+	 */
 
 	@Autowired
 	ValidateFactory validateFactory;
-	
+
 	@Autowired
-	private SchemaConfiguratorFactory schemaConfiguratorFactory; 
+	private SchemaConfiguratorFactory schemaConfiguratorFactory;
 
 	@Autowired
 	Gson gson;
@@ -136,35 +152,38 @@ public class RegistryServiceImpl implements RegistryService {
 	@Override
 	public String addEntity(Model rdfModel, String dataObject, String subject, String property)
 			throws DuplicateRecordException, EntityCreationException, EncryptionException, AuditFailedException,
-			MultipleEntityException, RecordNotFoundException, IOException, SignatureException.UnreachableException, JsonLdError, SignatureException.CreationException, RDFValidationException, MiddlewareHaltException, ValidationFactoryException {
+			MultipleEntityException, RecordNotFoundException, IOException, SignatureException.UnreachableException,
+			JsonLdError, SignatureException.CreationException, RDFValidationException, MiddlewareHaltException,
+			ValidationFactoryException {
 		try {
 			Model signedRdfModel = null;
 			RegistrySignature rs = new RegistrySignature();
 			//
-			if(isValidationEnabled){
-				if(Constants.RDF_OBJECT.equalsIgnoreCase(validationType)){
+			if (isValidationEnabled) {
+				if (Constants.RDF_OBJECT.equalsIgnoreCase(validationType)) {
 					ValidationService validationService = validateFactory.getInstance(Constants.ENABLE_RDF_VALIDATION);
-					ValidationResponse validationResponse = validationService.validateData(rdfModel,Constants.CREATE_METHOD_ORIGIN);
-					if(!validationResponse.isValid()) {
+					ValidationResponse validationResponse = validationService.validateData(rdfModel,
+							Constants.CREATE_METHOD_ORIGIN);
+					if (!validationResponse.isValid()) {
 						throw new RDFValidationException(ErrorConstants.RDF_VALIDATION_ERROR_MESSAGE);
 					}
-					//Validating Sign Mandatory data
+					// Validating Sign Mandatory data
 					if (signatureEnabled) {
 						Map signReq = new HashMap<String, Object>();
 						InputStream is = this.getClass().getClassLoader().getResourceAsStream(frameFile);
 						String fileString = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
-						Map<String, Object> reqMap = JSONUtil.frameJsonAndRemoveIds(ID_REGEX,
-								dataObject, gson, fileString);
+						Map<String, Object> reqMap = JSONUtil.frameJsonAndRemoveIds(ID_REGEX, dataObject, gson,
+								fileString);
 						signReq.put("entity", reqMap);
 						Map<String, Object> entitySignMap = (Map<String, Object>) signatureService.sign(signReq);
 						entitySignMap.put("createdDate", rs.getCreatedTimestamp());
 						entitySignMap.put("keyUrl", signatureKeyURl);
-						signedRdfModel = RDFUtil.getUpdatedSignedModel(rdfModel, registryContext, signatureDomain, entitySignMap,
-								ModelFactory.createDefaultModel());
+						signedRdfModel = RDFUtil.getUpdatedSignedModel(rdfModel, registryContext, signatureDomain,
+								entitySignMap, ModelFactory.createDefaultModel());
 					}
 				} else {
-                    //else part for json validation
-                }
+					// else part for json validation
+				}
 
 			}
 
@@ -211,13 +230,15 @@ public class RegistryServiceImpl implements RegistryService {
 	@Override
 	public boolean updateEntity(Model entity) throws RecordNotFoundException, EntityCreationException,
 			EncryptionException, AuditFailedException, MultipleEntityException, SignatureException.UnreachableException,
-			IOException, SignatureException.CreationException, RDFValidationException, MiddlewareHaltException, ValidationFactoryException {
+			IOException, SignatureException.CreationException, RDFValidationException, MiddlewareHaltException,
+			ValidationFactoryException {
 		boolean isUpdated = false;
 		if (persistenceEnabled) {
-			if(isValidationEnabled){
-				if(Constants.RDF_OBJECT.equalsIgnoreCase(validationType)){
+			if (isValidationEnabled) {
+				if (Constants.RDF_OBJECT.equalsIgnoreCase(validationType)) {
 					ValidationService validationService = validateFactory.getInstance(Constants.ENABLE_RDF_VALIDATION);
-					ValidationResponse validationResponse = validationService.validateData(entity,Constants.UPDATE_METHOD_ORIGIN);
+					ValidationResponse validationResponse = validationService.validateData(entity,
+							Constants.UPDATE_METHOD_ORIGIN);
 					if (!validationResponse.isValid()) {
 						throw new RDFValidationException(ErrorConstants.RDF_VALIDATION_ERROR_MESSAGE);
 					}
@@ -236,7 +257,7 @@ public class RegistryServiceImpl implements RegistryService {
 						}
 					}
 				} else {
-					//else part for json validation
+					// else part for json validation
 				}
 
 			}
@@ -425,14 +446,15 @@ public class RegistryServiceImpl implements RegistryService {
 
 	private void setModelWithEncryptedOrDecryptedAttributes(Model rdfModel, boolean isEncryptionRequired)
 			throws EncryptionException {
-		//NodeIterator nodeIter = schemaConfigurator.getAllPrivateProperties();
-		List<String> privateProperties = schemaConfiguratorFactory.getInstance(SchemaType.SHEX).getAllPrivateProperties();
+		// NodeIterator nodeIter = schemaConfigurator.getAllPrivateProperties();
+		List<String> privateProperties = schemaConfiguratorFactory.getInstance(SchemaType.SHEX)
+				.getAllPrivateProperties();
 
 		Map<Resource, Map<String, Object>> toBeEncryptedOrDecryptedAttributes = new HashMap<Resource, Map<String, Object>>();
 		TypeMapper tm = TypeMapper.getInstance();
-		//while (nodeIter.hasNext()) {
-		for(String propertyName: privateProperties){	 
-			RDFNode node = ResourceFactory.createResource(propertyName);//nodeIter.next();
+		// while (nodeIter.hasNext()) {
+		for (String propertyName : privateProperties) {
+			RDFNode node = ResourceFactory.createResource(propertyName);// nodeIter.next();
 			String predicateStr = node.toString();
 			Property predicate = null;
 			if (!isEncryptionRequired) {
