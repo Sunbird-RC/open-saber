@@ -1,27 +1,38 @@
 package io.opensaber.registry.dao.impl;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import io.opensaber.registry.authorization.AuthorizationToken;
-import io.opensaber.registry.authorization.pojos.AuthInfo;
-import io.opensaber.registry.config.GenericConfiguration;
-import io.opensaber.registry.controller.RegistryTestBase;
-import io.opensaber.registry.dao.RegistryDao;
-import io.opensaber.registry.exception.EncryptionException;
-import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.model.AuditRecordReader;
-import io.opensaber.registry.schema.config.SchemaConfigurator;
-import io.opensaber.registry.service.impl.EncryptionServiceImpl;
-import io.opensaber.registry.sink.DatabaseProvider;
-import io.opensaber.registry.tests.utility.TestHelper;
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.jena.rdf.model.Model;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.FixMethodOrder;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
@@ -43,13 +54,21 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.io.InputStreamReader;
-import java.util.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.*;
+import io.opensaber.registry.authorization.AuthorizationToken;
+import io.opensaber.registry.authorization.pojos.AuthInfo;
+import io.opensaber.registry.config.GenericConfiguration;
+import io.opensaber.registry.controller.RegistryTestBase;
+import io.opensaber.registry.dao.RegistryDao;
+import io.opensaber.registry.exception.EncryptionException;
+import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.model.AuditRecordReader;
+import io.opensaber.registry.service.impl.EncryptionServiceImpl;
+import io.opensaber.registry.sink.DatabaseProvider;
+import io.opensaber.registry.tests.utility.TestHelper;
 
 @Ignore
 @RunWith(SpringRunner.class)

@@ -21,7 +21,7 @@ public abstract class ASchemaConfigurator implements ISchemaConfigurator{
 	public static final String OPENSABER_PRIVACY_PROPERTY = "opensaber:privateProperties";
 
 	private final ObjectMapper mapper = new ObjectMapper();
-	private static ObjectNode schemaConfigurationNode;
+	private ObjectNode schemaConfigurationNode;
 	private String schemaContent;
 
 	private static List<String> foundProperties = new ArrayList<>();
@@ -63,7 +63,7 @@ public abstract class ASchemaConfigurator implements ISchemaConfigurator{
 		return (ObjectNode) mapper.readTree(schemaContent);
 	}
 
-	private static List<String> getPrivateProperties() {
+	private List<String> getPrivateProperties() {
 		if (foundProperties.isEmpty()) {
 			JSONUtil.trimPrefix(schemaConfigurationNode, PREFIX);
 			ArrayNode arrayNode = (ArrayNode) schemaConfigurationNode.get(OPENSABER_PRIVACY_PROPERTY);

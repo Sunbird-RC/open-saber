@@ -1,38 +1,10 @@
 package io.opensaber.registry.config;
 
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import es.weso.schema.Schema;
-import io.opensaber.pojos.OpenSaberInstrumentation;
-import io.opensaber.pojos.Response;
-import io.opensaber.registry.authorization.AuthorizationFilter;
-import io.opensaber.registry.authorization.KeyCloakServiceImpl;
-import io.opensaber.registry.exception.CustomException;
-import io.opensaber.registry.exception.CustomExceptionHandler;
-import io.opensaber.registry.frame.FrameEntity;
-import io.opensaber.registry.frame.FrameEntityImpl;
-import io.opensaber.registry.interceptor.AuthorizationInterceptor;
-import io.opensaber.registry.interceptor.RDFConversionInterceptor;
-import io.opensaber.registry.interceptor.RDFValidationMappingInterceptor;
-import io.opensaber.registry.interceptor.RequestIdValidationInterceptor;
-import io.opensaber.registry.interceptor.request.transform.JsonToLdRequestTransformer;
-import io.opensaber.registry.interceptor.request.transform.JsonldToLdRequestTransformer;
-import io.opensaber.registry.interceptor.request.transform.RequestTransformFactory;
-import io.opensaber.registry.middleware.Middleware;
-import io.opensaber.registry.middleware.impl.JSONLDConverter;
-import io.opensaber.registry.middleware.impl.RDFConverter;
-import io.opensaber.registry.middleware.impl.RDFValidationMapper;
-import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.model.AuditRecord;
-import io.opensaber.registry.schema.config.SchemaConfigurator;
-import io.opensaber.registry.schema.config.SchemaLoader;
-import io.opensaber.registry.schema.configurator.JsonSchemaConfigurator;
-import io.opensaber.registry.schema.configurator.SchemaConfiguratorFactory;
-import io.opensaber.registry.schema.configurator.ShexSchemaConfigurator;
-import io.opensaber.registry.service.RdfSignatureValidator;
-import io.opensaber.registry.service.RdfValidationServiceImpl;
-import io.opensaber.registry.sink.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -54,10 +26,43 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.PathResourceResolver;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+
+import io.opensaber.pojos.OpenSaberInstrumentation;
+import io.opensaber.pojos.Response;
+import io.opensaber.registry.authorization.AuthorizationFilter;
+import io.opensaber.registry.authorization.KeyCloakServiceImpl;
+import io.opensaber.registry.exception.CustomException;
+import io.opensaber.registry.exception.CustomExceptionHandler;
+import io.opensaber.registry.frame.FrameEntity;
+import io.opensaber.registry.frame.FrameEntityImpl;
+import io.opensaber.registry.interceptor.AuthorizationInterceptor;
+import io.opensaber.registry.interceptor.RDFConversionInterceptor;
+import io.opensaber.registry.interceptor.RDFValidationMappingInterceptor;
+import io.opensaber.registry.interceptor.RequestIdValidationInterceptor;
+import io.opensaber.registry.interceptor.request.transform.JsonToLdRequestTransformer;
+import io.opensaber.registry.interceptor.request.transform.JsonldToLdRequestTransformer;
+import io.opensaber.registry.interceptor.request.transform.RequestTransformFactory;
+import io.opensaber.registry.middleware.Middleware;
+import io.opensaber.registry.middleware.impl.JSONLDConverter;
+import io.opensaber.registry.middleware.impl.RDFConverter;
+import io.opensaber.registry.middleware.impl.RDFValidationMapper;
+import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.model.AuditRecord;
+import io.opensaber.registry.schema.config.SchemaLoader;
+import io.opensaber.registry.schema.configurator.JsonSchemaConfigurator;
+import io.opensaber.registry.schema.configurator.SchemaConfiguratorFactory;
+import io.opensaber.registry.schema.configurator.ShexSchemaConfigurator;
+import io.opensaber.registry.service.RdfSignatureValidator;
+import io.opensaber.registry.service.RdfValidationServiceImpl;
+import io.opensaber.registry.sink.DatabaseProvider;
+import io.opensaber.registry.sink.JanusGraphStorage;
+import io.opensaber.registry.sink.Neo4jGraphProvider;
+import io.opensaber.registry.sink.OrientDBGraphProvider;
+import io.opensaber.registry.sink.SqlgProvider;
+import io.opensaber.registry.sink.TinkerGraphProvider;
 
 @Configuration
 public class GenericConfiguration implements WebMvcConfigurer {
