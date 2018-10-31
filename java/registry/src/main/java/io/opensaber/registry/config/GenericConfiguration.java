@@ -178,21 +178,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		return schemaLoader;
 	}
 
-	//TODO: to be removed.	
-	/*@Bean
-	public SchemaConfigurator schemaConfiguration() throws IOException, CustomException {
-		String fieldConfigFileName = environment.getProperty(Constants.FIELD_CONFIG_SCEHEMA_FILE);
-		if (fieldConfigFileName == null) {
-			throw new CustomException(Constants.SCHEMA_CONFIGURATION_MISSING);
-		}
-
-		OpenSaberInstrumentation watch = instrumentationStopWatch();
-		watch.start("SchemaConfigurator.initialization");
-		SchemaConfigurator schemaConfigurator = new SchemaConfigurator(fieldConfigFileName, registrySystemBase, schemaLoader());
-		watch.stop("SchemaConfigurator.initialization");
-		return schemaConfigurator ;
-	}*/
-
 	@Bean
 	public RdfValidationServiceImpl rdfValidator() {
 		return new RdfValidationServiceImpl();
@@ -265,7 +250,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	public Middleware rdfValidationMapper() {
 		Model validationConfig = null;
 		try{
-			//validationConfig = schemaConfiguration().getValidationConfig();
 			validationConfig = schemaLoader().getValidationConfig();
 		}catch(Exception e){
 			logger.error("Unable to get validation configuration");

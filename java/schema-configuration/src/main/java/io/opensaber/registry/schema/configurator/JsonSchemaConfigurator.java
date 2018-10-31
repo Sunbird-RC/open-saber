@@ -1,34 +1,16 @@
 package io.opensaber.registry.schema.configurator;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
 
 @Component
-public class JsonSchemaConfigurator implements ISchemaConfigurator{
+public class JsonSchemaConfigurator extends ASchemaConfigurator{
 
-	@Override
-	public boolean isPrivate(String propertyName) {
-		// TODO Auto-generated method stub
-		return false;
+	public JsonSchemaConfigurator(String schemaFile) throws IOException {
+		super(schemaFile);
 	}
 
-	@Override
-	public boolean isEncrypted(String tailPropertyKey) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public String getSchemaContent() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<String> getAllPrivateProperties() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 }

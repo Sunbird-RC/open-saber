@@ -73,9 +73,6 @@ public class RegistryDaoImpl implements RegistryDao {
 
 	@Value("${signature.enabled}")
 	private boolean signatureEnabled;
-	/*
-	 * @Autowired SchemaConfigurator schemaConfigurator;
-	 */
 
 	@Autowired
 	private SchemaLoader schemaLoader;

@@ -15,65 +15,10 @@ import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 
-public class ShexSchemaConfigurator implements ISchemaConfigurator {
-
-	private final static String PREFIX = "teacher:";
-	public static final String OPENSABER_PRIVACY_PROPERTY = "opensaber:privateProperties";
-
-	private final ObjectMapper mapper = new ObjectMapper();
-	private ObjectNode schemaConfigurationNode;
-	private String schemaContent;
-
-	private List<String> foundProperties = new ArrayList<>();
+public class ShexSchemaConfigurator extends ASchemaConfigurator {
 
 	public ShexSchemaConfigurator(String schemaFile) throws IOException {
-		schemaConfigurationNode = loadSchemaConfig(schemaFile);
+		super(schemaFile);
 	}
-
-	@Override
-	public boolean isPrivate(String propertyName) {
-		foundProperties = getPrivateProperties();
-		return foundProperties.contains(propertyName);
-	}
-
-	@Override
-	public boolean isEncrypted(String tailPropertyKey) {
-		if (tailPropertyKey != null) {
-			return tailPropertyKey.substring(0, Math.min(tailPropertyKey.length(), 9)).equalsIgnoreCase("encrypted");
-		} else
-			return false;
-	}
-	
-	@Override
-	public List<String> getAllPrivateProperties() {
-		return foundProperties;
-	}
-
-	@Override
-	public String getSchemaContent() {
-		return schemaContent;
-	}
-
-	private ObjectNode loadSchemaConfig(String schemaFile) throws IOException {
-		InputStream is = this.getClass().getClassLoader().getResourceAsStream(schemaFile);
-		if (is == null) {
-			throw new IOException(Constants.SCHEMA_CONFIGURATION_MISSING);
-		}
-		schemaContent = new String(ByteStreams.toByteArray(is));
-		return (ObjectNode) mapper.readTree(schemaContent);
-	}
-
-	private List<String> getPrivateProperties() {
-		if (foundProperties.isEmpty()) {
-			JSONUtil.trimPrefix(schemaConfigurationNode, PREFIX);
-			ArrayNode arrayNode = (ArrayNode) schemaConfigurationNode.get(OPENSABER_PRIVACY_PROPERTY);
-			for (int i = 0; i < arrayNode.size(); i++) {
-				if (arrayNode.get(i).isObject())
-					foundProperties.addAll(arrayNode.get(i).findValuesAsText(JsonldConstants.ID, foundProperties));
-			}
-		}
-		return foundProperties;
-	}
-
 
 }

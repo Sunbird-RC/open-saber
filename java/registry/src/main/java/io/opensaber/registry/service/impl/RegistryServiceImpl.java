@@ -89,10 +89,7 @@ public class RegistryServiceImpl implements RegistryService {
 
 	@Autowired
 	SignatureService signatureService;
-	/*
-	 * @Autowired SchemaConfigurator schemaConfigurator;
-	 */
-
+	
 	@Autowired
 	ValidateFactory validateFactory;
 
