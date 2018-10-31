@@ -40,10 +40,8 @@ public class RdfValidationServiceImpl implements ValidationService {
 	private Schema schemaForCreate;
 	private Schema schemaForUpdate;
 	
-	@Autowired
-	private SchemaLoader schemaLoader;
 
-	public RdfValidationServiceImpl() {
+	public RdfValidationServiceImpl(SchemaLoader schemaLoader) {
 		this.schemaForCreate = schemaLoader.getSchemaForCreate();
 		this.schemaForUpdate = schemaLoader.getSchemaForUpdate();
 		this.shapeTypeMap = getShapeMap(RDF.type, SX_SHAPE_IRI);

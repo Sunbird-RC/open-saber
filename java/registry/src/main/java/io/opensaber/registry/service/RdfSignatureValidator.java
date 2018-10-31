@@ -39,16 +39,10 @@ public class RdfSignatureValidator {
 	private Model schemaConfig;
 	private List<String> signatureTypes = new ArrayList<String>();
 	private List<String> signatureAttributes;
-	
-	@Autowired
-	private SchemaConfiguratorFactory schemaConfiguratorFactory;
-	
-	@Autowired
-	private SchemaLoader schemaLoader;
 
     // TODO: Instead of passing the ShapeType everytime, there could be a good reason
     // to read all the shapes at once and then start validating against what was read.   
-	public RdfSignatureValidator(String registryContext, String registrySystemBase,
+	public RdfSignatureValidator(SchemaLoader schemaLoader, SchemaConfiguratorFactory schemaConfiguratorFactory, String registryContext, String registrySystemBase,
 			String signatureConfigName, Map<String, String> shapeTypeMap) {
 		this.schemaForCreate = schemaLoader.getSchemaForCreate();
 		this.registryContext = registryContext;

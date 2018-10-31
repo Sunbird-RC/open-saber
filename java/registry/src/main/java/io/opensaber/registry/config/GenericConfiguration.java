@@ -27,6 +27,8 @@ import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.schema.config.SchemaConfigurator;
 import io.opensaber.registry.schema.config.SchemaLoader;
+import io.opensaber.registry.schema.configurator.JsonSchemaConfigurator;
+import io.opensaber.registry.schema.configurator.SchemaConfiguratorFactory;
 import io.opensaber.registry.schema.configurator.ShexSchemaConfigurator;
 import io.opensaber.registry.service.RdfSignatureValidator;
 import io.opensaber.registry.service.RdfValidationServiceImpl;
@@ -179,8 +181,13 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public RdfValidationServiceImpl rdfValidator() {
-		return new RdfValidationServiceImpl();
+	public RdfValidationServiceImpl rdfValidator() throws CustomException, IOException {
+		return new RdfValidationServiceImpl(schemaLoader());
+	}
+	
+	@Bean
+	public SchemaConfiguratorFactory schemaConfiguratorFactory(){
+		return new SchemaConfiguratorFactory();
 	}
 	
 	@Bean
@@ -193,8 +200,17 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 	
 	@Bean
-	public RdfSignatureValidator signatureValidator() {
-		return new RdfSignatureValidator(registryContextBase, registrySystemBase,
+	public JsonSchemaConfigurator jsonSchemaConfigurator() throws CustomException, IOException{
+		String schemaFile = environment.getProperty(Constants.FIELD_CONFIG_SCEHEMA_FILE);
+		if (schemaFile == null) {
+			throw new CustomException(Constants.SCHEMA_CONFIGURATION_MISSING);
+		}
+		return new JsonSchemaConfigurator(schemaFile);
+	}
+	
+	@Bean
+	public RdfSignatureValidator signatureValidator() throws CustomException, IOException {
+		return new RdfSignatureValidator(schemaLoader(), schemaConfiguratorFactory(), registryContextBase, registrySystemBase,
 				signatureSchemaConfigName, ((RdfValidationServiceImpl) rdfValidator()).getShapeTypeMap());
 	}
 

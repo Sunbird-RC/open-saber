@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-@Component
+
 public class JsonSchemaConfigurator extends ASchemaConfigurator{
 
 	public JsonSchemaConfigurator(String schemaFile) throws IOException {
