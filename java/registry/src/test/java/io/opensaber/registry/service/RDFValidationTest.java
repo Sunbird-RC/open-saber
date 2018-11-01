@@ -39,8 +39,6 @@ public class RDFValidationTest {
 	private static final String COMPLEX_UPDATE_SHEX = "teacher_update.shex";
 	public static final String TTL_FORMAT = "TTL";
 	public static final String JSONLD_FORMAT = "JSONLD";
-	private static final String SCHEMAFORMAT = "SHEXC";
-	private static final String PROCESSOR 	= "shex";
 	private String jsonld;
 	private static final String EMPTY_STRING = "";
 
@@ -55,8 +53,6 @@ public class RDFValidationTest {
 	private boolean setup(String shexFileForCreate, String shexFileForUpdate) {
 		boolean successfulInitialization = true;
 		try {
-			Schema createSchema = readSchema(shexFileForCreate, SCHEMAFORMAT, PROCESSOR);
-			Schema updateSchema = readSchema(shexFileForUpdate, SCHEMAFORMAT, PROCESSOR);
 			SchemaLoader schemaLoader = new SchemaLoader(shexFileForCreate, shexFileForUpdate);
 			rdfValidationServiceImpl = new RdfValidationServiceImpl(schemaLoader);
 		} catch (Exception e) {
@@ -64,17 +60,6 @@ public class RDFValidationTest {
 		}
 		return successfulInitialization;
 	}
-	
-/*	private boolean setup( String shexFileForUpdate) {
-		boolean successfulInitialization = true;
-		try {
-			Schema createSchema = readSchema(shexFileForUpdate, SCHEMAFORMAT, PROCESSOR);
-			rdfValidationServiceImpl = new RdfValidationServiceImpl();
-		} catch (Exception e) {
-			successfulInitialization = false;
-		}
-		return successfulInitialization;
-	}*/
 
 	private URI getPath(String file) throws URISyntaxException {
 		return this.getClass().getClassLoader().getResource(file).toURI();

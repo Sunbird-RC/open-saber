@@ -230,8 +230,7 @@ public class RegistryServiceImpl implements RegistryService {
 			IOException, SignatureException.CreationException, RDFValidationException, MiddlewareHaltException,
 			ValidationFactoryException {
 		boolean isUpdated = false;
-		if (persistenceEnabled) {
-			if (isValidationEnabled) {
+		if (persistenceEnabled && isValidationEnabled) {
 				if (Constants.RDF_OBJECT.equalsIgnoreCase(validationType)) {
 					ValidationService validationService = validateFactory.getInstance(Constants.ENABLE_RDF_VALIDATION);
 					ValidationResponse validationResponse = validationService.validateData(entity,
@@ -256,8 +255,6 @@ public class RegistryServiceImpl implements RegistryService {
 				} else {
 					// else part for json validation
 				}
-
-			}
 
 		}
 		return isUpdated;

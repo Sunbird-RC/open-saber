@@ -159,10 +159,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		return new RDFValidationMappingInterceptor(rdfValidationMapper(), gson());
 	}
 
-	/**
-	 * This methos creates bean for RequestIdValidationInterceptor
-	 * @return RequestIdValidationInterceptor
-	 */
 	@Bean
 	public RequestIdValidationInterceptor requestIdValidationInterceptor() {
 		return new RequestIdValidationInterceptor(requestIdMap(), gson());
