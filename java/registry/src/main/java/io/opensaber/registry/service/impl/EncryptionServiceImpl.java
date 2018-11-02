@@ -27,7 +27,6 @@ import com.google.gson.reflect.TypeToken;
 
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.exception.EncryptionException;
-import io.opensaber.registry.schema.config.SchemaConfigurator;
 import io.opensaber.registry.service.EncryptionService;
 
 @Component
