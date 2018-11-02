@@ -1,4 +1,4 @@
-package io.opensaber.validators.shex.shaclex;
+package io.opensaber.validators.rdf.shex;
 
 import java.util.Optional;
 

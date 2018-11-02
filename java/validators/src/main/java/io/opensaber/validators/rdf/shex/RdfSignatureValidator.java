@@ -1,4 +1,4 @@
-package io.opensaber.registry.service;
+package io.opensaber.validators.rdf.shex;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,10 +24,6 @@ import es.weso.schema.Schema;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.RDFUtil;
-import io.opensaber.registry.schema.config.SchemaLoader;
-import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
-import io.opensaber.registry.schema.configurator.SchemaConfiguratorFactory;
-import io.opensaber.registry.schema.configurator.SchemaType;
 
 public class RdfSignatureValidator {
 
@@ -50,13 +46,12 @@ public class RdfSignatureValidator {
 
     // TODO: Instead of passing the ShapeType everytime, there could be a good reason
     // to read all the shapes at once and then start validating against what was read.   
-	public RdfSignatureValidator(SchemaLoader schemaLoader, SchemaConfiguratorFactory schemaConfiguratorFactory, String registryContext, String registrySystemBase,
+	public RdfSignatureValidator(Schema createSchema, String schemaContent, String registryContext, String registrySystemBase,
 			String signatureConfigName, Map<String, String> shapeTypeMap) {
-		this.schemaForCreate = schemaLoader.getSchemaForCreate();
+		this.schemaForCreate = createSchema;
 		this.registryContext = registryContext;
 		this.signatureConfigName = signatureConfigName;
-		ISchemaConfigurator schemaConfigartor = schemaConfiguratorFactory.getInstance(SchemaType.SHEX);
-		schemaConfig = RDFUtil.getRdfModelBasedOnFormat(schemaConfigartor.getSchemaContent(), JSON_LD_FORMAT);
+		schemaConfig = RDFUtil.getRdfModelBasedOnFormat(schemaContent, JSON_LD_FORMAT);
 		this.registrySystemBase = registrySystemBase;
 				
 		shapeTypeMap.forEach((type, shape) -> {

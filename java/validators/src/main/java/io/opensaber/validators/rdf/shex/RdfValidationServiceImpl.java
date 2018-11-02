@@ -1,24 +1,29 @@
-package io.opensaber.registry.service;
-
-import es.weso.schema.Schema;
-import io.opensaber.pojos.ValidationResponse;
-import io.opensaber.registry.exception.RDFValidationException;
-import io.opensaber.registry.exception.errorconstants.ErrorConstants;
-import io.opensaber.registry.middleware.MiddlewareHaltException;
-import io.opensaber.registry.middleware.Validator;
-import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.middleware.util.RDFUtil;
-import io.opensaber.registry.schema.config.SchemaLoader;
-import io.opensaber.validators.shex.shaclex.ShaclexValidator;
-import org.apache.jena.rdf.model.*;
-import org.apache.jena.vocabulary.RDF;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+package io.opensaber.validators.rdf.shex;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.vocabulary.RDF;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+
+import es.weso.schema.Schema;
+import io.opensaber.pojos.ValidationResponse;
+import io.opensaber.registry.middleware.MiddlewareHaltException;
+import io.opensaber.registry.middleware.Validator;
+import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.RDFUtil;
+import io.opensaber.validators.core.ValidationService;
+import io.opensaber.validators.exception.ErrorConstants;
+import io.opensaber.validators.exception.RDFValidationException;
 
 //@Component
 public class RdfValidationServiceImpl implements ValidationService {
@@ -41,9 +46,9 @@ public class RdfValidationServiceImpl implements ValidationService {
 	private Schema schemaForUpdate;
 	
 
-	public RdfValidationServiceImpl(SchemaLoader schemaLoader) {
-		this.schemaForCreate = schemaLoader.getSchemaForCreate();
-		this.schemaForUpdate = schemaLoader.getSchemaForUpdate();
+	public RdfValidationServiceImpl(Schema createSchema, Schema updateSchema) {
+		this.schemaForCreate = createSchema;
+		this.schemaForUpdate = updateSchema;
 		this.shapeTypeMap = getShapeMap(RDF.type, SX_SHAPE_IRI);
 	}
 	

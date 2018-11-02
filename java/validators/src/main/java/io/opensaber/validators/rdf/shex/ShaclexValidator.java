@@ -1,29 +1,41 @@
-package io.opensaber.validators.shex.shaclex;
+package io.opensaber.validators.rdf.shex;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.ext.com.google.common.io.ByteStreams;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import es.weso.rdf.PrefixMap;
-import es.weso.schema.*;
+import es.weso.rdf.RDFReader;
+import es.weso.rdf.jena.RDFAsJenaModel;
+import es.weso.schema.ErrorInfo;
+import es.weso.schema.Result;
+import es.weso.schema.Schema;
+import es.weso.schema.Schemas;
 import es.weso.shapeMaps.ResultShapeMap;
 import io.opensaber.pojos.ValidationInfo;
 import io.opensaber.pojos.ValidationResponse;
 import io.opensaber.registry.middleware.Validator;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.ext.com.google.common.io.ByteStreams;
-import org.apache.jena.rdf.model.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import scala.Option;
 import scala.collection.JavaConverters;
 import scala.util.Either;
-import scala.Option;
-import es.weso.rdf.RDFReader;
-import es.weso.rdf.jena.RDFAsJenaModel;
 
 public class ShaclexValidator implements Validator{
 

@@ -1,4 +1,4 @@
-package io.opensaber.registry.exception.errorconstants;
+package io.opensaber.validators.exception;
 
 public class ErrorConstants {
 

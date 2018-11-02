@@ -1,4 +1,4 @@
-package io.opensaber.registry.exception;
+package io.opensaber.validators.exception;
 
 public class RDFValidationException extends Exception {
 
