@@ -71,13 +71,13 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Autowired
 	private Environment environment;
-	
+
 	@Value("${encryption.service.connection.timeout}")
 	private int connectionTimeout;
 
 	@Value("${encryption.service.read.timeout}")
 	private int readTimeout;
-	
+
 	@Value("${encryption.service.connection.request.timeout}")
 	private int connectionRequestTimeout;
 
@@ -86,17 +86,15 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Value("${perf.monitoring.enabled}")
 	private boolean performanceMonitoringEnabled;
-	
+
 	@Value("${registry.system.base}")
 	private String registrySystemBase;
-	
+
 	@Value("${registry.context.base}")
 	private String registryContextBase;
-	
+
 	@Value("${signature.schema.config.name}")
 	private String signatureSchemaConfigName;
-	
-
 
 	@Bean
 	public ObjectMapper objectMapper() {
@@ -111,43 +109,44 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public Gson gson(){
+	public Gson gson() {
 		return new Gson();
 	}
 
 	@Bean
-	public Middleware jsonldConverter(){
+	public Middleware jsonldConverter() {
 		return new JSONLDConverter();
 	}
 
 	@Bean
-	public Middleware rdfConverter(){
+	public Middleware rdfConverter() {
 		return new RDFConverter();
 	}
-	
+
 	@Bean
-	public RequestTransformFactory requestTransformFactory(){
+	public RequestTransformFactory requestTransformFactory() {
 		return new RequestTransformFactory();
 	}
-	
-	@Bean 
-	public FrameEntity frameEntity(){
+
+	@Bean
+	public FrameEntity frameEntity() {
 		return new FrameEntityImpl();
 	}
-	
+
 	@Bean
-	public JsonToLdRequestTransformer jsonToLdRequestTransformer(){
+	public JsonToLdRequestTransformer jsonToLdRequestTransformer() {
 		return new JsonToLdRequestTransformer(frameEntity().getContent());
 	}
+
 	@Bean
-	public JsonldToLdRequestTransformer jsonldToLdRequestTransformer(){
+	public JsonldToLdRequestTransformer jsonldToLdRequestTransformer() {
 		return new JsonldToLdRequestTransformer();
 	}
 
-    @Bean
-    public AuthorizationInterceptor authorizationInterceptor() {
-        return new AuthorizationInterceptor(authorizationFilter(), gson());
-    }
+	@Bean
+	public AuthorizationInterceptor authorizationInterceptor() {
+		return new AuthorizationInterceptor(authorizationFilter(), gson());
+	}
 
 	@Bean
 	public RDFConversionInterceptor rdfConversionInterceptor() {
@@ -165,18 +164,18 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public Middleware authorizationFilter(){
+	public Middleware authorizationFilter() {
 		return new AuthorizationFilter(new KeyCloakServiceImpl());
 	}
-	
+
 	@Bean
-	public SchemaLoader schemaLoader() throws CustomException, IOException{
+	public SchemaLoader schemaLoader() throws CustomException, IOException {
 		String validationConfigFileForCreate = environment.getProperty(Constants.SHEX_CREATE_PROPERTY_NAME);
 		String validationConfigFileForUpdate = environment.getProperty(Constants.SHEX_UPDATE_PROPERTY_NAME);
 		if (validationConfigFileForCreate == null || validationConfigFileForUpdate == null) {
 			throw new CustomException(Constants.VALIDATION_CONFIGURATION_MISSING);
 		}
-		
+
 		SchemaLoader schemaLoader = new SchemaLoader(validationConfigFileForCreate, validationConfigFileForUpdate);
 		return schemaLoader;
 	}
@@ -185,34 +184,35 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	public RdfValidationServiceImpl rdfValidator() throws CustomException, IOException {
 		return new RdfValidationServiceImpl(schemaLoader());
 	}
-	
+
 	@Bean
-	public SchemaConfiguratorFactory schemaConfiguratorFactory(){
+	public SchemaConfiguratorFactory schemaConfiguratorFactory() {
 		return new SchemaConfiguratorFactory();
 	}
-	
+
 	@Bean
-	public ShexSchemaConfigurator shexSchemaConfigurator() throws CustomException, IOException{
+	public ShexSchemaConfigurator shexSchemaConfigurator() throws CustomException, IOException {
 		String schemaFile = environment.getProperty(Constants.FIELD_CONFIG_SCEHEMA_FILE);
 		if (schemaFile == null) {
 			throw new CustomException(Constants.SCHEMA_CONFIGURATION_MISSING);
 		}
 		return new ShexSchemaConfigurator(schemaFile);
 	}
-	
+
 	@Bean
-	public JsonSchemaConfigurator jsonSchemaConfigurator() throws CustomException, IOException{
+	public JsonSchemaConfigurator jsonSchemaConfigurator() throws CustomException, IOException {
 		String schemaFile = environment.getProperty(Constants.FIELD_CONFIG_SCEHEMA_FILE);
 		if (schemaFile == null) {
 			throw new CustomException(Constants.SCHEMA_CONFIGURATION_MISSING);
 		}
 		return new JsonSchemaConfigurator(schemaFile);
 	}
-	
+
 	@Bean
 	public RdfSignatureValidator signatureValidator() throws CustomException, IOException {
-		return new RdfSignatureValidator(schemaLoader(), schemaConfiguratorFactory(), registryContextBase, registrySystemBase,
-				signatureSchemaConfigName, ((RdfValidationServiceImpl) rdfValidator()).getShapeTypeMap());
+		return new RdfSignatureValidator(schemaLoader(), schemaConfiguratorFactory(), registryContextBase,
+				registrySystemBase, signatureSchemaConfigName,
+				((RdfValidationServiceImpl) rdfValidator()).getShapeTypeMap());
 	}
 
 	@Bean
@@ -221,17 +221,16 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		return new AuditRecord();
 	}
 
-    @Bean
-    public RestTemplate restTemaplteProvider() throws IOException {
-        HttpClient httpClient = HttpClientBuilder.create().build();
-        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
-        requestFactory.setConnectTimeout(connectionTimeout);
-        requestFactory.setConnectionRequestTimeout(connectionRequestTimeout);
-        requestFactory.setReadTimeout(readTimeout);
-        return new RestTemplate(requestFactory);
-    }
+	@Bean
+	public RestTemplate restTemaplteProvider() throws IOException {
+		HttpClient httpClient = HttpClientBuilder.create().build();
+		HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
+		requestFactory.setConnectTimeout(connectionTimeout);
+		requestFactory.setConnectionRequestTimeout(connectionRequestTimeout);
+		requestFactory.setReadTimeout(readTimeout);
+		return new RestTemplate(requestFactory);
+	}
 
-	
 	@Bean
 	public DatabaseProvider databaseProvider() {
 		String dbProvider = environment.getProperty(Constants.DATABASE_PROVIDER);
@@ -259,16 +258,16 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public UrlValidator urlValidator(){
+	public UrlValidator urlValidator() {
 		return new UrlValidator(UrlValidator.ALLOW_LOCAL_URLS);
 	}
 
 	@Bean
 	public Middleware rdfValidationMapper() {
 		Model validationConfig = null;
-		try{
+		try {
 			validationConfig = schemaLoader().getValidationConfig();
-		}catch(Exception e){
+		} catch (Exception e) {
 			logger.error("Unable to get validation configuration");
 		}
 		return new RDFValidationMapper(validationConfig);
@@ -276,46 +275,45 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	/**
 	 * This method create a Map of request endpoints with request id
+	 * 
 	 * @return Map
 	 */
 	@Bean
-	public Map<String, String> requestIdMap(){
+	public Map<String, String> requestIdMap() {
 		Map<String, String> requestIdMap = new HashMap<>();
-		requestIdMap.put(Constants.REGISTRY_ADD_ENDPOINT,Response.API_ID.CREATE.getId());
-		requestIdMap.put(Constants.REGISTRY_SEARCH_ENDPOINT,Response.API_ID.SEARCH.getId());
-		requestIdMap.put(Constants.REGISTRY_UPDATE_ENDPOINT,Response.API_ID.UPDATE.getId());
-		requestIdMap.put(Constants.SIGNATURE_SIGN_ENDPOINT,Response.API_ID.SIGN.getId());
-		requestIdMap.put(Constants.SIGNATURE_VERIFY_ENDPOINT,Response.API_ID.VERIFY.getId());
+		requestIdMap.put(Constants.REGISTRY_ADD_ENDPOINT, Response.API_ID.CREATE.getId());
+		requestIdMap.put(Constants.REGISTRY_SEARCH_ENDPOINT, Response.API_ID.SEARCH.getId());
+		requestIdMap.put(Constants.REGISTRY_UPDATE_ENDPOINT, Response.API_ID.UPDATE.getId());
+		requestIdMap.put(Constants.SIGNATURE_SIGN_ENDPOINT, Response.API_ID.SIGN.getId());
+		requestIdMap.put(Constants.SIGNATURE_VERIFY_ENDPOINT, Response.API_ID.VERIFY.getId());
 		return requestIdMap;
 	}
 
 	/**
 	 * This method will process all the interceptors for each request
+	 * 
 	 * @param registry
 	 */
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		int orderIdx = 1;
-		Map<String, String> requestMap =  requestIdMap();
-		registry.addInterceptor(requestIdValidationInterceptor()).
-				addPathPatterns(new ArrayList(requestMap.keySet())).order(orderIdx++);
-		if(authenticationEnabled) {
-            registry.addInterceptor(authorizationInterceptor())
-                    .addPathPatterns("/**").excludePathPatterns("/health", "/error").order(orderIdx++);
-	    }
+		Map<String, String> requestMap = requestIdMap();
+		registry.addInterceptor(requestIdValidationInterceptor()).addPathPatterns(new ArrayList(requestMap.keySet()))
+				.order(orderIdx++);
+		if (authenticationEnabled) {
+			registry.addInterceptor(authorizationInterceptor()).addPathPatterns("/**")
+					.excludePathPatterns("/health", "/error").order(orderIdx++);
+		}
 
-	    registry.addInterceptor(rdfConversionInterceptor())
-				.addPathPatterns("/add", "/update", "/search", "/read").order(orderIdx++);
+		registry.addInterceptor(rdfConversionInterceptor()).addPathPatterns("/add", "/update", "/search", "/read")
+				.order(orderIdx++);
 	}
 
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 		try {
-			registry.addResourceHandler("/resources/**")
-					.addResourceLocations("classpath:vocab/1.0/")
-					.setCachePeriod(3600)
-					.resourceChain(true)
-					.addResolver(new PathResourceResolver());
+			registry.addResourceHandler("/resources/**").addResourceLocations("classpath:vocab/1.0/")
+					.setCachePeriod(3600).resourceChain(true).addResolver(new PathResourceResolver());
 		} catch (Exception e) {
 			throw e;
 		}
@@ -323,7 +321,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-    public HandlerExceptionResolver customExceptionHandler () {
-        return new CustomExceptionHandler(gson());
-    }
+	public HandlerExceptionResolver customExceptionHandler() {
+		return new CustomExceptionHandler(gson());
+	}
 }

@@ -73,13 +73,13 @@ public class RDFValidationTest {
 		rdfValidationServiceImpl.validateRDFWithSchema(null,null);
 	}
 
-/*	@Test
+	@Test
 	public void testHaltIfSchemaIsMissing() throws IOException, RDFValidationException {
 		expectedEx.expect(RDFValidationException.class);
 		expectedEx.expectMessage("Schema for validation is missing");
-		assertTrue(setup(COMPLEX_UPDATE_SHEX));
+		assertTrue(setup(COMPLEX_CREATE_SHEX, COMPLEX_UPDATE_SHEX));
 		rdfValidationServiceImpl.validateRDFWithSchema(getValidRdf(COMPLEX_TTL), Constants.CREATE_METHOD_ORIGIN);
-	}*/
+	}
 
 	@Test
 	public void testHaltIfMethodOriginIsMissing() throws IOException, RDFValidationException {

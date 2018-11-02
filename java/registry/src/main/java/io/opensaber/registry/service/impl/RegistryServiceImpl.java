@@ -440,13 +440,11 @@ public class RegistryServiceImpl implements RegistryService {
 
 	private void setModelWithEncryptedOrDecryptedAttributes(Model rdfModel, boolean isEncryptionRequired)
 			throws EncryptionException {
-		// NodeIterator nodeIter = schemaConfigurator.getAllPrivateProperties();
 		List<String> privateProperties = schemaConfiguratorFactory.getInstance(SchemaType.SHEX)
 				.getAllPrivateProperties();
 
 		Map<Resource, Map<String, Object>> toBeEncryptedOrDecryptedAttributes = new HashMap<Resource, Map<String, Object>>();
 		TypeMapper tm = TypeMapper.getInstance();
-		// while (nodeIter.hasNext()) {
 		for (String propertyName : privateProperties) {
 			RDFNode node = ResourceFactory.createResource(propertyName);// nodeIter.next();
 			String predicateStr = node.toString();

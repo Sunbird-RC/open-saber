@@ -79,9 +79,6 @@ public class RegistryServiceImplTest extends RegistryTestBase {
 	@Autowired
 	private DatabaseProvider databaseProvider;
 
-/*	@Mock
-	private SchemaConfigurator mockSchemaConfigurator;*/
-
 	@Mock
 	private RestTemplate mockRestTemplate;
 
