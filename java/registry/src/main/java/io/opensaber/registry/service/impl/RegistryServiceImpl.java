@@ -262,7 +262,7 @@ public class RegistryServiceImpl implements RegistryService {
 	 * @throws SignatureException.UnreachableException
 	 * @throws SignatureException.CreationException
 	 */
-	void getEntityAndUpdateSign(String label) throws EncryptionException, AuditFailedException,
+	private void getEntityAndUpdateSign(String label) throws EncryptionException, AuditFailedException,
 			RecordNotFoundException, EntityCreationException, IOException, MultipleEntityException,
 			SignatureException.UnreachableException, SignatureException.CreationException {
 		final String ID_REGEX = "\"@id\"\\s*:\\s*\"[a-z]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\",";
