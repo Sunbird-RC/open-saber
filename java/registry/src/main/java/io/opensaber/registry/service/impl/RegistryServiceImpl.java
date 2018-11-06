@@ -1,56 +1,13 @@
 package io.opensaber.registry.service.impl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.datatypes.RDFDatatype;
-import org.apache.jena.datatypes.TypeMapper;
-import org.apache.jena.ext.com.google.common.io.ByteStreams;
-import org.apache.jena.query.DatasetFactory;
-import org.apache.jena.rdf.model.Literal;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.rdf.model.StmtIterator;
-import org.apache.jena.riot.JsonLDWriteContext;
-import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.WriterDatasetRIOT;
-import org.apache.jena.riot.system.PrefixMap;
-import org.apache.jena.riot.system.RiotLib;
-import org.apache.jena.sparql.core.DatasetGraph;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 import com.github.jsonldjava.core.JsonLdError;
 import com.google.gson.Gson;
-
 import io.opensaber.converters.JenaRDF4J;
 import io.opensaber.pojos.ComponentHealthInfo;
 import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.pojos.ValidationResponse;
 import io.opensaber.registry.dao.RegistryDao;
-import io.opensaber.registry.exception.AuditFailedException;
-import io.opensaber.registry.exception.DuplicateRecordException;
-import io.opensaber.registry.exception.EncryptionException;
-import io.opensaber.registry.exception.EntityCreationException;
-import io.opensaber.registry.exception.MultipleEntityException;
-import io.opensaber.registry.exception.RecordNotFoundException;
-import io.opensaber.registry.exception.SignatureException;
+import io.opensaber.registry.exception.*;
 import io.opensaber.registry.frame.FrameEntity;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
 import io.opensaber.registry.middleware.util.Constants;
@@ -70,6 +27,34 @@ import io.opensaber.validators.core.ValidationService;
 import io.opensaber.validators.exception.ErrorConstants;
 import io.opensaber.validators.exception.RDFValidationException;
 import io.opensaber.validators.exception.ValidationFactoryException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.datatypes.RDFDatatype;
+import org.apache.jena.datatypes.TypeMapper;
+import org.apache.jena.ext.com.google.common.io.ByteStreams;
+import org.apache.jena.query.DatasetFactory;
+import org.apache.jena.rdf.model.*;
+import org.apache.jena.riot.JsonLDWriteContext;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.WriterDatasetRIOT;
+import org.apache.jena.riot.system.PrefixMap;
+import org.apache.jena.riot.system.RiotLib;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.function.library.leviathan.root;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class RegistryServiceImpl implements RegistryService {
@@ -243,16 +228,17 @@ public class RegistryServiceImpl implements RegistryService {
 					Resource root = getRootNode(entity);
 					String label = getRootLabel(root);
 					String rootType = getTypeForRootLabel(entity, root);
-					if (rootType.equalsIgnoreCase(registryContextBase + registryRootEntityType)) {
-						if (encryptionEnabled) {
-							encryptModel(entity);
+					if (encryptionEnabled) {
+						encryptModel(entity);
+					}
+					Graph graph = generateGraphFromRDF(entity);
+					logger.debug("Service layer graph :", graph);
+					isUpdated = registryDao.updateEntity(graph, label, Constants.UPDATE_METHOD_ORIGIN);
+					if (signatureEnabled) {
+						if (!rootType.equalsIgnoreCase(registryContextBase + registryRootEntityType)) {
+							label = registryDao.getRootLabelForNodeLabel(label);
 						}
-						Graph graph = generateGraphFromRDF(entity);
-						logger.debug("Service layer graph :", graph);
-						isUpdated = registryDao.updateEntity(graph, label, Constants.UPDATE_METHOD_ORIGIN);
-						if (signatureEnabled) {
-							getEntityAndUpdateSign(entity, label);
-						}
+						getEntityAndUpdateSign(label);
 					}
 				} else {
 					// else part for json validation
@@ -276,7 +262,7 @@ public class RegistryServiceImpl implements RegistryService {
 	 * @throws SignatureException.UnreachableException
 	 * @throws SignatureException.CreationException
 	 */
-	void getEntityAndUpdateSign(Model entity, String label) throws EncryptionException, AuditFailedException,
+	void getEntityAndUpdateSign(String label) throws EncryptionException, AuditFailedException,
 			RecordNotFoundException, EntityCreationException, IOException, MultipleEntityException,
 			SignatureException.UnreachableException, SignatureException.CreationException {
 		final String ID_REGEX = "\"@id\"\\s*:\\s*\"[a-z]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\",";
@@ -290,7 +276,7 @@ public class RegistryServiceImpl implements RegistryService {
 		Map<String, Object> entitySignMap = (Map<String, Object>) signatureService.sign(signReq);
 		entitySignMap.put("createdDate", rs.getCreatedTimestamp());
 		entitySignMap.put("keyUrl", signatureKeyURl);
-		Graph graph = generateGraphFromRDF(RDFUtil.getUpdatedSignedModel(entity, registryContextBase, signatureDomain,
+		Graph graph = generateGraphFromRDF(RDFUtil.getUpdatedSignedModel(jenaEntityModel, registryContextBase, signatureDomain,
 				entitySignMap, signatureModel));
 		registryDao.updateEntity(graph, label, "update");
 	}

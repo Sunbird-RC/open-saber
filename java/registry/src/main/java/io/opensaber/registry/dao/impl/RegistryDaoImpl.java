@@ -1,49 +1,6 @@
 package io.opensaber.registry.dao.impl;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Stack;
-import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.validator.routines.UrlValidator;
-import org.apache.jena.rdf.model.Literal;
-import org.apache.jena.rdf.model.NodeIterator;
-import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.ResIterator;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Property;
-import org.apache.tinkerpop.gremlin.structure.T;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
-import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.javatuples.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ImmutableList;
-
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.authorization.pojos.AuthInfo;
 import io.opensaber.registry.dao.RegistryDao;
@@ -57,6 +14,27 @@ import io.opensaber.registry.schema.config.SchemaLoader;
 import io.opensaber.registry.schema.configurator.SchemaConfiguratorFactory;
 import io.opensaber.registry.schema.configurator.SchemaType;
 import io.opensaber.registry.sink.DatabaseProvider;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.validator.routines.UrlValidator;
+import org.apache.jena.rdf.model.*;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
+import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
+import org.javatuples.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 public class RegistryDaoImpl implements RegistryDao {
@@ -705,6 +683,25 @@ public class RegistryDaoImpl implements RegistryDao {
 		return isEntityDeleted;
 	}
 
+	@Override
+	public String getRootLabelForNodeLabel(String nodeLabel) {
+		String rootLabel = null;
+		Graph graphFromStore = databaseProvider.getGraphStore();
+		GraphTraversalSource traversalSource = graphFromStore.traversal();
+		GraphTraversal<Vertex, Vertex> hasLabel = traversalSource.clone().V().hasLabel(nodeLabel);
+		Vertex s = hasLabel.next();
+		Iterator<Edge> edges = s.edges(Direction.IN);
+		while(edges.hasNext()) {
+			Edge typeEdge = edges.next();
+			if(!typeEdge.label().equalsIgnoreCase(registryContext+Constants.SIGNATURE_OF)){
+				Vertex rootVertex = typeEdge.outVertex();
+				rootLabel = rootVertex.label();
+			}
+		}
+
+		return rootLabel;
+	}
+
 	private boolean deleteVertexWithInEdge(Vertex s) {
 		Edge edge;
 		Stack<Vertex> vStack = new Stack<Vertex>();
@@ -934,8 +931,7 @@ public class RegistryDaoImpl implements RegistryDao {
 	}
 
 	private void extractGraphFromVertex(Graph parsedGraph, Vertex parsedGraphSubject, Vertex theVertex,
-			boolean includeSignatures, String methodOrigin)
-			throws NoSuchElementException, EncryptionException, AuditFailedException {
+			boolean includeSignatures, String methodOrigin) throws NoSuchElementException, EncryptionException, AuditFailedException {
 		Iterator<Edge> outEdgeIter = theVertex.edges(Direction.OUT);
 		Edge edge;
 		Stack<Vertex> vStack = new Stack<Vertex>();
