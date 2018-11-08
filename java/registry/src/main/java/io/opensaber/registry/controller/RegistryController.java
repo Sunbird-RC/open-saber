@@ -16,7 +16,6 @@ import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
 import io.opensaber.registry.service.SignatureService;
 import io.opensaber.registry.transformation.ResponseTransformFactory;
-
 import org.apache.jena.rdf.model.Model;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -38,50 +37,35 @@ import java.util.Map;
 @RestController
 public class RegistryController {
 
-	private static Logger logger = LoggerFactory.getLogger(RegistryController.class);
-
 	private static final String ID_REGEX = "\"@id\"\\s*:\\s*\"_:[a-z][0-9]+\",";
-
+	private static Logger logger = LoggerFactory.getLogger(RegistryController.class);
+	@Autowired
+	ResponseTransformFactory responseTransformFactory;
 	@Autowired
 	private RegistryService registryService;
-
 	@Autowired
 	private RegistryAuditService registryAuditService;
-
 	@Autowired
 	private SearchService searchService;
-
 	@Autowired
 	private SignatureService signatureService;
-
 	@Value("${registry.context.base}")
 	private String registryContext;
-
 	private Gson gson = new Gson();
 	private Type mapType = new TypeToken<Map<String, Object>>() {
 	}.getType();
-
 	@Value("${audit.enabled}")
 	private boolean auditEnabled;
-
 	@Value("${signature.domain}")
 	private String signatureDomain;
-
 	@Value("${signature.enabled}")
 	private boolean signatureEnabled;
-
 	@Value("${signature.keysURL}")
 	private String signatureKeyURl;
-
 	@Value("${frame.file}")
 	private String frameFile;
-
 	@Autowired
 	private OpenSaberInstrumentation watch;
-
-	@Autowired
-	ResponseTransformFactory responseTransformFactory;
-
 	private List<String> keyToPurge = new java.util.ArrayList<>();
 
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
@@ -122,24 +106,24 @@ public class RegistryController {
 	 * 
 	 * @param id
 	 * @param accept,
-	 *            only one mime type is supported at a time. Pick up the first
-	 *            mime type from the header.
+	 *            only one mime type is supported at a time. Pick up the first mime
+	 *            type from the header.
 	 * @return
 	 */
 	@RequestMapping(value = "/read", method = RequestMethod.POST)
 	public ResponseEntity<Response> readEntity(@RequestAttribute Request requestModel,
-			@RequestHeader HttpHeaders header){
+			@RequestHeader HttpHeaders header) {
 
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
-		
+
 		String dataObject = (String) requestModel.getRequestMap().get(Constants.REQUEST_ATTRIBUTE_NAME);
 		JSONParser parser = new JSONParser();
 		try {
 			JSONObject json = (JSONObject) parser.parse(dataObject);
 			String entityId = registryContext + json.get("id").toString();
 			boolean includeSign = Boolean.parseBoolean(json.get("includeSignatures").toString());
-			
+
 			watch.start("RegistryController.readEntity");
 			String content = registryService.getEntityFramedById(entityId, includeSign);
 			logger.info("RegistryController: Json string " + content);
@@ -159,12 +143,12 @@ public class RegistryController {
 			response.setResult(null);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 			responseParams.setErrmsg(e.getMessage());
-		}catch (Exception e) {
+		} catch (Exception e) {
 			logger.error("RegistryController: Exception while reading entity!", e);
 			response.setResult(null);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 			responseParams.setErrmsg("Ding! You encountered an error!");
-		}		
+		}
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
@@ -173,8 +157,8 @@ public class RegistryController {
 	 * 
 	 * @param id
 	 * @param accept,
-	 *            only one mime type is supported at a time. Pick up the first
-	 *            mime type from the header.
+	 *            only one mime type is supported at a time. Pick up the first mime
+	 *            type from the header.
 	 * @return
 	 */
 	@RequestMapping(value = "/search", method = RequestMethod.POST)
