@@ -6,7 +6,10 @@ import java.util.NoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import io.opensaber.registry.exception.*;
+import io.opensaber.registry.exception.AuditFailedException;
+import io.opensaber.registry.exception.DuplicateRecordException;
+import io.opensaber.registry.exception.EncryptionException;
+import io.opensaber.registry.exception.RecordNotFoundException;
 
 public interface RegistryDao {
 
