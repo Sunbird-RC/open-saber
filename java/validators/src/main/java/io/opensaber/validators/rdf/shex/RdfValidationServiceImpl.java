@@ -5,12 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.rdf.model.*;
 import org.apache.jena.vocabulary.RDF;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,40 +23,36 @@ import io.opensaber.validators.exception.RDFValidationException;
 //@Component
 public class RdfValidationServiceImpl implements ValidationService {
 
-	@Autowired
-	private RdfSignatureValidator signatureValidator;
-
-	@Value("${signature.enabled}")
-	private boolean signatureEnabled;
-
 	private static final String SX_SHAPE_IRI = "http://shex.io/ns/shex#Shape";
 	private static final String SHAPE_EXPRESSION_IRI = "http://shex.io/ns/shex#expression";
 	private static final String SHAPE_EXPRESSIONS_IRI = "http://shex.io/ns/shex#expressions";
 	private static final String SHAPE_VALUES_IRI = "http://shex.io/ns/shex#values";
 	private static final String SHAPE_VALUE_EXPR_IRI = "http://shex.io/ns/shex#valueExpr";
 	private static final String JSON_LD_FORMAT = "JSON-LD";
-	
-	private Map<String,String> shapeTypeMap;
+	@Autowired
+	private RdfSignatureValidator signatureValidator;
+	@Value("${signature.enabled}")
+	private boolean signatureEnabled;
+	private Map<String, String> shapeTypeMap;
 	private Schema schemaForCreate;
 	private Schema schemaForUpdate;
-	
 
 	public RdfValidationServiceImpl(Schema createSchema, Schema updateSchema) {
 		this.schemaForCreate = createSchema;
 		this.schemaForUpdate = updateSchema;
 		this.shapeTypeMap = getShapeMap(RDF.type, SX_SHAPE_IRI);
 	}
-	
-	public Map<String,String> getShapeTypeMap(){
+
+	public Map<String, String> getShapeTypeMap() {
 		return shapeTypeMap;
 	}
 
-	public ValidationResponse validateRDFWithSchema(Model rdf, String methodOrigin) throws RDFValidationException{
+	public ValidationResponse validateRDFWithSchema(Model rdf, String methodOrigin) throws RDFValidationException {
 		Schema schema = null;
 		Model validationRdf = generateShapeModel(rdf);
-		mergeModels( rdf,  validationRdf);
+		mergeModels(rdf, validationRdf);
 		ValidationResponse validationResponse = null;
-		if(Constants.CREATE_METHOD_ORIGIN.equals(methodOrigin)){
+		if (Constants.CREATE_METHOD_ORIGIN.equals(methodOrigin)) {
 			schema = schemaForCreate;
 		} else {
 			schema = schemaForUpdate;
@@ -71,7 +62,8 @@ public class RdfValidationServiceImpl implements ValidationService {
 		return validationResponse;
 	}
 
-	public ValidationResponse validateData(Object rdf, String methodOrigin) throws RDFValidationException, MiddlewareHaltException, IOException {
+	public ValidationResponse validateData(Object rdf, String methodOrigin)
+			throws RDFValidationException, MiddlewareHaltException, IOException {
 		Model rdfModel = null;
 		if (rdf == null) {
 			throw new RDFValidationException(ErrorConstants.RDF_DATA_IS_MISSING);
@@ -93,13 +85,12 @@ public class RdfValidationServiceImpl implements ValidationService {
 		}
 	}
 
-	private void mergeModels(Model RDF, Model validationRDF){
-		if(validationRDF!=null){
+	private void mergeModels(Model RDF, Model validationRDF) {
+		if (validationRDF != null) {
 			validationRDF.add(RDF.listStatements());
 		}
 	}
-	
-	
+
 	private Model generateShapeModel(Model inputRdf) throws RDFValidationException {
 		Model model = ModelFactory.createDefaultModel();
 		List<Resource> labelNodes = RDFUtil.getRootLabels(inputRdf);
@@ -124,64 +115,71 @@ public class RdfValidationServiceImpl implements ValidationService {
 	}
 
 	/**
-	 * This method generates a shapemap which contains mappings between each entity type and the corresponding
-	 * shape that the validations should target. Here we first filter out all the shape resources from the validationConfig.
-	 * Then we iterate through the list of shape resources and do a bunch of filtering from the validationConfig
-	 * based on a few predicates to finally arrive at the type for which the shape is targeted.
+	 * This method generates a shapemap which contains mappings between each entity
+	 * type and the corresponding shape that the validations should target. Here we
+	 * first filter out all the shape resources from the validationConfig. Then we
+	 * iterate through the list of shape resources and do a bunch of filtering from
+	 * the validationConfig based on a few predicates to finally arrive at the type
+	 * for which the shape is targeted.
+	 * 
 	 * @param predicate
 	 * @param object
-	 * @param validationConfig is the rdf model format of the Schema file used for validations
+	 * @param validationConfig
+	 *            is the rdf model format of the Schema file used for validations
 	 * @return
 	 */
-	private Map<String,String> getShapeMap(Property predicate, String object){
-		Map<String,String> shapeTypeMap = new HashMap<String, String>();
+	private Map<String, String> getShapeMap(Property predicate, String object) {
+		Map<String, String> shapeTypeMap = new HashMap<String, String>();
 		Model validationConfig = getValidationConfigModel();
 		List<Resource> shapeList = RDFUtil.getListOfSubjects(predicate, object, validationConfig);
-		for(Resource shape: shapeList){
+		for (Resource shape : shapeList) {
 			RDFNode node = getObjectAfterFilter(shape, SHAPE_EXPRESSION_IRI, validationConfig);
 			RDFNode firstNode = getObjectAfterFilter(node, SHAPE_EXPRESSIONS_IRI, validationConfig);
 			RDFNode secondNode = getObjectAfterFilter(firstNode, RDF.first.getURI(), validationConfig);
 			RDFNode thirdNode = getObjectAfterFilter(secondNode, SHAPE_VALUES_IRI, validationConfig);
-			if(thirdNode == null){
+			if (thirdNode == null) {
 				thirdNode = getObjectAfterFilter(secondNode, SHAPE_VALUE_EXPR_IRI, validationConfig);
 			}
 			RDFNode fourthNode = getObjectAfterFilter(thirdNode, SHAPE_VALUES_IRI, validationConfig);
 			RDFNode typeNode = getObjectAfterFilter(fourthNode, RDF.first.getURI(), validationConfig);
-			if(typeNode!=null){
+			if (typeNode != null) {
 				shapeTypeMap.put(typeNode.toString(), shape.toString());
 				addOtherTypesForShape(fourthNode, validationConfig, shapeTypeMap, shape);
 			}
 		}
 		return shapeTypeMap;
 	}
-	
+
 	/**
 	 * This method is created to include multiple types for a shape in the shapeMap.
+	 * 
 	 * @param subjectOfTypeNode
 	 * @param validationConfig
 	 * @param shapeMap
 	 * @param shape
 	 */
-	private void addOtherTypesForShape(RDFNode subjectOfTypeNode, Model validationConfig, Map<String,String> shapeTypeMap, Resource shape){
+	private void addOtherTypesForShape(RDFNode subjectOfTypeNode, Model validationConfig,
+			Map<String, String> shapeTypeMap, Resource shape) {
 		RDFNode node = getObjectAfterFilter(subjectOfTypeNode, RDF.rest.getURI(), validationConfig);
-		if(!node.equals(RDF.nil)){
+		if (!node.equals(RDF.nil)) {
 			RDFNode typeNode = getObjectAfterFilter(node, RDF.first.getURI(), validationConfig);
 			shapeTypeMap.put(typeNode.toString(), shape.toString());
 			addOtherTypesForShape(node, validationConfig, shapeTypeMap, shape);
 		}
 	}
-	
-	private RDFNode getObjectAfterFilter(RDFNode node, String predicate, Model validationConfig){
-			Property property = ResourceFactory.createProperty(predicate);
-			List<RDFNode> nodeList = RDFUtil.getListOfObjectNodes((Resource)node, property,validationConfig);
-			if(nodeList.size() != 0){
-				return nodeList.get(0);
-			}
-			return null;
+
+	private RDFNode getObjectAfterFilter(RDFNode node, String predicate, Model validationConfig) {
+		Property property = ResourceFactory.createProperty(predicate);
+		List<RDFNode> nodeList = RDFUtil.getListOfObjectNodes((Resource) node, property, validationConfig);
+		if (nodeList.size() != 0) {
+			return nodeList.get(0);
+		}
+		return null;
 	}
-	
-	private Model getValidationConfigModel(){
-		return RDFUtil.getRdfModelBasedOnFormat(schemaForUpdate.serialize(JSON_LD_FORMAT).right().get(), JSON_LD_FORMAT);
+
+	private Model getValidationConfigModel() {
+		return RDFUtil.getRdfModelBasedOnFormat(schemaForUpdate.serialize(JSON_LD_FORMAT).right().get(),
+				JSON_LD_FORMAT);
 	}
 
 }

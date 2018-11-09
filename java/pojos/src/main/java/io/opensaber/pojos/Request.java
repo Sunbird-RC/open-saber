@@ -1,8 +1,8 @@
 package io.opensaber.pojos;
 
-import com.google.gson.annotations.SerializedName;
-
 import java.util.Map;
+
+import com.google.gson.annotations.SerializedName;
 
 public class Request {
 

@@ -1,19 +1,9 @@
 package io.opensaber.registry.dao.impl;
 
-import com.google.common.collect.ImmutableList;
-import io.opensaber.pojos.OpenSaberInstrumentation;
-import io.opensaber.registry.authorization.pojos.AuthInfo;
-import io.opensaber.registry.dao.RegistryDao;
-import io.opensaber.registry.exception.AuditFailedException;
-import io.opensaber.registry.exception.DuplicateRecordException;
-import io.opensaber.registry.exception.EncryptionException;
-import io.opensaber.registry.exception.RecordNotFoundException;
-import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.model.AuditRecord;
-import io.opensaber.registry.schema.config.SchemaLoader;
-import io.opensaber.registry.schema.configurator.SchemaConfiguratorFactory;
-import io.opensaber.registry.schema.configurator.SchemaType;
-import io.opensaber.registry.sink.DatabaseProvider;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.jena.rdf.model.*;
@@ -32,9 +22,18 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.google.common.collect.ImmutableList;
+
+import io.opensaber.pojos.OpenSaberInstrumentation;
+import io.opensaber.registry.authorization.pojos.AuthInfo;
+import io.opensaber.registry.dao.RegistryDao;
+import io.opensaber.registry.exception.*;
+import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.model.AuditRecord;
+import io.opensaber.registry.schema.config.SchemaLoader;
+import io.opensaber.registry.schema.configurator.SchemaConfiguratorFactory;
+import io.opensaber.registry.schema.configurator.SchemaType;
+import io.opensaber.registry.sink.DatabaseProvider;
 
 @Component
 public class RegistryDaoImpl implements RegistryDao {
@@ -184,8 +183,8 @@ public class RegistryDaoImpl implements RegistryDao {
 	 * @throws NoSuchElementException
 	 */
 	private String addOrUpdateVerticesAndEdges(GraphTraversalSource dbTraversalSource,
-			GraphTraversalSource entitySource, String rootLabel, String methodOrigin)
-			throws NoSuchElementException, EncryptionException, AuditFailedException, RecordNotFoundException {
+			GraphTraversalSource entitySource, String rootLabel, String methodOrigin) throws NoSuchElementException,
+			EncryptionException, AuditFailedException, RecordNotFoundException {
 
 		GraphTraversal<Vertex, Vertex> gts = entitySource.clone().V().hasLabel(rootLabel);
 		String label = rootLabel;
@@ -236,8 +235,8 @@ public class RegistryDaoImpl implements RegistryDao {
 	 * @throws NoSuchElementException
 	 */
 	private void addOrUpdateVertexAndEdge(Vertex v, String idForSignature, Vertex dbVertex,
-			GraphTraversalSource dbGraph, String methodOrigin, Direction direction)
-			throws NoSuchElementException, EncryptionException, AuditFailedException, RecordNotFoundException {
+			GraphTraversalSource dbGraph, String methodOrigin, Direction direction) throws NoSuchElementException,
+			EncryptionException, AuditFailedException, RecordNotFoundException {
 		Iterator<Edge> edges = v.edges(direction);
 		Iterator<Edge> edgeList = v.edges(direction);
 		List<Edge> dbEdgesForVertex = ImmutableList.copyOf(dbVertex.edges(direction));
@@ -258,8 +257,8 @@ public class RegistryDaoImpl implements RegistryDao {
 
 	private Stack<Pair<Vertex, Vertex>> addOrUpdateVertexAndEdge(Iterator<Edge> edges, String idForSignature,
 			Iterator<Edge> edgeList, List<Edge> dbEdgesForVertex, List<Edge> edgeVertexMatchList, Direction direction,
-			GraphTraversalSource dbGraph, String methodOrigin, Vertex dbVertex)
-			throws NoSuchElementException, EncryptionException, AuditFailedException, RecordNotFoundException {
+			GraphTraversalSource dbGraph, String methodOrigin, Vertex dbVertex) throws NoSuchElementException,
+			EncryptionException, AuditFailedException, RecordNotFoundException {
 		Stack<Pair<Vertex, Vertex>> parsedVertices = new Stack<>();
 		String signatureOf = registryContext + Constants.SIGNATURE_OF;
 		String signatureFor = registryContext + Constants.SIGNATURE_FOR;
@@ -416,8 +415,8 @@ public class RegistryDaoImpl implements RegistryDao {
 	}
 
 	private void addOrUpdateSignature(Vertex v, String idForSignature, Vertex dbVertex, GraphTraversalSource dbGraph,
-			String methodOrigin)
-			throws NoSuchElementException, EncryptionException, AuditFailedException, RecordNotFoundException {
+			String methodOrigin) throws NoSuchElementException, EncryptionException, AuditFailedException,
+			RecordNotFoundException {
 		Iterator<Edge> edges = v.edges(Direction.IN, (registryContext + Constants.SIGNATURE_OF));
 		Iterator<Edge> edgeList = v.edges(Direction.IN, (registryContext + Constants.SIGNATURE_OF));
 		List<Edge> dbEdgesForVertex = ImmutableList
@@ -683,9 +682,9 @@ public class RegistryDaoImpl implements RegistryDao {
 		GraphTraversal<Vertex, Vertex> hasLabel = traversalSource.clone().V().hasLabel(nodeLabel);
 		Vertex s = hasLabel.next();
 		Iterator<Edge> edges = s.edges(Direction.IN);
-		while(edges.hasNext()) {
+		while (edges.hasNext()) {
 			Edge typeEdge = edges.next();
-			if(!typeEdge.label().equalsIgnoreCase(registryContext+Constants.SIGNATURE_OF)){
+			if (!typeEdge.label().equalsIgnoreCase(registryContext + Constants.SIGNATURE_OF)) {
 				Vertex rootVertex = typeEdge.outVertex();
 				rootLabel = rootVertex.label();
 			}

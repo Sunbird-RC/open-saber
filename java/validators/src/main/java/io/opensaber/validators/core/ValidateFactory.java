@@ -11,28 +11,27 @@ import io.opensaber.validators.rdf.shex.RdfValidationServiceImpl;
 public class ValidateFactory {
 
 	@Autowired
-	private RdfValidationServiceImpl rdfValidationServiceImpl; 
-	
-    public ValidationService getInstance(String type) throws ValidationFactoryException {
-        ValidationService validationService = null;
+	private RdfValidationServiceImpl rdfValidationServiceImpl;
 
-        switch (type) {
+	public ValidationService getInstance(String type) throws ValidationFactoryException {
+		ValidationService validationService = null;
 
-            case Constants.ENABLE_RDF_VALIDATION:
-                validationService = (ValidationService) rdfValidationServiceImpl;
-                break;
-             //provided for json validation
-            case Constants.ENABLE_JSON_VALIDATION:
+		switch (type) {
 
-                break;
+		case Constants.ENABLE_RDF_VALIDATION:
+			validationService = (ValidationService) rdfValidationServiceImpl;
+			break;
+		// provided for json validation
+		case Constants.ENABLE_JSON_VALIDATION:
 
-            default:
+			break;
 
-                throw new ValidationFactoryException(ErrorConstants.VALIDATION_IMPLEMENTATION_NOT_PROVIDED);
+		default:
 
-        }
-        return validationService;
-    }
+			throw new ValidationFactoryException(ErrorConstants.VALIDATION_IMPLEMENTATION_NOT_PROVIDED);
 
+		}
+		return validationService;
+	}
 
 }

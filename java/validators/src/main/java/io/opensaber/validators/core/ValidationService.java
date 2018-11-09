@@ -8,5 +8,6 @@ import io.opensaber.validators.exception.RDFValidationException;
 
 public interface ValidationService {
 
-    public ValidationResponse validateData(Object rdfModel, String origin) throws RDFValidationException,MiddlewareHaltException,IOException;
+	public ValidationResponse validateData(Object rdfModel, String origin)
+			throws RDFValidationException, MiddlewareHaltException, IOException;
 }

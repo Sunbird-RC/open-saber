@@ -1,21 +1,6 @@
 package io.opensaber.registry.middleware.impl;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import es.weso.schema.Schema;
-import es.weso.schema.Schemas;
-import io.opensaber.registry.middleware.Middleware;
-import io.opensaber.registry.middleware.MiddlewareHaltException;
-import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.middleware.util.RDFUtil;
-import org.apache.jena.ext.com.google.common.io.ByteStreams;
-import org.apache.jena.rdf.model.*;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import scala.Option;
-import scala.util.Either;
+import static org.junit.Assert.assertTrue;
 
 import java.io.*;
 import java.net.URI;
@@ -24,7 +9,24 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertTrue;
+import org.apache.jena.ext.com.google.common.io.ByteStreams;
+import org.apache.jena.rdf.model.*;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import es.weso.schema.Schema;
+import es.weso.schema.Schemas;
+import io.opensaber.registry.middleware.Middleware;
+import io.opensaber.registry.middleware.MiddlewareHaltException;
+import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.RDFUtil;
+import scala.Option;
+import scala.util.Either;
 
 public class RDFValidationMapperTest {
 

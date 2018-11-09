@@ -1,14 +1,12 @@
 package io.opensaber.registry.dao;
 
-import io.opensaber.registry.exception.AuditFailedException;
-import io.opensaber.registry.exception.DuplicateRecordException;
-import io.opensaber.registry.exception.EncryptionException;
-import io.opensaber.registry.exception.RecordNotFoundException;
+import java.util.List;
+import java.util.NoSuchElementException;
+
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.List;
-import java.util.NoSuchElementException;
+import io.opensaber.registry.exception.*;
 
 public interface RegistryDao {
 

@@ -1,13 +1,15 @@
 package io.opensaber.registry.service;
 
+import java.io.IOException;
+import java.util.List;
+
+import org.apache.jena.rdf.model.Model;
+
 import com.github.jsonldjava.core.JsonLdError;
+
 import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.registry.exception.*;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
-import org.apache.jena.rdf.model.Model;
-
-import java.io.IOException;
-import java.util.List;
 
 public interface RegistryService {
 

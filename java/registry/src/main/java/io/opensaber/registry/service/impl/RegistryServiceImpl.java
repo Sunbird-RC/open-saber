@@ -1,26 +1,14 @@
 package io.opensaber.registry.service.impl;
 
-import com.github.jsonldjava.core.JsonLdError;
-import com.google.gson.Gson;
-import io.opensaber.converters.JenaRDF4J;
-import io.opensaber.pojos.ComponentHealthInfo;
-import io.opensaber.pojos.HealthCheckResponse;
-import io.opensaber.registry.dao.RegistryDao;
-import io.opensaber.registry.exception.*;
-import io.opensaber.registry.frame.FrameEntity;
-import io.opensaber.registry.middleware.MiddlewareHaltException;
-import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.middleware.util.JSONUtil;
-import io.opensaber.registry.middleware.util.RDFUtil;
-import io.opensaber.registry.model.RegistrySignature;
-import io.opensaber.registry.schema.configurator.SchemaConfiguratorFactory;
-import io.opensaber.registry.schema.configurator.SchemaType;
-import io.opensaber.registry.service.EncryptionService;
-import io.opensaber.registry.service.RegistryService;
-import io.opensaber.registry.service.SignatureService;
-import io.opensaber.registry.sink.DatabaseProvider;
-import io.opensaber.registry.util.GraphDBFactory;
-import io.opensaber.utils.converters.RDF2Graph;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
@@ -40,14 +28,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.github.jsonldjava.core.JsonLdError;
+import com.google.gson.Gson;
+
+import io.opensaber.converters.JenaRDF4J;
+import io.opensaber.pojos.ComponentHealthInfo;
+import io.opensaber.pojos.HealthCheckResponse;
+import io.opensaber.registry.dao.RegistryDao;
+import io.opensaber.registry.exception.*;
+import io.opensaber.registry.frame.FrameEntity;
+import io.opensaber.registry.middleware.MiddlewareHaltException;
+import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.JSONUtil;
+import io.opensaber.registry.middleware.util.RDFUtil;
+import io.opensaber.registry.model.RegistrySignature;
+import io.opensaber.registry.schema.configurator.SchemaConfiguratorFactory;
+import io.opensaber.registry.schema.configurator.SchemaType;
+import io.opensaber.registry.service.EncryptionService;
+import io.opensaber.registry.service.RegistryService;
+import io.opensaber.registry.service.SignatureService;
+import io.opensaber.registry.sink.DatabaseProvider;
+import io.opensaber.registry.util.GraphDBFactory;
+import io.opensaber.utils.converters.RDF2Graph;
 
 @Component
 public class RegistryServiceImpl implements RegistryService {
@@ -247,9 +249,9 @@ public class RegistryServiceImpl implements RegistryService {
 	 * @throws SignatureException.UnreachableException
 	 * @throws SignatureException.CreationException
 	 */
-	void getEntityAndUpdateSign(String label) throws EncryptionException, AuditFailedException,
-			RecordNotFoundException, EntityCreationException, IOException, MultipleEntityException,
-			SignatureException.UnreachableException, SignatureException.CreationException {
+	void getEntityAndUpdateSign(String label) throws EncryptionException, AuditFailedException, RecordNotFoundException,
+			EntityCreationException, IOException, MultipleEntityException, SignatureException.UnreachableException,
+			SignatureException.CreationException {
 		final String ID_REGEX = "\"@id\"\\s*:\\s*\"[a-z]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\",";
 		Map signReq = new HashMap<String, Object>();
 		RegistrySignature rs = new RegistrySignature();
@@ -261,8 +263,8 @@ public class RegistryServiceImpl implements RegistryService {
 		Map<String, Object> entitySignMap = (Map<String, Object>) signatureService.sign(signReq);
 		entitySignMap.put("createdDate", rs.getCreatedTimestamp());
 		entitySignMap.put("keyUrl", signatureKeyURl);
-		Graph graph = generateGraphFromRDF(RDFUtil.getUpdatedSignedModel(jenaEntityModel, registryContextBase, signatureDomain,
-				entitySignMap, signatureModel));
+		Graph graph = generateGraphFromRDF(RDFUtil.getUpdatedSignedModel(jenaEntityModel, registryContextBase,
+				signatureDomain, entitySignMap, signatureModel));
 		registryDao.updateEntity(graph, label, "update");
 	}
 
