@@ -49,6 +49,7 @@ import io.opensaber.registry.middleware.Middleware;
 import io.opensaber.registry.middleware.impl.JSONLDConverter;
 import io.opensaber.registry.middleware.impl.RDFConverter;
 import io.opensaber.registry.middleware.impl.RDFValidationMapper;
+import io.opensaber.registry.middleware.transform.FrameContext;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.schema.config.SchemaLoader;
@@ -56,7 +57,12 @@ import io.opensaber.registry.schema.configurator.JsonSchemaConfigurator;
 import io.opensaber.registry.schema.configurator.SchemaConfiguratorFactory;
 import io.opensaber.registry.schema.configurator.SchemaType;
 import io.opensaber.registry.schema.configurator.ShexSchemaConfigurator;
-import io.opensaber.registry.sink.*;
+import io.opensaber.registry.sink.DatabaseProvider;
+import io.opensaber.registry.sink.JanusGraphStorage;
+import io.opensaber.registry.sink.Neo4jGraphProvider;
+import io.opensaber.registry.sink.OrientDBGraphProvider;
+import io.opensaber.registry.sink.SqlgProvider;
+import io.opensaber.registry.sink.TinkerGraphProvider;
 import io.opensaber.validators.rdf.shex.RdfSignatureValidator;
 import io.opensaber.validators.rdf.shex.RdfValidationServiceImpl;
 
@@ -88,6 +94,9 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Value("${registry.context.base}")
 	private String registryContextBase;
+	
+	@Value("${frame.file}")
+	private String frameFile;
 
 	@Value("${signature.schema.config.name}")
 	private String signatureSchemaConfigName;
@@ -128,9 +137,14 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	public FrameEntity frameEntity() {
 		return new FrameEntityImpl();
 	}
+	
+	@Bean 
+	public FrameContext frameContext( ){
+		return new FrameContext(frameFile, registryContextBase);
+	}
 
 	@Bean
-	public JsonToLdRequestTransformer jsonToLdRequestTransformer() {
+	public JsonToLdRequestTransformer jsonToLdRequestTransformer() throws IOException {
 		return new JsonToLdRequestTransformer(frameEntity().getContent());
 	}
 
