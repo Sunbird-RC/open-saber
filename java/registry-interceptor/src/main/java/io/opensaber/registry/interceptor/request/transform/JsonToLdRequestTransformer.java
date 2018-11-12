@@ -1,12 +1,10 @@
 package io.opensaber.registry.interceptor.request.transform;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,16 +12,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.opensaber.registry.middleware.transform.Data;
 import io.opensaber.registry.middleware.transform.ErrorCode;
-import io.opensaber.registry.middleware.transform.FrameContext;
 import io.opensaber.registry.middleware.transform.ITransformer;
 import io.opensaber.registry.middleware.transform.TransformationException;
+import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 
 public class JsonToLdRequestTransformer implements ITransformer<Object> {
 
-	@Autowired
-	private FrameContext frameContext;
 	private final static String REQUEST = "request";
 	private static final String SEPERATOR = ":";
 	private static Logger logger = LoggerFactory.getLogger(JsonToLdRequestTransformer.class);
@@ -32,9 +28,9 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 	private String prefix = "";
 	private String rootType = "";
 
-	public JsonToLdRequestTransformer(String context) throws IOException {
+	public JsonToLdRequestTransformer(String context, String domain){
 		this.context = context;
-		rootType = frameContext.getDomain();
+		rootType = domain;
 	}
 
 	@Override
@@ -47,9 +43,13 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 			ObjectNode requestnode = (ObjectNode) input.path(REQUEST);
 
 			String type = getTypeFromNode(requestnode);
-			setPrefix(type);
+			//setPrefix(type);
+			if(rootType.isEmpty())
+				throw new TransformationException(Constants.INVALID_FRAME, ErrorCode.JSON_TO_JSONLD_TRANFORMATION_ERROR);
+			setPrefix(rootType);
 			JSONUtil.addPrefix(requestnode, prefix, nodeTypes);
 			logger.info("Appending prefix to requestNode " + requestnode);
+			logger.info("Domain  value "+rootType);
 
 			requestnode = (ObjectNode) requestnode.path(type);
 			requestnode.setAll(fieldObjects);
@@ -58,7 +58,7 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 			String jsonldResult = mapper.writeValueAsString(input);
 			return new Data<>(jsonldResult.replace("<@type>", rootType));
 		} catch (Exception ex) {
-			logger.error(ex.getMessage(), ex);
+			logger.error("Error trnsx : "+ex.getMessage(), ex);
 			throw new TransformationException(ex.getMessage(), ex, ErrorCode.JSON_TO_JSONLD_TRANFORMATION_ERROR);
 		}
 	}

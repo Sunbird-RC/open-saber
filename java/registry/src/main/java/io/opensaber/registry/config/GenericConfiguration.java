@@ -36,6 +36,7 @@ import io.opensaber.registry.authorization.AuthorizationFilter;
 import io.opensaber.registry.authorization.KeyCloakServiceImpl;
 import io.opensaber.registry.exception.CustomException;
 import io.opensaber.registry.exception.CustomExceptionHandler;
+import io.opensaber.registry.frame.FrameContext;
 import io.opensaber.registry.frame.FrameEntity;
 import io.opensaber.registry.frame.FrameEntityImpl;
 import io.opensaber.registry.interceptor.AuthorizationInterceptor;
@@ -49,7 +50,6 @@ import io.opensaber.registry.middleware.Middleware;
 import io.opensaber.registry.middleware.impl.JSONLDConverter;
 import io.opensaber.registry.middleware.impl.RDFConverter;
 import io.opensaber.registry.middleware.impl.RDFValidationMapper;
-import io.opensaber.registry.middleware.transform.FrameContext;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.schema.config.SchemaLoader;
@@ -139,13 +139,14 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 	
 	@Bean 
-	public FrameContext frameContext( ){
+	public FrameContext frameContext(){
 		return new FrameContext(frameFile, registryContextBase);
 	}
 
 	@Bean
-	public JsonToLdRequestTransformer jsonToLdRequestTransformer() throws IOException {
-		return new JsonToLdRequestTransformer(frameEntity().getContent());
+	public JsonToLdRequestTransformer jsonToLdRequestTransformer() {
+		String domain = frameContext().getDomain();
+		return new JsonToLdRequestTransformer(frameEntity().getContent(), domain);
 	}
 
 	@Bean
