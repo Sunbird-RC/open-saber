@@ -3,6 +3,7 @@ package io.opensaber.registry.middleware.util;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -31,6 +32,7 @@ public class JSONUtil {
 	private static Logger logger = LoggerFactory.getLogger(JSONUtil.class);
 	private static Type stringObjMapType = new TypeToken<Map<String, Object>>() {
 	}.getType();
+	private static String domainName = "";
 
 	public static Map<String, Object> convertObjectJsonMap(Object object) {
 		Gson gson = new Gson();
@@ -240,6 +242,21 @@ public class JSONUtil {
 			}
 		});
 		parent.remove(removeKeyNames);
+	}
+	
+	public static String findDomain(JsonNode node, String contextBase) {
+		logger.info("contextBase : "+contextBase);
+		Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
+		while (fields.hasNext()) {
+			Map.Entry<String, JsonNode> entry = fields.next();
+			if (entry.getValue().isTextual() && entry.getValue().textValue().equalsIgnoreCase(contextBase)) {
+				domainName = entry.getKey();
+				break;
+			} else if (entry.getValue().isObject()) {
+				findDomain(entry.getValue(), contextBase);
+			}
+		}
+		return domainName;
 	}
 
 }

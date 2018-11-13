@@ -2,9 +2,8 @@ package io.opensaber.registry.frame;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Iterator;
-import java.util.Map;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +11,9 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.io.CharStreams;
+import com.google.common.io.ByteStreams;
+
+import io.opensaber.registry.middleware.util.JSONUtil;
 
 public class FrameContext {
 	private static Logger logger = LoggerFactory.getLogger(FrameContext.class);
@@ -24,10 +25,10 @@ public class FrameContext {
 	public FrameContext(String frameFileName, String registryContextBase) {
 		this.registryContextBase = registryContextBase;
 
-		InputStreamReader in;
+		InputStream in;
 		try {
-			in = new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream(frameFileName));
-			frameContent = CharStreams.toString(in);
+			in = this.getClass().getClassLoader().getResourceAsStream(frameFileName);
+			frameContent = new String(ByteStreams.toByteArray(in), StandardCharsets.UTF_8);
 
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
@@ -43,7 +44,10 @@ public class FrameContext {
 	public String getContent() {
 		return frameContent;
 	}
-
+    /**
+     * Always return one domain that the registry represents
+     * @return
+     */
 	public String getDomain() {
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode frameNode = null;
@@ -55,22 +59,9 @@ public class FrameContext {
 			e.printStackTrace();
 			logger.error(e.getLocalizedMessage());
 		}
-		findDomain(frameNode);
+		domainName = JSONUtil.findDomain(frameNode, registryContextBase);
 		return domainName;
 	}
 
-	private void findDomain(JsonNode node) {
-		Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
-		while (fields.hasNext()) {
-			Map.Entry<String, JsonNode> entry = fields.next();
-			if (entry.getValue().isTextual() && entry.getValue().textValue().equalsIgnoreCase(registryContextBase)) {
-				domainName = entry.getKey();
-				break;
-			} else if (entry.getValue().isObject()) {
-				findDomain(entry.getValue());
-			}
-		}
-
-	}
 
 }

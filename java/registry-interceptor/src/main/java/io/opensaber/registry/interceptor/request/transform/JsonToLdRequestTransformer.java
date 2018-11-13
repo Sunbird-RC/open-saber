@@ -26,11 +26,11 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 	private String context;
 	private List<String> nodeTypes = new ArrayList<>();
 	private String prefix = "";
-	private String rootType = "";
+	private String domain = "";
 
 	public JsonToLdRequestTransformer(String context, String domain){
 		this.context = context;
-		rootType = domain;
+		this.domain = domain;
 	}
 
 	@Override
@@ -44,19 +44,19 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 
 			String type = getTypeFromNode(requestnode);
 			//setPrefix(type);
-			if(rootType.isEmpty())
+			if(domain.isEmpty())
 				throw new TransformationException(Constants.INVALID_FRAME, ErrorCode.JSON_TO_JSONLD_TRANFORMATION_ERROR);
-			setPrefix(rootType);
+			setPrefix(domain);
 			JSONUtil.addPrefix(requestnode, prefix, nodeTypes);
 			logger.info("Appending prefix to requestNode " + requestnode);
-			logger.info("Domain  value "+rootType);
+			logger.info("Domain  value "+domain);
 
 			requestnode = (ObjectNode) requestnode.path(type);
 			requestnode.setAll(fieldObjects);
 			input.set(REQUEST, requestnode);
 			logger.info("Object requestnode " + requestnode);
 			String jsonldResult = mapper.writeValueAsString(input);
-			return new Data<>(jsonldResult.replace("<@type>", rootType));
+			return new Data<>(jsonldResult.replace("<@type>", domain));
 		} catch (Exception ex) {
 			logger.error("Error trnsx : "+ex.getMessage(), ex);
 			throw new TransformationException(ex.getMessage(), ex, ErrorCode.JSON_TO_JSONLD_TRANFORMATION_ERROR);
