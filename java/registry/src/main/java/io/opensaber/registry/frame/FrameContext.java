@@ -20,7 +20,6 @@ public class FrameContext {
 
 	private String registryContextBase;
 	private String frameContent;
-	private String domainName = "";
 
 	public FrameContext(String frameFileName, String registryContextBase) {
 		this.registryContextBase = registryContextBase;
@@ -59,8 +58,7 @@ public class FrameContext {
 			e.printStackTrace();
 			logger.error(e.getLocalizedMessage());
 		}
-		domainName = JSONUtil.findDomain(frameNode, registryContextBase);
-		return domainName;
+		return JSONUtil.findDomain(frameNode, registryContextBase);
 	}
 
 
