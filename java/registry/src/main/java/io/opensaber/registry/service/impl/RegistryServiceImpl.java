@@ -115,7 +115,7 @@ public class RegistryServiceImpl implements RegistryService {
 	public String addEntity(Model rdfModel, String dataObject, String subject, String property)
 			throws DuplicateRecordException, EntityCreationException, EncryptionException, AuditFailedException,
 			MultipleEntityException, RecordNotFoundException, IOException, SignatureException.UnreachableException,
-			JsonLdError, SignatureException.CreationException, MiddlewareHaltException {
+			JsonLdError, SignatureException.CreationException {
 		try {
 			Model signedRdfModel = null;
 			RegistrySignature rs = new RegistrySignature();
@@ -182,38 +182,24 @@ public class RegistryServiceImpl implements RegistryService {
 	@Override
 	public boolean updateEntity(Model entity) throws RecordNotFoundException, EntityCreationException,
 			EncryptionException, AuditFailedException, MultipleEntityException, SignatureException.UnreachableException,
-			IOException, SignatureException.CreationException, MiddlewareHaltException {
+			IOException, SignatureException.CreationException {
 		boolean isUpdated = false;
-		if (persistenceEnabled && isValidationEnabled) {
-			if (Constants.RDF_OBJECT.equalsIgnoreCase(validationType)) {
-				/*
-				 * ValidationService validationService =
-				 * validateFactory.getInstance(Constants.ENABLE_RDF_VALIDATION);
-				 * ValidationResponse validationResponse =
-				 * validationService.validateData(entity, Constants.UPDATE_METHOD_ORIGIN); if
-				 * (!validationResponse.isValid()) { throw new
-				 * RDFValidationException(ErrorConstants.RDF_VALIDATION_ERROR_MESSAGE); }
-				 */
-				Resource root = getRootNode(entity);
-				String label = getRootLabel(root);
-				String rootType = getTypeForRootLabel(entity, root);
-				if (encryptionEnabled) {
-					encryptModel(entity);
-				}
-				Graph graph = generateGraphFromRDF(entity);
-				logger.debug("Service layer graph :", graph);
-				isUpdated = registryDao.updateEntity(graph, label, Constants.UPDATE_METHOD_ORIGIN);
-				if (signatureEnabled) {
-					if (!rootType.equalsIgnoreCase(registryContextBase + registryRootEntityType)) {
-						label = registryDao.getRootLabelForNodeLabel(label);
-					}
-					getEntityAndUpdateSign(label);
-				}
-
-			} else {
-				// else part for json validation
+		if (persistenceEnabled) {
+			Resource root = getRootNode(entity);
+			String label = getRootLabel(root);
+			String rootType = getTypeForRootLabel(entity, root);
+			if (encryptionEnabled) {
+				encryptModel(entity);
 			}
-
+			Graph graph = generateGraphFromRDF(entity);
+			logger.debug("Service layer graph :", graph);
+			isUpdated = registryDao.updateEntity(graph, label, Constants.UPDATE_METHOD_ORIGIN);
+			if (signatureEnabled) {
+				if (!rootType.equalsIgnoreCase(registryContextBase + registryRootEntityType)) {
+					label = registryDao.getRootLabelForNodeLabel(label);
+				}
+				getEntityAndUpdateSign(label);
+			}
 		}
 		return isUpdated;
 	}
