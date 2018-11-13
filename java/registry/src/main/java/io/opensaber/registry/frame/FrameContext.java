@@ -58,7 +58,7 @@ public class FrameContext {
 			e.printStackTrace();
 			logger.error(e.getLocalizedMessage());
 		}
-		return JSONUtil.findDomain(frameNode, registryContextBase);
+		return JSONUtil.findKey(frameNode, registryContextBase);
 	}
 
 
