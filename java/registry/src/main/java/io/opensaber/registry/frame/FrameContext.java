@@ -53,7 +53,7 @@ public class FrameContext {
 		logger.info(
 				"for FrameContext registryContextBase: " + registryContextBase + " and frame content: " + frameContent);
 		try {
-			frameNode = (ObjectNode) mapper.readTree(frameContent);
+			frameNode = (ObjectNode) mapper.readTree(getContent());
 		} catch (IOException e) {
 			e.printStackTrace();
 			logger.error(e.getLocalizedMessage());
