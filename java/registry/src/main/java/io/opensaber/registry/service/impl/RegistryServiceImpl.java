@@ -119,40 +119,27 @@ public class RegistryServiceImpl implements RegistryService {
 		try {
 			Model signedRdfModel = null;
 			RegistrySignature rs = new RegistrySignature();
-			//
-			if (isValidationEnabled) {
-				if (Constants.RDF_OBJECT.equalsIgnoreCase(validationType)) {
-					/*
-					 * ValidationService validationService =
-					 * validateFactory.getInstance(Constants.ENABLE_RDF_VALIDATION);
-					 * ValidationResponse validationResponse =
-					 * validationService.validateData(rdfModel, Constants.CREATE_METHOD_ORIGIN); if
-					 * (!validationResponse.isValid()) { throw new
-					 * RDFValidationException(ErrorConstants.RDF_VALIDATION_ERROR_MESSAGE); }
-					 */
-					// Validating Sign Mandatory data
-					if (signatureEnabled) {
-						Map signReq = new HashMap<String, Object>();
-						InputStream is = this.getClass().getClassLoader().getResourceAsStream(frameFile);
-						String fileString = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
-						Map<String, Object> reqMap = JSONUtil.frameJsonAndRemoveIds(ID_REGEX, dataObject, gson,
-								fileString);
-						signReq.put("entity", reqMap);
-						Map<String, Object> entitySignMap = (Map<String, Object>) signatureService.sign(signReq);
-						entitySignMap.put("createdDate", rs.getCreatedTimestamp());
-						entitySignMap.put("keyUrl", signatureKeyURl);
-						signedRdfModel = RDFUtil.getUpdatedSignedModel(rdfModel, registryContext, signatureDomain,
-								entitySignMap, ModelFactory.createDefaultModel());
-						return addEntity(signedRdfModel, subject, property);
+			String rootLabel = null;
 
-					}
-				} else {
-					// else part for json validation
-				}
+			// Validating Sign Mandatory data
+			if (signatureEnabled) {
+				Map signReq = new HashMap<String, Object>();
+				InputStream is = this.getClass().getClassLoader().getResourceAsStream(frameFile);
+				String fileString = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
+				Map<String, Object> reqMap = JSONUtil.frameJsonAndRemoveIds(ID_REGEX, dataObject, gson,
+						fileString);
+				signReq.put("entity", reqMap);
+				Map<String, Object> entitySignMap = (Map<String, Object>) signatureService.sign(signReq);
+				entitySignMap.put("createdDate", rs.getCreatedTimestamp());
+				entitySignMap.put("keyUrl", signatureKeyURl);
+				signedRdfModel = RDFUtil.getUpdatedSignedModel(rdfModel, registryContext, signatureDomain,
+						entitySignMap, ModelFactory.createDefaultModel());
+				rootLabel = addEntity(signedRdfModel, subject, property);
 
+			} else {
+				rootLabel = addEntity(rdfModel, subject, property);
 			}
-
-			return addEntity(rdfModel, subject, property);
+			return rootLabel;
 
 		} catch (EntityCreationException | EncryptionException | AuditFailedException | DuplicateRecordException
 				| MultipleEntityException ex) {
