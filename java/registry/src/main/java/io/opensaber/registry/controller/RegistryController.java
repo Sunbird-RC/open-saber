@@ -1,89 +1,60 @@
 package io.opensaber.registry.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import io.opensaber.pojos.*;
-import io.opensaber.registry.exception.*;
-import io.opensaber.registry.middleware.transform.commons.Data;
-import io.opensaber.registry.middleware.transform.commons.ITransformer;
-import io.opensaber.registry.middleware.transform.commons.TransformationException;
-import io.opensaber.registry.middleware.transform.commons.Constants.JsonldConstants;
-import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.middleware.util.RDFUtil;
-import io.opensaber.registry.model.RegistrySignature;
-import io.opensaber.registry.service.RegistryAuditService;
-import io.opensaber.registry.service.RegistryService;
-import io.opensaber.registry.service.SearchService;
-import io.opensaber.registry.service.SignatureService;
-import io.opensaber.registry.transformation.ResponseTransformFactory;
-import io.opensaber.registry.util.JSONUtil;
-import org.apache.jena.ext.com.google.common.io.ByteStreams;
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.InputStream;
-import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import io.opensaber.pojos.*;
+import io.opensaber.registry.exception.*;
+import io.opensaber.registry.middleware.transform.Data;
+import io.opensaber.registry.middleware.transform.ITransformer;
+import io.opensaber.registry.middleware.transform.TransformationException;
+import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
+import io.opensaber.registry.middleware.util.JSONUtil;
+import io.opensaber.registry.service.RegistryAuditService;
+import io.opensaber.registry.service.RegistryService;
+import io.opensaber.registry.service.SearchService;
+import io.opensaber.registry.transformation.ResponseTransformFactory;
 
 @RestController
 public class RegistryController {
 
 	private static Logger logger = LoggerFactory.getLogger(RegistryController.class);
-
-	private static final String ID_REGEX = "\"@id\"\\s*:\\s*\"_:[a-z][0-9]+\",";
-
+	@Autowired
+	ResponseTransformFactory responseTransformFactory;
 	@Autowired
 	private RegistryService registryService;
-
 	@Autowired
 	private RegistryAuditService registryAuditService;
-
 	@Autowired
 	private SearchService searchService;
-
-	@Autowired
-	private SignatureService signatureService;
-
 	@Value("${registry.context.base}")
 	private String registryContext;
-
 	private Gson gson = new Gson();
 	private Type mapType = new TypeToken<Map<String, Object>>() {
 	}.getType();
-
 	@Value("${audit.enabled}")
 	private boolean auditEnabled;
-
-	@Value("${signature.domain}")
-	private String signatureDomain;
-
-	@Value("${signature.enabled}")
-	private boolean signatureEnabled;
-
-	@Value("${signature.keysURL}")
-	private String signatureKeyURl;
-
-	@Value("${frame.file}")
-	private String frameFile;
-
 	@Autowired
 	private OpenSaberInstrumentation watch;
-
-	@Autowired
-	ResponseTransformFactory responseTransformFactory;
-
 	private List<String> keyToPurge = new java.util.ArrayList<>();
 
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
@@ -95,24 +66,11 @@ public class RegistryController {
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.CREATE, "OK", responseParams);
 		Map<String, Object> result = new HashMap<>();
-		RegistrySignature rs = new RegistrySignature();
 
 		try {
 			watch.start("RegistryController.addToExistingEntity");
-			if (signatureEnabled) {
-				Map signReq = new HashMap<String, Object>();
-				InputStream is = this.getClass().getClassLoader().getResourceAsStream(frameFile);
-				String fileString = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
-				Map<String, Object> reqMap = JSONUtil.frameJsonAndRemoveIds(ID_REGEX,
-						(String) requestModel.getRequestMap().get("dataObject"), gson, fileString);
-				signReq.put("entity", reqMap);
-				Map<String, Object> entitySignMap = (Map<String, Object>) signatureService.sign(signReq);
-				entitySignMap.put("createdDate", rs.getCreatedTimestamp());
-				entitySignMap.put("keyUrl", signatureKeyURl);
-				rdf = RDFUtil.getUpdatedSignedModel(rdf, registryContext, signatureDomain, entitySignMap,
-						ModelFactory.createDefaultModel());
-			}
-			String label = registryService.addEntity(rdf, id, property);
+			String dataObject = requestModel.getRequestMap().get("dataObject").toString();
+			String label = registryService.addEntity(rdf, dataObject, id, property);
 			result.put("entity", label);
 			response.setResult(result);
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
@@ -136,33 +94,39 @@ public class RegistryController {
 	 * 
 	 * @param id
 	 * @param accept,
-	 *            only one mime type is supported.
+	 *            only one mime type is supported at a time. Pick up the first mime
+	 *            type from the header.
 	 * @return
 	 */
-	@RequestMapping(value = "/read/{id}", method = RequestMethod.GET)
-	public ResponseEntity<Response> readEntity(@PathVariable("id") String id,
-			@RequestParam(required = false) boolean includeSignatures,
-			@RequestHeader(value = "Accept") MediaType accept) {
+	@RequestMapping(value = "/read", method = RequestMethod.POST)
+	public ResponseEntity<Response> readEntity(@RequestAttribute Request requestModel,
+			@RequestHeader HttpHeaders header) {
 
-		String entityId = registryContext + id;
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
+		String dataObject = (String) requestModel.getRequestMap().get(Constants.REQUEST_ATTRIBUTE_NAME);
+		JSONParser parser = new JSONParser();
 		try {
+			JSONObject json = (JSONObject) parser.parse(dataObject);
+			String entityId = registryContext + json.get("id").toString();
+			boolean includeSign = Boolean.parseBoolean(json.get("includeSignatures").toString());
+
 			watch.start("RegistryController.readEntity");
-			String content = registryService.getEntityFramedById(entityId, includeSignatures);
+			String content = registryService.getEntityFramedById(entityId, includeSign);
 			logger.info("RegistryController: Json string " + content);
 
 			Data<Object> data = new Data<Object>(content);
-			ITransformer<Object> responseTransformer = responseTransformFactory.getInstance(accept);
+			ITransformer<Object> responseTransformer = responseTransformFactory
+					.getInstance(header.getAccept().iterator().next());
 			responseTransformer.setPurgeData(getKeysToPurge());
 			Data<Object> responseContent = responseTransformer.transform(data);
 			response.setResult(responseContent.getData());
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
 			watch.stop("RegistryController.readEntity");
 			logger.debug("RegistryController: entity for {} read !", entityId);
+		} catch (ParseException | RecordNotFoundException | UnsupportedOperationException | TransformationException e) {
 
-		} catch (RecordNotFoundException | UnsupportedOperationException | TransformationException e) {
 			logger.error("RegistryController: Exception while reading entity !", e);
 			response.setResult(null);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
@@ -173,6 +137,7 @@ public class RegistryController {
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 			responseParams.setErrmsg("Ding! You encountered an error!");
 		}
+
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
@@ -180,12 +145,13 @@ public class RegistryController {
 	 * 
 	 * @param id
 	 * @param accept,
-	 *            only one mime type is supported.
+	 *            only one mime type is supported at a time. Pick up the first mime
+	 *            type from the header.
 	 * @return
 	 */
 	@RequestMapping(value = "/search", method = RequestMethod.POST)
 	public ResponseEntity<Response> searchEntity(@RequestAttribute Request requestModel,
-			@RequestHeader(value = "Accept") MediaType accept) {
+			@RequestHeader HttpHeaders header) {
 
 		Model rdf = (Model) requestModel.getRequestMap().get("rdf");
 		ResponseParams responseParams = new ResponseParams();
@@ -196,7 +162,8 @@ public class RegistryController {
 			watch.start("RegistryController.searchEntity");
 			String jenaJson = searchService.searchFramed(rdf);
 			Data<Object> data = new Data<>(jenaJson);
-			ITransformer<Object> responseTransformer = responseTransformFactory.getInstance(accept);
+			ITransformer<Object> responseTransformer = responseTransformFactory
+					.getInstance(header.getAccept().iterator().next());
 			responseTransformer.setPurgeData(getKeysToPurge());
 			Data<Object> resultContent = responseTransformer.transform(data);
 			response.setResult(resultContent.getData());
@@ -338,10 +305,9 @@ public class RegistryController {
 	}
 
 	/*
-	 * To set the keys(like "@id" or @"@type" to be trim of a json
+	 * To set the keys(like @type to be trim of a json
 	 */
 	private List<String> getKeysToPurge() {
-		keyToPurge.add(JsonldConstants.ID);
 		keyToPurge.add(JsonldConstants.TYPE);
 		return keyToPurge;
 

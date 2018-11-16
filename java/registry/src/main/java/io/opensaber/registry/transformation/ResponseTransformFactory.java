@@ -4,11 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
-import io.opensaber.registry.middleware.transform.commons.ErrorCode;
-import io.opensaber.registry.middleware.transform.commons.ITransformer;
-import io.opensaber.registry.middleware.transform.commons.TransformationException;
-import io.opensaber.registry.transformation.JsonToLdTransformer;
-import io.opensaber.registry.transformation.JsonldToLdTransformer;
+import io.opensaber.registry.middleware.transform.ErrorCode;
+import io.opensaber.registry.middleware.transform.ITransformer;
+import io.opensaber.registry.middleware.transform.TransformationException;
 
 @Component
 public class ResponseTransformFactory {
@@ -32,6 +30,10 @@ public class ResponseTransformFactory {
 			break;
 
 		case MediaType.APPLICATION_JSON_VALUE:
+			responseTransformer = jsonTransformer;
+			break;
+
+		case MediaType.ALL_VALUE:
 			responseTransformer = jsonTransformer;
 			break;
 
