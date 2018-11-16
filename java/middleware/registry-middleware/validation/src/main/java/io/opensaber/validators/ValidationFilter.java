@@ -21,11 +21,12 @@ public class ValidationFilter implements Middleware {
 		Model rdfModel = (Model) mapData.get(Constants.RDF_OBJECT);
 		String method = mapData.get(Constants.METHOD_ORIGIN).toString().replace("/", "");
 
-		if (null == rdfModel) {
+		// TODO: What is the best way to simplify this.
+		if (true) {
 			// json based validation likely
 			validationService.validate(mapData.get(Constants.ATTRIBUTE_NAME), method);
 		} else {
-			validationService.validate(mapData.get("rdf"), method);
+			validationService.validate(rdfModel, method);
 		}
 		return mapData;
 	}

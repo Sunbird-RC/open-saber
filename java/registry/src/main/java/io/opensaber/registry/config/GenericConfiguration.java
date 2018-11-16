@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.opensaber.registry.interceptor.*;
+import io.opensaber.validators.ValidationFilter;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -40,10 +42,6 @@ import io.opensaber.registry.exception.CustomException;
 import io.opensaber.registry.exception.CustomExceptionHandler;
 import io.opensaber.registry.frame.FrameEntity;
 import io.opensaber.registry.frame.FrameEntityImpl;
-import io.opensaber.registry.interceptor.AuthorizationInterceptor;
-import io.opensaber.registry.interceptor.RDFConversionInterceptor;
-import io.opensaber.registry.interceptor.RDFValidationMappingInterceptor;
-import io.opensaber.registry.interceptor.RequestIdValidationInterceptor;
 import io.opensaber.registry.interceptor.request.transform.JsonToLdRequestTransformer;
 import io.opensaber.registry.interceptor.request.transform.JsonldToLdRequestTransformer;
 import io.opensaber.registry.interceptor.request.transform.RequestTransformFactory;
@@ -181,6 +179,11 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Bean
 	public RequestIdValidationInterceptor requestIdValidationInterceptor() {
 		return new RequestIdValidationInterceptor(requestIdMap(), gson());
+	}
+
+	@Bean
+	public ValidationInterceptor validationInterceptor() throws IOException, CustomException {
+		return new ValidationInterceptor(new ValidationFilter(validator()), gson());
 	}
 
 	@Bean
@@ -359,18 +362,50 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	public void addInterceptors(InterceptorRegistry registry) {
 		int orderIdx = 1;
 		Map<String, String> requestMap = requestIdMap();
-		if (validationEnabled) {
-			registry.addInterceptor(requestIdValidationInterceptor())
-					.addPathPatterns(new ArrayList(requestMap.keySet())).order(orderIdx++);
-		}
 
+		// Verify api ids
+		registry.addInterceptor(requestIdValidationInterceptor())
+				.addPathPatterns(new ArrayList(requestMap.keySet())).order(orderIdx++);
+
+		// Authenticate and authorization check
 		if (authenticationEnabled) {
 			registry.addInterceptor(authorizationInterceptor()).addPathPatterns("/**")
 					.excludePathPatterns("/health", "/error", "/_schemas/**").order(orderIdx++);
 		}
 
+		// Convert to RDF
 		registry.addInterceptor(rdfConversionInterceptor()).addPathPatterns("/add", "/update", "/search", "/read")
 				.order(orderIdx++);
+
+		// Validate the input against the defined schema
+		if (validationEnabled) {
+			try {
+				registry.addInterceptor(validationInterceptor())
+						.addPathPatterns("/add", "/update").order(orderIdx++);
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (CustomException e) {
+				e.printStackTrace();
+			}
+		}
+
+
+		/*
+		if(authenticationEnabled) {
+            registry.addInterceptor(authorizationInterceptor())
+                    .addPathPatterns("/**").excludePathPatterns("/health", "/error").order(orderIdx++);
+	    }
+
+	    registry.addInterceptor(rdfConversionInterceptor())
+				.addPathPatterns("/add", "/update", "/search").order(orderIdx++);
+		registry.addInterceptor(rdfValidationInterceptor())
+				.addPathPatterns("/add", "/update").order(orderIdx++);
+
+		if (signatureEnabled) {
+			registry.addInterceptor(signaturePresenceValidationInterceptor())
+					.addPathPatterns("/add", "/update").order(orderIdx++);
+		}
+		 */
 	}
 
 	@Override
