@@ -140,28 +140,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	@Scope(value = WebApplicationContext.SCOPE_REQUEST,
-					proxyMode = ScopedProxyMode.TARGET_CLASS)
-	public APIMessage apiMessage() {
-		logger.info("Bean some printing of string {}", UUID.randomUUID().toString());
-		APIMessage m = new APIMessage(servletRequest);
-		return m;
-	}
-
-	//@Scope(value = WebApplicationContext.SCOPE_REQUEST,
-	//			proxyMode = ScopedProxyMode.TARGET_CLASS)
-	//
-
-//	@Bean
-//	@RequestScope
-//	public APIResponseMessage apiResponseMessage() {
-//		String id = UUID.randomUUID().toString();
-//		logger.info(id);
-//		APIResponseMessage m = new APIResponseMessage();
-//		return m;
-//	}
-
-	@Bean
 	public Middleware jsonldConverter() {
 		return new JSONLDConverter();
 	}

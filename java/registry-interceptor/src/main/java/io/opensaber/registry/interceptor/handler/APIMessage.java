@@ -1,39 +1,40 @@
 package io.opensaber.registry.interceptor.handler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import io.opensaber.pojos.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.annotation.RequestScope;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 @Component("apiMessage")
+@Scope(value = WebApplicationContext.SCOPE_REQUEST,
+					proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class APIMessage {
 	private static Logger logger = LoggerFactory.getLogger(APIMessage.class);
-	private String body;
 
-	private HttpServletRequest httpServletRequest;
-
+	/* HTTP wrapper */
 	private RequestWrapper requestWrapper;
 
+	/* Custom pojo specific to org */
 	private Request request;
+
+	/* A temporary map to pass data cooked up in the interceptors, modules */
 	private Map<String, Object> placeholderMap = new HashMap<>();
 
+	@Autowired
 	public APIMessage(HttpServletRequest servletRequest) {
-		httpServletRequest = servletRequest;
 		request = new Request();
-		requestWrapper = new RequestWrapper(httpServletRequest);
-		body = requestWrapper.getBody();
+		requestWrapper = new RequestWrapper(servletRequest);
+		String body = requestWrapper.getBody();
 		try {
 			request = new ObjectMapper().readValue(body, Request.class);
 		} catch (IOException jpe) {
@@ -42,10 +43,18 @@ public class APIMessage {
 		}
 	}
 
+	/**
+	 * Get the message body
+	 * @return
+	 */
 	public String get() {
-		return body;
+		return requestWrapper.getBody();
 	}
 
+	/**
+	 * Provides access to HTTPServletRequest operations
+	 * @return
+	 */
 	public RequestWrapper getRequestWrapper() {
 		return requestWrapper;
 	}
@@ -54,15 +63,29 @@ public class APIMessage {
 		return request;
 	}
 
+	/**
+	 * Add some temporary request-specific data, say massaged data
+	 * @param key
+	 * @param data
+	 */
 	public void addLocal(String key, Object data) {
 	    placeholderMap.put(key, data);
     }
 
-    public Object getLocal(String key) {
+	/**
+	 * Read back from local
+	 * @param key
+	 * @return
+	 */
+	public Object getLocal(String key) {
 	    return placeholderMap.get(key);
     }
 
-    public Map<String, Object> getLocalMap() {
+	/**
+	 * Get a map of all temporary data
+	 * @return
+	 */
+	public Map<String, Object> getLocalMap() {
 		return placeholderMap;
 	}
 }
