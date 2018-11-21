@@ -44,10 +44,10 @@ public class RDFConversionInterceptor implements HandlerInterceptor {
 		boolean result = false;
 		String dataFromRequest = apiMessage.getRequest().getRequestMapAsString();
 		String contentType = request.getContentType();
-		logger.info("ContentType {0} requestBody {1}", contentType, dataFromRequest);
+		logger.debug("ContentType {0} requestBody {1}", contentType, dataFromRequest);
 
 		Data<Object> transformedData = requestTransformFactory.getInstance(contentType).transform(new Data<Object>(dataFromRequest));
-		logger.info("After transformation {0}", transformedData.getData());
+		logger.debug("After transformation {0}", transformedData.getData());
 
 		apiMessage.addLocal(Constants.LD_OBJECT, transformedData.getData());
 

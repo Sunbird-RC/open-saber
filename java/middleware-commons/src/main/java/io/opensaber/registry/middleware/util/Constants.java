@@ -28,6 +28,9 @@ public class Constants {
 	public static final String TARGET_NODE_IRI = "http://www.w3.org/ns/shacl#targetNode";
 	public static final String CONTEXT_KEYWORD = "@context";
 
+	public static final String JENA_LD_FORMAT = "JSON-LD";
+
+	public static final String JSONLD_DATA_IS_MISSING = "JSON-LD data is missing!";
 	public static final String DUPLICATE_RECORD_MESSAGE = "Cannot insert duplicate record";
 	public static final String NO_ENTITY_AVAILABLE_MESSAGE = "No entity available";
 	public static final String ENTITY_NOT_FOUND = "Entity does not exist";

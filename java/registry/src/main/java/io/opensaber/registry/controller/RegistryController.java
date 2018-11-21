@@ -71,7 +71,7 @@ public class RegistryController {
 
 		try {
 			watch.start("RegistryController.addToExistingEntity");
-			String dataObject = apiMessage.getRequest().getRequestMapAsString();
+			String dataObject = apiMessage.getLocal(Constants.LD_OBJECT).toString();
 			String label = registryService.addEntity(rdf, dataObject, id, property);
 			result.put("entity", label);
 			response.setResult(result);

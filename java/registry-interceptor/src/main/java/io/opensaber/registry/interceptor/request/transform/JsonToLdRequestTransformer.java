@@ -40,22 +40,21 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 			ObjectNode input = (ObjectNode) mapper.readTree(data.getData().toString());
 			ObjectNode fieldObjects = (ObjectNode) mapper.readTree(context);
 			setNodeTypeToAppend(fieldObjects);
-			ObjectNode requestnode = input;
+			ObjectNode resultNode = input;
 
-			String type = getTypeFromNode(requestnode);
+			String type = getTypeFromNode(resultNode);
 			//setPrefix(type);
 			if(domain.isEmpty())
 				throw new TransformationException(Constants.INVALID_FRAME, ErrorCode.JSON_TO_JSONLD_TRANFORMATION_ERROR);
 			setPrefix(domain);
-			JSONUtil.addPrefix(requestnode, prefix, nodeTypes);
-			logger.info("Appending prefix to requestNode " + requestnode);
+			JSONUtil.addPrefix(resultNode, prefix, nodeTypes);
+			logger.info("Appending prefix to requestNode " + resultNode);
 			logger.info("Domain  value "+domain);
 
-			requestnode = (ObjectNode) requestnode.path(type);
-			requestnode.setAll(fieldObjects);
-			input.set(REQUEST, requestnode);
-			logger.info("Object requestnode " + requestnode);
-			String jsonldResult = mapper.writeValueAsString(input);
+			resultNode = (ObjectNode) resultNode.path(type);
+			resultNode.setAll(fieldObjects);
+			logger.info("Object requestnode " + resultNode);
+			String jsonldResult = mapper.writeValueAsString(resultNode);
 			return new Data<>(jsonldResult.replace("<@type>", domain));
 		} catch (Exception ex) {
 			logger.error("Error trnsx : "+ex.getMessage(), ex);
