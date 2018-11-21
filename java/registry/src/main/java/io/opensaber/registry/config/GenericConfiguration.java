@@ -417,7 +417,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 					.excludePathPatterns("/health", "/error", "/_schemas/**").order(orderIdx++);
 		}
 
-		registry.addInterceptor(rdfConversionInterceptor()).addPathPatterns("/add", "/update", "/search", "/read")
+		registry.addInterceptor(rdfConversionInterceptor()).addPathPatterns("/add", "/update", "/search")
 				.order(orderIdx++);
 	}
 

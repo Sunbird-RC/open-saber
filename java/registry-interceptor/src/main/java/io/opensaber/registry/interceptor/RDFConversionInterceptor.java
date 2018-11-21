@@ -1,26 +1,21 @@
 package io.opensaber.registry.interceptor;
 
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.gson.Gson;
+import io.opensaber.pojos.OpenSaberInstrumentation;
+import io.opensaber.registry.interceptor.handler.APIMessage;
+import io.opensaber.registry.interceptor.request.transform.RequestTransformFactory;
+import io.opensaber.registry.middleware.Middleware;
+import io.opensaber.registry.middleware.transform.Data;
+import io.opensaber.registry.middleware.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.ModelAndView;
 
-import com.google.gson.Gson;
-
-import io.opensaber.pojos.OpenSaberInstrumentation;
-import io.opensaber.registry.interceptor.handler.BaseRequestHandler;
-import io.opensaber.registry.interceptor.request.transform.RequestTransformFactory;
-import io.opensaber.registry.middleware.Middleware;
-import io.opensaber.registry.middleware.MiddlewareHaltException;
-import io.opensaber.registry.middleware.transform.Data;
-import io.opensaber.registry.middleware.util.Constants;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 
 @Component
 public class RDFConversionInterceptor implements HandlerInterceptor {
@@ -33,6 +28,9 @@ public class RDFConversionInterceptor implements HandlerInterceptor {
 	private OpenSaberInstrumentation watch;
 
 	@Autowired
+	private APIMessage apiMessage;
+
+	@Autowired
 	private RequestTransformFactory requestTransformFactory;
 
 	public RDFConversionInterceptor(Middleware rdfConverter, Gson gson) {
@@ -43,49 +41,27 @@ public class RDFConversionInterceptor implements HandlerInterceptor {
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
-		BaseRequestHandler baseRequestHandler = new BaseRequestHandler();
-		try {
-			baseRequestHandler.setRequest(request);
-			String json = baseRequestHandler.getRequestBody();
-			logger.info("json requestBody RDFConversionInterceptor" + json);
-			Data<Object> jsonData = new Data<Object>(json);
-			Data<Object> jsonlsData = requestTransformFactory.getInstance(request.getContentType()).transform(jsonData);
-			logger.info("jsonLd request body RDFConversionInterceptor" + jsonlsData);
-			baseRequestHandler.setRequestBody(jsonlsData.getData().toString());
-			watch.start("RDFConversionInterceptor.execute");
-			Map<String, Object> attributeMap = rdfConverter.execute(baseRequestHandler.getRequestBodyMap());
-			baseRequestHandler.mergeRequestAttributes(attributeMap);
-			watch.stop("RDFConversionInterceptor.execute");
-			request = baseRequestHandler.getRequest();
-			if (request.getAttribute(Constants.RDF_OBJECT) != null) {
-				logger.debug("RDF object for conversion :" + request.getAttribute(Constants.RDF_OBJECT));
-				return true;
-			}
-		} catch (MiddlewareHaltException e) {
-			logger.error("MiddlewareHaltException from RDFConversionInterceptor !" + e);
-			baseRequestHandler.setResponse(response);
-			baseRequestHandler.writeResponseObj(gson, e.getMessage());
-			response = baseRequestHandler.getResponse();
-		} catch (Exception e) {
-			logger.error("Exception from RDFConversionInterceptor!" + e);
-			e.printStackTrace();
-			baseRequestHandler.setResponse(response);
-			baseRequestHandler.writeResponseObj(gson, Constants.JSONLD_PARSE_ERROR);
-			response = baseRequestHandler.getResponse();
+		boolean result = false;
+		String dataFromRequest = apiMessage.getRequest().getRequestMapAsString();
+		String contentType = request.getContentType();
+		logger.info("ContentType {0} requestBody {1}", contentType, dataFromRequest);
+
+		Data<Object> transformedData = requestTransformFactory.getInstance(contentType).transform(new Data<Object>(dataFromRequest));
+		logger.info("After transformation {0}", transformedData.getData());
+
+		apiMessage.addLocal(Constants.LD_OBJECT, transformedData.getData());
+
+		watch.start("RDFConversionInterceptor.execute");
+		Map<String, Object> attributeMap = rdfConverter.execute(apiMessage.getLocalMap());
+		watch.stop("RDFConversionInterceptor.execute");
+
+		if (attributeMap.get(Constants.RDF_OBJECT) != null) {
+			apiMessage.addLocal(Constants.RDF_OBJECT, attributeMap.get(Constants.RDF_OBJECT));
+
+			logger.debug("RDF object for conversion : {0}", attributeMap.get(Constants.RDF_OBJECT));
+			result = true;
 		}
-		return false;
+
+		return result;
 	}
-
-	@Override
-	public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
-			ModelAndView modelAndView) throws Exception {
-
-	}
-
-	@Override
-	public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
-			throws Exception {
-
-	}
-
 }

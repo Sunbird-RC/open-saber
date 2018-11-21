@@ -1,10 +1,8 @@
 package io.opensaber.registry.interceptor;
 
 import com.google.gson.Gson;
-import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.interceptor.handler.APIMessage;
-import io.opensaber.registry.interceptor.handler.BaseRequestHandler;
-import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.interceptor.handler.RequestWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,15 +22,12 @@ public class RequestIdValidationInterceptor implements HandlerInterceptor {
 	@Autowired
 	private APIMessage apiMessage;
 
-	@Autowired
-	private OpenSaberInstrumentation instrumentation;
-
 	public RequestIdValidationInterceptor(Map requestIdMap, Gson gson) {
 		this.gson = gson;
 		this.requestIdMap = requestIdMap;
 	}
 
-    /**
+	/**
 	 * This method checks for each request it contains a valid request id for
 	 * accessing the api
 	 * 
@@ -43,31 +38,11 @@ public class RequestIdValidationInterceptor implements HandlerInterceptor {
 	 * @throws Exception
 	 */
 	@Override
-	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
-			throws Exception {
-		BaseRequestHandler baseRequestHandler = new BaseRequestHandler();
+	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+		RequestWrapper wrapper = apiMessage.getRequestWrapper();
+		String expectedAPI = requestIdMap.getOrDefault(wrapper.getRequestURI(), "");
 
-		System.out.println(apiMessage.getRequestWrapper().getBody());
-		try {
-			// Code commented for later purpose, need to work on reading body from request
-			/*
-			 * baseRequestHandler.setRequest(request); Request req = (Request)
-			 * baseRequestHandler.getRequestBodyMap().get(Constants.REQUEST_ATTRIBUTE);
-			 */
-			if (requestIdMap.containsKey(request
-					.getRequestURI()) /* && requestIdMap.get(request.getRequestURI()).equalsIgnoreCase(req.getId()) */) {
-				return true;
-			} else {
-				throw new Exception();
-			}
-
-		} catch (Exception e) {
-			logger.error(" Authentication Failed !", e);
-			baseRequestHandler.setResponse(response);
-			baseRequestHandler.writeResponseObj(gson, Constants.ENTITY_ID_MISMATCH);
-			response = baseRequestHandler.getResponse();
-		}
-		return false;
+		return !expectedAPI.isEmpty();
 	}
 
 }

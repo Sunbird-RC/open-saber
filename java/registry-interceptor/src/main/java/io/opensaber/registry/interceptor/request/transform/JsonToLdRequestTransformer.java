@@ -40,7 +40,7 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 			ObjectNode input = (ObjectNode) mapper.readTree(data.getData().toString());
 			ObjectNode fieldObjects = (ObjectNode) mapper.readTree(context);
 			setNodeTypeToAppend(fieldObjects);
-			ObjectNode requestnode = (ObjectNode) input.path(REQUEST);
+			ObjectNode requestnode = input;
 
 			String type = getTypeFromNode(requestnode);
 			//setPrefix(type);

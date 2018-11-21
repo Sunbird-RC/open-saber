@@ -9,7 +9,8 @@ public class Constants {
 	public static final String ATTRIBUTE_NAME = "dataObject";
 	public static final String REQUEST_ATTRIBUTE = "requestModel";
 	public static final String REQUEST_OBJECT = "requestObject";
-	public static final String RDF_OBJECT = "rdf";
+	public static final String RDF_OBJECT = "rdfObject";
+	public static final String LD_OBJECT = "ldObject";
 	public static final String METHOD_ORIGIN = "methodOrigin";
 	public static final String TOKEN_OBJECT = "x-authenticated-user-token";
 	public static final String SHEX_CREATE_PROPERTY_NAME = "validation.create.file";

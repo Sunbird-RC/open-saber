@@ -1,5 +1,7 @@
 package io.opensaber.registry.interceptor.handler;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import io.opensaber.pojos.Request;
 import org.slf4j.Logger;
@@ -10,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.annotation.RequestScope;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -26,25 +29,28 @@ public class APIMessage {
 	private Request request;
 	private Map<String, Object> placeholderMap = new HashMap<>();
 
-	private String id;
-
 	public APIMessage(HttpServletRequest servletRequest) {
 		httpServletRequest = servletRequest;
 		request = new Request();
 		requestWrapper = new RequestWrapper(httpServletRequest);
 		body = requestWrapper.getBody();
-		request = new Gson().fromJson(body, Request.class);
+		try {
+			request = new ObjectMapper().readValue(body, Request.class);
+		} catch (IOException jpe) {
+			logger.error("Can't read request body");
+			request = null;
+		}
 	}
 
 	public String get() {
-		return id;
+		return body;
 	}
 
 	public RequestWrapper getRequestWrapper() {
 		return requestWrapper;
 	}
 
-	public final Request getRequest() {
+	public Request getRequest() {
 		return request;
 	}
 
@@ -56,7 +62,7 @@ public class APIMessage {
 	    return placeholderMap.get(key);
     }
 
-	public String toString() {
-		return "";
+    public Map<String, Object> getLocalMap() {
+		return placeholderMap;
 	}
 }
