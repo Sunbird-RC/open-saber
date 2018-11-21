@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import io.opensaber.registry.interceptor.handler.APIMessage;
 import org.apache.jena.ext.com.google.common.io.ByteStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
 import io.opensaber.pojos.*;
-import io.opensaber.registry.interceptor.handler.BaseRequestHandler;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.service.SignatureService;
@@ -46,6 +46,9 @@ public class RegistryUtilsController {
 	private SignatureService signatureService;
 
 	@Autowired
+	private APIMessage apiMessage;
+
+	@Autowired
 	private OpenSaberInstrumentation watch;
 
 	@Value("${frame.file}")
@@ -58,9 +61,7 @@ public class RegistryUtilsController {
 
 		try {
 			watch.start("RegistryUtilsController.generateSignature");
-			BaseRequestHandler baseRequestHandler = new BaseRequestHandler();
-			baseRequestHandler.setRequest(requestModel);
-			Map<String, Object> requestBodyMap = baseRequestHandler.getRequestBodyMap();
+			Map<String, Object> requestBodyMap = apiMessage.getRequest().getRequestMap();
 			if (requestBodyMap.containsKey(Constants.REQUEST_ATTRIBUTE)
 					&& requestBodyMap.containsKey(Constants.ATTRIBUTE_NAME)) {
 				Object result = signatureService
@@ -91,9 +92,7 @@ public class RegistryUtilsController {
 
 		try {
 			watch.start("RegistryUtilsController.verifySignature");
-			BaseRequestHandler baseRequestHandler = new BaseRequestHandler();
-			baseRequestHandler.setRequest(request);
-			Map<String, Object> map = baseRequestHandler.getRequestBodyMap();
+			Map<String, Object> map = apiMessage.getRequest().getRequestMap();
 			if (map.containsKey(Constants.REQUEST_ATTRIBUTE) && map.containsKey(Constants.ATTRIBUTE_NAME)) {
 				JsonObject obj = gson.fromJson(map.get(Constants.ATTRIBUTE_NAME).toString(), JsonObject.class);
 

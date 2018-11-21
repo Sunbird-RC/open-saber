@@ -11,6 +11,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 
@@ -47,7 +50,15 @@ public class RequestWrapper extends HttpServletRequestWrapper {
 		return this.body;
 	}
 
-	public void setBody(String s) {
-		this.body = s;
+	public Map<String, Object> getRequestHeaderMap() throws IOException {
+		Map<String, Object> requestHeaderMap = new HashMap<>();
+		Enumeration<String> headerNames = getHeaderNames();
+		if (headerNames != null) {
+			while (headerNames.hasMoreElements()) {
+				String header = headerNames.nextElement();
+				requestHeaderMap.put(header, getHeader(header));
+			}
+		}
+		return requestHeaderMap;
 	}
 }

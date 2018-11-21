@@ -49,7 +49,7 @@ public class RDFConversionInterceptor implements HandlerInterceptor {
 		Data<Object> transformedData = requestTransformFactory.getInstance(contentType).transform(new Data<Object>(dataFromRequest));
 		logger.debug("After transformation {0}", transformedData.getData());
 
-		apiMessage.addLocal(Constants.LD_OBJECT, transformedData.getData());
+		apiMessage.addLocal(Constants.LD_OBJECT, transformedData.getData().toString());
 
 		watch.start("RDFConversionInterceptor.execute");
 		Map<String, Object> attributeMap = rdfConverter.execute(apiMessage.getLocalMap());

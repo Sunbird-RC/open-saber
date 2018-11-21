@@ -199,11 +199,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public RDFValidationMappingInterceptor rdfValidationMappingInterceptor() {
-		return new RDFValidationMappingInterceptor(rdfValidationMapper(), gson());
-	}
-
-	@Bean
 	public RequestIdValidationInterceptor requestIdValidationInterceptor() {
 		return new RequestIdValidationInterceptor(requestIdMap(), gson());
 	}
