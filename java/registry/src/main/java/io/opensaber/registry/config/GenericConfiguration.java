@@ -6,11 +6,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
+import io.opensaber.pojos.*;
+import io.opensaber.registry.interceptor.*;
+import io.opensaber.registry.interceptor.handler.APIMessage;
+import io.opensaber.registry.interceptor.handler.APIResponseMessage;
+import io.opensaber.registry.interceptor.handler.RequestWrapper;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.jena.rdf.model.Model;
+import org.h2.server.web.WebApp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +26,13 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.core.env.Environment;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.annotation.RequestScope;
+import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -32,8 +43,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 
-import io.opensaber.pojos.OpenSaberInstrumentation;
-import io.opensaber.pojos.Response;
 import io.opensaber.registry.authorization.AuthorizationFilter;
 import io.opensaber.registry.authorization.KeyCloakServiceImpl;
 import io.opensaber.registry.exception.CustomException;
@@ -41,10 +50,6 @@ import io.opensaber.registry.exception.CustomExceptionHandler;
 import io.opensaber.registry.frame.FrameContext;
 import io.opensaber.registry.frame.FrameEntity;
 import io.opensaber.registry.frame.FrameEntityImpl;
-import io.opensaber.registry.interceptor.AuthorizationInterceptor;
-import io.opensaber.registry.interceptor.RDFConversionInterceptor;
-import io.opensaber.registry.interceptor.RDFValidationMappingInterceptor;
-import io.opensaber.registry.interceptor.RequestIdValidationInterceptor;
 import io.opensaber.registry.interceptor.request.transform.JsonToLdRequestTransformer;
 import io.opensaber.registry.interceptor.request.transform.JsonldToLdRequestTransformer;
 import io.opensaber.registry.interceptor.request.transform.RequestTransformFactory;
@@ -71,6 +76,8 @@ import io.opensaber.validators.json.jsonschema.JsonValidationServiceImpl;
 import io.opensaber.validators.rdf.shex.RdfSignatureValidator;
 import io.opensaber.validators.rdf.shex.RdfValidationServiceImpl;
 
+import javax.servlet.http.HttpServletRequest;
+
 @Configuration
 public class GenericConfiguration implements WebMvcConfigurer {
 
@@ -78,6 +85,9 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Autowired
 	private Environment environment;
+
+	@Autowired
+	private HttpServletRequest servletRequest;
 
 	@Value("${encryption.service.connection.timeout}")
 	private int connectionTimeout;
@@ -128,6 +138,28 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	public Gson gson() {
 		return new Gson();
 	}
+
+	@Bean
+	@Scope(value = WebApplicationContext.SCOPE_REQUEST,
+					proxyMode = ScopedProxyMode.TARGET_CLASS)
+	public APIMessage apiMessage() {
+		logger.info("Bean some printing of string {}", UUID.randomUUID().toString());
+		APIMessage m = new APIMessage(servletRequest);
+		return m;
+	}
+
+	//@Scope(value = WebApplicationContext.SCOPE_REQUEST,
+	//			proxyMode = ScopedProxyMode.TARGET_CLASS)
+	//
+
+//	@Bean
+//	@RequestScope
+//	public APIResponseMessage apiResponseMessage() {
+//		String id = UUID.randomUUID().toString();
+//		logger.info(id);
+//		APIResponseMessage m = new APIResponseMessage();
+//		return m;
+//	}
 
 	@Bean
 	public Middleware jsonldConverter() {
@@ -357,6 +389,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	public Map<String, String> requestIdMap() {
 		Map<String, String> requestIdMap = new HashMap<>();
 		requestIdMap.put(Constants.REGISTRY_ADD_ENDPOINT, Response.API_ID.CREATE.getId());
+		requestIdMap.put(Constants.REGISTRY_READ_ENDPOINT, Response.API_ID.READ.getId());
 		requestIdMap.put(Constants.REGISTRY_SEARCH_ENDPOINT, Response.API_ID.SEARCH.getId());
 		requestIdMap.put(Constants.REGISTRY_UPDATE_ENDPOINT, Response.API_ID.UPDATE.getId());
 		requestIdMap.put(Constants.SIGNATURE_SIGN_ENDPOINT, Response.API_ID.SIGN.getId());
@@ -374,10 +407,10 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	public void addInterceptors(InterceptorRegistry registry) {
 		int orderIdx = 1;
 		Map<String, String> requestMap = requestIdMap();
-		if (validationEnabled) {
-			registry.addInterceptor(requestIdValidationInterceptor())
+
+		// Verifying our API identifiers and populating the APIMessage bean
+		registry.addInterceptor(requestIdValidationInterceptor())
 					.addPathPatterns(new ArrayList(requestMap.keySet())).order(orderIdx++);
-		}
 
 		if (authenticationEnabled) {
 			registry.addInterceptor(authorizationInterceptor()).addPathPatterns("/**")
