@@ -6,18 +6,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import io.opensaber.pojos.*;
 import io.opensaber.registry.interceptor.*;
-import io.opensaber.registry.interceptor.handler.APIMessage;
-import io.opensaber.registry.interceptor.handler.APIResponseMessage;
-import io.opensaber.registry.interceptor.handler.RequestWrapper;
+import io.opensaber.validators.ValidationFilter;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.jena.rdf.model.Model;
-import org.h2.server.web.WebApp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,13 +22,9 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.core.env.Environment;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.annotation.RequestScope;
-import org.springframework.web.context.request.RequestContextListener;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -199,6 +191,11 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
+	public ValidationInterceptor validationInterceptor() {
+		return new
+	}
+
+	@Bean
 	public RequestIdValidationInterceptor requestIdValidationInterceptor() {
 		return new RequestIdValidationInterceptor(requestIdMap(), gson());
 	}
@@ -206,6 +203,11 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Bean
 	public Middleware authorizationFilter() {
 		return new AuthorizationFilter(new KeyCloakServiceImpl());
+	}
+
+	@Bean
+	public Middleware validationFilter() throws IOException, CustomException{
+		return new ValidationFilter(validator());
 	}
 
 	@Bean
@@ -392,6 +394,8 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 		registry.addInterceptor(rdfConversionInterceptor()).addPathPatterns("/add", "/update", "/search")
 				.order(orderIdx++);
+
+		registry.addInterceptor(validator()).addPathPatterns("/add", "/update");
 	}
 
 	@Override

@@ -2,7 +2,7 @@ package io.opensaber.registry.interceptor;
 
 import com.google.gson.Gson;
 import io.opensaber.pojos.OpenSaberInstrumentation;
-import io.opensaber.registry.interceptor.handler.APIMessage;
+import io.opensaber.pojos.APIMessage;
 import io.opensaber.registry.interceptor.request.transform.RequestTransformFactory;
 import io.opensaber.registry.middleware.Middleware;
 import io.opensaber.registry.middleware.transform.Data;

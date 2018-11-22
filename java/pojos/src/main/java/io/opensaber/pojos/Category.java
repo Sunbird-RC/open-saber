@@ -1,4 +1,4 @@
-package io.opensaber.registry.interceptor.handler;
+package io.opensaber.pojos;
 
 public enum Category {
     HEADER, BODY, ATTRIBUTE, PLACEHOLDER

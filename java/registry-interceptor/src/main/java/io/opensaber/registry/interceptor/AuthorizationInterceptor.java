@@ -12,7 +12,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import com.google.gson.Gson;
 
 import io.opensaber.pojos.OpenSaberInstrumentation;
-import io.opensaber.registry.interceptor.handler.APIMessage;
+import io.opensaber.pojos.APIMessage;
 import io.opensaber.registry.middleware.Middleware;
 
 @Component

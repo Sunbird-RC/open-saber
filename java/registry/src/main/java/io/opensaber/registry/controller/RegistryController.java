@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.opensaber.registry.interceptor.handler.APIMessage;
+import io.opensaber.pojos.APIMessage;
 import org.apache.jena.rdf.model.Model;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;

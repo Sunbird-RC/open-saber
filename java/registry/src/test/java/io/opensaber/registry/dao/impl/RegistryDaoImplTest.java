@@ -8,7 +8,7 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.*;
 
-import io.opensaber.registry.interceptor.handler.APIMessage;
+import io.opensaber.pojos.APIMessage;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.rdf.model.Property;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;

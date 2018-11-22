@@ -1,8 +1,8 @@
 package io.opensaber.registry.interceptor;
 
 import com.google.gson.Gson;
-import io.opensaber.registry.interceptor.handler.APIMessage;
-import io.opensaber.registry.interceptor.handler.RequestWrapper;
+import io.opensaber.pojos.APIMessage;
+import io.opensaber.pojos.RequestWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
