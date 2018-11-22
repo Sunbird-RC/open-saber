@@ -182,17 +182,17 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Bean
 	public AuthorizationInterceptor authorizationInterceptor() {
-		return new AuthorizationInterceptor(authorizationFilter(), gson());
+		return new AuthorizationInterceptor(authorizationFilter());
 	}
 
 	@Bean
 	public RDFConversionInterceptor rdfConversionInterceptor() {
-		return new RDFConversionInterceptor(rdfConverter(), gson());
+		return new RDFConversionInterceptor(rdfConverter());
 	}
 
 	@Bean
 	public RequestIdValidationInterceptor requestIdValidationInterceptor() {
-		return new RequestIdValidationInterceptor(requestIdMap(), gson());
+		return new RequestIdValidationInterceptor(requestIdMap());
 	}
 
 	@Bean
