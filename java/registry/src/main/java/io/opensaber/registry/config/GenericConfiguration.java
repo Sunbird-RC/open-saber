@@ -191,11 +191,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public ValidationInterceptor validationInterceptor() {
-		return new
-	}
-
-	@Bean
 	public RequestIdValidationInterceptor requestIdValidationInterceptor() {
 		return new RequestIdValidationInterceptor(requestIdMap(), gson());
 	}
@@ -395,7 +390,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		registry.addInterceptor(rdfConversionInterceptor()).addPathPatterns("/add", "/update", "/search")
 				.order(orderIdx++);
 
-		registry.addInterceptor(validator()).addPathPatterns("/add", "/update");
 	}
 
 	@Override
