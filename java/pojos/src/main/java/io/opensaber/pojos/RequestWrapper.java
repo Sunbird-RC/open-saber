@@ -1,15 +1,16 @@
 package io.opensaber.pojos;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -27,7 +28,6 @@ public class RequestWrapper extends HttpServletRequestWrapper {
 
 	public String getBody() {
 		if (this.body == null || this.body.isEmpty()) {
-			BufferedReader bufferedReader = null;
 			StringBuilder buffer = new StringBuilder();
 			BufferedReader reader = null;
 			try {

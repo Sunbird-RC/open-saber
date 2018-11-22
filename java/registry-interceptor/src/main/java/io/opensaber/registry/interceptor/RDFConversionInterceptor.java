@@ -1,28 +1,28 @@
 package io.opensaber.registry.interceptor;
 
-import com.google.gson.Gson;
-import io.opensaber.pojos.OpenSaberInstrumentation;
-import io.opensaber.pojos.APIMessage;
-import io.opensaber.registry.interceptor.request.transform.RequestTransformFactory;
-import io.opensaber.registry.middleware.Middleware;
-import io.opensaber.registry.middleware.transform.Data;
-import io.opensaber.registry.middleware.util.Constants;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Map;
+import io.opensaber.pojos.APIMessage;
+import io.opensaber.pojos.OpenSaberInstrumentation;
+import io.opensaber.registry.interceptor.request.transform.RequestTransformFactory;
+import io.opensaber.registry.middleware.Middleware;
+import io.opensaber.registry.middleware.transform.Data;
+import io.opensaber.registry.middleware.util.Constants;
 
 @Component
 public class RDFConversionInterceptor implements HandlerInterceptor {
 
 	private static Logger logger = LoggerFactory.getLogger(RDFConversionInterceptor.class);
 	private Middleware rdfConverter;
-	private Gson gson;
 
 	@Autowired
 	private OpenSaberInstrumentation watch;
@@ -33,9 +33,8 @@ public class RDFConversionInterceptor implements HandlerInterceptor {
 	@Autowired
 	private RequestTransformFactory requestTransformFactory;
 
-	public RDFConversionInterceptor(Middleware rdfConverter, Gson gson) {
+	public RDFConversionInterceptor(Middleware rdfConverter) {
 		this.rdfConverter = rdfConverter;
-		this.gson = gson;
 	}
 
 	@Override

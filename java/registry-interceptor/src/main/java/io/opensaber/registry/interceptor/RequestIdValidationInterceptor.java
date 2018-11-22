@@ -1,29 +1,25 @@
 package io.opensaber.registry.interceptor;
 
-import com.google.gson.Gson;
-import io.opensaber.pojos.APIMessage;
-import io.opensaber.pojos.RequestWrapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Map;
+import io.opensaber.pojos.APIMessage;
+import io.opensaber.pojos.RequestWrapper;
 
 @Component
 public class RequestIdValidationInterceptor implements HandlerInterceptor {
-	private static Logger logger = LoggerFactory.getLogger(RequestIdValidationInterceptor.class);
-	private Gson gson;
 	private Map<String, String> requestIdMap;
 
 	@Autowired
 	private APIMessage apiMessage;
 
-	public RequestIdValidationInterceptor(Map requestIdMap, Gson gson) {
-		this.gson = gson;
+	public RequestIdValidationInterceptor(Map requestIdMap) {
 		this.requestIdMap = requestIdMap;
 	}
 

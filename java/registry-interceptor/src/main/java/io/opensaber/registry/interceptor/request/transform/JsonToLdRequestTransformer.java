@@ -20,7 +20,6 @@ import io.opensaber.registry.middleware.util.JSONUtil;
 
 public class JsonToLdRequestTransformer implements ITransformer<Object> {
 
-	private final static String REQUEST = "request";
 	private static final String SEPERATOR = ":";
 	private static Logger logger = LoggerFactory.getLogger(JsonToLdRequestTransformer.class);
 	private String context;

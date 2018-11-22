@@ -9,10 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import com.google.gson.Gson;
-
-import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.pojos.APIMessage;
+import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.middleware.Middleware;
 
 @Component
@@ -21,17 +19,14 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 	private static Logger logger = LoggerFactory.getLogger(AuthorizationInterceptor.class);
 	private Middleware authorizationFilter;
 
-	private Gson gson;
-
 	@Autowired
 	private APIMessage apiMessage;
 
 	@Autowired
 	private OpenSaberInstrumentation watch;
 
-	public AuthorizationInterceptor(Middleware authorizationFilter, Gson gson) {
+	public AuthorizationInterceptor(Middleware authorizationFilter) {
 		this.authorizationFilter = authorizationFilter;
-		this.gson = gson;
 	}
 
 	@Override
@@ -40,7 +35,7 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 		watch.start("AuthorizationInterceptor.execute");
 		authorizationFilter.execute(apiMessage.getRequestWrapper().getRequestHeaderMap());
 		watch.stop("AuthorizationInterceptor.execute");
-		logger.debug(" Authentication successfull !");
+		logger.debug(" Authentication successful !");
 
 		return true;
 	}

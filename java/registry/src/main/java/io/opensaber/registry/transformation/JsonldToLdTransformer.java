@@ -5,9 +5,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.opensaber.registry.middleware.transform.Data;
 import io.opensaber.registry.middleware.transform.ITransformer;
 import io.opensaber.registry.middleware.transform.TransformationException;

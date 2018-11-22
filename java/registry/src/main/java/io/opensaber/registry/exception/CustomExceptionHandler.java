@@ -11,7 +11,6 @@ import org.springframework.web.servlet.ModelAndView;
 import com.google.gson.Gson;
 
 import io.opensaber.registry.interceptor.handler.BaseResponseHandler;
-import io.opensaber.registry.middleware.util.Constants;
 
 public class CustomExceptionHandler extends BaseResponseHandler implements HandlerExceptionResolver {
 
