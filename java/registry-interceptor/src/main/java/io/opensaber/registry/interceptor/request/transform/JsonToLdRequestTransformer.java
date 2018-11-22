@@ -41,16 +41,15 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 			setNodeTypeToAppend(fieldObjects);
 			ObjectNode resultNode = input;
 
-			String type = getTypeFromNode(resultNode);
-			//setPrefix(type);
+			String rootType = getTypeFromNode(resultNode);
+			logger.debug("Domain  value "+domain);
 			if(domain.isEmpty())
 				throw new TransformationException(Constants.INVALID_FRAME, ErrorCode.JSON_TO_JSONLD_TRANFORMATION_ERROR);
 			setPrefix(domain);
 			JSONUtil.addPrefix(resultNode, prefix, nodeTypes);
 			logger.info("Appending prefix to requestNode " + resultNode);
-			logger.info("Domain  value "+domain);
 
-			resultNode = (ObjectNode) resultNode.path(type);
+			resultNode = (ObjectNode) resultNode.path(rootType);
 			resultNode.setAll(fieldObjects);
 			logger.info("Object requestnode " + resultNode);
 			String jsonldResult = mapper.writeValueAsString(resultNode);
@@ -61,6 +60,10 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 		}
 	}
 
+	/*
+	 * Given a input like the following, {entity:{"a":1, "b":1}}
+	 * returns "entity" being the type of the json object.
+	 */
 	private String getTypeFromNode(ObjectNode requestNode) throws JsonProcessingException {
 		String rootValue = "";
 		if (requestNode.isObject()) {

@@ -5,6 +5,9 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.opensaber.registry.middleware.transform.Data;
 import io.opensaber.registry.middleware.transform.ITransformer;
 import io.opensaber.registry.middleware.transform.TransformationException;
@@ -12,9 +15,11 @@ import io.opensaber.registry.middleware.transform.TransformationException;
 @Component
 public class JsonldToLdTransformer implements ITransformer<Object> {
 
+	// The incoming data is a String and we need to convert to JSON.
 	@Override
 	public Data<Object> transform(Data<Object> data) throws TransformationException, IOException {
-		return data;
+		JsonNode input = new ObjectMapper().readTree(data.getData().toString());
+		return new Data<>(input);
 	}
 
 	@Override

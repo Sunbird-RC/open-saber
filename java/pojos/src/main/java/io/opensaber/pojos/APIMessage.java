@@ -1,6 +1,11 @@
 package io.opensaber.pojos;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,10 +14,7 @@ import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component("apiMessage")
 @Scope(value = WebApplicationContext.SCOPE_REQUEST,
@@ -27,7 +29,7 @@ public class APIMessage {
 	private Request request;
 
 	/* A temporary map to pass data cooked up in the interceptors, modules */
-	private Map<String, Object> placeholderMap = new HashMap<>();
+	private Map<String, Object> localMap = new HashMap<>();
 
 	@Autowired
 	public APIMessage(HttpServletRequest servletRequest) {
@@ -46,7 +48,7 @@ public class APIMessage {
 	 * Get the message body
 	 * @return
 	 */
-	public String get() {
+	public String getBody() {
 		return requestWrapper.getBody();
 	}
 
@@ -67,8 +69,8 @@ public class APIMessage {
 	 * @param key
 	 * @param data
 	 */
-	public void addLocal(String key, Object data) {
-	    placeholderMap.put(key, data);
+	public void addLocalMap(String key, Object data) {
+	    localMap.put(key, data);
     }
 
 	/**
@@ -76,8 +78,8 @@ public class APIMessage {
 	 * @param key
 	 * @return
 	 */
-	public Object getLocal(String key) {
-	    return placeholderMap.get(key);
+	public Object getLocalMap(String key) {
+	    return localMap.get(key);
     }
 
 	/**
@@ -85,6 +87,6 @@ public class APIMessage {
 	 * @return
 	 */
 	public Map<String, Object> getLocalMap() {
-		return placeholderMap;
+		return localMap;
 	}
 }

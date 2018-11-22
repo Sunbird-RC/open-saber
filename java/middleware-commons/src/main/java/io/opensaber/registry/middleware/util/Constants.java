@@ -69,6 +69,7 @@ public class Constants {
 	public static final String SEARCH_METHOD_ORIGIN = "search";
 	public static final String FORWARD_SLASH = "/";
 	public static final String RDF_URL_SYNTAX_TYPE = RDF.uri + "type";
+	public static final String TYPE_STR_JSON_LD = "@type";
 
 	// List of predicates introduced for digital signature.
 	public static final String SIGNATURES = "signatures";

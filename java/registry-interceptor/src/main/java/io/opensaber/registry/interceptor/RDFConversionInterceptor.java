@@ -48,14 +48,15 @@ public class RDFConversionInterceptor implements HandlerInterceptor {
 		Data<Object> transformedData = requestTransformFactory.getInstance(contentType).transform(new Data<Object>(dataFromRequest));
 		logger.debug("After transformation {0}", transformedData.getData());
 
-		apiMessage.addLocal(Constants.LD_OBJECT, transformedData.getData().toString());
+		apiMessage.addLocalMap(Constants.LD_OBJECT, transformedData.getData());
 
 		watch.start("RDFConversionInterceptor.execute");
 		Map<String, Object> attributeMap = rdfConverter.execute(apiMessage.getLocalMap());
 		watch.stop("RDFConversionInterceptor.execute");
 
+
 		if (attributeMap.get(Constants.RDF_OBJECT) != null) {
-			apiMessage.addLocal(Constants.RDF_OBJECT, attributeMap.get(Constants.RDF_OBJECT));
+			apiMessage.addLocalMap(Constants.RDF_OBJECT, attributeMap.get(Constants.RDF_OBJECT));
 
 			logger.debug("RDF object for conversion : {0}", attributeMap.get(Constants.RDF_OBJECT));
 			result = true;
