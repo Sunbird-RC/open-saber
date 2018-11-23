@@ -8,7 +8,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -70,7 +69,7 @@ public class RDFConversionInterceptor implements HandlerInterceptor {
 	}
 	
 	private Configuration getConfiguration(String contentType){
-		if(contentType.equals(MediaType.APPLICATION_JSON)){
+		if(contentType.equalsIgnoreCase("application/json")){
 			return Configuration.JSON2LD;
 		}else if(contentType.equalsIgnoreCase("application/ld+json")){
 			return Configuration.LD2LD;

@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -325,7 +324,7 @@ public class RegistryController {
 	}
 	
 	private Configuration getConfiguration(String mediaType){
-		if(mediaType.equals(MediaType.APPLICATION_JSON)){
+		if(mediaType.equalsIgnoreCase("application/json")){
 			return Configuration.LD2JSON;
 		}else if(mediaType.equalsIgnoreCase("application/ld+json")){
 			return Configuration.LD2LD;
