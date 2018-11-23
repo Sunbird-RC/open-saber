@@ -323,10 +323,10 @@ public class RegistryController {
 
 	}
 	
-	private Configuration getConfiguration(String mediaType){
-		if(mediaType.equalsIgnoreCase("application/json")){
+	private Configuration getConfiguration(String accept){
+		if(accept.equalsIgnoreCase("application/json")){
 			return Configuration.LD2JSON;
-		}else if(mediaType.equalsIgnoreCase("application/ld+json")){
+		}else if(accept.equalsIgnoreCase("application/ld+json")){
 			return Configuration.LD2LD;
 		}		
 		return null;
