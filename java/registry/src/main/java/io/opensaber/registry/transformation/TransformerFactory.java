@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import io.opensaber.registry.middleware.transform.ErrorCode;
 import io.opensaber.registry.middleware.transform.ITransformer;
 import io.opensaber.registry.middleware.transform.TransformationException;
-import io.opensaber.registry.middleware.util.CommunicationType;
 
 @Component
 public class TransformerFactory {
@@ -21,7 +20,7 @@ public class TransformerFactory {
 	@Autowired
 	private LdTransform ldTransform;
 
-	public ITransformer<Object> getInstance(MediaType type, CommunicationType communicationType) throws TransformationException {
+	public ITransformer<Object> getInstance(MediaType type) throws TransformationException {
 		ITransformer<Object> responseTransformer = null;
 
 		switch (type.toString()) {
