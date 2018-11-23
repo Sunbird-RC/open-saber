@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -37,24 +38,24 @@ import io.opensaber.registry.exception.DuplicateRecordException;
 import io.opensaber.registry.exception.EntityCreationException;
 import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.exception.TypeNotProvidedException;
-import io.opensaber.registry.middleware.transform.Data;
-import io.opensaber.registry.middleware.transform.ITransformer;
-import io.opensaber.registry.middleware.transform.TransformationException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
-import io.opensaber.registry.middleware.util.Direction;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.service.RegistryAuditService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
-import io.opensaber.registry.transformation.TransformerFactory;
+import io.opensaber.registry.transform.Configuration;
+import io.opensaber.registry.transform.Data;
+import io.opensaber.registry.transform.ITransformer;
+import io.opensaber.registry.transform.TransformationException;
+import io.opensaber.registry.transform.TransformerFactory;
 
 @RestController
 public class RegistryController {
 
 	private static Logger logger = LoggerFactory.getLogger(RegistryController.class);
 	@Autowired
-	TransformerFactory responseTransformFactory;
+	TransformerFactory transformerFactory;
 	@Autowired
 	private RegistryService registryService;
 	@Autowired
@@ -128,11 +129,12 @@ public class RegistryController {
 			String content = registryService.getEntityFramedById(entityId, includeSign);
 			logger.info("RegistryController: Framed content " + content);
 
+			Configuration config = getConfiguration(header.getAccept().iterator().next().toString());
 			Data<Object> data = new Data<Object>(content);
-			ITransformer<Object> responseTransformer = responseTransformFactory
-					.getInstance(header.getAccept().iterator().next());
+			ITransformer<Object> responseTransformer = transformerFactory
+					.getInstance(config);
 			responseTransformer.setPurgeData(getKeysToPurge());
-			Data<Object> responseContent = responseTransformer.transform(data, Direction.OUT);
+			Data<Object> responseContent = responseTransformer.transform(data);
 			response.setResult(responseContent.getData());
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
 			watch.stop("RegistryController.readEntity");
@@ -170,10 +172,11 @@ public class RegistryController {
 			watch.start("RegistryController.searchEntity");
 			String jenaJson = searchService.searchFramed(rdf);
 			Data<Object> data = new Data<>(jenaJson);
-			ITransformer<Object> responseTransformer = responseTransformFactory
-					.getInstance(header.getAccept().iterator().next());
+			Configuration config = getConfiguration(header.getAccept().iterator().next().toString());
+
+			ITransformer<Object> responseTransformer = transformerFactory.getInstance(config);
 			responseTransformer.setPurgeData(getKeysToPurge());
-			Data<Object> resultContent = responseTransformer.transform(data, Direction.OUT);
+			Data<Object> resultContent = responseTransformer.transform(data);
 			response.setResult(resultContent.getData());
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
 			watch.stop("RegistryController.searchEntity");
@@ -319,5 +322,14 @@ public class RegistryController {
 		keyToPurge.add(JsonldConstants.TYPE);
 		return keyToPurge;
 
+	}
+	
+	private Configuration getConfiguration(String mediaType){
+		if(mediaType.equals(MediaType.APPLICATION_JSON)){
+			return Configuration.LD2JSON;
+		}else if(mediaType.equalsIgnoreCase("application/ld+json")){
+			return Configuration.LD2LD;
+		}		
+		return null;
 	}
 }

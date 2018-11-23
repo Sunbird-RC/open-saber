@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -46,9 +44,6 @@ import io.opensaber.registry.frame.FrameEntityImpl;
 import io.opensaber.registry.interceptor.AuthorizationInterceptor;
 import io.opensaber.registry.interceptor.RDFConversionInterceptor;
 import io.opensaber.registry.interceptor.RequestIdValidationInterceptor;
-import io.opensaber.registry.interceptor.request.transform.JsonToLdRequestTransformer;
-import io.opensaber.registry.interceptor.request.transform.JsonldToLdRequestTransformer;
-import io.opensaber.registry.interceptor.request.transform.RequestTransformFactory;
 import io.opensaber.registry.middleware.Middleware;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
 import io.opensaber.registry.middleware.impl.JSONLDConverter;
@@ -67,7 +62,10 @@ import io.opensaber.registry.sink.Neo4jGraphProvider;
 import io.opensaber.registry.sink.OrientDBGraphProvider;
 import io.opensaber.registry.sink.SqlgProvider;
 import io.opensaber.registry.sink.TinkerGraphProvider;
-import io.opensaber.registry.transformation.JsonTransform;
+import io.opensaber.registry.transform.Json2LdTransformer;
+import io.opensaber.registry.transform.Ld2JsonTransformer;
+import io.opensaber.registry.transform.Ld2LdTransformer;
+import io.opensaber.registry.transform.TransformerFactory;
 import io.opensaber.validators.IValidate;
 import io.opensaber.validators.ValidationFilter;
 import io.opensaber.validators.json.jsonschema.JsonValidationServiceImpl;
@@ -81,9 +79,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Autowired
 	private Environment environment;
-
-	@Autowired
-	private HttpServletRequest servletRequest;
 
 	@Value("${encryption.service.connection.timeout}")
 	private int connectionTimeout;
@@ -146,11 +141,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public RequestTransformFactory requestTransformFactory() {
-		return new RequestTransformFactory();
-	}
-
-	@Bean
 	public FrameEntity frameEntity() {
 		return new FrameEntityImpl();
 	}
@@ -174,20 +164,24 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public JsonToLdRequestTransformer jsonToLdRequestTransformer() {
+	public Json2LdTransformer json2LdTransformer() {
 		String domain = frameContext().getDomain();
-		return new JsonToLdRequestTransformer(frameEntity().getContent(), domain);
-	}
-
-	@Bean
-	public JsonldToLdRequestTransformer jsonldToLdRequestTransformer() {
-		return new JsonldToLdRequestTransformer();
+		return new Json2LdTransformer(frameEntity().getContent(), domain);
 	}
 	
 	@Bean
-	public JsonTransform jsonTransform() {
-		String domain = frameContext().getDomain();
-		return new JsonTransform(frameEntity().getContent(), domain);
+	public Ld2JsonTransformer ld2JsonTransformer(){
+		return new Ld2JsonTransformer();
+	}
+	
+	@Bean 
+	public Ld2LdTransformer ld2LdTransformer(){
+		return new Ld2LdTransformer();
+	}
+	
+	@Bean
+	public TransformerFactory transformerFactory(){
+		return new TransformerFactory();
 	}
 
 	@Bean
@@ -197,7 +191,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Bean
 	public RDFConversionInterceptor rdfConversionInterceptor() {
-		return new RDFConversionInterceptor(rdfConverter());
+		return new RDFConversionInterceptor(rdfConverter(),transformerFactory());
 	}
 
 	@Bean

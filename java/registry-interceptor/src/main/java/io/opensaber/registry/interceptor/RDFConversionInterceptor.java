@@ -8,15 +8,18 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import io.opensaber.pojos.APIMessage;
 import io.opensaber.pojos.OpenSaberInstrumentation;
-import io.opensaber.registry.interceptor.request.transform.RequestTransformFactory;
 import io.opensaber.registry.middleware.Middleware;
-import io.opensaber.registry.middleware.transform.Data;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.transform.Configuration;
+import io.opensaber.registry.transform.Data;
+import io.opensaber.registry.transform.TransformerFactory;
+
 
 @Component
 public class RDFConversionInterceptor implements HandlerInterceptor {
@@ -29,12 +32,12 @@ public class RDFConversionInterceptor implements HandlerInterceptor {
 
 	@Autowired
 	private APIMessage apiMessage;
+	
+	private TransformerFactory transformerFactory;
 
-	@Autowired
-	private RequestTransformFactory requestTransformFactory;
-
-	public RDFConversionInterceptor(Middleware rdfConverter) {
+	public RDFConversionInterceptor(Middleware rdfConverter, TransformerFactory transformerFactory ) {
 		this.rdfConverter = rdfConverter;
+		this.transformerFactory = transformerFactory;
 	}
 
 	@Override
@@ -44,8 +47,9 @@ public class RDFConversionInterceptor implements HandlerInterceptor {
 		String dataFromRequest = apiMessage.getRequest().getRequestMapAsString();
 		String contentType = request.getContentType();
 		logger.debug("ContentType {0} requestBody {1}", contentType, dataFromRequest);
+		Configuration config = getConfiguration(contentType);
+		Data<Object> transformedData = transformerFactory.getInstance(config).transform(new Data<Object>(dataFromRequest));
 
-		Data<Object> transformedData = requestTransformFactory.getInstance(contentType).transform(new Data<Object>(dataFromRequest));
 		logger.debug("After transformation {0}", transformedData.getData());
 
 		apiMessage.addLocalMap(Constants.LD_OBJECT, transformedData.getData());
@@ -63,5 +67,14 @@ public class RDFConversionInterceptor implements HandlerInterceptor {
 		}
 
 		return result;
+	}
+	
+	private Configuration getConfiguration(String contentType){
+		if(contentType.equals(MediaType.APPLICATION_JSON)){
+			return Configuration.JSON2LD;
+		}else if(contentType.equalsIgnoreCase("application/ld+json")){
+			return Configuration.LD2LD;
+		}		
+		return null;
 	}
 }
