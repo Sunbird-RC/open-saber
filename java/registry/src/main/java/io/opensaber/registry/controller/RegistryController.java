@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.opensaber.registry.util.TPGraphMain;
 import org.apache.jena.rdf.model.Model;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -293,6 +294,35 @@ public class RegistryController {
 			response.setResult(null);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 			responseParams.setErrmsg("Meh ! You encountered an error!");
+		}
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+
+	@RequestMapping(value = "/add2", method = RequestMethod.POST)
+	public ResponseEntity<Response> addTP2Graph(@RequestParam(value = "id", required = false) String id,
+										@RequestParam(value = "prop", required = false) String property) {
+
+		//Model rdf = (Model) apiMessage.getLocalMap(Constants.RDF_OBJECT);
+		ResponseParams responseParams = new ResponseParams();
+		Response response = new Response(Response.API_ID.CREATE, "OK", responseParams);
+		Map<String, Object> result = new HashMap<>();
+		String jsonString = apiMessage.getRequest().getRequestMapAsString();
+		TPGraphMain tpGraph = new TPGraphMain();
+
+		try {
+			watch.start("RegistryController.addToExistingEntity");
+			tpGraph.createTPGraph(jsonString);
+			result.put("entity", "");
+			response.setResult(result);
+			responseParams.setStatus(Response.Status.SUCCESSFUL);
+			watch.stop("RegistryController.addToExistingEntity");
+			logger.debug("RegistryController : Entity with label {} added !", "");
+		} catch (Exception e) {
+			logger.error("Exception in controller while adding entity !", e);
+			response.setResult(result);
+			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+			responseParams.setErrmsg(e.getMessage());
 		}
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
