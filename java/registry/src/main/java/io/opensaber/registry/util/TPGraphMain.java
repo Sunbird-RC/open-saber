@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.steelbridgelabs.oss.neo4j.structure.Neo4JElementIdProvider;
 import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
 import com.steelbridgelabs.oss.neo4j.structure.providers.Neo4JNativeElementIdProvider;
+import io.opensaber.registry.sink.DatabaseProvider;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -13,10 +14,12 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.h2.engine.Database;
 import org.neo4j.driver.v1.AuthToken;
 import org.neo4j.driver.v1.AuthTokens;
 import org.neo4j.driver.v1.Driver;
 import org.neo4j.driver.v1.GraphDatabase;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.umlg.sqlg.structure.SqlgGraph;
 
 import java.io.IOException;
@@ -26,48 +29,16 @@ import java.util.*;
 
 public class TPGraphMain {
     private static Graph graph;
-    private static Driver driver;
 
-    public static Graph createNeo4jGraph() {
-        boolean withAuth = true;
-        String databaseHost = "localhost";
-        String databasePort = "7687";
-        /*Boolean profilerEnabled = Boolean
-                .parseBoolean(environment.getProperty("database.neo4j.profiler_enabled"));*/
-        AuthToken authToken = AuthTokens.basic("neo4j", "stackroute1!");
-
-        if (withAuth) {
-            driver = GraphDatabase.driver(String.format("bolt://%s:%s", databaseHost, databasePort),
-                    authToken);
-        } else {
-            driver = GraphDatabase.driver(String.format("bolt://%s:%s", databaseHost, databasePort),
-                    AuthTokens.none());
-        }
-        Neo4JElementIdProvider<?> idProvider = new Neo4JNativeElementIdProvider();
-        Neo4JGraph neo4JGraph = new Neo4JGraph(driver, idProvider, idProvider);
-        //neo4JGraph.setProfilerEnabled(profilerEnabled);
-        graph = neo4JGraph;
-
-        return graph;
+    public TPGraphMain(DatabaseProvider db) {
+        graph = db.getGraphStore();
     }
 
-    public Graph createPostgresGraph() {
-        String jdbcUrl = "jdbc:postgresql://localhost:5432/json2tp";
-        String jdbcUsername = "postgres";
-        String jdbcPassword = "postgres";
-        Configuration config = new BaseConfiguration();
-        config.setProperty("jdbc.url", jdbcUrl);
-        config.setProperty("jdbc.username", jdbcUsername);
-        config.setProperty("jdbc.password", jdbcPassword);
-        graph = SqlgGraph.open(config);
-        return graph;
-    }
-
-    public String createLabel() {
+    public static String createLabel() {
         return UUID.randomUUID().toString();
     }
 
-    public void createVertex(Graph graph, String label, Vertex parentVertex, JsonNode jsonObject) {
+    public static void createVertex(Graph graph, String label, Vertex parentVertex, JsonNode jsonObject) {
         Vertex vertex = graph.addVertex(label);
         jsonObject.fields().forEachRemaining(entry -> {
             JsonNode entryValue = entry.getValue();
@@ -78,14 +49,16 @@ public class TPGraphMain {
             }
         });
         Edge e = addEdge(graph, label, parentVertex, vertex);
-        parentVertex.property("label", e.id());
+        String edgeId = UUID.randomUUID().toString();
+        vertex.property("intId", edgeId);
+        parentVertex.property(vertex.label(), edgeId);
     }
 
-    public Edge addEdge(Graph graph, String label, Vertex v1, Vertex v2) {
+    public static Edge addEdge(Graph graph, String label, Vertex v1, Vertex v2) {
         return v1.addEdge(label, v2);
     }
 
-    public Vertex createParentVertex() {
+    public static Vertex createParentVertex() {
         String personsStr = "Persons";
         String personsId = "ParentEntity_Persons";
         GraphTraversalSource gtRootTraversal = graph.traversal();
@@ -102,8 +75,10 @@ public class TPGraphMain {
         return parentVertex;
     }
 
+    public static List<String> verticesCreated = new ArrayList<String>();
 
-    public void processNode(String parentName, Vertex parentVertex, JsonNode node) {
+    public static void processNode(String parentName, Vertex parentVertex, JsonNode node) {
+
         Iterator<Map.Entry<String, JsonNode>> entryIterator = node.fields();
         while (entryIterator.hasNext()) {
             Map.Entry<String, JsonNode> entry = entryIterator.next();
@@ -132,7 +107,6 @@ public class TPGraphMain {
     //    teacher -> address
 
     public void createTPGraph(String jsonString) throws IOException {
-        createNeo4jGraph();
         Instant startTime = Instant.now();
 
         ObjectMapper mapper = new ObjectMapper();
