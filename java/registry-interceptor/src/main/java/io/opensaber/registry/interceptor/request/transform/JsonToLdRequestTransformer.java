@@ -15,7 +15,7 @@ import io.opensaber.registry.middleware.transform.Data;
 import io.opensaber.registry.middleware.transform.ErrorCode;
 import io.opensaber.registry.middleware.transform.ITransformer;
 import io.opensaber.registry.middleware.transform.TransformationException;
-import io.opensaber.registry.middleware.util.CommunicationType;
+import io.opensaber.registry.middleware.util.Direction;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
 import io.opensaber.registry.middleware.util.JSONUtil;
@@ -97,7 +97,7 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 	}
 
 	@Override
-	public Data<Object> transform(Data<Object> data, CommunicationType communicationType)
+	public Data<Object> transform(Data<Object> data, Direction communicationType)
 			throws TransformationException, IOException {
 		// TODO Auto-generated method stub
 		return null;

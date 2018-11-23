@@ -40,9 +40,9 @@ import io.opensaber.registry.exception.TypeNotProvidedException;
 import io.opensaber.registry.middleware.transform.Data;
 import io.opensaber.registry.middleware.transform.ITransformer;
 import io.opensaber.registry.middleware.transform.TransformationException;
-import io.opensaber.registry.middleware.util.CommunicationType;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
+import io.opensaber.registry.middleware.util.Direction;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.service.RegistryAuditService;
 import io.opensaber.registry.service.RegistryService;
@@ -132,7 +132,7 @@ public class RegistryController {
 			ITransformer<Object> responseTransformer = responseTransformFactory
 					.getInstance(header.getAccept().iterator().next());
 			responseTransformer.setPurgeData(getKeysToPurge());
-			Data<Object> responseContent = responseTransformer.transform(data);
+			Data<Object> responseContent = responseTransformer.transform(data, Direction.OUT);
 			response.setResult(responseContent.getData());
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
 			watch.stop("RegistryController.readEntity");
@@ -173,7 +173,7 @@ public class RegistryController {
 			ITransformer<Object> responseTransformer = responseTransformFactory
 					.getInstance(header.getAccept().iterator().next());
 			responseTransformer.setPurgeData(getKeysToPurge());
-			Data<Object> resultContent = responseTransformer.transform(data, CommunicationType.response);
+			Data<Object> resultContent = responseTransformer.transform(data, Direction.OUT);
 			response.setResult(resultContent.getData());
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
 			watch.stop("RegistryController.searchEntity");

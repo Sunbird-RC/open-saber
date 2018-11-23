@@ -19,9 +19,9 @@ import io.opensaber.registry.middleware.transform.Data;
 import io.opensaber.registry.middleware.transform.ErrorCode;
 import io.opensaber.registry.middleware.transform.ITransformer;
 import io.opensaber.registry.middleware.transform.TransformationException;
-import io.opensaber.registry.middleware.util.CommunicationType;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
+import io.opensaber.registry.middleware.util.Direction;
 import io.opensaber.registry.middleware.util.JSONUtil;
 
 public class JsonTransform implements ITransformer<Object> {
@@ -49,7 +49,7 @@ public class JsonTransform implements ITransformer<Object> {
 	}
 
 	@Override
-	public Data<Object> transform(Data<Object> data, CommunicationType communicationType)
+	public Data<Object> transform(Data<Object> data, Direction communicationType)
 			throws TransformationException, IOException {
 
 		ObjectNode input = (ObjectNode) mapper.readTree(data.getData().toString());
@@ -57,10 +57,10 @@ public class JsonTransform implements ITransformer<Object> {
 		return transformedData;
 	}
 
-	private Data<Object> getTransformedData(ObjectNode input, CommunicationType communicationType)
+	private Data<Object> getTransformedData(ObjectNode input, Direction communicationType)
 			throws TransformationException, IOException {
 
-		if (communicationType == CommunicationType.request) {
+		if (communicationType == Direction.IN) {
 			ObjectNode fieldObjects = (ObjectNode) mapper.readTree(context);
 			setNodeTypeToAppend(fieldObjects);
 			ObjectNode resultNode = input;
@@ -79,7 +79,7 @@ public class JsonTransform implements ITransformer<Object> {
 			String jsonldResult = mapper.writeValueAsString(resultNode);
 			return new Data<>(jsonldResult.replace("<@type>", domain));
 
-		} else if (communicationType == CommunicationType.response) {
+		} else if (communicationType == Direction.OUT) {
 			JsonNode jsonNode = null;
 			try {
 				jsonNode = getconstructedJson(input, keysToPurge);
