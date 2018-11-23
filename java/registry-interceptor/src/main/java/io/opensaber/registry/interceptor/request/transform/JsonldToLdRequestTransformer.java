@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opensaber.registry.middleware.transform.Data;
 import io.opensaber.registry.middleware.transform.ITransformer;
 import io.opensaber.registry.middleware.transform.TransformationException;
+import io.opensaber.registry.middleware.util.CommunicationType;
 
 public class JsonldToLdRequestTransformer implements ITransformer<Object> {
 
@@ -21,6 +22,13 @@ public class JsonldToLdRequestTransformer implements ITransformer<Object> {
 	@Override
 	public void setPurgeData(List<String> keyToPruge) {
 
+	}
+
+	@Override
+	public Data<Object> transform(Data<Object> data, CommunicationType communicationType)
+			throws TransformationException, IOException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -32,14 +32,14 @@ import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.service.RegistryAuditService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
-import io.opensaber.registry.transformation.ResponseTransformFactory;
+import io.opensaber.registry.transformation.TransformerFactory;
 
 @RestController
 public class RegistryController {
 
 	private static Logger logger = LoggerFactory.getLogger(RegistryController.class);
 	@Autowired
-	ResponseTransformFactory responseTransformFactory;
+	TransformerFactory responseTransformFactory;
 	@Autowired
 	private RegistryService registryService;
 	@Autowired

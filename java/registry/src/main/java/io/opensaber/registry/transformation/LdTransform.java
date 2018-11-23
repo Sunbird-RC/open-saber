@@ -5,26 +5,30 @@ import java.util.List;
 
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.opensaber.registry.middleware.transform.Data;
 import io.opensaber.registry.middleware.transform.ITransformer;
 import io.opensaber.registry.middleware.transform.TransformationException;
+import io.opensaber.registry.middleware.util.CommunicationType;
 
 @Component
-public class JsonldToLdTransformer implements ITransformer<Object> {
+public class LdTransform implements ITransformer<Object> {
 
 	// The incoming data is a String and we need to convert to JSON.
 	@Override
 	public Data<Object> transform(Data<Object> data) throws TransformationException, IOException {
-		JsonNode input = new ObjectMapper().readTree(data.getData().toString());
-		return new Data<>(input);
+		return new Data<>(data);
 	}
 
 	@Override
 	public void setPurgeData(List<String> keyToPurge) {
 		// Nothing to purge
+	}
+
+	@Override
+	public Data<Object> transform(Data<Object> data, CommunicationType communicationType)
+			throws TransformationException, IOException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

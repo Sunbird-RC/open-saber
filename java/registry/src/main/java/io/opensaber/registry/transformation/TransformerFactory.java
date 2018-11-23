@@ -7,34 +7,35 @@ import org.springframework.stereotype.Component;
 import io.opensaber.registry.middleware.transform.ErrorCode;
 import io.opensaber.registry.middleware.transform.ITransformer;
 import io.opensaber.registry.middleware.transform.TransformationException;
+import io.opensaber.registry.middleware.util.CommunicationType;
 
 @Component
-public class ResponseTransformFactory {
+public class TransformerFactory {
 
 	private static final String MEDIATYPE_APPLICATION_JSONLD = "application/ld+json";
 	private static final String EXCEPTION_MESSAGE = "Media type not suppoted";
 
 	@Autowired
-	private JsonToLdTransformer jsonTransformer;
+	private JsonTransform jsonTransform;
 
 	@Autowired
-	private JsonldToLdTransformer jsonldTransformer;
+	private LdTransform ldTransform;
 
-	public ITransformer<Object> getInstance(MediaType type) throws TransformationException {
+	public ITransformer<Object> getInstance(MediaType type, CommunicationType communicationType) throws TransformationException {
 		ITransformer<Object> responseTransformer = null;
 
 		switch (type.toString()) {
 
 		case MEDIATYPE_APPLICATION_JSONLD:
-			responseTransformer = jsonldTransformer;
+			responseTransformer = ldTransform;
 			break;
 
 		case MediaType.APPLICATION_JSON_VALUE:
-			responseTransformer = jsonTransformer;
+			responseTransformer = jsonTransform;
 			break;
 
 		case MediaType.ALL_VALUE:
-			responseTransformer = jsonTransformer;
+			responseTransformer = jsonTransform;
 			break;
 
 		default:
