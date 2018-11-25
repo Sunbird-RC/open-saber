@@ -38,6 +38,7 @@ import io.opensaber.registry.exception.EntityCreationException;
 import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.exception.TypeNotProvidedException;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.Constants.Direction;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.service.RegistryAuditService;
@@ -109,7 +110,8 @@ public class RegistryController {
 	/**
 	 * 
 	 * Note: Only one mime type is supported at a time. Picks up the first mime
-	 *            type from the header.
+	 * type from the header.
+	 * 
 	 * @return
 	 */
 	@RequestMapping(value = "/read", method = RequestMethod.POST)
@@ -128,10 +130,10 @@ public class RegistryController {
 			String content = registryService.getEntityFramedById(entityId, includeSign);
 			logger.info("RegistryController: Framed content " + content);
 
-			Configuration config = getConfiguration(header.getAccept().iterator().next().toString());
+			Configuration config = transformerFactory.getConfiguration(header.getAccept().iterator().next().toString(),
+					Direction.out);
 			Data<Object> data = new Data<Object>(content);
-			ITransformer<Object> responseTransformer = transformerFactory
-					.getInstance(config);
+			ITransformer<Object> responseTransformer = transformerFactory.getInstance(config);
 			responseTransformer.setPurgeData(getKeysToPurge());
 			Data<Object> responseContent = responseTransformer.transform(data);
 			response.setResult(responseContent.getData());
@@ -156,7 +158,8 @@ public class RegistryController {
 	/**
 	 *
 	 * Note: Only one mime type is supported at a time. Pick up the first mime
-	 *            type from the header.
+	 * type from the header.
+	 * 
 	 * @return
 	 */
 	@RequestMapping(value = "/search", method = RequestMethod.POST)
@@ -171,7 +174,8 @@ public class RegistryController {
 			watch.start("RegistryController.searchEntity");
 			String jenaJson = searchService.searchFramed(rdf);
 			Data<Object> data = new Data<>(jenaJson);
-			Configuration config = getConfiguration(header.getAccept().iterator().next().toString());
+			Configuration config = transformerFactory.getConfiguration(header.getAccept().iterator().next().toString(),
+					Direction.out);
 
 			ITransformer<Object> responseTransformer = transformerFactory.getInstance(config);
 			responseTransformer.setPurgeData(getKeysToPurge());
@@ -322,13 +326,5 @@ public class RegistryController {
 		return keyToPurge;
 
 	}
-	
-	private Configuration getConfiguration(String accept){
-		if(accept.equalsIgnoreCase("application/json")){
-			return Configuration.LD2JSON;
-		}else if(accept.equalsIgnoreCase("application/ld+json")){
-			return Configuration.LD2LD;
-		}		
-		return null;
-	}
+
 }
