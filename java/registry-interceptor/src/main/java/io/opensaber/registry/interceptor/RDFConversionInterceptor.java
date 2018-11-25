@@ -15,10 +15,10 @@ import io.opensaber.pojos.APIMessage;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.middleware.Middleware;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.Constants.Direction;
 import io.opensaber.registry.transform.Configuration;
 import io.opensaber.registry.transform.Data;
 import io.opensaber.registry.transform.TransformerFactory;
-
 
 @Component
 public class RDFConversionInterceptor implements HandlerInterceptor {
@@ -31,10 +31,10 @@ public class RDFConversionInterceptor implements HandlerInterceptor {
 
 	@Autowired
 	private APIMessage apiMessage;
-	
+
 	private TransformerFactory transformerFactory;
 
-	public RDFConversionInterceptor(Middleware rdfConverter, TransformerFactory transformerFactory ) {
+	public RDFConversionInterceptor(Middleware rdfConverter, TransformerFactory transformerFactory) {
 		this.rdfConverter = rdfConverter;
 		this.transformerFactory = transformerFactory;
 	}
@@ -46,8 +46,9 @@ public class RDFConversionInterceptor implements HandlerInterceptor {
 		String dataFromRequest = apiMessage.getRequest().getRequestMapAsString();
 		String contentType = request.getContentType();
 		logger.debug("ContentType {0} requestBody {1}", contentType, dataFromRequest);
-		Configuration config = getConfiguration(contentType);
-		Data<Object> transformedData = transformerFactory.getInstance(config).transform(new Data<Object>(dataFromRequest));
+		Configuration config = transformerFactory.getConfiguration(contentType, Direction.in);
+		Data<Object> transformedData = transformerFactory.getInstance(config)
+				.transform(new Data<Object>(dataFromRequest));
 
 		logger.debug("After transformation {0}", transformedData.getData());
 
@@ -56,7 +57,6 @@ public class RDFConversionInterceptor implements HandlerInterceptor {
 		watch.start("RDFConversionInterceptor.execute");
 		Map<String, Object> attributeMap = rdfConverter.execute(apiMessage.getLocalMap());
 		watch.stop("RDFConversionInterceptor.execute");
-
 
 		if (attributeMap.get(Constants.RDF_OBJECT) != null) {
 			apiMessage.addLocalMap(Constants.RDF_OBJECT, attributeMap.get(Constants.RDF_OBJECT));
@@ -67,13 +67,5 @@ public class RDFConversionInterceptor implements HandlerInterceptor {
 
 		return result;
 	}
-	
-	private Configuration getConfiguration(String contentType){
-		if(contentType.equalsIgnoreCase("application/json")){
-			return Configuration.JSON2LD;
-		}else if(contentType.equalsIgnoreCase("application/ld+json")){
-			return Configuration.LD2LD;
-		}		
-		return null;
-	}
+
 }

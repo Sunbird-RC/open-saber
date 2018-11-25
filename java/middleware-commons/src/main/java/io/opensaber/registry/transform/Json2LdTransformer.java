@@ -12,10 +12,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
-import io.opensaber.registry.transform.Data;
-import io.opensaber.registry.transform.ErrorCode;
-import io.opensaber.registry.transform.ITransformer;
-import io.opensaber.registry.transform.TransformationException;
 import io.opensaber.registry.middleware.util.JSONUtil;
 
 public class Json2LdTransformer implements ITransformer<Object> {
@@ -91,7 +87,7 @@ public class Json2LdTransformer implements ITransformer<Object> {
 
 	@Override
 	public void setPurgeData(List<String> keyToPruge) {
-
+		// Nothing to purge
 	}
 
 }

@@ -1,11 +1,13 @@
 package io.opensaber.registry.transform;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 
-//@Component
+import io.opensaber.registry.middleware.util.Constants.Direction;
+
 public class TransformerFactory {
 
-	private static final String MEDIATYPE_APPLICATION_JSONLD = "application/ld+json";
+	public static final String MEDIATYPE_APPLICATION_JSONLD = "application/ld+json";
 	private static final String EXCEPTION_MESSAGE = "Media type not suppoted";
 
 	@Autowired
@@ -19,8 +21,7 @@ public class TransformerFactory {
 	
 	public ITransformer<Object> getInstance(Configuration config) throws TransformationException {
 		ITransformer<Object> transformer = null;
-
-
+		
 		if(config == Configuration.JSON2LD){
 			transformer = json2LdTransformer;
 		}else if(config == Configuration.LD2JSON){
@@ -33,29 +34,17 @@ public class TransformerFactory {
 		}			
 		return transformer;
 	}
-
-/*	public ITransformer<Object> getInstance(String mediaType) throws TransformationException {
-		ITransformer<Object> transformer = null;
-
-		switch (mediaType.toString()) {
-
-		case MEDIATYPE_APPLICATION_JSONLD:
-			transformer = Ld2LdTransformer;
-			break;
-
-		case MediaType.APPLICATION_JSON_VALUE:
-			transformer = ld2JsonTransformer;
-			break;
-
-		case MediaType.ALL_VALUE:
-			transformer = ld2JsonTransformer;
-			break;
-
-		default:
-			throw new TransformationException(EXCEPTION_MESSAGE, ErrorCode.UNSUPPOTERTED_TYPE);
-
-		}
-		return transformer;
-	}*/
+	
+	public Configuration getConfiguration(String mediaType, Direction direction){
+		
+		if(mediaType.equalsIgnoreCase(MediaType.APPLICATION_JSON_VALUE) && direction == Direction.out){
+			return Configuration.LD2JSON;
+		}else if(mediaType.equalsIgnoreCase(MEDIATYPE_APPLICATION_JSONLD)){
+			return Configuration.LD2LD;
+		}else if(mediaType.equalsIgnoreCase(MediaType.APPLICATION_JSON_VALUE) && direction == Direction.in){
+			return Configuration.JSON2LD;
+		}		
+		return null;
+	}
 
 }
