@@ -27,7 +27,7 @@ public abstract class ASchemaConfigurator implements ISchemaConfigurator {
 
 	public ASchemaConfigurator(String schemaFile) throws IOException {
 		schemaConfigurationNode = loadSchemaConfig(schemaFile);
-
+		foundProperties = getPrivateProperties();
 	}
 
 	@Override
@@ -46,7 +46,6 @@ public abstract class ASchemaConfigurator implements ISchemaConfigurator {
 
 	@Override
 	public List<String> getAllPrivateProperties() {
-		foundProperties = getPrivateProperties();
 		return foundProperties;
 	}
 
@@ -68,9 +67,9 @@ public abstract class ASchemaConfigurator implements ISchemaConfigurator {
 		if (foundProperties.isEmpty()) {
 			JSONUtil.trimPrefix(schemaConfigurationNode, PREFIX);
 			ArrayNode arrayNode = (ArrayNode) schemaConfigurationNode.get(OPENSABER_PRIVACY_PROPERTY);
-			for (int i = 0; i < arrayNode.size(); i++) {
+			for (int i = 0; i < arrayNode.size(); i++) {				
 				if (arrayNode.get(i).isObject())
-					foundProperties.addAll(arrayNode.get(i).findValuesAsText(JsonldConstants.ID, foundProperties));
+					 foundProperties.add(arrayNode.get(i).get(JsonldConstants.ID).asText().toString());
 			}
 		}
 		return foundProperties;
