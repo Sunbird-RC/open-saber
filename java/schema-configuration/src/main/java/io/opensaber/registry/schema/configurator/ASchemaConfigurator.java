@@ -27,11 +27,12 @@ public abstract class ASchemaConfigurator implements ISchemaConfigurator {
 
 	public ASchemaConfigurator(String schemaFile) throws IOException {
 		schemaConfigurationNode = loadSchemaConfig(schemaFile);
+
 	}
 
 	@Override
 	public boolean isPrivate(String propertyName) {
-		foundProperties = getPrivateProperties();
+
 		return foundProperties.contains(propertyName);
 	}
 
@@ -45,6 +46,7 @@ public abstract class ASchemaConfigurator implements ISchemaConfigurator {
 
 	@Override
 	public List<String> getAllPrivateProperties() {
+		foundProperties = getPrivateProperties();
 		return foundProperties;
 	}
 

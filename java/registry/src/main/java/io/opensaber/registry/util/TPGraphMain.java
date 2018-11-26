@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.steelbridgelabs.oss.neo4j.structure.Neo4JElementIdProvider;
 import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
 import com.steelbridgelabs.oss.neo4j.structure.providers.Neo4JNativeElementIdProvider;
+import io.opensaber.registry.exception.EncryptionException;
+import io.opensaber.registry.service.EncryptionService;
 import io.opensaber.registry.sink.DatabaseProvider;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
@@ -29,9 +31,13 @@ import java.util.*;
 
 public class TPGraphMain {
     private static Graph graph;
+    private static List<String> privatePropertyLst;
+    private static EncryptionService encryptionService;
 
-    public TPGraphMain(DatabaseProvider db) {
+    public TPGraphMain(DatabaseProvider db, List<String> privatePropertyLst, EncryptionService encryptionService) {
         graph = db.getGraphStore();
+        this.privatePropertyLst = privatePropertyLst;
+        this.encryptionService = encryptionService;
     }
 
     public static String createLabel() {
@@ -43,7 +49,18 @@ public class TPGraphMain {
         jsonObject.fields().forEachRemaining(entry -> {
             JsonNode entryValue = entry.getValue();
             if (entryValue.isValueNode()) {
-                vertex.property(entry.getKey(), entryValue.asText());
+                if(privatePropertyLst.contains(entry.getKey())) {
+                    String encValue = null;
+                    try {
+                        encValue = encryptionService.encrypt(entryValue.asText());
+                    } catch (EncryptionException e) {
+                        e.printStackTrace();
+                    }
+                    vertex.property(entry.getKey(), encValue.substring(encValue.lastIndexOf("|")+1));
+                } else {
+                    vertex.property(entry.getKey(), entryValue.asText());
+                }
+
             } else if (entryValue.isObject()) {
                 createVertex(graph, entry.getKey(), vertex, entryValue);
             }
@@ -77,7 +94,7 @@ public class TPGraphMain {
 
     public static List<String> verticesCreated = new ArrayList<String>();
 
-    public static void processNode(String parentName, Vertex parentVertex, JsonNode node) {
+    public static void processNode(String parentName, Vertex parentVertex, JsonNode node) throws EncryptionException {
 
         Iterator<Map.Entry<String, JsonNode>> entryIterator = node.fields();
         while (entryIterator.hasNext()) {
@@ -106,7 +123,7 @@ public class TPGraphMain {
     // For every parent vertex and child vertex, there is a single Edge between
     //    teacher -> address
 
-    public void createTPGraph(String jsonString) throws IOException {
+    public void createTPGraph(String jsonString) throws IOException, EncryptionException {
         Instant startTime = Instant.now();
 
         ObjectMapper mapper = new ObjectMapper();
