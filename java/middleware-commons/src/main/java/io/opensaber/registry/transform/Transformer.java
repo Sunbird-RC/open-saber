@@ -37,11 +37,11 @@ public class Transformer {
 	
 	public Configuration getConfiguration(String mediaType, Direction direction){
 		
-		if(mediaType.equalsIgnoreCase(MediaType.APPLICATION_JSON_VALUE) && direction == Direction.out){
+		if(mediaType.equalsIgnoreCase(MediaType.APPLICATION_JSON_VALUE) && direction == Direction.OUT){
 			return Configuration.LD2JSON;
 		}else if(mediaType.equalsIgnoreCase(MEDIATYPE_APPLICATION_JSONLD)){
 			return Configuration.LD2LD;
-		}else if(mediaType.equalsIgnoreCase(MediaType.APPLICATION_JSON_VALUE) && direction == Direction.in){
+		}else if(mediaType.equalsIgnoreCase(MediaType.APPLICATION_JSON_VALUE) && direction == Direction.IN){
 			return Configuration.JSON2LD;
 		}		
 		return null;
