@@ -1,10 +1,11 @@
 package io.opensaber.registry.util;
 
-import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.*;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.opensaber.pojos.OpenSaberInstrumentation;
+import io.opensaber.registry.exception.EncryptionException;
+import io.opensaber.registry.service.EncryptionService;
+import io.opensaber.registry.sink.DatabaseProvider;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -12,22 +13,22 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.opensaber.pojos.OpenSaberInstrumentation;
-import io.opensaber.registry.sink.DatabaseProvider;
+import java.io.IOException;
+import java.util.*;
 
 public class TPGraphMain {
     private static Graph graph;
+    private static List<String> privatePropertyLst;
+    private static EncryptionService encryptionService;
 
     private DatabaseProvider dbProvider;
 
     private OpenSaberInstrumentation watch = new OpenSaberInstrumentation(true);
 
-    public TPGraphMain(DatabaseProvider db) {
-        dbProvider = db;
+    public TPGraphMain(DatabaseProvider db, List<String> privatePropertyLst, EncryptionService encryptionService) {
         graph = db.getGraphStore();
+        this.privatePropertyLst = privatePropertyLst;
+        this.encryptionService = encryptionService;
     }
 
     public static String createLabel() {
@@ -39,7 +40,18 @@ public class TPGraphMain {
         jsonObject.fields().forEachRemaining(entry -> {
             JsonNode entryValue = entry.getValue();
             if (entryValue.isValueNode()) {
-                vertex.property(entry.getKey(), entryValue.asText());
+                if(privatePropertyLst.contains(entry.getKey())) {
+                    String encValue = null;
+                    try {
+                        encValue = encryptionService.encrypt(entryValue.asText());
+                    } catch (EncryptionException e) {
+                        e.printStackTrace();
+                    }
+                    vertex.property(entry.getKey(), encValue.substring(encValue.lastIndexOf("|")+1));
+                } else {
+                    vertex.property(entry.getKey(), entryValue.asText());
+                }
+
             } else if (entryValue.isObject()) {
                 createVertex(graph, entry.getKey(), vertex, entryValue);
             }
@@ -73,7 +85,7 @@ public class TPGraphMain {
 
     public static List<String> verticesCreated = new ArrayList<String>();
 
-    public static void processNode(String parentName, Vertex parentVertex, JsonNode node) {
+    public static void processNode(String parentName, Vertex parentVertex, JsonNode node) throws EncryptionException {
 
         Iterator<Map.Entry<String, JsonNode>> entryIterator = node.fields();
         while (entryIterator.hasNext()) {
@@ -102,9 +114,7 @@ public class TPGraphMain {
     // For every parent vertex and child vertex, there is a single Edge between
     //    teacher -> address
 
-    public void createTPGraph(String jsonString) throws IOException {
-        Instant startTime = Instant.now();
-
+    public void createTPGraph(String jsonString) throws IOException, EncryptionException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(jsonString);
 
@@ -118,7 +128,11 @@ public class TPGraphMain {
         tx.commit();
         watch.stop("End Transaction");
 
-        tx.createThreadedTx();
+        // TODO
+        // How about creating a threaded transaction?
+        // When apib is invoked with 100 concurrent requests, there is an error that
+        //    Neo4Session is not getting closed
+        //  Is this influenced by what we do?
 
 //        watch.start("Close transaction");
 //        try {
@@ -127,12 +141,5 @@ public class TPGraphMain {
 //
 //        }
 //        watch.stop("End close Graph");
-
-
-        Instant endTime = Instant.now();
-        System.out.println(
-                Duration.between(startTime, endTime).toNanos() + "," +
-                Duration.between(startTime, endTime).toMillis() + "," +
-                Duration.between(startTime, endTime).toMinutes());
     }
 }

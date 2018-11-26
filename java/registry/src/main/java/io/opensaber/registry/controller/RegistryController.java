@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
+import io.opensaber.registry.service.EncryptionService;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.util.TPGraphMain;
 import org.apache.jena.rdf.model.Model;
@@ -54,6 +56,10 @@ public class RegistryController {
 	private APIMessage apiMessage;
 	@Autowired
 	private DatabaseProvider databaseProvider;
+	@Autowired
+	private ISchemaConfigurator schemaConfigurator;
+	@Autowired
+	private EncryptionService encryptionService;
 	private Gson gson = new Gson();
 	private Type mapType = new TypeToken<Map<String, Object>>() {
 	}.getType();
@@ -311,8 +317,9 @@ public class RegistryController {
 		Response response = new Response(Response.API_ID.CREATE, "OK", responseParams);
 		Map<String, Object> result = new HashMap<>();
 		String jsonString = apiMessage.getRequest().getRequestMapAsString();
+		List<String> privateProperties = schemaConfigurator.getAllPrivateProperties();
 		//String jsonString = "{\"Teacher\":{\"signatures\":{\"@type\":\"sc:GraphSignature2012\",\"signatureFor\":\"http://localhost:8080/serialNum\",\"creator\":\"https://example.com/i/pat/keys/5\",\"created\":\"2017-09-23T20:21:34Z\",\"nonce\":\"2bbgh3dgjg2302d-d2b3gi423d42\",\"signatureValue\":\"eyiOiJKJ0eXA...OEjgFWFXk\"},\"serialNum\":6,\"teacherCode\":\"12234\",\"nationalIdentifier\":\"1234567890123456\",\"teacherName\":\"FromRajeshLaptop\",\"gender\":\"GenderTypeCode-MALE\",\"birthDate\":\"1990-12-06\",\"socialCategory\":\"SocialCategoryTypeCode-GENERAL\",\"highestAcademicQualification\":\"AcademicQualificationTypeCode-PHD\",\"highestTeacherQualification\":\"TeacherQualificationTypeCode-MED\",\"yearOfJoiningService\":\"2014\",\"teachingRole\":{\"@type\":\"TeachingRole\",\"teacherType\":\"TeacherTypeCode-HEAD\",\"appointmentType\":\"TeacherAppointmentTypeCode-REGULAR\",\"classesTaught\":\"ClassTypeCode-SECONDARYANDHIGHERSECONDARY\",\"appointedForSubjects\":\"SubjectCode-ENGLISH\",\"mainSubjectsTaught\":\"SubjectCode-SOCIALSTUDIES\",\"appointmentYear\":\"2015\"},\"inServiceTeacherTrainingFromBRC\":{\"@type\":\"InServiceTeacherTrainingFromBlockResourceCentre\",\"daysOfInServiceTeacherTraining\":\"10\"},\"inServiceTeacherTrainingFromCRC\":{\"@type\":\"InServiceTeacherTrainingFromClusterResourceCentre\",\"daysOfInServiceTeacherTraining\":\"2\"},\"inServiceTeacherTrainingFromDIET\":{\"@type\":\"InServiceTeacherTrainingFromDIET\",\"daysOfInServiceTeacherTraining\":\"5.5\"},\"inServiceTeacherTrainingFromOthers\":{\"@type\":\"InServiceTeacherTrainingFromOthers\",\"daysOfInServiceTeacherTraining\":\"3.5\"},\"nonTeachingAssignmentsForAcademicCalendar\":{\"@type\":\"NonTeachingAssignmentsForAcademicCalendar\",\"daysOfNonTeachingAssignments\":\"6\"},\"basicProficiencyLevel\":{\"@type\":\"BasicProficiencyLevel\",\"proficiencySubject\":\"SubjectCode-MATH\",\"proficiencyAcademicQualification\":\"AcademicQualificationTypeCode-PHD\"},\"disabilityType\":\"DisabilityCode-NA\",\"trainedForChildrenSpecialNeeds\":\"YesNoCode-YES\",\"trainedinUseOfComputer\":\"YesNoCode-YES\"}}}";
-		TPGraphMain tpGraph = new TPGraphMain(databaseProvider);
+		TPGraphMain tpGraph = new TPGraphMain(databaseProvider,privateProperties,encryptionService);
 
 		try {
 			watch.start("RegistryController.addToExistingEntity");
