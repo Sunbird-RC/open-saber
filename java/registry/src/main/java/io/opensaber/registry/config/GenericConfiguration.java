@@ -65,7 +65,7 @@ import io.opensaber.registry.sink.TinkerGraphProvider;
 import io.opensaber.registry.transform.Json2LdTransformer;
 import io.opensaber.registry.transform.Ld2JsonTransformer;
 import io.opensaber.registry.transform.Ld2LdTransformer;
-import io.opensaber.registry.transform.TransformerFactory;
+import io.opensaber.registry.transform.Transformer;
 import io.opensaber.validators.IValidate;
 import io.opensaber.validators.ValidationFilter;
 import io.opensaber.validators.json.jsonschema.JsonValidationServiceImpl;
@@ -180,8 +180,8 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 	
 	@Bean
-	public TransformerFactory transformerFactory(){
-		return new TransformerFactory();
+	public Transformer transformer(){
+		return new Transformer();
 	}
 
 	@Bean
@@ -191,7 +191,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Bean
 	public RDFConversionInterceptor rdfConversionInterceptor() {
-		return new RDFConversionInterceptor(rdfConverter(),transformerFactory());
+		return new RDFConversionInterceptor(rdfConverter(),transformer());
 	}
 
 	@Bean

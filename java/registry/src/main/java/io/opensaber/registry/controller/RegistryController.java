@@ -48,14 +48,14 @@ import io.opensaber.registry.transform.Configuration;
 import io.opensaber.registry.transform.Data;
 import io.opensaber.registry.transform.ITransformer;
 import io.opensaber.registry.transform.TransformationException;
-import io.opensaber.registry.transform.TransformerFactory;
+import io.opensaber.registry.transform.Transformer;
 
 @RestController
 public class RegistryController {
 
 	private static Logger logger = LoggerFactory.getLogger(RegistryController.class);
 	@Autowired
-	TransformerFactory transformerFactory;
+	Transformer transformer;
 	@Autowired
 	private RegistryService registryService;
 	@Autowired
@@ -130,10 +130,10 @@ public class RegistryController {
 			String content = registryService.getEntityFramedById(entityId, includeSign);
 			logger.info("RegistryController: Framed content " + content);
 
-			Configuration config = transformerFactory.getConfiguration(header.getAccept().iterator().next().toString(),
+			Configuration config = transformer.getConfiguration(header.getAccept().iterator().next().toString(),
 					Direction.out);
 			Data<Object> data = new Data<Object>(content);
-			ITransformer<Object> responseTransformer = transformerFactory.getInstance(config);
+			ITransformer<Object> responseTransformer = transformer.getInstance(config);
 			responseTransformer.setPurgeData(getKeysToPurge());
 			Data<Object> responseContent = responseTransformer.transform(data);
 			response.setResult(responseContent.getData());
@@ -174,10 +174,10 @@ public class RegistryController {
 			watch.start("RegistryController.searchEntity");
 			String jenaJson = searchService.searchFramed(rdf);
 			Data<Object> data = new Data<>(jenaJson);
-			Configuration config = transformerFactory.getConfiguration(header.getAccept().iterator().next().toString(),
+			Configuration config = transformer.getConfiguration(header.getAccept().iterator().next().toString(),
 					Direction.out);
 
-			ITransformer<Object> responseTransformer = transformerFactory.getInstance(config);
+			ITransformer<Object> responseTransformer = transformer.getInstance(config);
 			responseTransformer.setPurgeData(getKeysToPurge());
 			Data<Object> resultContent = responseTransformer.transform(data);
 			response.setResult(resultContent.getData());

@@ -5,7 +5,7 @@ import org.springframework.http.MediaType;
 
 import io.opensaber.registry.middleware.util.Constants.Direction;
 
-public class TransformerFactory {
+public class Transformer {
 
 	public static final String MEDIATYPE_APPLICATION_JSONLD = "application/ld+json";
 	private static final String EXCEPTION_MESSAGE = "Media type not suppoted";
