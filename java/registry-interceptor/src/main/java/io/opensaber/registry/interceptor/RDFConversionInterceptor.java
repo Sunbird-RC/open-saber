@@ -46,7 +46,7 @@ public class RDFConversionInterceptor implements HandlerInterceptor {
 		String dataFromRequest = apiMessage.getRequest().getRequestMapAsString();
 		String contentType = request.getContentType();
 		logger.debug("ContentType {0} requestBody {1}", contentType, dataFromRequest);
-		Configuration config = transformer.getConfiguration(contentType, Direction.in);
+		Configuration config = transformer.getConfiguration(contentType, Direction.IN);
 		Data<Object> transformedData = transformer.getInstance(config)
 				.transform(new Data<Object>(dataFromRequest));
 

@@ -131,7 +131,7 @@ public class RegistryController {
 			logger.info("RegistryController: Framed content " + content);
 
 			Configuration config = transformer.getConfiguration(header.getAccept().iterator().next().toString(),
-					Direction.out);
+					Direction.OUT);
 			Data<Object> data = new Data<Object>(content);
 			ITransformer<Object> responseTransformer = transformer.getInstance(config);
 			responseTransformer.setPurgeData(getKeysToPurge());
@@ -175,7 +175,7 @@ public class RegistryController {
 			String jenaJson = searchService.searchFramed(rdf);
 			Data<Object> data = new Data<>(jenaJson);
 			Configuration config = transformer.getConfiguration(header.getAccept().iterator().next().toString(),
-					Direction.out);
+					Direction.OUT);
 
 			ITransformer<Object> responseTransformer = transformer.getInstance(config);
 			responseTransformer.setPurgeData(getKeysToPurge());

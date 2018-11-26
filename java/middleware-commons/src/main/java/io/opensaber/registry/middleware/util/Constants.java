@@ -115,7 +115,7 @@ public class Constants {
 	}
 
 	public enum Direction {	
-		in, out
+		IN, OUT
 	}
 
 	public static class JsonldConstants {
