@@ -1,36 +1,32 @@
 package io.opensaber.registry.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.steelbridgelabs.oss.neo4j.structure.Neo4JElementIdProvider;
-import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
-import com.steelbridgelabs.oss.neo4j.structure.providers.Neo4JNativeElementIdProvider;
-import io.opensaber.registry.sink.DatabaseProvider;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.Configuration;
+import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.*;
+
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.h2.engine.Database;
-import org.neo4j.driver.v1.AuthToken;
-import org.neo4j.driver.v1.AuthTokens;
-import org.neo4j.driver.v1.Driver;
-import org.neo4j.driver.v1.GraphDatabase;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.umlg.sqlg.structure.SqlgGraph;
 
-import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.opensaber.pojos.OpenSaberInstrumentation;
+import io.opensaber.registry.sink.DatabaseProvider;
 
 public class TPGraphMain {
     private static Graph graph;
 
+    private DatabaseProvider dbProvider;
+
+    private OpenSaberInstrumentation watch = new OpenSaberInstrumentation(true);
+
     public TPGraphMain(DatabaseProvider db) {
+        dbProvider = db;
         graph = db.getGraphStore();
     }
 
@@ -50,7 +46,7 @@ public class TPGraphMain {
         });
         Edge e = addEdge(graph, label, parentVertex, vertex);
         String edgeId = UUID.randomUUID().toString();
-        vertex.property("intId", edgeId);
+        vertex.property(label + "id", edgeId);
         parentVertex.property(vertex.label(), edgeId);
     }
 
@@ -111,9 +107,27 @@ public class TPGraphMain {
 
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(jsonString);
+
+        watch.start("Get Graph");
+        graph = dbProvider.getGraphStore();
+        watch.stop("End Graph");
+
+        watch.start("Start Transaction");
         Transaction tx = graph.tx();
         processNode(null, createParentVertex(), rootNode);
         tx.commit();
+        watch.stop("End Transaction");
+
+        tx.createThreadedTx();
+
+//        watch.start("Close transaction");
+//        try {
+//            tx.close();
+//        } catch (Exception e) {
+//
+//        }
+//        watch.stop("End close Graph");
+
 
         Instant endTime = Instant.now();
         System.out.println(
