@@ -30,6 +30,10 @@ public class ValidationInterceptor implements HandlerInterceptor {
 	@Autowired
 	private OpenSaberInstrumentation watch;
 
+	public ValidationInterceptor(Middleware validationFilter) {
+		this.validationFilter = validationFilter;
+	}
+
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
