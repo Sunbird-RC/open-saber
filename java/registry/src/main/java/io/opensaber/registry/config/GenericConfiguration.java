@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.opensaber.pojos.OpenSaberInstrumentation;
+import io.opensaber.pojos.Response;
 import io.opensaber.registry.interceptor.*;
 import io.opensaber.validators.ValidationFilter;
 import org.apache.commons.validator.routines.UrlValidator;
@@ -34,12 +36,11 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 
-import io.opensaber.pojos.OpenSaberInstrumentation;
-import io.opensaber.pojos.Response;
 import io.opensaber.registry.authorization.AuthorizationFilter;
 import io.opensaber.registry.authorization.KeyCloakServiceImpl;
 import io.opensaber.registry.exception.CustomException;
 import io.opensaber.registry.exception.CustomExceptionHandler;
+import io.opensaber.registry.frame.FrameContext;
 import io.opensaber.registry.frame.FrameEntity;
 import io.opensaber.registry.frame.FrameEntityImpl;
 import io.opensaber.registry.interceptor.request.transform.JsonToLdRequestTransformer;
@@ -57,11 +58,18 @@ import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.schema.configurator.JsonSchemaConfigurator;
 import io.opensaber.registry.schema.configurator.SchemaType;
 import io.opensaber.registry.schema.configurator.ShexSchemaConfigurator;
-import io.opensaber.registry.sink.*;
+import io.opensaber.registry.sink.DatabaseProvider;
+import io.opensaber.registry.sink.JanusGraphStorage;
+import io.opensaber.registry.sink.Neo4jGraphProvider;
+import io.opensaber.registry.sink.OrientDBGraphProvider;
+import io.opensaber.registry.sink.SqlgProvider;
+import io.opensaber.registry.sink.TinkerGraphProvider;
 import io.opensaber.validators.IValidate;
 import io.opensaber.validators.json.jsonschema.JsonValidationServiceImpl;
 import io.opensaber.validators.rdf.shex.RdfSignatureValidator;
 import io.opensaber.validators.rdf.shex.RdfValidationServiceImpl;
+
+import javax.servlet.http.HttpServletRequest;
 
 @Configuration
 public class GenericConfiguration implements WebMvcConfigurer {
@@ -70,6 +78,9 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Autowired
 	private Environment environment;
+
+	@Autowired
+	private HttpServletRequest servletRequest;
 
 	@Value("${encryption.service.connection.timeout}")
 	private int connectionTimeout;
@@ -91,6 +102,9 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Value("${registry.context.base}")
 	private String registryContextBase;
+	
+	@Value("${frame.file}")
+	private String frameFile;
 
 	@Value("${signature.schema.config.name}")
 	private String signatureSchemaConfigName;
@@ -137,6 +151,11 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	public FrameEntity frameEntity() {
 		return new FrameEntityImpl();
 	}
+	
+	@Bean 
+	public FrameContext frameContext(){
+		return new FrameContext(frameFile, registryContextBase);
+	}
 
 	/**
 	 * Gets the type of validation configured in the application.yml
@@ -153,7 +172,8 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Bean
 	public JsonToLdRequestTransformer jsonToLdRequestTransformer() {
-		return new JsonToLdRequestTransformer(frameEntity().getContent());
+		String domain = frameContext().getDomain();
+		return new JsonToLdRequestTransformer(frameEntity().getContent(), domain);
 	}
 
 	@Bean
@@ -163,27 +183,22 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Bean
 	public AuthorizationInterceptor authorizationInterceptor() {
-		return new AuthorizationInterceptor(authorizationFilter(), gson());
+		return new AuthorizationInterceptor(authorizationFilter());
 	}
 
 	@Bean
 	public RDFConversionInterceptor rdfConversionInterceptor() {
-		return new RDFConversionInterceptor(rdfConverter(), gson());
-	}
-
-	@Bean
-	public RDFValidationMappingInterceptor rdfValidationMappingInterceptor() {
-		return new RDFValidationMappingInterceptor(rdfValidationMapper(), gson());
+		return new RDFConversionInterceptor(rdfConverter());
 	}
 
 	@Bean
 	public RequestIdValidationInterceptor requestIdValidationInterceptor() {
-		return new RequestIdValidationInterceptor(requestIdMap(), gson());
+		return new RequestIdValidationInterceptor(requestIdMap());
 	}
 
 	@Bean
 	public ValidationInterceptor validationInterceptor() throws IOException, CustomException {
-		return new ValidationInterceptor(new ValidationFilter(validator()), gson());
+		return new ValidationInterceptor();
 	}
 
 	@Bean
@@ -204,7 +219,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public IValidate validator() throws IOException, CustomException {
+	public IValidate validationServiceImpl() throws IOException, CustomException {
 		IValidate validator = null;
 		if (getValidationType() == SchemaType.SHEX) {
 			validator = new RdfValidationServiceImpl(shexSchemaLoader().getSchemaForCreate(),
@@ -272,7 +287,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 			String schemaContent = schemaConfigurator().getSchemaContent();
 			return new RdfSignatureValidator(shexSchemaLoader().getSchemaForCreate(), schemaContent,
 					registryContextBase, registrySystemBase, signatureSchemaConfigName,
-					((RdfValidationServiceImpl) validator()).getShapeTypeMap());
+					((RdfValidationServiceImpl) validationServiceImpl()).getShapeTypeMap());
 		} else {
 			return null;
 		}
@@ -345,6 +360,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	public Map<String, String> requestIdMap() {
 		Map<String, String> requestIdMap = new HashMap<>();
 		requestIdMap.put(Constants.REGISTRY_ADD_ENDPOINT, Response.API_ID.CREATE.getId());
+		requestIdMap.put(Constants.REGISTRY_READ_ENDPOINT, Response.API_ID.READ.getId());
 		requestIdMap.put(Constants.REGISTRY_SEARCH_ENDPOINT, Response.API_ID.SEARCH.getId());
 		requestIdMap.put(Constants.REGISTRY_UPDATE_ENDPOINT, Response.API_ID.UPDATE.getId());
 		requestIdMap.put(Constants.SIGNATURE_SIGN_ENDPOINT, Response.API_ID.SIGN.getId());
@@ -363,9 +379,9 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		int orderIdx = 1;
 		Map<String, String> requestMap = requestIdMap();
 
-		// Verify api ids
+		// Verifying our API identifiers and populating the APIMessage bean
 		registry.addInterceptor(requestIdValidationInterceptor())
-				.addPathPatterns(new ArrayList(requestMap.keySet())).order(orderIdx++);
+					.addPathPatterns(new ArrayList(requestMap.keySet())).order(orderIdx++);
 
 		// Authenticate and authorization check
 		if (authenticationEnabled) {
@@ -373,9 +389,9 @@ public class GenericConfiguration implements WebMvcConfigurer {
 					.excludePathPatterns("/health", "/error", "/_schemas/**").order(orderIdx++);
 		}
 
-		// Convert to RDF
-		registry.addInterceptor(rdfConversionInterceptor()).addPathPatterns("/add", "/update", "/search", "/read")
-				.order(orderIdx++);
+//		// Convert to RDF
+//		registry.addInterceptor(rdfConversionInterceptor()).addPathPatterns("/add", "/update", "/search")
+//				.order(orderIdx++);
 
 		// Validate the input against the defined schema
 		if (validationEnabled) {

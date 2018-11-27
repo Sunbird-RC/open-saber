@@ -49,8 +49,6 @@ public class RegistryDaoImpl implements RegistryDao {
 	private DatabaseProvider databaseProvider;
 	@Value("${registry.context.base}")
 	private String registryContext;
-	@Value("${signature.enabled}")
-	private boolean signatureEnabled;
 	@Autowired
 	private SchemaLoader schemaLoader;
 	@Autowired
@@ -105,7 +103,7 @@ public class RegistryDaoImpl implements RegistryDao {
 		TinkerGraph graph = (TinkerGraph) entity;
 		GraphTraversalSource traversal = graph.traversal();
 		if (graphFromStore.features().graph().supportsTransactions()) {
-			org.apache.tinkerpop.gremlin.structure.Transaction tx = graphFromStore.tx();
+			Transaction tx = graphFromStore.tx();
 			tx.onReadWrite(org.apache.tinkerpop.gremlin.structure.Transaction.READ_WRITE_BEHAVIOR.AUTO);
 			watch.start("RegistryDaoImpl.addOrUpdateVerticesAndEdges");
 			label = addOrUpdateVerticesAndEdges(dbGraphTraversalSource, traversal, label,
@@ -300,7 +298,7 @@ public class RegistryDaoImpl implements RegistryDao {
 										existingV.label()));
 						// Existing logic moved to this method to avoid
 						// duplicate code
-						parsedVertices = addEdgeForAVertex(ver, idForSignature, existingV, dbGraph, methodOrigin,
+						parsedVertices = addEdgeForAVertex(ver, existingV, methodOrigin,
 								edgeLabel, direction, parsedVertices, dbVertex, e, edgeVertexMatchList,
 								edgeVertexExist);
 					} else {
@@ -327,7 +325,7 @@ public class RegistryDaoImpl implements RegistryDao {
 										// below as true for signature based on
 										// the existence of same signatureFor
 										// field
-										parsedVertices = addEdgeForAVertex(ver, idForSignature, newV, dbGraph,
+										parsedVertices = addEdgeForAVertex(ver, newV,
 												methodOrigin, edgeLabel, direction, parsedVertices, dbVertex, e,
 												edgeVertexMatchList, true);
 									}
@@ -338,7 +336,7 @@ public class RegistryDaoImpl implements RegistryDao {
 								newV = dbGraph.addV(label).next();
 								// Existing logic moved to this method to avoid
 								// duplicate code
-								parsedVertices = addEdgeForAVertex(ver, idForSignature, newV, dbGraph, methodOrigin,
+								parsedVertices = addEdgeForAVertex(ver, newV, methodOrigin,
 										edgeLabel, direction, parsedVertices, dbVertex, e, edgeVertexMatchList,
 										edgeVertexExist);
 							}
@@ -356,7 +354,6 @@ public class RegistryDaoImpl implements RegistryDao {
 	 *
 	 * @param ver
 	 * @param newV
-	 * @param dbGraph
 	 * @param methodOrigin
 	 * @param edgeLabel
 	 * @param direction
@@ -369,8 +366,7 @@ public class RegistryDaoImpl implements RegistryDao {
 	 * @throws AuditFailedException
 	 * @throws EncryptionException
 	 */
-	private Stack<Pair<Vertex, Vertex>> addEdgeForAVertex(Vertex ver, String idForSignature, Vertex newV,
-			GraphTraversalSource dbGraph, String methodOrigin, String edgeLabel, Direction direction,
+	private Stack<Pair<Vertex, Vertex>> addEdgeForAVertex(Vertex ver, Vertex newV, String methodOrigin, String edgeLabel, Direction direction,
 			Stack<Pair<Vertex, Vertex>> parsedVertices, Vertex dbVertex, Edge e, List<Edge> edgeVertexMatchList,
 			boolean edgeVertexExist) throws AuditFailedException, EncryptionException {
 		setAuditInfo(ver, true);
@@ -564,7 +560,7 @@ public class RegistryDaoImpl implements RegistryDao {
 			throw new RecordNotFoundException(Constants.ENTITY_NOT_FOUND);
 		} else {
 			if (graphFromStore.features().graph().supportsTransactions()) {
-				org.apache.tinkerpop.gremlin.structure.Transaction tx = graphFromStore.tx();
+				Transaction tx = graphFromStore.tx();
 				tx.onReadWrite(org.apache.tinkerpop.gremlin.structure.Transaction.READ_WRITE_BEHAVIOR.AUTO);
 				// createOrUpdateEntity(graphForUpdate, rootNodeLabel,
 				// methodOrigin);
@@ -693,6 +689,22 @@ public class RegistryDaoImpl implements RegistryDao {
 		}
 
 		return rootLabel;
+	}
+
+	@Override
+	public String getTypeForNodeLabel(String nodeLabel) {
+		String nodeLabelType = null;
+		Graph graphFromStore = databaseProvider.getGraphStore();
+		GraphTraversalSource traversalSource = graphFromStore.traversal();
+		GraphTraversal<Vertex, Vertex> hasLabel = traversalSource.clone().V().hasLabel(nodeLabel);
+		Vertex s = hasLabel.next();
+		Iterator<Edge> edges = s.edges(Direction.OUT, Constants.RDF_URL_SYNTAX_TYPE);
+		if (edges.hasNext()) {
+			Edge typeEdge = edges.next();
+			Vertex inVertex = typeEdge.inVertex();
+			nodeLabelType = inVertex.label();
+		}
+		return nodeLabelType;
 	}
 
 	private boolean deleteVertexWithInEdge(Vertex s) {

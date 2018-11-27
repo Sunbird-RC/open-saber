@@ -14,20 +14,22 @@ import io.opensaber.registry.middleware.transform.Data;
 import io.opensaber.registry.middleware.transform.ErrorCode;
 import io.opensaber.registry.middleware.transform.ITransformer;
 import io.opensaber.registry.middleware.transform.TransformationException;
+import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 
 public class JsonToLdRequestTransformer implements ITransformer<Object> {
 
-	private final static String REQUEST = "request";
 	private static final String SEPERATOR = ":";
 	private static Logger logger = LoggerFactory.getLogger(JsonToLdRequestTransformer.class);
 	private String context;
 	private List<String> nodeTypes = new ArrayList<>();
 	private String prefix = "";
+	private String domain = "";
 
-	public JsonToLdRequestTransformer(String context) {
+	public JsonToLdRequestTransformer(String context, String domain){
 		this.context = context;
+		this.domain = domain;
 	}
 
 	@Override
@@ -37,25 +39,31 @@ public class JsonToLdRequestTransformer implements ITransformer<Object> {
 			ObjectNode input = (ObjectNode) mapper.readTree(data.getData().toString());
 			ObjectNode fieldObjects = (ObjectNode) mapper.readTree(context);
 			setNodeTypeToAppend(fieldObjects);
-			ObjectNode requestnode = (ObjectNode) input.path(REQUEST);
+			ObjectNode resultNode = input;
 
-			String type = getTypeFromNode(requestnode);
-			setPrefix(type);
-			JSONUtil.addPrefix(requestnode, prefix, nodeTypes);
-			logger.info("Appending prefix to requestNode " + requestnode);
+			String rootType = getTypeFromNode(resultNode);
+			logger.debug("Domain  value "+domain);
+			if(domain.isEmpty())
+				throw new TransformationException(Constants.INVALID_FRAME, ErrorCode.JSON_TO_JSONLD_TRANFORMATION_ERROR);
+			setPrefix(domain);
+			JSONUtil.addPrefix(resultNode, prefix, nodeTypes);
+			logger.info("Appending prefix to requestNode " + resultNode);
 
-			requestnode = (ObjectNode) requestnode.path(type);
-			requestnode.setAll(fieldObjects);
-			input.set(REQUEST, requestnode);
-			logger.info("Object requestnode " + requestnode);
-			String jsonldResult = mapper.writeValueAsString(input);
-			return new Data<>(jsonldResult.replace("<@type>", type));
+			resultNode = (ObjectNode) resultNode.path(rootType);
+			resultNode.setAll(fieldObjects);
+			logger.info("Object requestnode " + resultNode);
+			String jsonldResult = mapper.writeValueAsString(resultNode);
+			return new Data<>(jsonldResult.replace("<@type>", domain));
 		} catch (Exception ex) {
-			logger.error(ex.getMessage(), ex);
+			logger.error("Error trnsx : "+ex.getMessage(), ex);
 			throw new TransformationException(ex.getMessage(), ex, ErrorCode.JSON_TO_JSONLD_TRANFORMATION_ERROR);
 		}
 	}
 
+	/*
+	 * Given a input like the following, {entity:{"a":1, "b":1}}
+	 * returns "entity" being the type of the json object.
+	 */
 	private String getTypeFromNode(ObjectNode requestNode) throws JsonProcessingException {
 		String rootValue = "";
 		if (requestNode.isObject()) {

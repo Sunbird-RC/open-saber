@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.opensaber.pojos.APIMessage;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.vocabulary.RDF;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,8 +70,11 @@ public class RdfValidationServiceImpl implements IValidate {
 		return validationResponse;
 	}
 
-	public ValidationResponse validate(Object rdf, String methodOrigin) throws MiddlewareHaltException {
+	public boolean validate(APIMessage apiMessage) throws MiddlewareHaltException {
 		Model rdfModel = null;
+		Object rdf = apiMessage.getLocalMap(Constants.RDF_OBJECT);
+		String uri = apiMessage.getRequestWrapper().getRequestURI();
+		String methodOrigin = uri.replace("/", "");
 		try {
 			if (rdf == null) {
 				throw new ValidationException(ErrorConstants.RDF_DATA_IS_MISSING);
@@ -88,7 +92,7 @@ public class RdfValidationServiceImpl implements IValidate {
 				if (signatureEnabled && Constants.CREATE_METHOD_ORIGIN.equals(methodOrigin)) {
 					signatureValidator.validateMandatorySignatureFields(rdfModel);
 				}
-				return validationResponse;
+				return true;
 			}
 		} catch (ValidationException ve) {
 			throw new MiddlewareHaltException(ve.getMessage());

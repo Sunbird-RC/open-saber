@@ -1,6 +1,5 @@
 package io.opensaber.registry.kernel.extension;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
@@ -19,8 +18,6 @@ import io.opensaber.registry.kernel.util.LogGraphEvent;
 import io.opensaber.registry.middleware.util.Constants;
 
 public class ProcessTransactionData {
-
-	private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
 	private static Logger logger = LoggerFactory.getLogger(ProcessTransactionData.class);
 
@@ -372,12 +369,6 @@ public class ProcessTransactionData {
 			return label.toString();
 		}
 		return "";
-	}
-
-	private Object getPropertyValue(Node node, String propertyName) {
-		if (node.hasProperty(propertyName))
-			return node.getProperty(propertyName);
-		return null;
 	}
 
 	private List<Long> getUpdatedNodeIds(TransactionData data) {

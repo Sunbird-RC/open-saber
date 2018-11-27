@@ -3,36 +3,32 @@ package io.opensaber.validators;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.jena.rdf.model.Model;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import io.opensaber.pojos.APIMessage;
 import io.opensaber.registry.middleware.Middleware;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
-import io.opensaber.registry.middleware.util.Constants;
 
+@Component("validationFilter")
 public class ValidationFilter implements Middleware {
 	private IValidate validationService;
+
+	@Autowired
+	private APIMessage apiMessage;
 
 	public ValidationFilter(IValidate validationServiceImpl) {
 		this.validationService = validationServiceImpl;
 	}
 
 	@Override
-	public Map<String, Object> execute(Map<String, Object> mapData) throws IOException, MiddlewareHaltException {
-		Model rdfModel = (Model) mapData.get(Constants.RDF_OBJECT);
-		String method = mapData.get(Constants.METHOD_ORIGIN).toString().replace("/", "");
-
-		// TODO: What is the best way to simplify this.
-		if (true) {
-			// json based validation likely
-			validationService.validate(mapData.get(Constants.ATTRIBUTE_NAME), method);
-		} else {
-			validationService.validate(rdfModel, method);
-		}
+	public Map<String, Object> execute(Map<String, Object> mapData) throws MiddlewareHaltException {
+		validationService.validate(apiMessage);
 		return mapData;
 	}
 
-	@Override
-	public Map<String, Object> next(Map<String, Object> mapData) throws IOException {
-		return null;
-	}
+    @Override
+    public Map<String, Object> next(Map<String, Object> mapData) throws IOException {
+        return null;
+    }
 }

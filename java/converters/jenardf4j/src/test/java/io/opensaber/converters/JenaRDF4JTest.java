@@ -2,10 +2,7 @@ package io.opensaber.converters;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Statement;
@@ -61,14 +58,6 @@ public class JenaRDF4JTest {
 				.add(RDF.TYPE, "ex:PostalAddress").subject(painting).add(RDF.TYPE, "ex:CreativeWork")
 				.add("ex:depicts", "cubes").add("ex:reaction", reaction).subject(reaction).add("ex:rating", "5")
 				.add(RDF.TYPE, "ex:AggregateRating");
-	}
-
-	private void printInputStream(InputStream inputStream) throws IOException {
-		String readLine;
-		BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
-		while (((readLine = br.readLine()) != null)) {
-			System.out.println(readLine);
-		}
 	}
 
 }

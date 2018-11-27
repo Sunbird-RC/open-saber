@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import io.opensaber.pojos.APIMessage;
 import org.apache.jena.ext.com.google.common.io.ByteStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,10 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -29,7 +27,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
 import io.opensaber.pojos.*;
-import io.opensaber.registry.interceptor.handler.BaseRequestHandler;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.service.SignatureService;
@@ -49,6 +46,9 @@ public class RegistryUtilsController {
 	private SignatureService signatureService;
 
 	@Autowired
+	private APIMessage apiMessage;
+
+	@Autowired
 	private OpenSaberInstrumentation watch;
 
 	@Value("${frame.file}")
@@ -60,9 +60,8 @@ public class RegistryUtilsController {
 		Response response = new Response(Response.API_ID.SIGN, "OK", responseParams);
 
 		try {
-			BaseRequestHandler baseRequestHandler = new BaseRequestHandler();
-			baseRequestHandler.setRequest(requestModel);
-			Map<String, Object> requestBodyMap = baseRequestHandler.getRequestBodyMap();
+			watch.start("RegistryUtilsController.generateSignature");
+			Map<String, Object> requestBodyMap = apiMessage.getRequest().getRequestMap();
 			if (requestBodyMap.containsKey(Constants.REQUEST_ATTRIBUTE)
 					&& requestBodyMap.containsKey(Constants.ATTRIBUTE_NAME)) {
 				Object result = signatureService
@@ -80,6 +79,9 @@ public class RegistryUtilsController {
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 			responseParams.setErrmsg(Constants.SIGN_ERROR_MESSAGE);
 		}
+		finally {
+			watch.stop("RegistryUtilsController.generateSignature");
+		}
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
@@ -89,9 +91,8 @@ public class RegistryUtilsController {
 		Response response = new Response(Response.API_ID.VERIFY, "OK", responseParams);
 
 		try {
-			BaseRequestHandler baseRequestHandler = new BaseRequestHandler();
-			baseRequestHandler.setRequest(request);
-			Map<String, Object> map = baseRequestHandler.getRequestBodyMap();
+			watch.start("RegistryUtilsController.verifySignature");
+			Map<String, Object> map = apiMessage.getRequest().getRequestMap();
 			if (map.containsKey(Constants.REQUEST_ATTRIBUTE) && map.containsKey(Constants.ATTRIBUTE_NAME)) {
 				JsonObject obj = gson.fromJson(map.get(Constants.ATTRIBUTE_NAME).toString(), JsonObject.class);
 
@@ -142,12 +143,14 @@ public class RegistryUtilsController {
 				responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 				responseParams.setErrmsg("");
 			}
-
 		} catch (Exception e) {
 			logger.error("Error in verifying signature", e);
 			response.setResult(null);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 			responseParams.setErrmsg(Constants.VERIFY_SIGN_ERROR_MESSAGE);
+		}
+		finally {
+			watch.stop("RegistryUtilsController.verifySignature");
 		}
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
@@ -158,7 +161,7 @@ public class RegistryUtilsController {
 		Response response = new Response(Response.API_ID.KEYS, "OK", responseParams);
 
 		try {
-			Gson gson = new Gson();
+			watch.start("RegistryUtilsController.getKey");
 			String result = signatureService.getKey(keyId);
 			response.setResult(result);
 			responseParams.setErrmsg("");
@@ -168,6 +171,9 @@ public class RegistryUtilsController {
 			response.setResult(null);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 			responseParams.setErrmsg(Constants.KEY_RETRIEVE_ERROR_MESSAGE);
+		}
+		finally {
+			watch.stop("RegistryUtilsController.getKey");
 		}
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
