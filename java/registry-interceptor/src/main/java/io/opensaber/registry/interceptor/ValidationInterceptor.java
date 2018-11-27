@@ -17,12 +17,11 @@ import io.opensaber.pojos.APIMessage;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.middleware.Middleware;
 
-@Component ("validationInterceptor")
+@Component
 public class ValidationInterceptor implements HandlerInterceptor {
 
 	private static Logger logger = LoggerFactory.getLogger(ValidationInterceptor.class);
 
-	@Autowired
 	private Middleware validationFilter;
 
 	@Autowired

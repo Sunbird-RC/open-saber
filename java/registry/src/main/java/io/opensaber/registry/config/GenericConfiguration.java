@@ -36,6 +36,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 
+import io.opensaber.pojos.OpenSaberInstrumentation;
+import io.opensaber.pojos.Response;
 import io.opensaber.registry.authorization.AuthorizationFilter;
 import io.opensaber.registry.authorization.KeyCloakServiceImpl;
 import io.opensaber.registry.exception.CustomException;
@@ -43,9 +45,9 @@ import io.opensaber.registry.exception.CustomExceptionHandler;
 import io.opensaber.registry.frame.FrameContext;
 import io.opensaber.registry.frame.FrameEntity;
 import io.opensaber.registry.frame.FrameEntityImpl;
-import io.opensaber.registry.interceptor.request.transform.JsonToLdRequestTransformer;
-import io.opensaber.registry.interceptor.request.transform.JsonldToLdRequestTransformer;
-import io.opensaber.registry.interceptor.request.transform.RequestTransformFactory;
+import io.opensaber.registry.interceptor.AuthorizationInterceptor;
+import io.opensaber.registry.interceptor.RDFConversionInterceptor;
+import io.opensaber.registry.interceptor.RequestIdValidationInterceptor;
 import io.opensaber.registry.middleware.Middleware;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
 import io.opensaber.registry.middleware.impl.JSONLDConverter;
@@ -64,7 +66,12 @@ import io.opensaber.registry.sink.Neo4jGraphProvider;
 import io.opensaber.registry.sink.OrientDBGraphProvider;
 import io.opensaber.registry.sink.SqlgProvider;
 import io.opensaber.registry.sink.TinkerGraphProvider;
+import io.opensaber.registry.transform.Json2LdTransformer;
+import io.opensaber.registry.transform.Ld2JsonTransformer;
+import io.opensaber.registry.transform.Ld2LdTransformer;
+import io.opensaber.registry.transform.Transformer;
 import io.opensaber.validators.IValidate;
+import io.opensaber.validators.ValidationFilter;
 import io.opensaber.validators.json.jsonschema.JsonValidationServiceImpl;
 import io.opensaber.validators.rdf.shex.RdfSignatureValidator;
 import io.opensaber.validators.rdf.shex.RdfValidationServiceImpl;
@@ -143,11 +150,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public RequestTransformFactory requestTransformFactory() {
-		return new RequestTransformFactory();
-	}
-
-	@Bean
 	public FrameEntity frameEntity() {
 		return new FrameEntityImpl();
 	}
@@ -171,14 +173,24 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public JsonToLdRequestTransformer jsonToLdRequestTransformer() {
+	public Json2LdTransformer json2LdTransformer() {
 		String domain = frameContext().getDomain();
-		return new JsonToLdRequestTransformer(frameEntity().getContent(), domain);
+		return new Json2LdTransformer(frameEntity().getContent(), domain);
 	}
-
+	
 	@Bean
-	public JsonldToLdRequestTransformer jsonldToLdRequestTransformer() {
-		return new JsonldToLdRequestTransformer();
+	public Ld2JsonTransformer ld2JsonTransformer(){
+		return new Ld2JsonTransformer();
+	}
+	
+	@Bean 
+	public Ld2LdTransformer ld2LdTransformer(){
+		return new Ld2LdTransformer();
+	}
+	
+	@Bean
+	public Transformer transformer(){
+		return new Transformer();
 	}
 
 	@Bean
@@ -188,7 +200,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Bean
 	public RDFConversionInterceptor rdfConversionInterceptor() {
-		return new RDFConversionInterceptor(rdfConverter());
+		return new RDFConversionInterceptor(rdfConverter(),transformer());
 	}
 
 	@Bean
@@ -198,7 +210,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Bean
 	public ValidationInterceptor validationInterceptor() throws IOException, CustomException {
-		return new ValidationInterceptor();
+		return new ValidationInterceptor(new ValidationFilter(validationServiceImpl()));
 	}
 
 	@Bean

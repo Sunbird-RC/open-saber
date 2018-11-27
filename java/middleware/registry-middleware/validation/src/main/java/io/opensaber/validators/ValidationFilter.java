@@ -10,7 +10,7 @@ import io.opensaber.pojos.APIMessage;
 import io.opensaber.registry.middleware.Middleware;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
 
-@Component("validationFilter")
+@Component
 public class ValidationFilter implements Middleware {
 	private IValidate validationService;
 
