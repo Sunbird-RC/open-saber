@@ -323,6 +323,7 @@ public class RegistryController {
 
 		try {
 			watch.start("RegistryController.addToExistingEntity");
+			tpGraph.createEncryptedJson(jsonString);
 			tpGraph.createTPGraph(jsonString);
 			result.put("entity", "");
 			response.setResult(result);

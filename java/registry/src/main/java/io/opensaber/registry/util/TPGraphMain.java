@@ -20,6 +20,8 @@ public class TPGraphMain {
     private static Graph graph;
     private static List<String> privatePropertyLst;
     private static EncryptionService encryptionService;
+    private static Map<String, Object> encMap;
+    private static Map<String, Object> encodedMap;
 
     private DatabaseProvider dbProvider;
 
@@ -41,12 +43,7 @@ public class TPGraphMain {
             JsonNode entryValue = entry.getValue();
             if (entryValue.isValueNode()) {
                 if(privatePropertyLst.contains(entry.getKey())) {
-                    String encValue = null;
-                    try {
-                        encValue = encryptionService.encrypt(entryValue.asText());
-                    } catch (EncryptionException e) {
-                        e.printStackTrace();
-                    }
+                    String encValue = encodedMap.get(entry.getKey()).toString();
                     vertex.property(entry.getKey(), encValue.substring(encValue.lastIndexOf("|")+1));
                 } else {
                     vertex.property(entry.getKey(), entryValue.asText());
@@ -104,6 +101,27 @@ public class TPGraphMain {
         }
     }
 
+    public static void createEncryptedJson(String jsonString) throws IOException, EncryptionException {
+        encMap = new HashMap<String, Object>();
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.readTree(jsonString);
+        if(rootNode.isObject()){
+            populateObject(rootNode);
+        }
+        encodedMap = (Map<String, Object>)encryptionService.encrypt(encMap);
+    }
+
+    private static void populateObject(JsonNode rootNode) {
+        rootNode.fields().forEachRemaining(entry -> {
+            JsonNode entryValue = entry.getValue();
+            if(entryValue.isValueNode() && privatePropertyLst.contains(entry.getKey())) {
+                encMap.put(entry.getKey(),entryValue.asText());
+            } else if(entryValue.isObject()) {
+                populateObject(entryValue);
+            }
+        });
+    }
+
     public static enum DBTYPE {NEO4J, POSTGRES};
 
 
@@ -118,9 +136,9 @@ public class TPGraphMain {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(jsonString);
 
-        watch.start("Get Graph");
+        /*watch.start("Get Graph");
         graph = dbProvider.getGraphStore();
-        watch.stop("End Graph");
+        watch.stop("End Graph");*/
 
         watch.start("Start Transaction");
         Transaction tx = graph.tx();
