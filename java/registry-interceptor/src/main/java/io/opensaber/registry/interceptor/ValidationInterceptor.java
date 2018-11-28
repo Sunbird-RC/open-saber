@@ -1,5 +1,6 @@
 package io.opensaber.registry.interceptor;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,8 +40,6 @@ public class ValidationInterceptor implements HandlerInterceptor {
 			throws Exception {
 		boolean result = true;
 		watch.start("ValidationInterceptor.execute");
-		Map<String, Object> data = apiMessage.getRequest().getRequestMap();
-		data.put(Constants.METHOD_ORIGIN, apiMessage.getRequestWrapper().getRequestURI());
 		validationFilter.execute(apiMessage);
 		watch.stop("ValidationInterceptor.execute");
 		return result;
