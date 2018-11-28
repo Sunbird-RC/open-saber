@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.opensaber.pojos.APIMessage;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.vocabulary.RDF;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,16 +16,11 @@ import io.opensaber.pojos.ValidationResponse;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
 import io.opensaber.registry.middleware.Validator;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.Constants.Direction;
 import io.opensaber.registry.middleware.util.RDFUtil;
+import io.opensaber.registry.transform.*;
 import io.opensaber.validators.IValidate;
 import io.opensaber.validators.ValidationException;
-
-import io.opensaber.registry.transform.Transformer;
-import io.opensaber.registry.middleware.util.Constants.Direction;
-import io.opensaber.registry.transform.Configuration;
-import io.opensaber.registry.transform.Data;
-import io.opensaber.registry.transform.ConfigurationHelper;
-import io.opensaber.registry.transform.TransformationException;
 
 public class RdfValidationServiceImpl implements IValidate {
 
@@ -89,17 +83,14 @@ public class RdfValidationServiceImpl implements IValidate {
 
 	public boolean validate(APIMessage apiMessage) throws MiddlewareHaltException {
 		Model rdfModel = null;
-<<<<<<< HEAD
 		Object rdf = apiMessage.getLocalMap(Constants.RDF_OBJECT);
 		String uri = apiMessage.getRequestWrapper().getRequestURI();
 		String methodOrigin = uri.replace("/", "");
-=======
-		
+
 		String dataFromRequest = apiMessage.getRequest().getRequestMapAsString();
 		String contentType = apiMessage.getRequestWrapper().getContentType();
 		Data<Object> rdfData = null;
 
->>>>>>> release-1.1.0
 		try {
 			Configuration config = configurationHelper.getConfiguration(contentType, Direction.IN);
 			Data<Object> ldData = transformer.getInstance(config).transform(new Data<Object>(dataFromRequest));
