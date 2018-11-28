@@ -16,6 +16,7 @@ import io.opensaber.registry.middleware.util.RDFUtil;
 public class RDFConverter implements Middleware {
 	private static Logger logger = LoggerFactory.getLogger(RDFConverter.class);
 
+	@Override
 	public boolean execute(APIMessage apiMessage) throws IOException, MiddlewareHaltException {
 		logger.debug("Attempting to convert LD to RDF");
 		Map<String, Object> mapData = apiMessage.getLocalMap();
@@ -31,10 +32,4 @@ public class RDFConverter implements Middleware {
 		logger.debug("Converted to RDF success");
 		return true;
 	}
-
-	public Map<String, Object> next(Map<String, Object> mapData) throws IOException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

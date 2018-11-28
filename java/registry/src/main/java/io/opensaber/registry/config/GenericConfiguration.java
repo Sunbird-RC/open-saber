@@ -365,6 +365,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		Map<String, String> requestMap = requestIdMap();
 
 		// Verifying our API identifiers and populating the APIMessage bean
+		// Do not remove this.
 		registry.addInterceptor(requestIdValidationInterceptor())
 					.addPathPatterns(new ArrayList(requestMap.keySet())).order(orderIdx++);
 
@@ -373,10 +374,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 			registry.addInterceptor(authorizationInterceptor()).addPathPatterns("/**")
 					.excludePathPatterns("/health", "/error", "/_schemas/**").order(orderIdx++);
 		}
-
-//		// Convert to RDF
-//		registry.addInterceptor(rdfConversionInterceptor()).addPathPatterns("/add", "/update", "/search")
-//				.order(orderIdx++);
 
 		// Validate the input against the defined schema
 		if (validationEnabled) {
@@ -389,24 +386,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 				e.printStackTrace();
 			}
 		}
-
-
-		/*
-		if(authenticationEnabled) {
-            registry.addInterceptor(authorizationInterceptor())
-                    .addPathPatterns("/**").excludePathPatterns("/health", "/error").order(orderIdx++);
-	    }
-
-	    registry.addInterceptor(rdfConversionInterceptor())
-				.addPathPatterns("/add", "/update", "/search").order(orderIdx++);
-		registry.addInterceptor(rdfValidationInterceptor())
-				.addPathPatterns("/add", "/update").order(orderIdx++);
-
-		if (signatureEnabled) {
-			registry.addInterceptor(signaturePresenceValidationInterceptor())
-					.addPathPatterns("/add", "/update").order(orderIdx++);
-		}
-		 */
 	}
 
 	@Override
