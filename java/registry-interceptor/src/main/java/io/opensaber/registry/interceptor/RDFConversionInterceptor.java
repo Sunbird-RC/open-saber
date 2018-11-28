@@ -18,6 +18,7 @@ import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.Direction;
 import io.opensaber.registry.transform.Configuration;
 import io.opensaber.registry.transform.Data;
+import io.opensaber.registry.transform.MediaTypeConfiguration;
 import io.opensaber.registry.transform.Transformer;
 
 @Component
@@ -33,6 +34,10 @@ public class RDFConversionInterceptor implements HandlerInterceptor {
 	private APIMessage apiMessage;
 
 	private Transformer transformer;
+	
+	@Autowired
+	private MediaTypeConfiguration mediaTypeConfiguration;
+	
 
 	public RDFConversionInterceptor(Middleware rdfConverter, Transformer transformer) {
 		this.rdfConverter = rdfConverter;
@@ -46,7 +51,7 @@ public class RDFConversionInterceptor implements HandlerInterceptor {
 		String dataFromRequest = apiMessage.getRequest().getRequestMapAsString();
 		String contentType = request.getContentType();
 		logger.debug("ContentType {0} requestBody {1}", contentType, dataFromRequest);
-		Configuration config = transformer.getConfiguration(contentType, Direction.IN);
+		Configuration config = mediaTypeConfiguration.getConfiguration(contentType, Direction.IN);
 		Data<Object> transformedData = transformer.getInstance(config)
 				.transform(new Data<Object>(dataFromRequest));
 

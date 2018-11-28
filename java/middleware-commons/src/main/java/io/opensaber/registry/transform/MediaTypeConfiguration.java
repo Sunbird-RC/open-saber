@@ -1,11 +1,9 @@
 package io.opensaber.registry.transform;
 
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
 
 import io.opensaber.registry.middleware.util.Constants.Direction;
 
-@Component
 public class MediaTypeConfiguration {
 	
 	public static final String MEDIATYPE_APPLICATION_JSONLD = "application/ld+json";

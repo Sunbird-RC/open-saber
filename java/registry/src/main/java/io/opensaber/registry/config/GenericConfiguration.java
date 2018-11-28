@@ -66,6 +66,7 @@ import io.opensaber.registry.transform.Json2LdTransformer;
 import io.opensaber.registry.transform.LD2RDFTransformer;
 import io.opensaber.registry.transform.Ld2JsonTransformer;
 import io.opensaber.registry.transform.Ld2LdTransformer;
+import io.opensaber.registry.transform.MediaTypeConfiguration;
 import io.opensaber.registry.transform.Transformer;
 import io.opensaber.validators.IValidate;
 import io.opensaber.validators.ValidationFilter;
@@ -190,6 +191,10 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	public LD2RDFTransformer ld2RDFTransformer(){
 		return new LD2RDFTransformer();
 	}
+	@Bean
+	public MediaTypeConfiguration mediaTypeConfiguration(){
+		return new MediaTypeConfiguration();
+	}
 
 	@Bean
 	public AuthorizationInterceptor authorizationInterceptor() {
@@ -233,7 +238,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		IValidate validator = null;
 		if (getValidationType() == SchemaType.SHEX) {
 			validator = new RdfValidationServiceImpl(shexSchemaLoader().getSchemaForCreate(),
-					shexSchemaLoader().getSchemaForUpdate(), transformer());
+					shexSchemaLoader().getSchemaForUpdate());
 		} else if (getValidationType() == JSON) {
 			validator = new JsonValidationServiceImpl();
 		} else {
@@ -398,8 +403,8 @@ public class GenericConfiguration implements WebMvcConfigurer {
 					.excludePathPatterns("/health", "/error", "/_schemas/**").order(orderIdx++);
 		}
 
-/*		registry.addInterceptor(rdfConversionInterceptor()).addPathPatterns("/add", "/update", "/search")
-				.order(orderIdx++);*/
+		registry.addInterceptor(rdfConversionInterceptor()).addPathPatterns("/add", "/update", "/search")
+				.order(orderIdx++);
 
 	}
 
