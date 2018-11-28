@@ -61,11 +61,11 @@ import io.opensaber.registry.sink.Neo4jGraphProvider;
 import io.opensaber.registry.sink.OrientDBGraphProvider;
 import io.opensaber.registry.sink.SqlgProvider;
 import io.opensaber.registry.sink.TinkerGraphProvider;
+import io.opensaber.registry.transform.ConfigurationHelper;
 import io.opensaber.registry.transform.Json2LdTransformer;
 import io.opensaber.registry.transform.LD2RDFTransformer;
 import io.opensaber.registry.transform.Ld2JsonTransformer;
 import io.opensaber.registry.transform.Ld2LdTransformer;
-import io.opensaber.registry.transform.MediaTypeConfiguration;
 import io.opensaber.registry.transform.Transformer;
 import io.opensaber.validators.IValidate;
 import io.opensaber.validators.ValidationFilter;
@@ -191,8 +191,8 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		return new LD2RDFTransformer();
 	}
 	@Bean
-	public MediaTypeConfiguration mediaTypeConfiguration(){
-		return new MediaTypeConfiguration();
+	public ConfigurationHelper configurationHelper(){
+		return new ConfigurationHelper();
 	}
 
 	@Bean

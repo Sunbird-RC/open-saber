@@ -24,7 +24,7 @@ import io.opensaber.registry.transform.Transformer;
 import io.opensaber.registry.middleware.util.Constants.Direction;
 import io.opensaber.registry.transform.Configuration;
 import io.opensaber.registry.transform.Data;
-import io.opensaber.registry.transform.MediaTypeConfiguration;
+import io.opensaber.registry.transform.ConfigurationHelper;
 import io.opensaber.registry.transform.TransformationException;
 
 public class RdfValidationServiceImpl implements IValidate {
@@ -50,7 +50,7 @@ public class RdfValidationServiceImpl implements IValidate {
 	private Transformer transformer;
 	
 	@Autowired
-	private MediaTypeConfiguration mediaTypeConfiguration;
+	private ConfigurationHelper configurationHelper;
 
 	private RdfValidationServiceImpl() {
 		// Disallow without schema
@@ -94,12 +94,12 @@ public class RdfValidationServiceImpl implements IValidate {
 		Data<Object> rdfData = null;
 
 		try {
-			Configuration config = mediaTypeConfiguration.getConfiguration(contentType, Direction.IN);
+			Configuration config = configurationHelper.getConfiguration(contentType, Direction.IN);
 			Data<Object> ldData = transformer.getInstance(config).transform(new Data<Object>(dataFromRequest));
 			rdfData = transformer.getInstance(Configuration.LD2RDF).transform(ldData);
 
 			apiMessage.addLocalMap(Constants.LD_OBJECT, ldData.getData().toString());
-			apiMessage.addLocalMap(Constants.RDF_OBJECT, rdfData.getData());
+			apiMessage.addLocalMap(Constants.INPUT, rdfData.getData());
 			
 			if (rdfData.getData() == null) {
 				throw new ValidationException(ErrorConstants.RDF_DATA_IS_MISSING);

@@ -4,7 +4,7 @@ import org.springframework.http.MediaType;
 
 import io.opensaber.registry.middleware.util.Constants.Direction;
 
-public class MediaTypeConfiguration {
+public class ConfigurationHelper {
 	
 	public static final String MEDIATYPE_APPLICATION_JSONLD = "application/ld+json";
 

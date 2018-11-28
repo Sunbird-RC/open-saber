@@ -38,7 +38,7 @@ public class RDFValidationMapper implements Middleware {
 	}
 
 	public Map<String, Object> execute(Map<String, Object> mapData) throws IOException, MiddlewareHaltException {
-		Object RDF = mapData.get(Constants.RDF_OBJECT);
+		Object RDF = mapData.get(Constants.INPUT);
 		if (RDF == null) {
 			throw new MiddlewareHaltException(this.getClass().getName() + RDF_DATA_IS_MISSING);
 		} else if (shapeTypeMap == null) {
