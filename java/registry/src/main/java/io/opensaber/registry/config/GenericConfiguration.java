@@ -203,7 +203,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Bean
 	public RDFConversionInterceptor rdfConversionInterceptor() {
-		return new RDFConversionInterceptor(rdfConverter(),transformer());
+		return new RDFConversionInterceptor(rdfConverter());
 	}
 
 	@Bean
@@ -403,8 +403,8 @@ public class GenericConfiguration implements WebMvcConfigurer {
 					.excludePathPatterns("/health", "/error", "/_schemas/**").order(orderIdx++);
 		}
 
-		registry.addInterceptor(rdfConversionInterceptor()).addPathPatterns("/add", "/update", "/search")
-				.order(orderIdx++);
+	/*	registry.addInterceptor(rdfConversionInterceptor()).addPathPatterns("/add", "/update", "/search")
+				.order(orderIdx++);*/
 
 	}
 

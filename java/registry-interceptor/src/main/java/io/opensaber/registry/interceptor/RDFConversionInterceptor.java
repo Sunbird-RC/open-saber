@@ -33,15 +33,15 @@ public class RDFConversionInterceptor implements HandlerInterceptor {
 	@Autowired
 	private APIMessage apiMessage;
 
+	@Autowired
 	private Transformer transformer;
 	
 	@Autowired
 	private MediaTypeConfiguration mediaTypeConfiguration;
 	
 
-	public RDFConversionInterceptor(Middleware rdfConverter, Transformer transformer) {
+	public RDFConversionInterceptor(Middleware rdfConverter) {
 		this.rdfConverter = rdfConverter;
-		this.transformer = transformer;
 	}
 
 	@Override
