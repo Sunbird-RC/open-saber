@@ -101,6 +101,7 @@ public class TPGraphMain {
         }
     }
 
+    // TODO: This method must exist outside in an EncryptionHelper.
     public static void createEncryptedJson(String jsonString) throws IOException, EncryptionException {
         encMap = new HashMap<String, Object>();
         ObjectMapper mapper = new ObjectMapper();
@@ -132,6 +133,9 @@ public class TPGraphMain {
     // For every parent vertex and child vertex, there is a single Edge between
     //    teacher -> address
 
+    // TODO: It is expected that this method would be called with already encrypted
+    // property values and with entity sigatures.
+    // Think of passing a ObjectNode directly; ObjectMapper().readTree is costly operation.
     public void createTPGraph(String jsonString) throws IOException, EncryptionException {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(jsonString);
