@@ -19,6 +19,9 @@ public class Transformer {
 	@Autowired
 	private Ld2LdTransformer Ld2LdTransformer;
 	
+	@Autowired
+	private LD2RDFTransformer ld2RDF;
+	
 	public ITransformer<Object> getInstance(Configuration config) throws TransformationException {
 		ITransformer<Object> transformer = null;
 		
@@ -28,6 +31,8 @@ public class Transformer {
 			transformer = ld2JsonTransformer;
 		}else if(config == Configuration.LD2LD){
 			transformer = Ld2LdTransformer;
+		}else if(config == Configuration.LD2RDF){
+			transformer = ld2RDF;				
 		}else{
 			throw new TransformationException(EXCEPTION_MESSAGE, ErrorCode.UNSUPPOTERTED_TYPE);
 

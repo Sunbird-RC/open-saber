@@ -63,6 +63,7 @@ import io.opensaber.registry.sink.OrientDBGraphProvider;
 import io.opensaber.registry.sink.SqlgProvider;
 import io.opensaber.registry.sink.TinkerGraphProvider;
 import io.opensaber.registry.transform.Json2LdTransformer;
+import io.opensaber.registry.transform.LD2RDFTransformer;
 import io.opensaber.registry.transform.Ld2JsonTransformer;
 import io.opensaber.registry.transform.Ld2LdTransformer;
 import io.opensaber.registry.transform.Transformer;
@@ -71,6 +72,7 @@ import io.opensaber.validators.ValidationFilter;
 import io.opensaber.validators.json.jsonschema.JsonValidationServiceImpl;
 import io.opensaber.validators.rdf.shex.RdfSignatureValidator;
 import io.opensaber.validators.rdf.shex.RdfValidationServiceImpl;
+
 
 @Configuration
 public class GenericConfiguration implements WebMvcConfigurer {
@@ -183,6 +185,11 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	public Transformer transformer(){
 		return new Transformer();
 	}
+	
+	@Bean
+	public LD2RDFTransformer ld2RDF(){
+		return new LD2RDFTransformer();
+	}
 
 	@Bean
 	public AuthorizationInterceptor authorizationInterceptor() {
@@ -226,7 +233,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		IValidate validator = null;
 		if (getValidationType() == SchemaType.SHEX) {
 			validator = new RdfValidationServiceImpl(shexSchemaLoader().getSchemaForCreate(),
-					shexSchemaLoader().getSchemaForUpdate());
+					shexSchemaLoader().getSchemaForUpdate(), transformer());
 		} else if (getValidationType() == JSON) {
 			validator = new JsonValidationServiceImpl();
 		} else {
@@ -391,8 +398,8 @@ public class GenericConfiguration implements WebMvcConfigurer {
 					.excludePathPatterns("/health", "/error", "/_schemas/**").order(orderIdx++);
 		}
 
-		registry.addInterceptor(rdfConversionInterceptor()).addPathPatterns("/add", "/update", "/search")
-				.order(orderIdx++);
+/*		registry.addInterceptor(rdfConversionInterceptor()).addPathPatterns("/add", "/update", "/search")
+				.order(orderIdx++);*/
 
 	}
 
