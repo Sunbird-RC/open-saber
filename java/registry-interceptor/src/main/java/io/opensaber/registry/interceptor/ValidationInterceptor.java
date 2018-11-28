@@ -37,13 +37,12 @@ public class ValidationInterceptor implements HandlerInterceptor {
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
-		boolean result = false;
+		boolean result = true;
 		watch.start("ValidationInterceptor.execute");
 		Map<String, Object> data = apiMessage.getRequest().getRequestMap();
 		data.put(Constants.METHOD_ORIGIN, apiMessage.getRequestWrapper().getRequestURI());
-		Map<String, Object> attributeMap = validationFilter.execute(apiMessage.getRequest().getRequestMap());
+		validationFilter.execute(apiMessage);
 		watch.stop("ValidationInterceptor.execute");
-		result = attributeMap.containsKey("isValid");
 		return result;
 	}
 

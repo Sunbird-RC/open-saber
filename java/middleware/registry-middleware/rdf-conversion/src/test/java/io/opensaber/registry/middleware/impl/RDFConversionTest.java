@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.opensaber.pojos.APIMessage;
 import org.apache.jena.rdf.model.Model;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,13 +22,21 @@ import org.junit.rules.ExpectedException;
 import io.opensaber.registry.middleware.Middleware;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
 import io.opensaber.registry.middleware.util.Constants;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
+@RunWith(MockitoJUnitRunner.class)
 public class RDFConversionTest {
 
 	private static final String SIMPLE_JSONLD = "good1.jsonld";
 
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
+
+	@Mock
+	private APIMessage apiMessage;
+
 
 	Map<String, Object> mapData;
 	private Middleware m;
@@ -46,18 +55,17 @@ public class RDFConversionTest {
 		mapData = new HashMap<String, Object>();
 		expectedEx.expect(MiddlewareHaltException.class);
 		expectedEx.expectMessage("JSON-LD data is missing!");
-		m.execute(mapData);
+		m.execute(apiMessage);
 	}
 
 	@Test
 	public void testHaltIfJSONLDpresentButInvalid() throws IOException, MiddlewareHaltException {
 		setup();
-		mapData = new HashMap<String, Object>();
 		Object object = new Object();
-		mapData.put(Constants.LD_OBJECT, object);
+		apiMessage.addLocalMap(Constants.LD_OBJECT, object);
 		expectedEx.expect(MiddlewareHaltException.class);
 		expectedEx.expectMessage(Constants.JSONLD_PARSE_ERROR);
-		m.execute(mapData);
+		m.execute(apiMessage);
 	}
 
 	@Test
@@ -67,8 +75,8 @@ public class RDFConversionTest {
 		String jsonLDData = Paths.get(getPath(SIMPLE_JSONLD)).toString();
 		Path filePath = Paths.get(jsonLDData);
 		String jsonld = new String(Files.readAllBytes(filePath), StandardCharsets.UTF_8);
-		mapData.put(Constants.LD_OBJECT, jsonld);
-		m.execute(mapData);
+		apiMessage.addLocalMap(Constants.LD_OBJECT, jsonld);
+		m.execute(apiMessage);
 		testForSuccessfulResult();
 	}
 

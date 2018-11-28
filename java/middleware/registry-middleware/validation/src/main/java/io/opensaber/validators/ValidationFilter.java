@@ -22,13 +22,8 @@ public class ValidationFilter implements Middleware {
 	}
 
 	@Override
-	public Map<String, Object> execute(Map<String, Object> mapData) throws MiddlewareHaltException {
+	public boolean execute(APIMessage apiMessage) throws MiddlewareHaltException {
 		validationService.validate(apiMessage);
-		return mapData;
+		return true;
 	}
-
-    @Override
-    public Map<String, Object> next(Map<String, Object> mapData) throws IOException {
-        return null;
-    }
 }
