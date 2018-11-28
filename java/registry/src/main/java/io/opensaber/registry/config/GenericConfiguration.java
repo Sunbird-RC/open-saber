@@ -42,7 +42,6 @@ import io.opensaber.registry.frame.FrameContext;
 import io.opensaber.registry.frame.FrameEntity;
 import io.opensaber.registry.frame.FrameEntityImpl;
 import io.opensaber.registry.interceptor.AuthorizationInterceptor;
-import io.opensaber.registry.interceptor.RDFConversionInterceptor;
 import io.opensaber.registry.interceptor.RequestIdValidationInterceptor;
 import io.opensaber.registry.middleware.Middleware;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
@@ -199,11 +198,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Bean
 	public AuthorizationInterceptor authorizationInterceptor() {
 		return new AuthorizationInterceptor(authorizationFilter());
-	}
-
-	@Bean
-	public RDFConversionInterceptor rdfConversionInterceptor() {
-		return new RDFConversionInterceptor(rdfConverter());
 	}
 
 	@Bean
@@ -402,9 +396,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 			registry.addInterceptor(authorizationInterceptor()).addPathPatterns("/**")
 					.excludePathPatterns("/health", "/error", "/_schemas/**").order(orderIdx++);
 		}
-
-	/*	registry.addInterceptor(rdfConversionInterceptor()).addPathPatterns("/add", "/update", "/search")
-				.order(orderIdx++);*/
 
 	}
 
