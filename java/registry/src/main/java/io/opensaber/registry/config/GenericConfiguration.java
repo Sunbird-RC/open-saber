@@ -187,7 +187,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 	
 	@Bean
-	public LD2RDFTransformer ld2RDF(){
+	public LD2RDFTransformer ld2RDFTransformer(){
 		return new LD2RDFTransformer();
 	}
 

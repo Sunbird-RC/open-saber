@@ -47,6 +47,7 @@ import io.opensaber.registry.service.SearchService;
 import io.opensaber.registry.transform.Configuration;
 import io.opensaber.registry.transform.Data;
 import io.opensaber.registry.transform.ITransformer;
+import io.opensaber.registry.transform.MediaTypeConfiguration;
 import io.opensaber.registry.transform.TransformationException;
 import io.opensaber.registry.transform.Transformer;
 
@@ -56,6 +57,8 @@ public class RegistryController {
 	private static Logger logger = LoggerFactory.getLogger(RegistryController.class);
 	@Autowired
 	Transformer transformer;
+	@Autowired
+	private MediaTypeConfiguration mediaTypeConfiguration;
 	@Autowired
 	private RegistryService registryService;
 	@Autowired
@@ -130,7 +133,7 @@ public class RegistryController {
 			String content = registryService.getEntityFramedById(entityId, includeSign);
 			logger.info("RegistryController: Framed content " + content);
 
-			Configuration config = transformer.getConfiguration(header.getAccept().iterator().next().toString(),
+			Configuration config = mediaTypeConfiguration.getConfiguration(header.getAccept().iterator().next().toString(),
 					Direction.OUT);
 			Data<Object> data = new Data<Object>(content);
 			ITransformer<Object> responseTransformer = transformer.getInstance(config);
@@ -174,7 +177,7 @@ public class RegistryController {
 			watch.start("RegistryController.searchEntity");
 			String jenaJson = searchService.searchFramed(rdf);
 			Data<Object> data = new Data<>(jenaJson);
-			Configuration config = transformer.getConfiguration(header.getAccept().iterator().next().toString(),
+			Configuration config = mediaTypeConfiguration.getConfiguration(header.getAccept().iterator().next().toString(),
 					Direction.OUT);
 
 			ITransformer<Object> responseTransformer = transformer.getInstance(config);
