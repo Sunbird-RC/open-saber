@@ -7,15 +7,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.opensaber.pojos.OpenSaberInstrumentation;
-import io.opensaber.pojos.Response;
-import io.opensaber.registry.interceptor.*;
-import io.opensaber.registry.middleware.impl.JSONLDConverter;
-import io.opensaber.validators.ValidationFilter;
+import io.opensaber.registry.interceptor.ValidationInterceptor;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,8 +70,6 @@ import io.opensaber.validators.json.jsonschema.JsonValidationServiceImpl;
 import io.opensaber.validators.rdf.shex.RdfSignatureValidator;
 import io.opensaber.validators.rdf.shex.RdfValidationServiceImpl;
 
-import javax.servlet.http.HttpServletRequest;
-
 @Configuration
 public class GenericConfiguration implements WebMvcConfigurer {
 
@@ -84,9 +77,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Autowired
 	private Environment environment;
-
-	@Autowired
-	private HttpServletRequest servletRequest;
 
 	@Value("${encryption.service.connection.timeout}")
 	private int connectionTimeout;
@@ -139,11 +129,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public Middleware jsonldConverter() {
-		return new JSONLDConverter();
-	}
-
-	@Bean
 	public Middleware rdfConverter() {
 		return new RDFConverter();
 	}
@@ -176,7 +161,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		String domain = frameContext().getDomain();
 		return new Json2LdTransformer(frameEntity().getContent(), domain);
 	}
-	
+
 	@Bean
 	public Ld2JsonTransformer ld2JsonTransformer(){
 		return new Ld2JsonTransformer();
