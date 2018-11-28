@@ -56,7 +56,7 @@ public class TPGraphMain {
         Edge e = addEdge(graph, label, parentVertex, vertex);
         String edgeId = UUID.randomUUID().toString();
         vertex.property(label + "id", edgeId);
-        parentVertex.property(vertex.label(), edgeId);
+        parentVertex.property(vertex.label()+ "id", edgeId);
     }
 
     public static Edge addEdge(Graph graph, String label, Vertex v1, Vertex v2) {
@@ -102,7 +102,7 @@ public class TPGraphMain {
     }
 
     // TODO: This method must exist outside in an EncryptionHelper.
-    public static void createEncryptedJson(String jsonString) throws IOException, EncryptionException {
+    public static JsonNode createEncryptedJson(String jsonString) throws IOException, EncryptionException {
         encMap = new HashMap<String, Object>();
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(jsonString);
@@ -110,6 +110,7 @@ public class TPGraphMain {
             populateObject(rootNode);
         }
         encodedMap = (Map<String, Object>)encryptionService.encrypt(encMap);
+        return rootNode;
     }
 
     private static void populateObject(JsonNode rootNode) {
@@ -136,9 +137,9 @@ public class TPGraphMain {
     // TODO: It is expected that this method would be called with already encrypted
     // property values and with entity sigatures.
     // Think of passing a ObjectNode directly; ObjectMapper().readTree is costly operation.
-    public void createTPGraph(String jsonString) throws IOException, EncryptionException {
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode rootNode = mapper.readTree(jsonString);
+    public void createTPGraph(JsonNode rootNode) throws IOException, EncryptionException {
+       /* ObjectMapper mapper = new ObjectMapper();
+        JsonNode rootNode = mapper.readTree(jsonString);*/
 
         /*watch.start("Get Graph");
         graph = dbProvider.getGraphStore();

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.service.EncryptionService;
 import io.opensaber.registry.sink.DatabaseProvider;
@@ -323,8 +324,8 @@ public class RegistryController {
 
 		try {
 			watch.start("RegistryController.addToExistingEntity");
-			tpGraph.createEncryptedJson(jsonString);
-			tpGraph.createTPGraph(jsonString);
+			JsonNode rootNode = tpGraph.createEncryptedJson(jsonString);
+			tpGraph.createTPGraph(rootNode);
 			result.put("entity", "");
 			response.setResult(result);
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
