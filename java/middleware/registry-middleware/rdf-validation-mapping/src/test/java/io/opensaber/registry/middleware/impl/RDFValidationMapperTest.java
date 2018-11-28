@@ -143,7 +143,7 @@ public class RDFValidationMapperTest {
 	public void test_halt_if_no_type_validation_map() throws IOException, MiddlewareHaltException {
 		setup();
 		mapData = new HashMap<String, Object>();
-		mapData.put(Constants.INPUT, ModelFactory.createDefaultModel());
+		mapData.put(Constants.RDF_OBJECT, ModelFactory.createDefaultModel());
 		expectedEx.expect(MiddlewareHaltException.class);
 		expectedEx.expectMessage("Validation is missing");
 		m.execute(mapData);
@@ -155,7 +155,7 @@ public class RDFValidationMapperTest {
 		loadValidationConfigModel();
 		setup();
 		mapData = new HashMap<String, Object>();
-		mapData.put(Constants.INPUT, "{}");
+		mapData.put(Constants.RDF_OBJECT, "{}");
 		expectedEx.expect(MiddlewareHaltException.class);
 		expectedEx.expectMessage("RDF Data is invalid");
 		m.execute(mapData);
@@ -168,7 +168,7 @@ public class RDFValidationMapperTest {
 		loadValidationConfigModel();
 		setup();
 		mapData = new HashMap<String, Object>();
-		mapData.put(Constants.INPUT, getRdfWithDifferentType(VALID_JSONLD));
+		mapData.put(Constants.RDF_OBJECT, getRdfWithDifferentType(VALID_JSONLD));
 		expectedEx.expect(MiddlewareHaltException.class);
 		expectedEx.expectMessage("Validation missing for type");
 		m.execute(mapData);
@@ -180,7 +180,7 @@ public class RDFValidationMapperTest {
 		loadValidationConfigModel();
 		setup();
 		mapData = new HashMap<String, Object>();
-		mapData.put(Constants.INPUT, getNewValidRdf(VALID_JSONLD));
+		mapData.put(Constants.RDF_OBJECT, getNewValidRdf(VALID_JSONLD));
 		mapData = m.execute(mapData);
 		Model resultModel = (Model) mapData.get(Constants.RDF_VALIDATION_MAPPER_OBJECT);
 		StmtIterator iter = filterStatement("http://example.com/voc/teacher/1.0.0/SchoolShape", TARGET_NODE_IRI,
@@ -195,7 +195,7 @@ public class RDFValidationMapperTest {
 		loadValidationConfigModel();
 		setup();
 		mapData = new HashMap<String, Object>();
-		mapData.put(Constants.INPUT, getRdfWithComplexNodeRemoved(VALID_JSONLD));
+		mapData.put(Constants.RDF_OBJECT, getRdfWithComplexNodeRemoved(VALID_JSONLD));
 		mapData = m.execute(mapData);
 		Model resultModel = (Model) mapData.get(Constants.RDF_VALIDATION_MAPPER_OBJECT);
 		StmtIterator iter1 = filterStatement("http://example.com/voc/teacher/1.0.0/SchoolShape", TARGET_NODE_IRI,

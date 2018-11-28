@@ -22,7 +22,7 @@ public class RDFConverter implements Middleware {
 			throw new MiddlewareHaltException(Constants.JSONLD_DATA_IS_MISSING);
 		} else if (jsonld instanceof String) {
 			Model rdfModel = RDFUtil.getRdfModelBasedOnFormat(jsonld.toString(), Constants.JENA_LD_FORMAT);
-			mapData.put(Constants.INPUT, rdfModel);
+			mapData.put(Constants.RDF_OBJECT, rdfModel);
 		} else {
 			throw new MiddlewareHaltException(Constants.JSONLD_PARSE_ERROR);
 		}

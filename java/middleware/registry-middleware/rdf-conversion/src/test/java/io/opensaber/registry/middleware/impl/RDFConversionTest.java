@@ -78,7 +78,7 @@ public class RDFConversionTest {
 	}
 
 	private Model testForModel() {
-		Model resultModel = (Model) mapData.get(Constants.INPUT);
+		Model resultModel = (Model) mapData.get(Constants.RDF_OBJECT);
 		assertNotNull(resultModel);
 		return resultModel;
 	}

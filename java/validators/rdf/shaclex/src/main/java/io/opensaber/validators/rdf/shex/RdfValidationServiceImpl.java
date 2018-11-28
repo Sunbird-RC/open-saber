@@ -99,7 +99,8 @@ public class RdfValidationServiceImpl implements IValidate {
 			rdfData = transformer.getInstance(Configuration.LD2RDF).transform(ldData);
 
 			apiMessage.addLocalMap(Constants.LD_OBJECT, ldData.getData().toString());
-			apiMessage.addLocalMap(Constants.INPUT, rdfData.getData());
+			apiMessage.addLocalMap(Constants.RDF_OBJECT, rdfData.getData());
+			apiMessage.addLocalMap(Constants.CONTROLLER_INPUT, rdfData.getData());
 			
 			if (rdfData.getData() == null) {
 				throw new ValidationException(ErrorConstants.RDF_DATA_IS_MISSING);

@@ -82,7 +82,7 @@ public class RegistryController {
 	public ResponseEntity<Response> add(@RequestParam(value = "id", required = false) String id,
 			@RequestParam(value = "prop", required = false) String property) {
 
-		Model rdf = (Model) apiMessage.getLocalMap(Constants.INPUT);
+		Model rdf = (Model) apiMessage.getLocalMap(Constants.CONTROLLER_INPUT);
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.CREATE, "OK", responseParams);
 		Map<String, Object> result = new HashMap<>();
@@ -168,7 +168,7 @@ public class RegistryController {
 	@RequestMapping(value = "/search", method = RequestMethod.POST)
 	public ResponseEntity<Response> searchEntity(@RequestHeader HttpHeaders header) {
 
-		Model rdf = (Model) apiMessage.getLocalMap(Constants.INPUT);
+		Model rdf = (Model) apiMessage.getLocalMap(Constants.RDF_OBJECT);
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.SEARCH, "OK", responseParams);
 		Map<String, Object> result = new HashMap<>();
@@ -206,7 +206,7 @@ public class RegistryController {
 	@ResponseBody
 	@RequestMapping(value = "/update", method = RequestMethod.POST)
 	public ResponseEntity<Response> update() {
-		Model rdf = (Model) apiMessage.getLocalMap(Constants.INPUT);
+		Model rdf = (Model) apiMessage.getLocalMap(Constants.RDF_OBJECT);
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.UPDATE, "OK", responseParams);
 

@@ -8,7 +8,7 @@ import org.apache.jena.rdf.model.Model;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.RDFUtil;
 
-public class LD2RDFTransformer implements ITransformer<Object> {
+public class Ld2RdfTransformer implements ITransformer<Object> {
 	
 	@Override
 	public Data<Object> transform(Data<Object> data) throws TransformationException, IOException {
