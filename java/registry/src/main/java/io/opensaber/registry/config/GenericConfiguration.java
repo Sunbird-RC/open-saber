@@ -10,6 +10,7 @@ import java.util.Map;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.pojos.Response;
 import io.opensaber.registry.interceptor.*;
+import io.opensaber.registry.middleware.impl.JSONLDConverter;
 import io.opensaber.validators.ValidationFilter;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.client.HttpClient;
@@ -50,9 +51,7 @@ import io.opensaber.registry.interceptor.RDFConversionInterceptor;
 import io.opensaber.registry.interceptor.RequestIdValidationInterceptor;
 import io.opensaber.registry.middleware.Middleware;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
-import io.opensaber.registry.middleware.impl.JSONLDConverter;
 import io.opensaber.registry.middleware.impl.RDFConverter;
-import io.opensaber.registry.middleware.impl.RDFValidationMapper;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.schema.config.SchemaLoader;
@@ -350,17 +349,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Bean
 	public UrlValidator urlValidator() {
 		return new UrlValidator(UrlValidator.ALLOW_LOCAL_URLS);
-	}
-
-	@Bean
-	public Middleware rdfValidationMapper() {
-		Model validationConfig = null;
-		try {
-			validationConfig = shexSchemaLoader().getValidationConfig();
-		} catch (Exception e) {
-			logger.error("Unable to get validation configuration");
-		}
-		return new RDFValidationMapper(validationConfig);
 	}
 
 	/**

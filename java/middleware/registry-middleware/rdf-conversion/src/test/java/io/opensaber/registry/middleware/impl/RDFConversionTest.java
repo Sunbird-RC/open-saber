@@ -2,6 +2,8 @@ package io.opensaber.registry.middleware.impl;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.URI;
@@ -25,6 +27,7 @@ import io.opensaber.registry.middleware.util.Constants;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.util.Assert;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RDFConversionTest {
@@ -38,7 +41,7 @@ public class RDFConversionTest {
 	private APIMessage apiMessage;
 
 
-	Map<String, Object> mapData;
+
 	private Middleware m;
 
 	private void setup() {
@@ -52,7 +55,7 @@ public class RDFConversionTest {
 	@Test
 	public void testHaltIfNoJsonLDDataToValidate() throws IOException, MiddlewareHaltException {
 		setup();
-		mapData = new HashMap<String, Object>();
+		Map<String, Object> mapData = new HashMap<String, Object>();
 		expectedEx.expect(MiddlewareHaltException.class);
 		expectedEx.expectMessage("JSON-LD data is missing!");
 		m.execute(apiMessage);
@@ -62,7 +65,11 @@ public class RDFConversionTest {
 	public void testHaltIfJSONLDpresentButInvalid() throws IOException, MiddlewareHaltException {
 		setup();
 		Object object = new Object();
-		apiMessage.addLocalMap(Constants.LD_OBJECT, object);
+		Map<String, Object> mapData = new HashMap<>();
+		mapData.put(Constants.LD_OBJECT, object);
+
+		when(apiMessage.getLocalMap()).thenReturn(mapData);
+
 		expectedEx.expect(MiddlewareHaltException.class);
 		expectedEx.expectMessage(Constants.JSONLD_PARSE_ERROR);
 		m.execute(apiMessage);
@@ -71,13 +78,17 @@ public class RDFConversionTest {
 	@Test
 	public void testIfJSONLDIsSupported() throws IOException, MiddlewareHaltException, URISyntaxException {
 		setup();
-		mapData = new HashMap<String, Object>();
+		Map<String, Object> mapData = new HashMap<String, Object>();
 		String jsonLDData = Paths.get(getPath(SIMPLE_JSONLD)).toString();
 		Path filePath = Paths.get(jsonLDData);
 		String jsonld = new String(Files.readAllBytes(filePath), StandardCharsets.UTF_8);
-		apiMessage.addLocalMap(Constants.LD_OBJECT, jsonld);
+
+		mapData.put(Constants.LD_OBJECT, jsonld);
+
+		when(apiMessage.getLocalMap()).thenReturn(mapData);
+
 		m.execute(apiMessage);
-		testForSuccessfulResult();
+		assertTrue(mapData.containsKey(Constants.RDF_OBJECT));
 	}
 
 	private void testForSuccessfulResult() {
@@ -86,6 +97,7 @@ public class RDFConversionTest {
 	}
 
 	private Model testForModel() {
+		Map<String, Object> mapData = new HashMap<>();
 		Model resultModel = (Model) mapData.get(Constants.RDF_OBJECT);
 		assertNotNull(resultModel);
 		return resultModel;
