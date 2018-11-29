@@ -28,23 +28,23 @@ import com.google.gson.reflect.TypeToken;
 
 import io.opensaber.pojos.*;
 import io.opensaber.registry.exception.*;
-import io.opensaber.registry.middleware.transform.Data;
-import io.opensaber.registry.middleware.transform.ITransformer;
-import io.opensaber.registry.middleware.transform.TransformationException;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.Constants.Direction;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.service.RegistryAuditService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
-import io.opensaber.registry.transformation.ResponseTransformFactory;
+import io.opensaber.registry.transform.*;
 
 @RestController
 public class RegistryController {
 
 	private static Logger logger = LoggerFactory.getLogger(RegistryController.class);
 	@Autowired
-	ResponseTransformFactory responseTransformFactory;
+	Transformer transformer;
+	@Autowired
+	private ConfigurationHelper configurationHelper;
 	@Autowired
 	private RegistryService registryService;
 	@Autowired
@@ -74,7 +74,7 @@ public class RegistryController {
 	public ResponseEntity<Response> add(@RequestParam(value = "id", required = false) String id,
 			@RequestParam(value = "prop", required = false) String property) {
 
-		Model rdf = (Model) apiMessage.getLocalMap(Constants.RDF_OBJECT);
+		Model rdf = (Model) apiMessage.getLocalMap(Constants.CONTROLLER_INPUT);
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.CREATE, "OK", responseParams);
 		Map<String, Object> result = new HashMap<>();
@@ -105,7 +105,8 @@ public class RegistryController {
 	/**
 	 * 
 	 * Note: Only one mime type is supported at a time. Picks up the first mime
-	 *            type from the header.
+	 * type from the header.
+	 * 
 	 * @return
 	 */
 	@RequestMapping(value = "/read", method = RequestMethod.POST)
@@ -124,9 +125,10 @@ public class RegistryController {
 			String content = registryService.getEntityFramedById(entityId, includeSign);
 			logger.info("RegistryController: Framed content " + content);
 
+			Configuration config = configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
+					Direction.OUT);
 			Data<Object> data = new Data<Object>(content);
-			ITransformer<Object> responseTransformer = responseTransformFactory
-					.getInstance(header.getAccept().iterator().next());
+			ITransformer<Object> responseTransformer = transformer.getInstance(config);
 			responseTransformer.setPurgeData(getKeysToPurge());
 			Data<Object> responseContent = responseTransformer.transform(data);
 			response.setResult(responseContent.getData());
@@ -151,7 +153,8 @@ public class RegistryController {
 	/**
 	 *
 	 * Note: Only one mime type is supported at a time. Pick up the first mime
-	 *            type from the header.
+	 * type from the header.
+	 * 
 	 * @return
 	 */
 	@RequestMapping(value = "/search", method = RequestMethod.POST)
@@ -166,8 +169,10 @@ public class RegistryController {
 			watch.start("RegistryController.searchEntity");
 			String jenaJson = searchService.searchFramed(rdf);
 			Data<Object> data = new Data<>(jenaJson);
-			ITransformer<Object> responseTransformer = responseTransformFactory
-					.getInstance(header.getAccept().iterator().next());
+			Configuration config = configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
+					Direction.OUT);
+
+			ITransformer<Object> responseTransformer = transformer.getInstance(config);
 			responseTransformer.setPurgeData(getKeysToPurge());
 			Data<Object> resultContent = responseTransformer.transform(data);
 			response.setResult(resultContent.getData());
@@ -348,4 +353,5 @@ public class RegistryController {
 		return keyToPurge;
 
 	}
+
 }

@@ -10,6 +10,8 @@ public class Constants {
 	public static final String REQUEST_ATTRIBUTE = "requestModel";
 	public static final String REQUEST_OBJECT = "requestObject";
 	public static final String RDF_OBJECT = "rdfObject";
+	public static final String CONTROLLER_INPUT = "controllerInput";
+
 	public static final String LD_OBJECT = "ldObject";
 	public static final String METHOD_ORIGIN = "methodOrigin";
 	public static final String TOKEN_OBJECT = "x-authenticated-user-token";
@@ -63,7 +65,7 @@ public class Constants {
 	public static final String STATUS_ACTIVE = "true";
 	public static final String STATUS_KEYWORD = "@status";
 	public static final String AUDIT_KEYWORD = "@audit";
-	public static final String CREATE_METHOD_ORIGIN = "create";
+	public static final String CREATE_METHOD_ORIGIN = "add";
 	public static final String READ_METHOD_ORIGIN = "read";
 	public static final String UPDATE_METHOD_ORIGIN = "update";
 	public static final String SEARCH_METHOD_ORIGIN = "search";
@@ -112,6 +114,10 @@ public class Constants {
 
 	public enum GraphParams {
 		properties, userId, operationType, label, requestId, nodeId, removedRelations, addedRelations, ets, createdAt, transactionData, CREATE, UPDATE, DELETE
+	}
+
+	public enum Direction {	
+		IN, OUT
 	}
 
 	public static class JsonldConstants {

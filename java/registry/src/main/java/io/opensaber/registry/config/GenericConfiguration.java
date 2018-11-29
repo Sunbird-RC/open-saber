@@ -7,13 +7,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.opensaber.pojos.*;
-import io.opensaber.registry.interceptor.*;
-import io.opensaber.validators.ValidationFilter;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +31,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 
+import io.opensaber.pojos.OpenSaberInstrumentation;
+import io.opensaber.pojos.Response;
 import io.opensaber.registry.authorization.AuthorizationFilter;
 import io.opensaber.registry.authorization.KeyCloakServiceImpl;
 import io.opensaber.registry.exception.CustomException;
@@ -42,14 +40,12 @@ import io.opensaber.registry.exception.CustomExceptionHandler;
 import io.opensaber.registry.frame.FrameContext;
 import io.opensaber.registry.frame.FrameEntity;
 import io.opensaber.registry.frame.FrameEntityImpl;
-import io.opensaber.registry.interceptor.request.transform.JsonToLdRequestTransformer;
-import io.opensaber.registry.interceptor.request.transform.JsonldToLdRequestTransformer;
-import io.opensaber.registry.interceptor.request.transform.RequestTransformFactory;
+import io.opensaber.registry.interceptor.AuthorizationInterceptor;
+import io.opensaber.registry.interceptor.RequestIdValidationInterceptor;
+import io.opensaber.registry.interceptor.ValidationInterceptor;
 import io.opensaber.registry.middleware.Middleware;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
-import io.opensaber.registry.middleware.impl.JSONLDConverter;
 import io.opensaber.registry.middleware.impl.RDFConverter;
-import io.opensaber.registry.middleware.impl.RDFValidationMapper;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.schema.config.SchemaLoader;
@@ -57,18 +53,14 @@ import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.schema.configurator.JsonSchemaConfigurator;
 import io.opensaber.registry.schema.configurator.SchemaType;
 import io.opensaber.registry.schema.configurator.ShexSchemaConfigurator;
-import io.opensaber.registry.sink.DatabaseProvider;
-import io.opensaber.registry.sink.JanusGraphStorage;
-import io.opensaber.registry.sink.Neo4jGraphProvider;
-import io.opensaber.registry.sink.OrientDBGraphProvider;
-import io.opensaber.registry.sink.SqlgProvider;
-import io.opensaber.registry.sink.TinkerGraphProvider;
+import io.opensaber.registry.sink.*;
+import io.opensaber.registry.transform.*;
 import io.opensaber.validators.IValidate;
+import io.opensaber.validators.ValidationFilter;
 import io.opensaber.validators.json.jsonschema.JsonValidationServiceImpl;
 import io.opensaber.validators.rdf.shex.RdfSignatureValidator;
 import io.opensaber.validators.rdf.shex.RdfValidationServiceImpl;
 
-import javax.servlet.http.HttpServletRequest;
 
 @Configuration
 public class GenericConfiguration implements WebMvcConfigurer {
@@ -77,9 +69,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Autowired
 	private Environment environment;
-
-	@Autowired
-	private HttpServletRequest servletRequest;
 
 	@Value("${encryption.service.connection.timeout}")
 	private int connectionTimeout;
@@ -132,18 +121,8 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public Middleware jsonldConverter() {
-		return new JSONLDConverter();
-	}
-
-	@Bean
 	public Middleware rdfConverter() {
 		return new RDFConverter();
-	}
-
-	@Bean
-	public RequestTransformFactory requestTransformFactory() {
-		return new RequestTransformFactory();
 	}
 
 	@Bean
@@ -170,14 +149,33 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public JsonToLdRequestTransformer jsonToLdRequestTransformer() {
+	public Json2LdTransformer json2LdTransformer() {
 		String domain = frameContext().getDomain();
-		return new JsonToLdRequestTransformer(frameEntity().getContent(), domain);
+		return new Json2LdTransformer(frameEntity().getContent(), domain);
 	}
 
 	@Bean
-	public JsonldToLdRequestTransformer jsonldToLdRequestTransformer() {
-		return new JsonldToLdRequestTransformer();
+	public Ld2JsonTransformer ld2JsonTransformer(){
+		return new Ld2JsonTransformer();
+	}
+	
+	@Bean 
+	public Ld2LdTransformer ld2LdTransformer(){
+		return new Ld2LdTransformer();
+	}
+	
+	@Bean
+	public Transformer transformer(){
+		return new Transformer();
+	}
+	
+	@Bean
+	public Ld2RdfTransformer ld2RdfTransformer(){
+		return new Ld2RdfTransformer();
+	}
+	@Bean
+	public ConfigurationHelper configurationHelper(){
+		return new ConfigurationHelper();
 	}
 
 	@Bean
@@ -186,23 +184,18 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public RDFConversionInterceptor rdfConversionInterceptor() {
-		return new RDFConversionInterceptor(rdfConverter());
-	}
-
-	@Bean
 	public RequestIdValidationInterceptor requestIdValidationInterceptor() {
 		return new RequestIdValidationInterceptor(requestIdMap());
 	}
 
 	@Bean
-	public Middleware authorizationFilter() {
-		return new AuthorizationFilter(new KeyCloakServiceImpl());
+	public ValidationInterceptor validationInterceptor() throws IOException, CustomException {
+		return new ValidationInterceptor(new ValidationFilter(validationServiceImpl()));
 	}
 
 	@Bean
-	public Middleware validationFilter() throws IOException, CustomException{
-		return new ValidationFilter(validator());
+	public Middleware authorizationFilter() {
+		return new AuthorizationFilter(new KeyCloakServiceImpl());
 	}
 
 	@Bean
@@ -218,7 +211,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public IValidate validator() throws IOException, CustomException {
+	public IValidate validationServiceImpl() throws IOException, CustomException {
 		IValidate validator = null;
 		if (getValidationType() == SchemaType.SHEX) {
 			validator = new RdfValidationServiceImpl(shexSchemaLoader().getSchemaForCreate(),
@@ -286,7 +279,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 			String schemaContent = schemaConfigurator().getSchemaContent();
 			return new RdfSignatureValidator(shexSchemaLoader().getSchemaForCreate(), schemaContent,
 					registryContextBase, registrySystemBase, signatureSchemaConfigName,
-					((RdfValidationServiceImpl) validator()).getShapeTypeMap());
+					((RdfValidationServiceImpl) validationServiceImpl()).getShapeTypeMap());
 		} else {
 			return null;
 		}
@@ -339,17 +332,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		return new UrlValidator(UrlValidator.ALLOW_LOCAL_URLS);
 	}
 
-	@Bean
-	public Middleware rdfValidationMapper() {
-		Model validationConfig = null;
-		try {
-			validationConfig = shexSchemaLoader().getValidationConfig();
-		} catch (Exception e) {
-			logger.error("Unable to get validation configuration");
-		}
-		return new RDFValidationMapper(validationConfig);
-	}
-
 	/**
 	 * This method create a Map of request endpoints with request id
 	 * 
@@ -379,17 +361,27 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		Map<String, String> requestMap = requestIdMap();
 
 		// Verifying our API identifiers and populating the APIMessage bean
+		// Do not remove this.
 		registry.addInterceptor(requestIdValidationInterceptor())
 					.addPathPatterns(new ArrayList(requestMap.keySet())).order(orderIdx++);
 
+		// Authenticate and authorization check
 		if (authenticationEnabled) {
 			registry.addInterceptor(authorizationInterceptor()).addPathPatterns("/**")
 					.excludePathPatterns("/health", "/error", "/_schemas/**").order(orderIdx++);
 		}
 
-		/*registry.addInterceptor(rdfConversionInterceptor()).addPathPatterns("/add", "/update", "/search","/add2")
-				.order(orderIdx++);*/
-
+		// Validate the input against the defined schema
+		if (validationEnabled) {
+			try {
+				registry.addInterceptor(validationInterceptor())
+						.addPathPatterns("/add", "/update").order(orderIdx++);
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (CustomException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	@Override
