@@ -11,7 +11,6 @@ import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.Gson;
 
-import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.exception.SignatureException;
 import io.opensaber.registry.service.SignatureService;
 
@@ -29,10 +28,6 @@ public class SignatureServiceImpl implements SignatureService {
 	private String keysURL;
 	@Autowired
 	private RestTemplate restTemplate;
-	@Autowired
-	private Gson gson;
-	@Autowired
-	private OpenSaberInstrumentation watch;
 
 	@Override
 	public boolean isServiceUp() throws SignatureException.UnreachableException {

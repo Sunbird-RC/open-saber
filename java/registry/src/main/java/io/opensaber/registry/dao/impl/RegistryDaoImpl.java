@@ -1,19 +1,10 @@
 package io.opensaber.registry.dao.impl;
 
-import com.google.common.collect.ImmutableList;
-import io.opensaber.pojos.OpenSaberInstrumentation;
-import io.opensaber.registry.authorization.pojos.AuthInfo;
-import io.opensaber.registry.dao.RegistryDao;
-import io.opensaber.registry.exception.AuditFailedException;
-import io.opensaber.registry.exception.DuplicateRecordException;
-import io.opensaber.registry.exception.EncryptionException;
-import io.opensaber.registry.exception.RecordNotFoundException;
-import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.model.AuditRecord;
-import io.opensaber.registry.schema.config.SchemaLoader;
-import io.opensaber.registry.schema.configurator.SchemaConfiguratorFactory;
-import io.opensaber.registry.schema.configurator.SchemaType;
-import io.opensaber.registry.sink.DatabaseProvider;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.jena.rdf.model.*;
@@ -32,9 +23,19 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.google.common.collect.ImmutableList;
+
+import io.opensaber.pojos.OpenSaberInstrumentation;
+import io.opensaber.registry.authorization.pojos.AuthInfo;
+import io.opensaber.registry.dao.RegistryDao;
+import io.opensaber.registry.exception.AuditFailedException;
+import io.opensaber.registry.exception.DuplicateRecordException;
+import io.opensaber.registry.exception.EncryptionException;
+import io.opensaber.registry.exception.RecordNotFoundException;
+import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.model.AuditRecord;
+import io.opensaber.registry.schema.config.SchemaLoader;
+import io.opensaber.registry.sink.DatabaseProvider;
 
 @Component
 public class RegistryDaoImpl implements RegistryDao {
@@ -48,12 +49,10 @@ public class RegistryDaoImpl implements RegistryDao {
 	private DatabaseProvider databaseProvider;
 	@Value("${registry.context.base}")
 	private String registryContext;
-	@Value("${signature.enabled}")
-	private boolean signatureEnabled;
 	@Autowired
 	private SchemaLoader schemaLoader;
 	@Autowired
-	private SchemaConfiguratorFactory schemaConfiguratorFactory;
+	private ISchemaConfigurator schemaConfigurator;
 	@Value("${audit.enabled}")
 	private boolean auditEnabled;
 
@@ -104,7 +103,7 @@ public class RegistryDaoImpl implements RegistryDao {
 		TinkerGraph graph = (TinkerGraph) entity;
 		GraphTraversalSource traversal = graph.traversal();
 		if (graphFromStore.features().graph().supportsTransactions()) {
-			org.apache.tinkerpop.gremlin.structure.Transaction tx = graphFromStore.tx();
+			Transaction tx = graphFromStore.tx();
 			tx.onReadWrite(org.apache.tinkerpop.gremlin.structure.Transaction.READ_WRITE_BEHAVIOR.AUTO);
 			watch.start("RegistryDaoImpl.addOrUpdateVerticesAndEdges");
 			label = addOrUpdateVerticesAndEdges(dbGraphTraversalSource, traversal, label,
@@ -184,8 +183,8 @@ public class RegistryDaoImpl implements RegistryDao {
 	 * @throws NoSuchElementException
 	 */
 	private String addOrUpdateVerticesAndEdges(GraphTraversalSource dbTraversalSource,
-			GraphTraversalSource entitySource, String rootLabel, String methodOrigin)
-			throws NoSuchElementException, EncryptionException, AuditFailedException, RecordNotFoundException {
+			GraphTraversalSource entitySource, String rootLabel, String methodOrigin) throws NoSuchElementException,
+			EncryptionException, AuditFailedException, RecordNotFoundException {
 
 		GraphTraversal<Vertex, Vertex> gts = entitySource.clone().V().hasLabel(rootLabel);
 		String label = rootLabel;
@@ -236,8 +235,8 @@ public class RegistryDaoImpl implements RegistryDao {
 	 * @throws NoSuchElementException
 	 */
 	private void addOrUpdateVertexAndEdge(Vertex v, String idForSignature, Vertex dbVertex,
-			GraphTraversalSource dbGraph, String methodOrigin, Direction direction)
-			throws NoSuchElementException, EncryptionException, AuditFailedException, RecordNotFoundException {
+			GraphTraversalSource dbGraph, String methodOrigin, Direction direction) throws NoSuchElementException,
+			EncryptionException, AuditFailedException, RecordNotFoundException {
 		Iterator<Edge> edges = v.edges(direction);
 		Iterator<Edge> edgeList = v.edges(direction);
 		List<Edge> dbEdgesForVertex = ImmutableList.copyOf(dbVertex.edges(direction));
@@ -258,8 +257,8 @@ public class RegistryDaoImpl implements RegistryDao {
 
 	private Stack<Pair<Vertex, Vertex>> addOrUpdateVertexAndEdge(Iterator<Edge> edges, String idForSignature,
 			Iterator<Edge> edgeList, List<Edge> dbEdgesForVertex, List<Edge> edgeVertexMatchList, Direction direction,
-			GraphTraversalSource dbGraph, String methodOrigin, Vertex dbVertex)
-			throws NoSuchElementException, EncryptionException, AuditFailedException, RecordNotFoundException {
+			GraphTraversalSource dbGraph, String methodOrigin, Vertex dbVertex) throws NoSuchElementException,
+			EncryptionException, AuditFailedException, RecordNotFoundException {
 		Stack<Pair<Vertex, Vertex>> parsedVertices = new Stack<>();
 		String signatureOf = registryContext + Constants.SIGNATURE_OF;
 		String signatureFor = registryContext + Constants.SIGNATURE_FOR;
@@ -299,7 +298,7 @@ public class RegistryDaoImpl implements RegistryDao {
 										existingV.label()));
 						// Existing logic moved to this method to avoid
 						// duplicate code
-						parsedVertices = addEdgeForAVertex(ver, idForSignature, existingV, dbGraph, methodOrigin,
+						parsedVertices = addEdgeForAVertex(ver, existingV, methodOrigin,
 								edgeLabel, direction, parsedVertices, dbVertex, e, edgeVertexMatchList,
 								edgeVertexExist);
 					} else {
@@ -326,7 +325,7 @@ public class RegistryDaoImpl implements RegistryDao {
 										// below as true for signature based on
 										// the existence of same signatureFor
 										// field
-										parsedVertices = addEdgeForAVertex(ver, idForSignature, newV, dbGraph,
+										parsedVertices = addEdgeForAVertex(ver, newV,
 												methodOrigin, edgeLabel, direction, parsedVertices, dbVertex, e,
 												edgeVertexMatchList, true);
 									}
@@ -337,7 +336,7 @@ public class RegistryDaoImpl implements RegistryDao {
 								newV = dbGraph.addV(label).next();
 								// Existing logic moved to this method to avoid
 								// duplicate code
-								parsedVertices = addEdgeForAVertex(ver, idForSignature, newV, dbGraph, methodOrigin,
+								parsedVertices = addEdgeForAVertex(ver, newV, methodOrigin,
 										edgeLabel, direction, parsedVertices, dbVertex, e, edgeVertexMatchList,
 										edgeVertexExist);
 							}
@@ -355,7 +354,6 @@ public class RegistryDaoImpl implements RegistryDao {
 	 *
 	 * @param ver
 	 * @param newV
-	 * @param dbGraph
 	 * @param methodOrigin
 	 * @param edgeLabel
 	 * @param direction
@@ -368,8 +366,7 @@ public class RegistryDaoImpl implements RegistryDao {
 	 * @throws AuditFailedException
 	 * @throws EncryptionException
 	 */
-	private Stack<Pair<Vertex, Vertex>> addEdgeForAVertex(Vertex ver, String idForSignature, Vertex newV,
-			GraphTraversalSource dbGraph, String methodOrigin, String edgeLabel, Direction direction,
+	private Stack<Pair<Vertex, Vertex>> addEdgeForAVertex(Vertex ver, Vertex newV, String methodOrigin, String edgeLabel, Direction direction,
 			Stack<Pair<Vertex, Vertex>> parsedVertices, Vertex dbVertex, Edge e, List<Edge> edgeVertexMatchList,
 			boolean edgeVertexExist) throws AuditFailedException, EncryptionException {
 		setAuditInfo(ver, true);
@@ -416,8 +413,8 @@ public class RegistryDaoImpl implements RegistryDao {
 	}
 
 	private void addOrUpdateSignature(Vertex v, String idForSignature, Vertex dbVertex, GraphTraversalSource dbGraph,
-			String methodOrigin)
-			throws NoSuchElementException, EncryptionException, AuditFailedException, RecordNotFoundException {
+			String methodOrigin) throws NoSuchElementException, EncryptionException, AuditFailedException,
+			RecordNotFoundException {
 		Iterator<Edge> edges = v.edges(Direction.IN, (registryContext + Constants.SIGNATURE_OF));
 		Iterator<Edge> edgeList = v.edges(Direction.IN, (registryContext + Constants.SIGNATURE_OF));
 		List<Edge> dbEdgesForVertex = ImmutableList
@@ -563,7 +560,7 @@ public class RegistryDaoImpl implements RegistryDao {
 			throw new RecordNotFoundException(Constants.ENTITY_NOT_FOUND);
 		} else {
 			if (graphFromStore.features().graph().supportsTransactions()) {
-				org.apache.tinkerpop.gremlin.structure.Transaction tx = graphFromStore.tx();
+				Transaction tx = graphFromStore.tx();
 				tx.onReadWrite(org.apache.tinkerpop.gremlin.structure.Transaction.READ_WRITE_BEHAVIOR.AUTO);
 				// createOrUpdateEntity(graphForUpdate, rootNodeLabel,
 				// methodOrigin);
@@ -683,15 +680,31 @@ public class RegistryDaoImpl implements RegistryDao {
 		GraphTraversal<Vertex, Vertex> hasLabel = traversalSource.clone().V().hasLabel(nodeLabel);
 		Vertex s = hasLabel.next();
 		Iterator<Edge> edges = s.edges(Direction.IN);
-		while(edges.hasNext()) {
+		while (edges.hasNext()) {
 			Edge typeEdge = edges.next();
-			if(!typeEdge.label().equalsIgnoreCase(registryContext+Constants.SIGNATURE_OF)){
+			if (!typeEdge.label().equalsIgnoreCase(registryContext + Constants.SIGNATURE_OF)) {
 				Vertex rootVertex = typeEdge.outVertex();
 				rootLabel = rootVertex.label();
 			}
 		}
 
 		return rootLabel;
+	}
+
+	@Override
+	public String getTypeForNodeLabel(String nodeLabel) {
+		String nodeLabelType = null;
+		Graph graphFromStore = databaseProvider.getGraphStore();
+		GraphTraversalSource traversalSource = graphFromStore.traversal();
+		GraphTraversal<Vertex, Vertex> hasLabel = traversalSource.clone().V().hasLabel(nodeLabel);
+		Vertex s = hasLabel.next();
+		Iterator<Edge> edges = s.edges(Direction.OUT, Constants.RDF_URL_SYNTAX_TYPE);
+		if (edges.hasNext()) {
+			Edge typeEdge = edges.next();
+			Vertex inVertex = typeEdge.inVertex();
+			nodeLabelType = inVertex.label();
+		}
+		return nodeLabelType;
 	}
 
 	private boolean deleteVertexWithInEdge(Vertex s) {
@@ -739,8 +752,7 @@ public class RegistryDaoImpl implements RegistryDao {
 		while (iter.hasNext()) {
 			VertexProperty<Object> property = iter.next();
 			String tailOfPropertyKey = property.key().substring(property.key().lastIndexOf("/") + 1).trim();
-			boolean existingEncyptedPropertyKey = schemaConfiguratorFactory.getInstance(SchemaType.SHEX)
-					.isEncrypted(tailOfPropertyKey);
+			boolean existingEncyptedPropertyKey = schemaConfigurator.isEncrypted(tailOfPropertyKey);
 			if ((methodOrigin.equalsIgnoreCase(Constants.CREATE_METHOD_ORIGIN)
 					|| methodOrigin.equalsIgnoreCase(Constants.UPDATE_METHOD_ORIGIN))) {
 				setProperty(newSubject, property.key(), property.value(), methodOrigin);
@@ -967,7 +979,8 @@ public class RegistryDaoImpl implements RegistryDao {
 		}
 	}
 
-	private boolean isSingleValued(String property) {
+	public boolean isSingleValued(String property) {
+		boolean singleValued = true;
 		logger.debug("Property being verified for single-valued, multi-valued:" + property);
 		RDFNode rdfNode = ResourceFactory.createResource(property);
 		ResIterator resIter = schemaLoader.getValidationConfig()
@@ -977,23 +990,12 @@ public class RegistryDaoImpl implements RegistryDao {
 			Resource subject = resIter.next();
 			Long minValue = getValueConstraint("http://shex.io/ns/shex#min", subject);
 			Long maxValue = getValueConstraint("http://shex.io/ns/shex#max", subject);
-			if (minValue == null || maxValue == null) {
-				logger.debug("Single-valued");
-				return true;
-			}
-			if (minValue > 1) {
-				logger.debug("Multi-valued");
-				return false;
-			} else if (maxValue > 1) {
-				logger.debug("Multi-valued");
-				return false;
-			} else {
-				logger.debug("Single-valued");
-				return true;
-			}
+
+			singleValued = (minValue == null || maxValue == null) ||
+							(minValue > 1 || maxValue > 1);
 		}
 		logger.debug("Property not matching any condition:" + property);
-		return true;
+		return singleValued;
 	}
 
 	private Long getValueConstraint(String constraint, Resource subject) {

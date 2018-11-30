@@ -1,14 +1,15 @@
 package io.opensaber.registry.dao;
 
+import java.util.List;
+import java.util.NoSuchElementException;
+
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
 import io.opensaber.registry.exception.AuditFailedException;
 import io.opensaber.registry.exception.DuplicateRecordException;
 import io.opensaber.registry.exception.EncryptionException;
 import io.opensaber.registry.exception.RecordNotFoundException;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-
-import java.util.List;
-import java.util.NoSuchElementException;
 
 public interface RegistryDao {
 
@@ -30,4 +31,6 @@ public interface RegistryDao {
 	public boolean deleteEntityById(String id) throws RecordNotFoundException, AuditFailedException;
 
 	public String getRootLabelForNodeLabel(String nodeLabel);
+
+    public String getTypeForNodeLabel(String label);
 }

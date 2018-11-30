@@ -11,11 +11,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import es.weso.schema.Schema;
+import io.opensaber.pojos.APIMessage;
 import io.opensaber.pojos.ValidationResponse;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
 import io.opensaber.registry.middleware.Validator;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.Constants.Direction;
 import io.opensaber.registry.middleware.util.RDFUtil;
+import io.opensaber.registry.transform.*;
 import io.opensaber.validators.IValidate;
 import io.opensaber.validators.ValidationException;
 
@@ -34,6 +37,19 @@ public class RdfValidationServiceImpl implements IValidate {
 	private Map<String, String> shapeTypeMap;
 	private Schema schemaForCreate;
 	private Schema schemaForUpdate;
+	
+	@Autowired
+	private APIMessage apiMessage;
+
+	@Autowired
+	private Transformer transformer;
+	
+	@Autowired
+	private ConfigurationHelper configurationHelper;
+
+	private RdfValidationServiceImpl() {
+		// Disallow without schema
+	}
 
 	public RdfValidationServiceImpl(Schema createSchema, Schema updateSchema) {
 		this.schemaForCreate = createSchema;
@@ -55,7 +71,7 @@ public class RdfValidationServiceImpl implements IValidate {
 		ValidationResponse validationResponse = null;
 		if (Constants.CREATE_METHOD_ORIGIN.equals(methodOrigin)) {
 			schema = schemaForCreate;
-		} else if (Constants.UPDATE_METHOD_ORIGIN.equals(methodOrigin)) {
+		} else if (Constants.UPDATE_METHOD_ORIGIN.equals(methodOrigin) || Constants.SEARCH_METHOD_ORIGIN.equals(methodOrigin)) {
 			schema = schemaForUpdate;
 		} else {
 			throw new ValidationException(ErrorConstants.INVALID_REQUEST_PATH);
@@ -65,12 +81,28 @@ public class RdfValidationServiceImpl implements IValidate {
 		return validationResponse;
 	}
 
-	public ValidationResponse validate(Object rdf, String methodOrigin) throws MiddlewareHaltException {
+	public boolean validate(APIMessage apiMessage) throws MiddlewareHaltException {
 		Model rdfModel = null;
+		Object rdf = apiMessage.getLocalMap(Constants.RDF_OBJECT);
+		String uri = apiMessage.getRequestWrapper().getRequestURI();
+		String methodOrigin = uri.replace("/", "");
+
+		String dataFromRequest = apiMessage.getRequest().getRequestMapAsString();
+		String contentType = apiMessage.getRequestWrapper().getContentType();
+		Data<Object> rdfData = null;
+
 		try {
-			if (rdf == null) {
+			Configuration config = configurationHelper.getConfiguration(contentType, Direction.IN);
+			Data<Object> ldData = transformer.getInstance(config).transform(new Data<Object>(dataFromRequest));
+			rdfData = transformer.getInstance(Configuration.LD2RDF).transform(ldData);
+
+			apiMessage.addLocalMap(Constants.LD_OBJECT, ldData.getData().toString());
+			apiMessage.addLocalMap(Constants.RDF_OBJECT, rdfData.getData());
+			apiMessage.addLocalMap(Constants.CONTROLLER_INPUT, rdfData.getData());
+			
+			if (rdfData.getData() == null) {
 				throw new ValidationException(ErrorConstants.RDF_DATA_IS_MISSING);
-			} else if (!(rdf instanceof Model)) {
+			} else if (!(rdfData.getData() instanceof Model)) {
 				throw new ValidationException(ErrorConstants.RDF_DATA_IS_INVALID);
 			} else if (methodOrigin == null) {
 				throw new ValidationException(ErrorConstants.INVALID_REQUEST_PATH);
@@ -79,13 +111,15 @@ public class RdfValidationServiceImpl implements IValidate {
 			} else if (shapeTypeMap == null) {
 				throw new ValidationException(this.getClass().getName() + ErrorConstants.VALIDATION_IS_MISSING);
 			} else {
-				rdfModel = (Model) rdf;
+				rdfModel = (Model) rdfData.getData();
 				ValidationResponse validationResponse = validateRDFWithSchema(rdfModel, methodOrigin);
 				if (signatureEnabled && Constants.CREATE_METHOD_ORIGIN.equals(methodOrigin)) {
 					signatureValidator.validateMandatorySignatureFields(rdfModel);
 				}
-				return validationResponse;
+				return true;
 			}
+		}catch (TransformationException te){
+			throw new MiddlewareHaltException(te.getMessage());
 		} catch (ValidationException ve) {
 			throw new MiddlewareHaltException(ve.getMessage());
 		} catch (IOException ioe) {

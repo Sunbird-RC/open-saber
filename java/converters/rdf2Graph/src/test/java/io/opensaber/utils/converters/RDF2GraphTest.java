@@ -1,9 +1,14 @@
 package io.opensaber.utils.converters;
 
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Set;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -13,7 +18,12 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
-import org.eclipse.rdf4j.model.*;
+import org.eclipse.rdf4j.model.BNode;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.Value;
+import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.ModelBuilder;
 import org.eclipse.rdf4j.model.util.Models;
@@ -22,7 +32,11 @@ import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.hamcrest.core.Every;
-import org.junit.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class RDF2GraphTest {
 
@@ -172,9 +186,9 @@ public class RDF2GraphTest {
 		editGraph(graph, expectedModel);
 		Model convertedModel = RDF2Graph.convertGraph2RDFModel(graph, SUBJECT_EXPANDED_LABEL);
 		IRI blankPred = vf.createIRI("http://example.org/creatorOf");
-		checkNodes(graph, expectedModel, blankPred, convertedModel, BNode.class);
+		checkNodes(expectedModel, blankPred, convertedModel, BNode.class);
 		IRI iriPred = vf.createIRI("http://example.org/homeAddress");
-		checkNodes(graph, expectedModel, iriPred, convertedModel, IRI.class);
+		checkNodes(expectedModel, iriPred, convertedModel, IRI.class);
 		assertEquals(expectedModel.size(), convertedModel.size());
 		System.out.println(expectedModel);
 		System.out.println(convertedModel);
@@ -188,14 +202,14 @@ public class RDF2GraphTest {
 		Model _model = RDF2Graph.convertGraph2RDFModel(graph, "http://example.org/someSubject");
 		Rio.write(model, System.out, RDFFormat.TURTLE);
 		Rio.write(_model, System.out, RDFFormat.TURTLE);
-		Assert.assertTrue(Models.isomorphic(model, _model));
+		assertTrue(Models.isomorphic(model, _model));
 	}
 
-	private void checkNodes(Graph graph, Model rdfModel, IRI iriPred, Model expectedModel, Class _class) {
+	private void checkNodes(Model rdfModel, IRI iriPred, Model expectedModel, Class _class) {
 		Set<Value> actualObjects = rdfModel.filter(null, iriPred, null).objects();
 		Set<Value> expectedObjects = expectedModel.filter(null, iriPred, null).objects();
-		Assert.assertThat(expectedObjects, (Every.everyItem(instanceOf(_class))));
-		Assert.assertThat(actualObjects, (Every.everyItem(instanceOf(_class))));
+		assertThat(expectedObjects, (Every.everyItem(instanceOf(_class))));
+		assertThat(actualObjects, (Every.everyItem(instanceOf(_class))));
 	}
 
 	private long countGraphVertices(Graph graph) {
@@ -233,7 +247,6 @@ public class RDF2GraphTest {
 
 	private InputStream getInputStream(String filename) throws FileNotFoundException {
 		ClassLoader classLoader = getClass().getClassLoader();
-		File file = new File(classLoader.getResource(filename).getFile());
-		return new FileInputStream(file);
+		return classLoader.getResourceAsStream(filename);
 	}
 }

@@ -3,6 +3,7 @@ package io.opensaber.registry.middleware.impl;
 import java.io.IOException;
 import java.util.Map;
 
+import io.opensaber.pojos.APIMessage;
 import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,27 +14,22 @@ import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.RDFUtil;
 
 public class RDFConverter implements Middleware {
-
-	private static final String JSONLD_DATA_IS_MISSING = "JSON-LD data is missing!";
-	private static final String FORMAT = "JSON-LD";
 	private static Logger logger = LoggerFactory.getLogger(RDFConverter.class);
 
-	public Map<String, Object> execute(Map<String, Object> mapData) throws IOException, MiddlewareHaltException {
-		Object jsonld = mapData.get(Constants.ATTRIBUTE_NAME);
+	@Override
+	public boolean execute(APIMessage apiMessage) throws IOException, MiddlewareHaltException {
+		logger.debug("Attempting to convert LD to RDF");
+		Map<String, Object> mapData = apiMessage.getLocalMap();
+		Object jsonld = mapData.get(Constants.LD_OBJECT);
 		if (jsonld == null) {
-			throw new MiddlewareHaltException(JSONLD_DATA_IS_MISSING);
+			throw new MiddlewareHaltException(Constants.JSONLD_DATA_IS_MISSING);
 		} else if (jsonld instanceof String) {
-			Model rdfModel = RDFUtil.getRdfModelBasedOnFormat(jsonld.toString(), FORMAT);
+			Model rdfModel = RDFUtil.getRdfModelBasedOnFormat(jsonld.toString(), Constants.JENA_LD_FORMAT);
 			mapData.put(Constants.RDF_OBJECT, rdfModel);
 		} else {
-			throw new MiddlewareHaltException(this.getClass().getName() + "JSONLD data is invalid!");
+			throw new MiddlewareHaltException(Constants.JSONLD_PARSE_ERROR);
 		}
-		return mapData;
+		logger.debug("Converted to RDF success");
+		return true;
 	}
-
-	public Map<String, Object> next(Map<String, Object> mapData) throws IOException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

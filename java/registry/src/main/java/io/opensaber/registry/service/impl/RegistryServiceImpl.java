@@ -1,26 +1,15 @@
 package io.opensaber.registry.service.impl;
 
-import com.github.jsonldjava.core.JsonLdError;
-import com.google.gson.Gson;
-import io.opensaber.converters.JenaRDF4J;
-import io.opensaber.pojos.ComponentHealthInfo;
-import io.opensaber.pojos.HealthCheckResponse;
-import io.opensaber.registry.dao.RegistryDao;
-import io.opensaber.registry.exception.*;
-import io.opensaber.registry.frame.FrameEntity;
-import io.opensaber.registry.middleware.MiddlewareHaltException;
-import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.middleware.util.JSONUtil;
-import io.opensaber.registry.middleware.util.RDFUtil;
-import io.opensaber.registry.model.RegistrySignature;
-import io.opensaber.registry.schema.configurator.SchemaConfiguratorFactory;
-import io.opensaber.registry.schema.configurator.SchemaType;
-import io.opensaber.registry.service.EncryptionService;
-import io.opensaber.registry.service.RegistryService;
-import io.opensaber.registry.service.SignatureService;
-import io.opensaber.registry.sink.DatabaseProvider;
-import io.opensaber.registry.util.GraphDBFactory;
-import io.opensaber.utils.converters.RDF2Graph;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.TypeMapper;
@@ -40,14 +29,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.github.jsonldjava.core.JsonLdError;
+import com.google.gson.Gson;
+
+import io.opensaber.converters.JenaRDF4J;
+import io.opensaber.pojos.ComponentHealthInfo;
+import io.opensaber.pojos.HealthCheckResponse;
+import io.opensaber.registry.dao.RegistryDao;
+import io.opensaber.registry.exception.*;
+import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.JSONUtil;
+import io.opensaber.registry.middleware.util.RDFUtil;
+import io.opensaber.registry.model.RegistrySignature;
+import io.opensaber.registry.service.EncryptionService;
+import io.opensaber.registry.service.RegistryService;
+import io.opensaber.registry.service.SignatureService;
+import io.opensaber.registry.sink.DatabaseProvider;
+import io.opensaber.registry.util.GraphDBFactory;
+import io.opensaber.utils.converters.RDF2Graph;
 
 @Component
 public class RegistryServiceImpl implements RegistryService {
@@ -65,7 +64,7 @@ public class RegistryServiceImpl implements RegistryService {
 	@Autowired
 	private RegistryDao registryDao;
 	@Autowired
-	private SchemaConfiguratorFactory schemaConfiguratorFactory;
+	private ISchemaConfigurator schemaConfigurator;
 	@Value("${encryption.enabled}")
 	private boolean encryptionEnabled;
 
@@ -84,29 +83,14 @@ public class RegistryServiceImpl implements RegistryService {
 	@Value("${frame.file}")
 	private String frameFile;
 
-	@Value("${audit.frame.file}")
-	private String auditFrameFile;
-
 	@Value("${registry.context.base}")
 	private String registryContextBase;
-
-	@Value("${registry.system.base}")
-	private String registrySystemBase;
 
 	@Value("${registry.rootEntity.type}")
 	private String registryRootEntityType;
 
 	@Value("${registry.context.base}")
 	private String registryContext;
-
-	@Value("${validation.enabled}")
-	private boolean isValidationEnabled;
-
-	@Value("${validation.type}")
-	private String validationType;
-
-	@Autowired
-	private FrameEntity frameEntity;
 
 	@Override
 	public List getEntityList() {
@@ -117,44 +101,30 @@ public class RegistryServiceImpl implements RegistryService {
 	public String addEntity(Model rdfModel, String dataObject, String subject, String property)
 			throws DuplicateRecordException, EntityCreationException, EncryptionException, AuditFailedException,
 			MultipleEntityException, RecordNotFoundException, IOException, SignatureException.UnreachableException,
-			JsonLdError, SignatureException.CreationException, MiddlewareHaltException {
+			JsonLdError, SignatureException.CreationException {
 		try {
 			Model signedRdfModel = null;
 			RegistrySignature rs = new RegistrySignature();
-			//
-			if (isValidationEnabled) {
-				if (Constants.RDF_OBJECT.equalsIgnoreCase(validationType)) {
-					/*
-					 * ValidationService validationService =
-					 * validateFactory.getInstance(Constants.ENABLE_RDF_VALIDATION);
-					 * ValidationResponse validationResponse =
-					 * validationService.validateData(rdfModel, Constants.CREATE_METHOD_ORIGIN); if
-					 * (!validationResponse.isValid()) { throw new
-					 * RDFValidationException(ErrorConstants.RDF_VALIDATION_ERROR_MESSAGE); }
-					 */
-					// Validating Sign Mandatory data
-					if (signatureEnabled) {
-						Map signReq = new HashMap<String, Object>();
-						InputStream is = this.getClass().getClassLoader().getResourceAsStream(frameFile);
-						String fileString = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
-						Map<String, Object> reqMap = JSONUtil.frameJsonAndRemoveIds(ID_REGEX, dataObject, gson,
-								fileString);
-						signReq.put("entity", reqMap);
-						Map<String, Object> entitySignMap = (Map<String, Object>) signatureService.sign(signReq);
-						entitySignMap.put("createdDate", rs.getCreatedTimestamp());
-						entitySignMap.put("keyUrl", signatureKeyURl);
-						signedRdfModel = RDFUtil.getUpdatedSignedModel(rdfModel, registryContext, signatureDomain,
-								entitySignMap, ModelFactory.createDefaultModel());
-						return addEntity(signedRdfModel, subject, property);
+			String rootLabel = null;
 
-					}
-				} else {
-					// else part for json validation
-				}
+			if (signatureEnabled) {
+				Map signReq = new HashMap<String, Object>();
+				InputStream is = this.getClass().getClassLoader().getResourceAsStream(frameFile);
+				String fileString = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
+				Map<String, Object> reqMap = JSONUtil.frameJsonAndRemoveIds(ID_REGEX, dataObject, gson,
+						fileString);
+				signReq.put("entity", reqMap);
+				Map<String, Object> entitySignMap = (Map<String, Object>) signatureService.sign(signReq);
+				entitySignMap.put("createdDate", rs.getCreatedTimestamp());
+				entitySignMap.put("keyUrl", signatureKeyURl);
+				signedRdfModel = RDFUtil.getUpdatedSignedModel(rdfModel, registryContext, signatureDomain,
+						entitySignMap, ModelFactory.createDefaultModel());
+				rootLabel = addEntity(signedRdfModel, subject, property);
 
+			} else {
+				rootLabel = addEntity(rdfModel, subject, property);
 			}
-
-			return addEntity(rdfModel, subject, property);
+			return rootLabel;
 
 		} catch (EntityCreationException | EncryptionException | AuditFailedException | DuplicateRecordException
 				| MultipleEntityException ex) {
@@ -197,21 +167,14 @@ public class RegistryServiceImpl implements RegistryService {
 	@Override
 	public boolean updateEntity(Model entity) throws RecordNotFoundException, EntityCreationException,
 			EncryptionException, AuditFailedException, MultipleEntityException, SignatureException.UnreachableException,
-			IOException, SignatureException.CreationException, MiddlewareHaltException {
+			IOException, SignatureException.CreationException, UpdateException {
 		boolean isUpdated = false;
-		if (persistenceEnabled && isValidationEnabled) {
-			if (Constants.RDF_OBJECT.equalsIgnoreCase(validationType)) {
-				/*
-				 * ValidationService validationService =
-				 * validateFactory.getInstance(Constants.ENABLE_RDF_VALIDATION);
-				 * ValidationResponse validationResponse =
-				 * validationService.validateData(entity, Constants.UPDATE_METHOD_ORIGIN); if
-				 * (!validationResponse.isValid()) { throw new
-				 * RDFValidationException(ErrorConstants.RDF_VALIDATION_ERROR_MESSAGE); }
-				 */
-				Resource root = getRootNode(entity);
-				String label = getRootLabel(root);
-				String rootType = getTypeForRootLabel(entity, root);
+		if (persistenceEnabled) {
+			Resource root = getRootNode(entity);
+			String label = getRootLabel(root);
+			String rootType = getTypeForRootLabel(entity, root);
+			String actualNodeType = registryDao.getTypeForNodeLabel(label);
+			if(rootType.equalsIgnoreCase(actualNodeType)){
 				if (encryptionEnabled) {
 					encryptModel(entity);
 				}
@@ -224,11 +187,9 @@ public class RegistryServiceImpl implements RegistryService {
 					}
 					getEntityAndUpdateSign(label);
 				}
-
 			} else {
-				// else part for json validation
+				throw new UpdateException(Constants.NODE_TYPE_WRONG_MAPPED_ERROR_MSG);
 			}
-
 		}
 		return isUpdated;
 	}
@@ -236,7 +197,6 @@ public class RegistryServiceImpl implements RegistryService {
 	/**
 	 * This method will get entity details and sign the entity and will update
 	 *
-	 * @param entity
 	 * @param label
 	 * @throws EncryptionException
 	 * @throws AuditFailedException
@@ -247,9 +207,9 @@ public class RegistryServiceImpl implements RegistryService {
 	 * @throws SignatureException.UnreachableException
 	 * @throws SignatureException.CreationException
 	 */
-	void getEntityAndUpdateSign(String label) throws EncryptionException, AuditFailedException,
-			RecordNotFoundException, EntityCreationException, IOException, MultipleEntityException,
-			SignatureException.UnreachableException, SignatureException.CreationException {
+	void getEntityAndUpdateSign(String label) throws EncryptionException, AuditFailedException, RecordNotFoundException,
+			EntityCreationException, IOException, MultipleEntityException, SignatureException.UnreachableException,
+			SignatureException.CreationException {
 		final String ID_REGEX = "\"@id\"\\s*:\\s*\"[a-z]+:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\",";
 		Map signReq = new HashMap<String, Object>();
 		RegistrySignature rs = new RegistrySignature();
@@ -261,8 +221,8 @@ public class RegistryServiceImpl implements RegistryService {
 		Map<String, Object> entitySignMap = (Map<String, Object>) signatureService.sign(signReq);
 		entitySignMap.put("createdDate", rs.getCreatedTimestamp());
 		entitySignMap.put("keyUrl", signatureKeyURl);
-		Graph graph = generateGraphFromRDF(RDFUtil.getUpdatedSignedModel(jenaEntityModel, registryContextBase, signatureDomain,
-				entitySignMap, signatureModel));
+		Graph graph = generateGraphFromRDF(RDFUtil.getUpdatedSignedModel(jenaEntityModel, registryContextBase,
+				signatureDomain, entitySignMap, signatureModel));
 		registryDao.updateEntity(graph, label, "update");
 	}
 
@@ -394,15 +354,6 @@ public class RegistryServiceImpl implements RegistryService {
 		}
 	}
 
-	private String getTypeForSearch(Model entity) throws EntityCreationException, MultipleEntityException {
-		List<Resource> rootLabels = RDFUtil.getRootLabels(entity);
-		if (rootLabels.size() == 0) {
-			throw new EntityCreationException(Constants.NO_ENTITY_AVAILABLE_MESSAGE);
-		} else {
-			return getTypeForRootLabel(entity, rootLabels.get(0));
-		}
-	}
-
 	private void encryptModel(Model rdfModel) throws EncryptionException {
 		setModelWithEncryptedOrDecryptedAttributes(rdfModel, true);
 	}
@@ -413,8 +364,7 @@ public class RegistryServiceImpl implements RegistryService {
 
 	private void setModelWithEncryptedOrDecryptedAttributes(Model rdfModel, boolean isEncryptionRequired)
 			throws EncryptionException {
-		List<String> privateProperties = schemaConfiguratorFactory.getInstance(SchemaType.SHEX)
-				.getAllPrivateProperties();
+		List<String> privateProperties = schemaConfigurator.getAllPrivateProperties();
 
 		Map<Resource, Map<String, Object>> toBeEncryptedOrDecryptedAttributes = new HashMap<Resource, Map<String, Object>>();
 		TypeMapper tm = TypeMapper.getInstance();
@@ -462,7 +412,6 @@ public class RegistryServiceImpl implements RegistryService {
 				encAttributes = encryptionService.decrypt(propertyMap);
 			}
 			for (Map.Entry<String, Object> listEntry : listPropertyMap.entrySet()) {
-				Resource k = entry.getKey();
 				Object v = entry.getValue();
 				List values = (List) v;
 				List encValues = new ArrayList();
@@ -492,7 +441,7 @@ public class RegistryServiceImpl implements RegistryService {
 					if (isEncryptionRequired) {
 						predicateStr = predicateStr.replace(tailOfPredicateStr, "encrypted" + tailOfPredicateStr);
 					} else {
-						if (schemaConfiguratorFactory.getInstance(SchemaType.SHEX).isEncrypted(tailOfPredicateStr)) {
+						if (schemaConfigurator.isEncrypted(tailOfPredicateStr)) {
 							predicateStr = predicateStr.replace(tailOfPredicateStr, tailOfPredicateStr.substring(9));
 						}
 					}
