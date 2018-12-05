@@ -1,6 +1,6 @@
 package io.opensaber.registry.model;
 
-public class DatabaseConnection {
+public class DBConnectionInfo {
 	
 	private String name;
 	private String uri;

@@ -7,13 +7,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConfigurationProperties(prefix = "databases")
-public class DatabaseProviderConnections {
+@ConfigurationProperties(prefix = "database")
+public class DatabaseProviders {
 	
 	private String provider;
-	private List<DatabaseConnection> connections = new ArrayList<>();
+	private List<DBConnectionInfo> connectionInfo = new ArrayList<>();
 	
-	public DatabaseProviderConnections(){
+	public DatabaseProviders(){
 		
 	}
 
@@ -25,16 +25,16 @@ public class DatabaseProviderConnections {
 		this.provider = provider;
 	}
 
-	public List<DatabaseConnection> getConnections() {
-		return connections;
+	public List<DBConnectionInfo> getConnections() {
+		return connectionInfo;
 	}
 
-	public void setConnections(List<DatabaseConnection> connections) {
-		this.connections = connections;
+	public void setConnections(List<DBConnectionInfo> connections) {
+		this.connectionInfo = connections;
 	}
 	//TODO: add this as a map, for optimized search.
-	public DatabaseConnection getDatabaseConnection(String name){
-		for(DatabaseConnection con: connections){
+	public DBConnectionInfo getDatabaseConnection(String name){
+		for(DBConnectionInfo con: connectionInfo){
 			if(con.getName().equalsIgnoreCase(name))
 				return con;
 		}

@@ -5,8 +5,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.model.DatabaseConnection;
-import io.opensaber.registry.model.DatabaseProviderConnections;
+import io.opensaber.registry.model.DBConnectionInfo;
+import io.opensaber.registry.model.DatabaseProviders;
 
 @Component("dbshard")
 public class DBShard {
@@ -15,7 +15,7 @@ public class DBShard {
 	Environment environment;
 	
 	@Autowired
-	DatabaseProviderConnections databaseProviderConnections;
+	DatabaseProviders databaseProviders;
 	
 	public DatabaseProvider getInstance(String name){
 		String dbProvider = environment.getProperty(Constants.DATABASE_PROVIDER);
@@ -24,11 +24,10 @@ public class DBShard {
 			provider = new OrientDBGraphProvider(environment);
 			provider.initializeGlobalGraphConfiguration();
 		} else if (dbProvider.equalsIgnoreCase(Constants.GraphDatabaseProvider.NEO4J.getName())) {
-			//throw exception is name is invalid
-			DatabaseConnection connection = databaseProviderConnections.getDatabaseConnection(name);
+			DBConnectionInfo connection = databaseProviders.getDatabaseConnection(name);
 			if(connection == null)
 				throw new RuntimeException("No shard is configured. Please configure a shard with "+name+" name.");
-			provider = new Neo4jShardProvider(connection);
+			provider = new Neo4jGraphProvider(connection);
 		} else if (dbProvider.equalsIgnoreCase(Constants.GraphDatabaseProvider.SQLG.getName())) {
 			provider = new SqlgProvider(environment);
 			provider.initializeGlobalGraphConfiguration();

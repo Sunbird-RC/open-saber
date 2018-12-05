@@ -10,15 +10,15 @@ import com.steelbridgelabs.oss.neo4j.structure.Neo4JElementIdProvider;
 import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
 import com.steelbridgelabs.oss.neo4j.structure.providers.Neo4JNativeElementIdProvider;
 
-import io.opensaber.registry.model.DatabaseConnection;
+import io.opensaber.registry.model.DBConnectionInfo;
 
 
-public class Neo4jShardProvider extends DatabaseProvider{
+public class Neo4jGraphProvider extends DatabaseProvider{
 	
 	private Driver driver;
 	private Graph graph;
 
-	public Neo4jShardProvider(DatabaseConnection connection) {
+	public Neo4jGraphProvider(DBConnectionInfo connection) {
 
 		AuthToken authToken = AuthTokens.basic(connection.getUsername(), connection.getPassword());
         if (authToken != null) {
