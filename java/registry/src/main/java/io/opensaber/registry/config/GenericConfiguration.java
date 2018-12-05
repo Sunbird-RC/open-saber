@@ -53,12 +53,8 @@ import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.schema.configurator.JsonSchemaConfigurator;
 import io.opensaber.registry.schema.configurator.SchemaType;
 import io.opensaber.registry.schema.configurator.ShexSchemaConfigurator;
+import io.opensaber.registry.sink.DBShard;
 import io.opensaber.registry.sink.DatabaseProvider;
-import io.opensaber.registry.sink.JanusGraphStorage;
-import io.opensaber.registry.sink.Neo4jGraphProvider;
-import io.opensaber.registry.sink.OrientDBGraphProvider;
-import io.opensaber.registry.sink.SqlgProvider;
-import io.opensaber.registry.sink.TinkerGraphProvider;
 import io.opensaber.registry.transform.ConfigurationHelper;
 import io.opensaber.registry.transform.Json2LdTransformer;
 import io.opensaber.registry.transform.Ld2JsonTransformer;
@@ -77,6 +73,8 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	private static Logger logger = LoggerFactory.getLogger(GenericConfiguration.class);
 
+	@Autowired
+	private DBShard dbshard;
 	@Autowired
 	private Environment environment;
 
@@ -311,7 +309,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		return new RestTemplate(requestFactory);
 	}
 
-	@Bean
+	/*@Bean
 	public DatabaseProvider databaseProvider() {
 		String dbProvider = environment.getProperty(Constants.DATABASE_PROVIDER);
 		DatabaseProvider provider;
@@ -335,7 +333,12 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		}
 
 		return provider;
+	}*/
+	@Bean
+	public DatabaseProvider databaseProvider() {
+		return dbshard.getInstance("shard1");
 	}
+	
 
 	@Bean
 	public UrlValidator urlValidator() {
