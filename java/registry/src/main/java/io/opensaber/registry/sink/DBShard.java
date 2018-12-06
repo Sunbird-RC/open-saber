@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.DBConnectionInfo;
-import io.opensaber.registry.model.DatabaseProviders;
+import io.opensaber.registry.model.DBConnectionInfoMgr;
 
 @Component("dbshard")
 public class DBShard {
@@ -15,7 +15,7 @@ public class DBShard {
 	Environment environment;
 	
 	@Autowired
-	DatabaseProviders databaseProviders;
+	DBConnectionInfoMgr databaseProviders;
 	
 	public DatabaseProvider getInstance(String name){
 		String dbProvider = environment.getProperty(Constants.DATABASE_PROVIDER);

@@ -113,11 +113,12 @@ public class RdfValidationServiceImpl implements IValidate {
 			} else {
 				rdfModel = (Model) rdfData.getData();
 				ValidationResponse validationResponse = validateRDFWithSchema(rdfModel, methodOrigin);
-				boolean result = validationResponse.isValid(); 
-				if(signatureEnabled && (Constants.CREATE_METHOD_ORIGIN.equals(methodOrigin) || Constants.UPDATE_METHOD_ORIGIN.equals(methodOrigin))) {
-						signatureValidator.validateMandatorySignatureFields(rdfModel);
+				if (validationResponse.isValid() && signatureEnabled && (Constants.CREATE_METHOD_ORIGIN.equals(methodOrigin) || Constants.UPDATE_METHOD_ORIGIN.equals(methodOrigin))) {
+					signatureValidator.validateMandatorySignatureFields(rdfModel);
+				} else {
+					return false;
 				}
-				return result;
+				return true;
 			}
 		}catch (TransformationException te){
 			throw new MiddlewareHaltException(te.getMessage());

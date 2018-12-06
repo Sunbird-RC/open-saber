@@ -8,12 +8,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConfigurationProperties(prefix = "database")
-public class DatabaseProviders {
+public class DBConnectionInfoMgr {
 	
 	private String provider;
 	private List<DBConnectionInfo> connectionInfo = new ArrayList<>();
 	
-	public DatabaseProviders(){
+	public DBConnectionInfoMgr(){
 		
 	}
 
@@ -40,9 +40,6 @@ public class DatabaseProviders {
 		}
 		return null;
 	}
-	
-	
-	
 
 
 }
