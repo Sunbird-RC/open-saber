@@ -2,6 +2,7 @@ package io.opensaber.registry.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.exception.EncryptionException;
 import io.opensaber.registry.service.EncryptionService;
@@ -12,13 +13,17 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.neo4j.driver.v1.Record;
+import org.neo4j.driver.v1.StatementResult;
 
 import java.io.IOException;
 import java.util.*;
 
 public class TPGraphMain {
     private static Graph graph;
+    private static Neo4JGraph neo4JGraph;
     private static List<String> privatePropertyLst;
+    private static List<String> uuidList;
     private static EncryptionService encryptionService;
     private static Map<String, Object> encMap;
     private static Map<String, Object> encodedMap;
@@ -29,8 +34,10 @@ public class TPGraphMain {
 
     public TPGraphMain(DatabaseProvider db, List<String> privatePropertyLst, EncryptionService encryptionService) {
         graph = db.getGraphStore();
+        neo4JGraph = db.getNeo4JGraph();
         this.privatePropertyLst = privatePropertyLst;
         this.encryptionService = encryptionService;
+        uuidList = new ArrayList<String>();
     }
 
     public static String createLabel() {
@@ -55,8 +62,9 @@ public class TPGraphMain {
         });
         Edge e = addEdge(graph, label, parentVertex, vertex);
         String edgeId = UUID.randomUUID().toString();
-        vertex.property(label + "id", edgeId);
+        vertex.property("osid", edgeId);
         parentVertex.property(vertex.label()+ "id", edgeId);
+        uuidList.add(edgeId);
     }
 
     public static Edge addEdge(Graph graph, String label, Vertex v1, Vertex v2) {
@@ -122,6 +130,27 @@ public class TPGraphMain {
                 populateObject(entryValue);
             }
         });
+    }
+
+    public void readGraph2Json(String osid) {
+        Map<String, Object> map;
+        //Transaction tx = graph.tx();
+        Transaction tx = graph.tx();
+        //GraphTraversalSource gtRootTraversal = graph.traversal();
+       // uuidList.forEach(uuid -> {
+        StatementResult sr = neo4JGraph.execute("match (n) where n.osid='" + osid + "' return n");
+        while(sr.hasNext()){
+            Record record = sr.single();
+            record.fields();
+
+        }
+        // StatementResult sr = graph.execute("match (n) where n.osid='532e2c1a-1ed0-4b29-8e44-2d5f6f3d711f' return n");
+        // System.out.println(sr.hasNext());
+       // GraphTraversal<Vertex, Vertex>  gt = gtRootTraversal.clone().V(679077);
+        //GraphTraversal<Vertex, Vertex>  gt = gtRootTraversal.clone().V(679077).hasLabel("Teacher");
+        //gt.hasNext();
+        tx.commit();
+       // });
     }
 
     public static enum DBTYPE {NEO4J, POSTGRES};

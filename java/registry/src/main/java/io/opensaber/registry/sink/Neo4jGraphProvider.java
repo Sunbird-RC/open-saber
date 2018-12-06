@@ -25,6 +25,7 @@ public class Neo4jGraphProvider extends DatabaseProvider {
 	private Logger logger = LoggerFactory.getLogger(Neo4jGraphProvider.class);
 	private Graph graph;
 	private Driver driver;
+	public Neo4JGraph neo4JGraph;
 
 	public Neo4jGraphProvider(Environment environment) {
 		Boolean isDatabaseEmbedded = Boolean.parseBoolean(environment.getProperty("database.neo4j.embedded"));
@@ -44,7 +45,7 @@ public class Neo4jGraphProvider extends DatabaseProvider {
 				driver = GraphDatabase.driver(String.format("bolt://%s:%s", databaseHost, databasePort),
 						AuthTokens.none());
 				Neo4JElementIdProvider<?> idProvider = new Neo4JNativeElementIdProvider();
-				Neo4JGraph neo4JGraph = new Neo4JGraph(driver, idProvider, idProvider);
+				neo4JGraph = new Neo4JGraph(driver, idProvider, idProvider);
 				neo4JGraph.setProfilerEnabled(profilerEnabled);
 				graph = neo4JGraph;
 				logger.info("Initializing remote graph db for ");
@@ -61,6 +62,26 @@ public class Neo4jGraphProvider extends DatabaseProvider {
 	public Graph getGraphStore() {
 		return graph;
 	}
+
+	@Override
+	public Neo4JGraph getNeo4JGraph() {
+		return neo4JGraph;
+	}
+
+
+	/*public Neo4JGraph getNeo4jGraphStore() {
+		String databaseHost = environment.getProperty("database.neo4j.host");
+		String databasePort = environment.getProperty("database.neo4j.port");
+		Boolean profilerEnabled = Boolean
+				.parseBoolean(environment.getProperty("database.neo4j.profiler_enabled"));
+		driver = GraphDatabase.driver(String.format("bolt://%s:%s", databaseHost, databasePort),
+				AuthTokens.none());
+		Neo4JElementIdProvider<?> idProvider = new Neo4JNativeElementIdProvider();
+		Neo4JGraph neo4JGraph = new Neo4JGraph(driver, idProvider, idProvider);
+		neo4JGraph.setProfilerEnabled(profilerEnabled);
+		//graph = neo4JGraph;
+		return neo4JGraph;
+	}*/
 
 	@PostConstruct
 	public void init() {

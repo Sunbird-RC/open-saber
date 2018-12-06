@@ -345,6 +345,21 @@ public class RegistryController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@RequestMapping(value = "/read2", method = RequestMethod.POST)
+	public ResponseEntity<Response> readGraph2Json(@RequestHeader HttpHeaders header) throws ParseException {
+		String dataObject = apiMessage.getRequest().getRequestMapAsString();
+		JSONParser parser = new JSONParser();
+		JSONObject json = (JSONObject) parser.parse(dataObject);
+		String osIdVal =  json.get("id").toString();
+		ResponseParams responseParams = new ResponseParams();
+		List<String> privateProperties = schemaConfigurator.getAllPrivateProperties();
+		TPGraphMain tpGraph = new TPGraphMain(databaseProvider,privateProperties,encryptionService);
+		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
+		tpGraph.readGraph2Json(osIdVal);
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	/*
 	 * To set the keys(like @type to be trim of a json
 	 */
