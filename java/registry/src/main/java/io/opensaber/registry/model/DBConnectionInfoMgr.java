@@ -47,7 +47,7 @@ public class DBConnectionInfoMgr {
 
 	/**
 	 * To provide a connection info on based of a shard identifier(name)
-	 * @param name
+	 * @param shardId
 	 * @return
 	 */
 	public DBConnectionInfo getDBConnectionInfo(String shardId){
