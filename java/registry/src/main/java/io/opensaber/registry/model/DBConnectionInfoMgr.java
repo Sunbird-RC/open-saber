@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 /**
  * 
  * @author Pritha Chattopadhyay
- * Auto populate/bind the field values from yaml properties.
+ * Auto populates/binds the field values from yaml properties.
  *
  */
 @Component
@@ -16,11 +16,12 @@ import org.springframework.stereotype.Component;
 public class DBConnectionInfoMgr {
 	
 	/**
-	 * get the provider property value from properties or yaml file
+	 * only one type of database provider as the target
+	 * as of today.
 	 */
 	private String provider;
 	/**
-	 * get the connectionInfo list of properties values from yaml/properties file.
+	 * Each DBConnectionInfo is a shard connection information.
 	 */
 	private List<DBConnectionInfo> connectionInfo = new ArrayList<>();
 	
@@ -44,15 +45,14 @@ public class DBConnectionInfoMgr {
 		this.connectionInfo = connectionInfo;
 	}
 
-	//TODO: add this as a map, for optimized search.
 	/**
 	 * To provide a connection info on based of a shard identifier(name)
 	 * @param name
 	 * @return
 	 */
-	public DBConnectionInfo getDatabaseConnection(String name){
+	public DBConnectionInfo getDBConnectionInfo(String shardId){
 		for(DBConnectionInfo con: connectionInfo){
-			if(con.getName().equalsIgnoreCase(name))
+			if(con.getName().equalsIgnoreCase(shardId))
 				return con;
 		}
 		return null;

@@ -32,16 +32,4 @@ public class DBConnectionInfo {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	
-	@Override
-    public String toString() {
-        return "Connection{" +
-                "name='" + name + '\'' +
-                ", uri='" + uri + '\'' +
-                ", passord='" + password + '\'' +
-                '}';
-    }
-	
-	
-
 }

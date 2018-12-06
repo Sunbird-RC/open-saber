@@ -74,8 +74,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	private static Logger logger = LoggerFactory.getLogger(GenericConfiguration.class);
 
-/*	@Autowired
-	private DBShard dbshard;*/
 	@Autowired
 	private Environment environment;
 
