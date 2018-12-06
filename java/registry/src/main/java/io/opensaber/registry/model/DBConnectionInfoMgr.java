@@ -25,13 +25,14 @@ public class DBConnectionInfoMgr {
 		this.provider = provider;
 	}
 
-	public List<DBConnectionInfo> getConnections() {
+	public List<DBConnectionInfo> getConnectionInfo() {
 		return connectionInfo;
 	}
 
-	public void setConnections(List<DBConnectionInfo> connections) {
-		this.connectionInfo = connections;
+	public void setConnectionInfo(List<DBConnectionInfo> connectionInfo) {
+		this.connectionInfo = connectionInfo;
 	}
+
 	//TODO: add this as a map, for optimized search.
 	public DBConnectionInfo getDatabaseConnection(String name){
 		for(DBConnectionInfo con: connectionInfo){

@@ -309,31 +309,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		return new RestTemplate(requestFactory);
 	}
 
-	/*@Bean
-	public DatabaseProvider databaseProvider() {
-		String dbProvider = environment.getProperty(Constants.DATABASE_PROVIDER);
-		DatabaseProvider provider;
-		if (dbProvider.equalsIgnoreCase(Constants.GraphDatabaseProvider.ORIENTDB.getName())) {
-			provider = new OrientDBGraphProvider(environment);
-			provider.initializeGlobalGraphConfiguration();
-		} else if (dbProvider.equalsIgnoreCase(Constants.GraphDatabaseProvider.NEO4J.getName())) {
-			provider = new Neo4jGraphProvider(environment);
-			provider.initializeGlobalGraphConfiguration();
-		} else if (dbProvider.equalsIgnoreCase(Constants.GraphDatabaseProvider.SQLG.getName())) {
-			provider = new SqlgProvider(environment);
-			provider.initializeGlobalGraphConfiguration();
-		} else if (dbProvider.equalsIgnoreCase(Constants.GraphDatabaseProvider.TINKERGRAPH.getName())) {
-			provider = new TinkerGraphProvider(environment);
-			provider.initializeGlobalGraphConfiguration();
-		} else if (dbProvider.equalsIgnoreCase(Constants.GraphDatabaseProvider.CASSANDRA.getName())) {
-			provider = new JanusGraphStorage(environment);
-			provider.initializeGlobalGraphConfiguration();
-		} else {
-			throw new RuntimeException("No Database Provider is configured. Please configure a Database Provider");
-		}
-
-		return provider;
-	}*/
 	@Bean
 	public DatabaseProvider databaseProvider() {
 		return dbshard.getInstance("shard1");
