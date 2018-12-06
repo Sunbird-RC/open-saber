@@ -5,6 +5,8 @@ import org.neo4j.driver.v1.AuthToken;
 import org.neo4j.driver.v1.AuthTokens;
 import org.neo4j.driver.v1.Driver;
 import org.neo4j.driver.v1.GraphDatabase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.steelbridgelabs.oss.neo4j.structure.Neo4JElementIdProvider;
 import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
@@ -15,6 +17,8 @@ import io.opensaber.registry.model.DBConnectionInfo;
 
 public class Neo4jGraphProvider extends DatabaseProvider{
 	
+	private Logger logger = LoggerFactory.getLogger(Neo4jGraphProvider.class);
+
 	private Driver driver;
 	private Graph graph;
 
@@ -33,7 +37,7 @@ public class Neo4jGraphProvider extends DatabaseProvider{
 		Neo4JGraph neo4JGraph = new Neo4JGraph(driver, idProvider, idProvider);
 		//neo4JGraph.setProfilerEnabled(profilerEnabled);
 		graph = neo4JGraph;
-		System.out.println("Initializing remote graph db for "+connection.getName());	
+		logger.info("Initializing remote graph db for "+connection.getShardId());	
 	}
 
 	public Graph getGraphStore() {

@@ -2,18 +2,18 @@ package io.opensaber.registry.model;
 
 public class DBConnectionInfo {
 	
-	private String name;
+	private String shardId;
 	private String uri;
 	private String username;
 	private String password;
 	
-	public String getName() {
-		return name;
+	public String getShardId() {
+		return shardId;
 	}
-	public void setName(String name) {
-		this.name = name;
+	public void setShardId(String shardId) {
+		this.shardId = shardId;
 	}
-	
+
 	public String getUri() {
 		return uri;
 	}

@@ -52,7 +52,7 @@ public class DBConnectionInfoMgr {
 	 */
 	public DBConnectionInfo getDBConnectionInfo(String shardId){
 		for(DBConnectionInfo con: connectionInfo){
-			if(con.getName().equalsIgnoreCase(shardId))
+			if(con.getShardId().equalsIgnoreCase(shardId))
 				return con;
 		}
 		return null;

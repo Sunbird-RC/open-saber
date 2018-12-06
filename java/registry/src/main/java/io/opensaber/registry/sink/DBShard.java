@@ -17,16 +17,16 @@ public class DBShard {
 	@Autowired
 	DBConnectionInfoMgr dBConnectionInfoMgr;
 	
-	public DatabaseProvider getInstance(String name){
+	public DatabaseProvider getInstance(String shardId){
 		String dbProvider = environment.getProperty(Constants.DATABASE_PROVIDER);
 		DatabaseProvider provider;
 		if (dbProvider.equalsIgnoreCase(Constants.GraphDatabaseProvider.ORIENTDB.getName())) {
 			provider = new OrientDBGraphProvider(environment);
 			provider.initializeGlobalGraphConfiguration();
 		} else if (dbProvider.equalsIgnoreCase(Constants.GraphDatabaseProvider.NEO4J.getName())) {
-			DBConnectionInfo connection = dBConnectionInfoMgr.getDatabaseConnection(name);
+			DBConnectionInfo connection = dBConnectionInfoMgr.getDBConnectionInfo(shardId);
 			if(connection == null)
-				throw new RuntimeException("No shard is configured. Please configure a shard with "+name+" name.");
+				throw new RuntimeException("No shard is configured. Please configure a shard with "+shardId);
 			provider = new Neo4jGraphProvider(connection);
 		} else if (dbProvider.equalsIgnoreCase(Constants.GraphDatabaseProvider.SQLG.getName())) {
 			provider = new SqlgProvider(environment);
