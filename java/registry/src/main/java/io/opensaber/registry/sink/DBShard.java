@@ -15,7 +15,7 @@ public class DBShard {
 	Environment environment;
 	
 	@Autowired
-	DBConnectionInfoMgr databaseProviders;
+	DBConnectionInfoMgr dBConnectionInfoMgr;
 	
 	public DatabaseProvider getInstance(String name){
 		String dbProvider = environment.getProperty(Constants.DATABASE_PROVIDER);
@@ -24,7 +24,7 @@ public class DBShard {
 			provider = new OrientDBGraphProvider(environment);
 			provider.initializeGlobalGraphConfiguration();
 		} else if (dbProvider.equalsIgnoreCase(Constants.GraphDatabaseProvider.NEO4J.getName())) {
-			DBConnectionInfo connection = databaseProviders.getDatabaseConnection(name);
+			DBConnectionInfo connection = dBConnectionInfoMgr.getDatabaseConnection(name);
 			if(connection == null)
 				throw new RuntimeException("No shard is configured. Please configure a shard with "+name+" name.");
 			provider = new Neo4jGraphProvider(connection);
