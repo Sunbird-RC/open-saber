@@ -33,7 +33,8 @@ config:
     file: ${config_schema_file:schema-configuration.json}
 
 database:
-  #provider available are NEO4J, 
+  #provider available are NEO4J, SQLG, TINKERGRAPH, CASSANDRA, ORIENTDB.
+  #Note: Please avoid repeating the shardId.
   provider: ${database_provider:NEO4J}
   connectionInfo:
     - 
