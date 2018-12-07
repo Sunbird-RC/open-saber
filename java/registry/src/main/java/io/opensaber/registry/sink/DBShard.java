@@ -1,5 +1,7 @@
 package io.opensaber.registry.sink;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -7,6 +9,7 @@ import org.springframework.stereotype.Component;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.DBConnectionInfo;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
+import io.opensaber.registry.shard.advisory.AdvisoryLoader;
 
 @Component("dbshard")
 public class DBShard {
@@ -17,16 +20,19 @@ public class DBShard {
 	@Autowired
 	DBConnectionInfoMgr dBConnectionInfoMgr;
 	
-	public DatabaseProvider getInstance(String shardId){
+	@Autowired
+	AdvisoryLoader advisoryLoader;
+		
+	public DatabaseProvider getInstance(String property, String value) throws IOException{
 		String dbProvider = environment.getProperty(Constants.DATABASE_PROVIDER);
 		DatabaseProvider provider;
 		if (dbProvider.equalsIgnoreCase(Constants.GraphDatabaseProvider.ORIENTDB.getName())) {
 			provider = new OrientDBGraphProvider(environment);
 			provider.initializeGlobalGraphConfiguration();
-		} else if (dbProvider.equalsIgnoreCase(Constants.GraphDatabaseProvider.NEO4J.getName())) {
-			DBConnectionInfo connection = dBConnectionInfoMgr.getDBConnectionInfo(shardId);
+		} else if (dbProvider.equalsIgnoreCase(Constants.GraphDatabaseProvider.NEO4J.getName())) {			
+			DBConnectionInfo connection = advisoryLoader.getShardAdvisory(property).connectionInfo(value);
 			if(connection == null)
-				throw new RuntimeException("No shard is configured. Please configure a shard with "+shardId);
+				throw new RuntimeException("No shard is configured. Please configure a shard");
 			provider = new Neo4jGraphProvider(connection);
 		} else if (dbProvider.equalsIgnoreCase(Constants.GraphDatabaseProvider.SQLG.getName())) {
 			provider = new SqlgProvider(environment);

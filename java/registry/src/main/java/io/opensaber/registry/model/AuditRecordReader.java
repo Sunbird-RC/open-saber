@@ -27,9 +27,10 @@ public class AuditRecordReader {
 	@Value("${registry.system.base}")
 	private String registrySystemContext;
 
-	public AuditRecordReader(DatabaseProvider databaseProvider) {
+	//TODO: for now commented.
+/*	public AuditRecordReader(DatabaseProvider databaseProvider) {
 		this.databaseProvider = databaseProvider;
-	}
+	}*/
 
 	public List<AuditRecord> fetchAuditRecords(String label, String predicate) throws LabelCannotBeNullException {
 		List<AuditRecord> records = new ArrayList<>();

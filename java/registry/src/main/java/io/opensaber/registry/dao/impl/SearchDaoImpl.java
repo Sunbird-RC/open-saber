@@ -1,6 +1,14 @@
 package io.opensaber.registry.dao.impl;
 
-import java.util.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -20,12 +28,13 @@ import io.opensaber.registry.exception.AuditFailedException;
 import io.opensaber.registry.exception.EncryptionException;
 import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.sink.DBShard;
 import io.opensaber.registry.sink.DatabaseProvider;
 
 @Component
 public class SearchDaoImpl implements SearchDao {
 
-	@Autowired
+	//@Autowired
 	private DatabaseProvider databaseProvider;
 
 	@Autowired
@@ -36,6 +45,14 @@ public class SearchDaoImpl implements SearchDao {
 
 	@Value("${registry.context.base}")
 	private String registryContext;
+	
+	//TODO: to remove and should databaseProvider from the calling calss.
+	@Autowired
+	DBShard dbshard;
+	@PostConstruct
+	public void initDBshard() throws IOException{
+		databaseProvider = dbshard.getInstance("serialNum", "8");
+	}
 
 	public Map<String, Graph> search(SearchQuery searchQuery)
 			throws AuditFailedException, EncryptionException, RecordNotFoundException {
