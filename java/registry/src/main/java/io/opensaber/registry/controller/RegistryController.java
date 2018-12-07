@@ -1,5 +1,6 @@
 package io.opensaber.registry.controller;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
@@ -346,7 +347,7 @@ public class RegistryController {
 	}
 
 	@RequestMapping(value = "/read2", method = RequestMethod.POST)
-	public ResponseEntity<Response> readGraph2Json(@RequestHeader HttpHeaders header) throws ParseException {
+	public ResponseEntity<Response> readGraph2Json(@RequestHeader HttpHeaders header) throws ParseException, IOException {
 		String dataObject = apiMessage.getRequest().getRequestMapAsString();
 		JSONParser parser = new JSONParser();
 		JSONObject json = (JSONObject) parser.parse(dataObject);
@@ -355,7 +356,7 @@ public class RegistryController {
 		List<String> privateProperties = schemaConfigurator.getAllPrivateProperties();
 		TPGraphMain tpGraph = new TPGraphMain(databaseProvider,privateProperties,encryptionService);
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
-		tpGraph.readGraph2Json(osIdVal);
+		response.setResult(tpGraph.readGraph2Json(osIdVal));
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

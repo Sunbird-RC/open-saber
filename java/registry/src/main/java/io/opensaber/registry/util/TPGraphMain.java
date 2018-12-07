@@ -13,6 +13,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.neo4j.driver.internal.InternalNode;
 import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.StatementResult;
 
@@ -132,17 +133,31 @@ public class TPGraphMain {
         });
     }
 
-    public void readGraph2Json(String osid) {
-        Map<String, Object> map;
-        //Transaction tx = graph.tx();
+    public Map readGraph2Json(String osid) throws IOException {
+        Map map = new HashMap();
         Transaction tx = graph.tx();
-        //GraphTraversalSource gtRootTraversal = graph.traversal();
-       // uuidList.forEach(uuid -> {
         StatementResult sr = neo4JGraph.execute("match (n) where n.osid='" + osid + "' return n");
         while(sr.hasNext()){
             Record record = sr.single();
-            record.fields();
-
+            InternalNode internalNode = (InternalNode) record.get("n").asNode();
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode node = mapper.createObjectNode();
+            String label = internalNode.labels().iterator().next();
+            map.put(label,internalNode.asValue().asMap());
+            //To find connected nodes of the osid node
+            /*if(label.equalsIgnoreCase("Teacher")){
+                StatementResult sr1 = neo4JGraph.execute("match (s)-[e]->(v) where ID(s) =" + internalNode.id() + " return v");
+                List<Record> record1 = sr1.list();
+                record1.forEach(node1 -> {
+                    InternalNode connectedNode = (InternalNode)node1.get("v").asNode();
+                    String connectedLabel = connectedNode.labels().iterator().next();
+                    map1.put(connectedLabel,connectedNode.asValue().asMap());
+                });
+                System.out.println("done");
+                *//*record1.stream().forEach(node1 -> {
+                    System.out.println((InternalNode)node1.values());
+                });*//*
+            }*/
         }
         // StatementResult sr = graph.execute("match (n) where n.osid='532e2c1a-1ed0-4b29-8e44-2d5f6f3d711f' return n");
         // System.out.println(sr.hasNext());
@@ -150,7 +165,7 @@ public class TPGraphMain {
         //GraphTraversal<Vertex, Vertex>  gt = gtRootTraversal.clone().V(679077).hasLabel("Teacher");
         //gt.hasNext();
         tx.commit();
-       // });
+        return map;
     }
 
     public static enum DBTYPE {NEO4J, POSTGRES};
@@ -177,6 +192,7 @@ public class TPGraphMain {
         watch.start("Start Transaction");
         Transaction tx = graph.tx();
         processNode(null, createParentVertex(), rootNode);
+        System.out.println("created");
         tx.commit();
         watch.stop("End Transaction");
 
