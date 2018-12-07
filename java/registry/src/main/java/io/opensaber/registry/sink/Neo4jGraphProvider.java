@@ -29,7 +29,7 @@ public class Neo4jGraphProvider extends DatabaseProvider {
 
 	public Neo4jGraphProvider(DBConnectionInfo connection) {
 		connectionInfo = connection;
-		profilerEnabled = connection.isEnableProfiler();
+		profilerEnabled = connection.isProfilerEnabled();
 		// TODO: Check with auth
 		driver = GraphDatabase.driver(connection.getUri(),
 				AuthTokens.none());

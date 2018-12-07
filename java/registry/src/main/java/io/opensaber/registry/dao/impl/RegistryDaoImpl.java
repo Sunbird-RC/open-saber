@@ -68,7 +68,6 @@ public class RegistryDaoImpl implements RegistryDao {
 	@Autowired
 	private UrlValidator urlValidator;
 
-
 	public static String generateRandomUUID() {
 		return UUID.randomUUID().toString();
 	}
