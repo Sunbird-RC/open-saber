@@ -47,7 +47,6 @@ import io.opensaber.registry.interceptor.AuthorizationInterceptor;
 import io.opensaber.registry.interceptor.RequestIdValidationInterceptor;
 import io.opensaber.registry.interceptor.ValidationInterceptor;
 import io.opensaber.registry.middleware.Middleware;
-import io.opensaber.registry.middleware.MiddlewareHaltException;
 import io.opensaber.registry.middleware.impl.RDFConverter;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.AuditRecord;
@@ -56,7 +55,6 @@ import io.opensaber.registry.schema.config.SchemaLoader;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.schema.configurator.JsonSchemaConfigurator;
 import io.opensaber.registry.schema.configurator.SchemaType;
-import io.opensaber.registry.schema.configurator.ShexSchemaConfigurator;
 import io.opensaber.registry.sink.DBShard;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.transform.ConfigurationHelper;
@@ -68,8 +66,6 @@ import io.opensaber.registry.transform.Transformer;
 import io.opensaber.validators.IValidate;
 import io.opensaber.validators.ValidationFilter;
 import io.opensaber.validators.json.jsonschema.JsonValidationServiceImpl;
-import io.opensaber.validators.rdf.shex.RdfSignatureValidator;
-import io.opensaber.validators.rdf.shex.RdfValidationServiceImpl;
 
 
 @Configuration
@@ -223,10 +219,8 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Bean
 	public IValidate validationServiceImpl() throws IOException, CustomException {
 		IValidate validator = null;
-		if (getValidationType() == SchemaType.SHEX) {
-			validator = new RdfValidationServiceImpl(shexSchemaLoader().getSchemaForCreate(),
-					shexSchemaLoader().getSchemaForUpdate());
-		} else if (getValidationType() == JSON) {
+		//depends on input type,we need to implement validation
+		if (getValidationType() == JSON) {
 			validator = new JsonValidationServiceImpl();
 		} else {
 			logger.error("Fatal - not a known validator mentioned in the application configuration.");
@@ -254,9 +248,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		case JSON:
 			schemaConfigurator = jsonSchemaConfigurator();
 			break;
-		case SHEX:
-			schemaConfigurator = shexSchemaConfigurator();
-			break;
 		default:
 			schemaConfigurator = null;
 			break;
@@ -266,33 +257,12 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public ISchemaConfigurator shexSchemaConfigurator() throws CustomException, IOException {
-		String schemaFile = environment.getProperty(Constants.FIELD_CONFIG_SCEHEMA_FILE);
-		if (schemaFile == null) {
-			throw new CustomException(Constants.SCHEMA_CONFIGURATION_MISSING);
-		}
-		return new ShexSchemaConfigurator(schemaFile);
-	}
-
-	@Bean
 	public ISchemaConfigurator jsonSchemaConfigurator() throws CustomException, IOException {
 		String schemaFile = environment.getProperty(Constants.FIELD_CONFIG_SCEHEMA_FILE);
 		if (schemaFile == null) {
 			throw new CustomException(Constants.SCHEMA_CONFIGURATION_MISSING);
 		}
 		return new JsonSchemaConfigurator(schemaFile);
-	}
-
-	@Bean
-	public RdfSignatureValidator signatureValidator() throws CustomException, IOException, MiddlewareHaltException {
-		if (validationType.toUpperCase().compareTo(SchemaType.SHEX.name()) == 0) {
-			String schemaContent = schemaConfigurator().getSchemaContent();
-			return new RdfSignatureValidator(shexSchemaLoader().getSchemaForCreate(), schemaContent,
-					registryContextBase, registrySystemBase, signatureSchemaConfigName,
-					((RdfValidationServiceImpl) validationServiceImpl()).getShapeTypeMap());
-		} else {
-			return null;
-		}
 	}
 
 	@Bean

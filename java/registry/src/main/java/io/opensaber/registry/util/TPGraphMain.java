@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.*;
 
 public class TPGraphMain {
-    private static Neo4JGraph neo4JGraph;
     private static List<String> privatePropertyLst;
     private static List<String> uuidList;
     private static EncryptionService encryptionService;
@@ -63,12 +62,18 @@ public class TPGraphMain {
 
             } else if (entryValue.isObject()) {
                 createVertex(graph, entry.getKey(), vertex, entryValue);
+            } else if(entryValue.isArray()){
+                entry.getValue().forEach(jsonNode -> {
+                    createVertex(graph, entry.getKey(), vertex, jsonNode);
+                });
+
             }
         });
         Edge e = addEdge(graph, label, parentVertex, vertex);
         String edgeId = UUID.randomUUID().toString();
         vertex.property("osid", edgeId);
         parentVertex.property(vertex.label()+ "id", edgeId);
+        System.out.println("osid:"+edgeId);
         uuidList.add(edgeId);
     }
 
@@ -110,6 +115,9 @@ public class TPGraphMain {
 
             } else if (entry.getValue().isArray()) {
                 // TODO
+                entry.getValue().forEach(jsonNode -> {
+                    createVertex(graph, entry.getKey(), parentVertex, jsonNode);
+                });
             }
         }
     }
@@ -129,8 +137,9 @@ public class TPGraphMain {
     private void populateObject(JsonNode rootNode) {
         rootNode.fields().forEachRemaining(entry -> {
             JsonNode entryValue = entry.getValue();
-            if(entryValue.isValueNode() && privatePropertyLst.contains(entry.getKey())) {
-                encMap.put(entry.getKey(),entryValue.asText());
+            if(entryValue.isValueNode()) {
+                if(privatePropertyLst.contains(entry.getKey()))
+                  encMap.put(entry.getKey(),entryValue.asText());
             } else if(entryValue.isObject()) {
                 populateObject(entryValue);
             }
@@ -141,7 +150,7 @@ public class TPGraphMain {
         Map map = new HashMap();
         Graph graph = dbProvider.getGraphStore();
         Transaction tx = graph.tx();
-        StatementResult sr = neo4JGraph.execute("match (n) where n.osid='" + osid + "' return n");
+        StatementResult sr = dbProvider.getNeo4JGraph().execute("match (n) where n.osid='" + osid + "' return n");
         while(sr.hasNext()){
             Record record = sr.single();
             InternalNode internalNode = (InternalNode) record.get("n").asNode();

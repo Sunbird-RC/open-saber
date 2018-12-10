@@ -71,11 +71,10 @@ public class RegistryController {
 	@Autowired
 	private OpenSaberInstrumentation watch;
 	private List<String> keyToPurge = new java.util.ArrayList<>();
-
 	@Autowired
 	private Vertex parentVertex;
 
-	@RequestMapping(value = "/add", method = RequestMethod.POST)
+	@RequestMapping(value = "/add2", method = RequestMethod.POST)
 	public ResponseEntity<Response> add(@RequestParam(value = "id", required = false) String id,
 			@RequestParam(value = "prop", required = false) String property) {
 
@@ -319,7 +318,7 @@ public class RegistryController {
 	}
 
 
-	@RequestMapping(value = "/add2", method = RequestMethod.POST)
+	@RequestMapping(value = "/add", method = RequestMethod.POST)
 	public ResponseEntity<Response> addTP2Graph(@RequestParam(value = "id", required = false) String id,
 										@RequestParam(value = "prop", required = false) String property) {
 
