@@ -4,7 +4,7 @@ import io.opensaber.registry.model.DBConnectionInfo;
 
 public interface IShardAdvisor {
 	
-	public DBConnectionInfo getShard(String attribute);
+	public DBConnectionInfo getShard(Object attribute);
 	
 
 }

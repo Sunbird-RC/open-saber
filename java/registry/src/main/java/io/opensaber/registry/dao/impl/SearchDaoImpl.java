@@ -1,14 +1,11 @@
 package io.opensaber.registry.dao.impl;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.annotation.PostConstruct;
 
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -28,15 +25,11 @@ import io.opensaber.registry.exception.AuditFailedException;
 import io.opensaber.registry.exception.EncryptionException;
 import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.model.DBConnectionInfo;
-import io.opensaber.registry.shard.advisory.ShardAdvisor;
-import io.opensaber.registry.sink.DBShard;
 import io.opensaber.registry.sink.DatabaseProvider;
 
 @Component
 public class SearchDaoImpl implements SearchDao {
 
-	//@Autowired
 	private DatabaseProvider databaseProvider;
 
 	@Autowired
@@ -47,16 +40,6 @@ public class SearchDaoImpl implements SearchDao {
 
 	@Value("${registry.context.base}")
 	private String registryContext;
-	
-	@Autowired
-	DBShard dbshard;
-	@Autowired
-	ShardAdvisor shardAdvisor;
-	@PostConstruct
-	public void initDBshard() throws IOException{
-		DBConnectionInfo connectionInfo = shardAdvisor.getShardAdvisor("serialNum").getShard("8");
-		databaseProvider = dbshard.getInstance(connectionInfo);
-	}
 
 	public Map<String, Graph> search(SearchQuery searchQuery)
 			throws AuditFailedException, EncryptionException, RecordNotFoundException {
@@ -136,6 +119,12 @@ public class SearchDaoImpl implements SearchDao {
 		} else {
 			valueList.add(value);
 		}
+	}
+
+	@Override
+	public void setDatabaseProvider(DatabaseProvider databaseProvider) {
+		this.databaseProvider = databaseProvider;
+		
 	}
 
 }

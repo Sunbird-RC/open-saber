@@ -1,6 +1,5 @@
 package io.opensaber.registry.dao.impl;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -14,8 +13,6 @@ import java.util.Stack;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.annotation.PostConstruct;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
@@ -57,11 +54,8 @@ import io.opensaber.registry.exception.EncryptionException;
 import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.AuditRecord;
-import io.opensaber.registry.model.DBConnectionInfo;
 import io.opensaber.registry.schema.config.SchemaLoader;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
-import io.opensaber.registry.shard.advisory.ShardAdvisor;
-import io.opensaber.registry.sink.DBShard;
 import io.opensaber.registry.sink.DatabaseProvider;
 
 @Component
@@ -72,7 +66,6 @@ public class RegistryDaoImpl implements RegistryDao {
 	private static Logger logger = LoggerFactory.getLogger(RegistryDaoImpl.class);
 	@Autowired
 	ApplicationContext appContext;
-	//@Autowired
 	private DatabaseProvider databaseProvider;
 	@Value("${registry.context.base}")
 	private String registryContext;
@@ -94,17 +87,7 @@ public class RegistryDaoImpl implements RegistryDao {
 
 	@Autowired
 	private UrlValidator urlValidator;
-	
-	//TODO: to remove and should databaseProvider from the calling calss.
-	@Autowired
-	DBShard dbshard;
-	@Autowired
-	ShardAdvisor shardAdvisor;
-	@PostConstruct
-	public void initDBshard() throws IOException{
-		DBConnectionInfo connectionInfo = shardAdvisor.getShardAdvisor("serialNum").getShard("8");
-		databaseProvider = dbshard.getInstance(connectionInfo);
-	}
+
 	public static String generateRandomUUID() {
 		return UUID.randomUUID().toString();
 	}
@@ -1049,6 +1032,10 @@ public class RegistryDaoImpl implements RegistryDao {
 			}
 		}
 		return null;
+	}
+	@Override
+	public void setDatabaseProvider(DatabaseProvider databaseProvider) {
+		this.databaseProvider = databaseProvider;
 	}
 
 }

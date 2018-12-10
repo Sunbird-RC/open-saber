@@ -1,9 +1,12 @@
 package io.opensaber.registry.controller;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.PostConstruct;
 
 import org.apache.jena.rdf.model.Model;
 import org.json.simple.JSONObject;
@@ -16,21 +19,44 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import io.opensaber.pojos.*;
-import io.opensaber.registry.exception.*;
+import io.opensaber.pojos.APIMessage;
+import io.opensaber.pojos.HealthCheckResponse;
+import io.opensaber.pojos.OpenSaberInstrumentation;
+import io.opensaber.pojos.Response;
+import io.opensaber.pojos.ResponseParams;
+import io.opensaber.registry.exception.AuditFailedException;
+import io.opensaber.registry.exception.DuplicateRecordException;
+import io.opensaber.registry.exception.EntityCreationException;
+import io.opensaber.registry.exception.RecordNotFoundException;
+import io.opensaber.registry.exception.TypeNotProvidedException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.Direction;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
 import io.opensaber.registry.middleware.util.JSONUtil;
+import io.opensaber.registry.model.DBConnectionInfo;
 import io.opensaber.registry.service.RegistryAuditService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
-import io.opensaber.registry.transform.*;
+import io.opensaber.registry.shard.advisory.IShardAdvisor;
+import io.opensaber.registry.sink.DBShard;
+import io.opensaber.registry.sink.DatabaseProvider;
+import io.opensaber.registry.transform.Configuration;
+import io.opensaber.registry.transform.ConfigurationHelper;
+import io.opensaber.registry.transform.Data;
+import io.opensaber.registry.transform.ITransformer;
+import io.opensaber.registry.transform.TransformationException;
+import io.opensaber.registry.transform.Transformer;
 
 @RestController
 public class RegistryController {
@@ -58,6 +84,25 @@ public class RegistryController {
 	@Autowired
 	private OpenSaberInstrumentation watch;
 	private List<String> keyToPurge = new java.util.ArrayList<>();
+	
+	@Autowired
+	private DBShard dbshard;
+	@Autowired
+	private IShardAdvisor shardAdvisor;
+	private DatabaseProvider databaseProvider;
+	/*
+	 * Used init a DBshard
+	 * attribute: SerialNum 
+	 * value for attribute hard coded.
+	 * 
+	 */
+	@PostConstruct
+	public void initDBshard() throws IOException{				
+		DBConnectionInfo connectionInfo = shardAdvisor.getShard("8");// {Param as Object}
+		databaseProvider = dbshard.getInstance(connectionInfo);
+		registryService.setDatabaseProvider(databaseProvider);
+		searchService.setDatabaseProvider(databaseProvider);
+	}
 
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
 	public ResponseEntity<Response> add(@RequestParam(value = "id", required = false) String id,
