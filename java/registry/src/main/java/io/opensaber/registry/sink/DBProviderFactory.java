@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.DBConnectionInfo;
 
-@Component("dbshard")
-public class DBShard {
+@Component("dbProviderFactory")
+public class DBProviderFactory {
 	
 	@Autowired
 	Environment environment;

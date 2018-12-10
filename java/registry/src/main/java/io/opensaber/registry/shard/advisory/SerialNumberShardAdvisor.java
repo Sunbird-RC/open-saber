@@ -42,5 +42,4 @@ public class SerialNumberShardAdvisor implements IShardAdvisor {
 	public String shardId() {
 		return shardId;
 	}
-
 }

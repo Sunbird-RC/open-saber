@@ -1,6 +1,5 @@
 package io.opensaber.registry.controller;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
@@ -42,13 +41,10 @@ import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.Direction;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
 import io.opensaber.registry.middleware.util.JSONUtil;
-import io.opensaber.registry.model.DBConnectionInfo;
 import io.opensaber.registry.service.RegistryAuditService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
-import io.opensaber.registry.shard.advisory.IShardAdvisor;
-import io.opensaber.registry.sink.DBShard;
-import io.opensaber.registry.sink.DatabaseProvider;
+import io.opensaber.registry.shard.advisory.ShardManager;
 import io.opensaber.registry.transform.Configuration;
 import io.opensaber.registry.transform.ConfigurationHelper;
 import io.opensaber.registry.transform.Data;
@@ -82,27 +78,10 @@ public class RegistryController {
 	@Autowired
 	private OpenSaberInstrumentation watch;
 	private List<String> keyToPurge = new java.util.ArrayList<>();
-	
-	@Autowired
-	private DBShard dbshard;
-	@Autowired
-	private IShardAdvisor shardAdvisor;
 
-	/**
-	 * intiatiate a DBShard and ensure activating a databaseProvider.
-	 * used for add end point. 
-	 * @param attributeValue
-	 * @throws IOException
-	 */
-	private void activateDBshard(Object attributeValue) throws IOException{				
-		DBConnectionInfo connectionInfo = shardAdvisor.getShard(attributeValue);
-		DatabaseProvider databaseProvider = dbshard.getInstance(connectionInfo);
-		registryService.setDatabaseProvider(databaseProvider);
-		searchService.setDatabaseProvider(databaseProvider);
-	}
+	@Autowired
+	ShardManager shardManager;
 
-	//TODO: Cache the shardId + label(uuid) map
-	//      shardAdvisor must have shardId, and attribute key 
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
 	public ResponseEntity<Response> add(@RequestParam(value = "id", required = false) String id,
 			@RequestParam(value = "prop", required = false) String property) {
@@ -110,9 +89,10 @@ public class RegistryController {
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.CREATE, "OK", responseParams);
 		Map<String, Object> result = new HashMap<>();
+		String entityType = apiMessage.getRequest().getEntityType();
 		try {
-			int slNum = (int) apiMessage.getRequest().getRequestMap().get("serialNum");
-			activateDBshard(slNum);	
+			int slNum = (int) ((HashMap<String, Object>)apiMessage.getRequest().getRequestMap().get(entityType)).get(shardManager.getShardProperty());
+			shardManager.activateDbShard(slNum);	
 			Model rdf = (Model) apiMessage.getLocalMap(Constants.CONTROLLER_INPUT);
 			
 			watch.start("RegistryController.addToExistingEntity");
