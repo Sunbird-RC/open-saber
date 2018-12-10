@@ -7,9 +7,9 @@ import java.util.Map;
 
 public class AdvisoryLoader {
 	
-	private Map<String,IShardAdvisory> advisors = new HashMap<String,IShardAdvisory>();
+	private Map<String,IShardAdvisor> advisors = new HashMap<String,IShardAdvisor>();
 	
-	public void registerAdvisory(String property, IShardAdvisory shardAdvisory){		
+	public void registerAdvisory(String property, IShardAdvisor shardAdvisory){		
 		advisors.put(property, shardAdvisory);		
 		
 	}
@@ -18,8 +18,8 @@ public class AdvisoryLoader {
 	 * @return
 	 * @throws IOException 
 	 */
-	public IShardAdvisory getShardAdvisory(String property) throws IOException{
-		IShardAdvisory advisory = null;
+	public IShardAdvisor getShardAdvisory(String property) throws IOException{
+		IShardAdvisor advisory = null;
 		if(advisors.keySet().contains(property))
 			advisory = advisors.get(property);
 		else

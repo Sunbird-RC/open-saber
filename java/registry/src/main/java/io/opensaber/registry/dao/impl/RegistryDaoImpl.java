@@ -57,8 +57,10 @@ import io.opensaber.registry.exception.EncryptionException;
 import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.AuditRecord;
+import io.opensaber.registry.model.DBConnectionInfo;
 import io.opensaber.registry.schema.config.SchemaLoader;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
+import io.opensaber.registry.shard.advisory.AdvisoryLoader;
 import io.opensaber.registry.sink.DBShard;
 import io.opensaber.registry.sink.DatabaseProvider;
 
@@ -96,9 +98,12 @@ public class RegistryDaoImpl implements RegistryDao {
 	//TODO: to remove and should databaseProvider from the calling calss.
 	@Autowired
 	DBShard dbshard;
+	@Autowired
+	AdvisoryLoader advisoryLoader;
 	@PostConstruct
 	public void initDBshard() throws IOException{
-		databaseProvider = dbshard.getInstance("serialNum", "8");
+		DBConnectionInfo connectionInfo = advisoryLoader.getShardAdvisory("serialNum").getShard("8");
+		databaseProvider = dbshard.getInstance(connectionInfo);
 	}
 	public static String generateRandomUUID() {
 		return UUID.randomUUID().toString();

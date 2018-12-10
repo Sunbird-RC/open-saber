@@ -6,7 +6,7 @@ import io.opensaber.registry.model.DBConnectionInfo;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
 
 @Component
-public class SerialNumberShardAdvisory implements IShardAdvisory {
+public class SerialNumberShardAdvisory implements IShardAdvisor {
 
 	private DBConnectionInfoMgr dBConnectionInfoMgr;
 	
@@ -15,10 +15,10 @@ public class SerialNumberShardAdvisory implements IShardAdvisory {
 	}
 	
 	@Override
-	public DBConnectionInfo connectionInfo(String subject) {
+	public DBConnectionInfo getShard(String serialNumber ) {
 		
 		DBConnectionInfo connectionInfo = null;
-		if (subject.length() % 2 == 0) {
+		if (serialNumber.length() % 2 == 0) {
 			connectionInfo = dBConnectionInfoMgr.getConnectionInfo().get(1);
 		} else {
 			connectionInfo = dBConnectionInfoMgr.getConnectionInfo().get(0);

@@ -56,11 +56,13 @@ import io.opensaber.registry.exception.UpdateException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.middleware.util.RDFUtil;
+import io.opensaber.registry.model.DBConnectionInfo;
 import io.opensaber.registry.model.RegistrySignature;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.service.EncryptionService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SignatureService;
+import io.opensaber.registry.shard.advisory.AdvisoryLoader;
 import io.opensaber.registry.sink.DBShard;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.util.GraphDBFactory;
@@ -75,6 +77,8 @@ public class RegistryServiceImpl implements RegistryService {
 	DatabaseProvider databaseProvider;
 	@Autowired
 	DBShard dbshard;
+	@Autowired
+	AdvisoryLoader advisoryLoader;
 	@Autowired
 	EncryptionService encryptionService;
 	@Autowired
@@ -114,7 +118,8 @@ public class RegistryServiceImpl implements RegistryService {
 
 	@PostConstruct
 	public void initDBshard() throws IOException{
-		databaseProvider = dbshard.getInstance("serialNum", "8");
+		DBConnectionInfo connectionInfo = advisoryLoader.getShardAdvisory("serialNum").getShard("8");
+		databaseProvider = dbshard.getInstance(connectionInfo);
 	}
 	
 	@Override

@@ -28,6 +28,8 @@ import io.opensaber.registry.exception.AuditFailedException;
 import io.opensaber.registry.exception.EncryptionException;
 import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.model.DBConnectionInfo;
+import io.opensaber.registry.shard.advisory.AdvisoryLoader;
 import io.opensaber.registry.sink.DBShard;
 import io.opensaber.registry.sink.DatabaseProvider;
 
@@ -46,12 +48,14 @@ public class SearchDaoImpl implements SearchDao {
 	@Value("${registry.context.base}")
 	private String registryContext;
 	
-	//TODO: to remove and should databaseProvider from the calling calss.
 	@Autowired
 	DBShard dbshard;
+	@Autowired
+	AdvisoryLoader advisoryLoader;
 	@PostConstruct
 	public void initDBshard() throws IOException{
-		databaseProvider = dbshard.getInstance("serialNum", "8");
+		DBConnectionInfo connectionInfo = advisoryLoader.getShardAdvisory("serialNum").getShard("8");
+		databaseProvider = dbshard.getInstance(connectionInfo);
 	}
 
 	public Map<String, Graph> search(SearchQuery searchQuery)
