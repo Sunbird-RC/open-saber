@@ -113,7 +113,7 @@ public class RegistryController {
 	 * 
 	 * @return
 	 */
-	@RequestMapping(value = "/read", method = RequestMethod.POST)
+	@RequestMapping(value = "/read2", method = RequestMethod.POST)
 	public ResponseEntity<Response> readEntity(@RequestHeader HttpHeaders header) {
 
 		ResponseParams responseParams = new ResponseParams();
@@ -322,7 +322,6 @@ public class RegistryController {
 	public ResponseEntity<Response> addTP2Graph(@RequestParam(value = "id", required = false) String id,
 										@RequestParam(value = "prop", required = false) String property) {
 
-		//Model rdf = (Model) apiMessage.getLocalMap(Constants.RDF_OBJECT);
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.CREATE, "OK", responseParams);
 		Map<String, Object> result = new HashMap<>();
@@ -349,7 +348,7 @@ public class RegistryController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@RequestMapping(value = "/read2", method = RequestMethod.POST)
+	@RequestMapping(value = "/read", method = RequestMethod.POST)
 	public ResponseEntity<Response> readGraph2Json(@RequestHeader HttpHeaders header) throws ParseException,
 			IOException, Exception {
 		String dataObject = apiMessage.getRequest().getRequestMapAsString();

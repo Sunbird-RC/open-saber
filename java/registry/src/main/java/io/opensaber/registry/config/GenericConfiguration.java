@@ -91,17 +91,11 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Value("${perf.monitoring.enabled}")
 	private boolean performanceMonitoringEnabled;
 
-	@Value("${registry.system.base}")
-	private String registrySystemBase;
-
 	@Value("${registry.context.base}")
 	private String registryContextBase;
 	
 	@Value("${frame.file}")
 	private String frameFile;
-
-	@Value("${signature.schema.config.name}")
-	private String signatureSchemaConfigName;
 
 	@Value("${validation.type}")
 	private String validationType = "json";

@@ -3,7 +3,6 @@ package io.opensaber.registry.sink;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.neo4j.driver.v1.AuthTokens;
 import org.neo4j.driver.v1.Driver;
@@ -37,7 +36,6 @@ public class Neo4jGraphProvider extends DatabaseProvider {
 
 	private Neo4JGraph getGraph() {
 		Neo4JGraph neo4jGraph;
-		Boolean isDatabaseEmbedded = false;
 		neo4jGraph = new Neo4JGraph(driver, idProvider, idProvider);
 		logger.info("Initialized db at {}", connectionInfo.getUri());
 		return neo4jGraph;

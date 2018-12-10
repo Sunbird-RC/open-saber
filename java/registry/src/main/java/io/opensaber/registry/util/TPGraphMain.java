@@ -2,7 +2,6 @@ package io.opensaber.registry.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.exception.EncryptionException;
 import io.opensaber.registry.middleware.util.LogMarkers;
@@ -69,7 +68,7 @@ public class TPGraphMain {
 
             }
         });
-        Edge e = addEdge(graph, label, parentVertex, vertex);
+        addEdge(graph, label, parentVertex, vertex);
         String edgeId = UUID.randomUUID().toString();
         vertex.property("osid", edgeId);
         parentVertex.property(vertex.label()+ "id", edgeId);
@@ -97,8 +96,6 @@ public class TPGraphMain {
 
         return parentVertex;
     }
-
-    public List<String> verticesCreated = new ArrayList<String>();
 
     public void processNode(Graph graph, String parentName, Vertex parentVertex, JsonNode node) throws EncryptionException {
 
@@ -154,8 +151,6 @@ public class TPGraphMain {
         while(sr.hasNext()){
             Record record = sr.single();
             InternalNode internalNode = (InternalNode) record.get("n").asNode();
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode node = mapper.createObjectNode();
             String label = internalNode.labels().iterator().next();
             map.put(label,internalNode.asValue().asMap());
             //To find connected nodes of the osid node
