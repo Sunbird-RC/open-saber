@@ -29,7 +29,7 @@ import io.opensaber.registry.exception.EncryptionException;
 import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.DBConnectionInfo;
-import io.opensaber.registry.shard.advisory.AdvisoryLoader;
+import io.opensaber.registry.shard.advisory.ShardAdvisor;
 import io.opensaber.registry.sink.DBShard;
 import io.opensaber.registry.sink.DatabaseProvider;
 
@@ -51,10 +51,10 @@ public class SearchDaoImpl implements SearchDao {
 	@Autowired
 	DBShard dbshard;
 	@Autowired
-	AdvisoryLoader advisoryLoader;
+	ShardAdvisor shardAdvisor;
 	@PostConstruct
 	public void initDBshard() throws IOException{
-		DBConnectionInfo connectionInfo = advisoryLoader.getShardAdvisory("serialNum").getShard("8");
+		DBConnectionInfo connectionInfo = shardAdvisor.getShardAdvisor("serialNum").getShard("8");
 		databaseProvider = dbshard.getInstance(connectionInfo);
 	}
 

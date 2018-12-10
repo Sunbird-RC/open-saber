@@ -54,8 +54,8 @@ import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.schema.configurator.JsonSchemaConfigurator;
 import io.opensaber.registry.schema.configurator.SchemaType;
 import io.opensaber.registry.schema.configurator.ShexSchemaConfigurator;
-import io.opensaber.registry.shard.advisory.AdvisoryLoader;
 import io.opensaber.registry.shard.advisory.SerialNumberShardAdvisory;
+import io.opensaber.registry.shard.advisory.ShardAdvisor;
 import io.opensaber.registry.sink.DBShard;
 import io.opensaber.registry.transform.ConfigurationHelper;
 import io.opensaber.registry.transform.Json2LdTransformer;
@@ -319,10 +319,10 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 	
 	@Bean
-	public AdvisoryLoader advisoryLoader(){
-		AdvisoryLoader advisoryLoader = new AdvisoryLoader();
-		advisoryLoader.registerAdvisory("serialNum", new SerialNumberShardAdvisory(dBConnectionInfoMgr()));
-		return advisoryLoader;	
+	public ShardAdvisor shardAdvisor(){
+		ShardAdvisor shardAdvisor = new ShardAdvisor();
+		shardAdvisor.registerAdvisory("serialNum", new SerialNumberShardAdvisory(dBConnectionInfoMgr()));
+		return shardAdvisor;	
 	}
 	
 

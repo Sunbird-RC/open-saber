@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class AdvisoryLoader {
+public class ShardAdvisor {
 	
 	private Map<String,IShardAdvisor> advisors = new HashMap<String,IShardAdvisor>();
 	
@@ -18,7 +18,7 @@ public class AdvisoryLoader {
 	 * @return
 	 * @throws IOException 
 	 */
-	public IShardAdvisor getShardAdvisory(String property) throws IOException{
+	public IShardAdvisor getShardAdvisor(String property) throws IOException{
 		IShardAdvisor advisory = null;
 		if(advisors.keySet().contains(property))
 			advisory = advisors.get(property);
