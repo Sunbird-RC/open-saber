@@ -9,7 +9,7 @@ public class ShardAdvisor {
 	
 	private Map<String,IShardAdvisor> advisors = new HashMap<String,IShardAdvisor>();
 	
-	public void registerAdvisory(String property, IShardAdvisor shardAdvisory){		
+	public void registerAdvisor(String property, IShardAdvisor shardAdvisory){		
 		advisors.put(property, shardAdvisory);		
 		
 	}
