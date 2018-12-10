@@ -12,6 +12,7 @@ import io.opensaber.registry.service.EncryptionService;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.util.TPGraphMain;
 import org.apache.jena.rdf.model.Model;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -70,6 +71,9 @@ public class RegistryController {
 	@Autowired
 	private OpenSaberInstrumentation watch;
 	private List<String> keyToPurge = new java.util.ArrayList<>();
+
+	@Autowired
+	private Vertex parentVertex;
 
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
 	public ResponseEntity<Response> add(@RequestParam(value = "id", required = false) String id,
@@ -326,7 +330,7 @@ public class RegistryController {
 		String jsonString = apiMessage.getRequest().getRequestMapAsString();
 		List<String> privateProperties = schemaConfigurator.getAllPrivateProperties();
 		//String jsonString = "{\"Teacher\":{\"signatures\":{\"@type\":\"sc:GraphSignature2012\",\"signatureFor\":\"http://localhost:8080/serialNum\",\"creator\":\"https://example.com/i/pat/keys/5\",\"created\":\"2017-09-23T20:21:34Z\",\"nonce\":\"2bbgh3dgjg2302d-d2b3gi423d42\",\"signatureValue\":\"eyiOiJKJ0eXA...OEjgFWFXk\"},\"serialNum\":6,\"teacherCode\":\"12234\",\"nationalIdentifier\":\"1234567890123456\",\"teacherName\":\"FromRajeshLaptop\",\"gender\":\"GenderTypeCode-MALE\",\"birthDate\":\"1990-12-06\",\"socialCategory\":\"SocialCategoryTypeCode-GENERAL\",\"highestAcademicQualification\":\"AcademicQualificationTypeCode-PHD\",\"highestTeacherQualification\":\"TeacherQualificationTypeCode-MED\",\"yearOfJoiningService\":\"2014\",\"teachingRole\":{\"@type\":\"TeachingRole\",\"teacherType\":\"TeacherTypeCode-HEAD\",\"appointmentType\":\"TeacherAppointmentTypeCode-REGULAR\",\"classesTaught\":\"ClassTypeCode-SECONDARYANDHIGHERSECONDARY\",\"appointedForSubjects\":\"SubjectCode-ENGLISH\",\"mainSubjectsTaught\":\"SubjectCode-SOCIALSTUDIES\",\"appointmentYear\":\"2015\"},\"inServiceTeacherTrainingFromBRC\":{\"@type\":\"InServiceTeacherTrainingFromBlockResourceCentre\",\"daysOfInServiceTeacherTraining\":\"10\"},\"inServiceTeacherTrainingFromCRC\":{\"@type\":\"InServiceTeacherTrainingFromClusterResourceCentre\",\"daysOfInServiceTeacherTraining\":\"2\"},\"inServiceTeacherTrainingFromDIET\":{\"@type\":\"InServiceTeacherTrainingFromDIET\",\"daysOfInServiceTeacherTraining\":\"5.5\"},\"inServiceTeacherTrainingFromOthers\":{\"@type\":\"InServiceTeacherTrainingFromOthers\",\"daysOfInServiceTeacherTraining\":\"3.5\"},\"nonTeachingAssignmentsForAcademicCalendar\":{\"@type\":\"NonTeachingAssignmentsForAcademicCalendar\",\"daysOfNonTeachingAssignments\":\"6\"},\"basicProficiencyLevel\":{\"@type\":\"BasicProficiencyLevel\",\"proficiencySubject\":\"SubjectCode-MATH\",\"proficiencyAcademicQualification\":\"AcademicQualificationTypeCode-PHD\"},\"disabilityType\":\"DisabilityCode-NA\",\"trainedForChildrenSpecialNeeds\":\"YesNoCode-YES\",\"trainedinUseOfComputer\":\"YesNoCode-YES\"}}}";
-		TPGraphMain tpGraph = new TPGraphMain(databaseProvider,privateProperties,encryptionService);
+		TPGraphMain tpGraph = new TPGraphMain(databaseProvider, parentVertex, privateProperties, encryptionService);
 
 		try {
 			watch.start("RegistryController.addToExistingEntity");
@@ -347,14 +351,15 @@ public class RegistryController {
 	}
 
 	@RequestMapping(value = "/read2", method = RequestMethod.POST)
-	public ResponseEntity<Response> readGraph2Json(@RequestHeader HttpHeaders header) throws ParseException, IOException {
+	public ResponseEntity<Response> readGraph2Json(@RequestHeader HttpHeaders header) throws ParseException,
+			IOException, Exception {
 		String dataObject = apiMessage.getRequest().getRequestMapAsString();
 		JSONParser parser = new JSONParser();
 		JSONObject json = (JSONObject) parser.parse(dataObject);
 		String osIdVal =  json.get("id").toString();
 		ResponseParams responseParams = new ResponseParams();
 		List<String> privateProperties = schemaConfigurator.getAllPrivateProperties();
-		TPGraphMain tpGraph = new TPGraphMain(databaseProvider,privateProperties,encryptionService);
+		TPGraphMain tpGraph = new TPGraphMain(databaseProvider, parentVertex, privateProperties, encryptionService);
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 		response.setResult(tpGraph.readGraph2Json(osIdVal));
 

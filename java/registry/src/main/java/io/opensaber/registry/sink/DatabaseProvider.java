@@ -68,5 +68,4 @@ public abstract class DatabaseProvider {
 			logger.error("Can't close graph " + e.getMessage());
 		}
 	}
-
 }

@@ -7,9 +7,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.opensaber.registry.util.TPGraphMain;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -342,6 +345,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		requestIdMap.put(Constants.REGISTRY_UPDATE_ENDPOINT, Response.API_ID.UPDATE.getId());
 		requestIdMap.put(Constants.SIGNATURE_SIGN_ENDPOINT, Response.API_ID.SIGN.getId());
 		requestIdMap.put(Constants.SIGNATURE_VERIFY_ENDPOINT, Response.API_ID.VERIFY.getId());
+
 		return requestIdMap;
 	}
 
@@ -394,5 +398,17 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Bean
 	public HandlerExceptionResolver customExceptionHandler() {
 		return new CustomExceptionHandler(gson());
+	}
+
+	@Bean
+	public Vertex parentVertex() {
+		Graph g = databaseProvider().getGraphStore();
+		Vertex parentV = TPGraphMain.createParentVertex(g);
+		try {
+			g.close();
+		} catch (Exception e) {
+			logger.info(e.getMessage());
+		}
+		return parentV;
 	}
 }

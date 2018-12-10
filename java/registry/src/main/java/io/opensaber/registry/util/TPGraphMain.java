@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.exception.EncryptionException;
+import io.opensaber.registry.middleware.util.LogMarkers;
 import io.opensaber.registry.service.EncryptionService;
 import io.opensaber.registry.sink.DatabaseProvider;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -16,36 +17,39 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.driver.internal.InternalNode;
 import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.StatementResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.*;
 
 public class TPGraphMain {
-    private static Graph graph;
     private static Neo4JGraph neo4JGraph;
     private static List<String> privatePropertyLst;
     private static List<String> uuidList;
     private static EncryptionService encryptionService;
     private static Map<String, Object> encMap;
     private static Map<String, Object> encodedMap;
-
     private DatabaseProvider dbProvider;
+    private Vertex parentVertex;
+
+    private Logger logger = LoggerFactory.getLogger(TPGraphMain.class);
 
     private OpenSaberInstrumentation watch = new OpenSaberInstrumentation(true);
 
-    public TPGraphMain(DatabaseProvider db, List<String> privatePropertyLst, EncryptionService encryptionService) {
-        graph = db.getGraphStore();
-        neo4JGraph = db.getNeo4JGraph();
+    public TPGraphMain(DatabaseProvider db, Vertex parentVertex, List<String> privatePropertyLst, EncryptionService encryptionService) {
+        dbProvider = db;
+        this.parentVertex = parentVertex;
         this.privatePropertyLst = privatePropertyLst;
         this.encryptionService = encryptionService;
         uuidList = new ArrayList<String>();
     }
 
-    public static String createLabel() {
+    public String createLabel() {
         return UUID.randomUUID().toString();
     }
 
-    public static void createVertex(Graph graph, String label, Vertex parentVertex, JsonNode jsonObject) {
+    public void createVertex(Graph graph, String label, Vertex parentVertex, JsonNode jsonObject) {
         Vertex vertex = graph.addVertex(label);
         jsonObject.fields().forEachRemaining(entry -> {
             JsonNode entryValue = entry.getValue();
@@ -68,11 +72,11 @@ public class TPGraphMain {
         uuidList.add(edgeId);
     }
 
-    public static Edge addEdge(Graph graph, String label, Vertex v1, Vertex v2) {
+    public Edge addEdge(Graph graph, String label, Vertex v1, Vertex v2) {
         return v1.addEdge(label, v2);
     }
 
-    public static Vertex createParentVertex() {
+    public static Vertex createParentVertex(Graph graph) {
         String personsStr = "Persons";
         String personsId = "ParentEntity_Persons";
         GraphTraversalSource gtRootTraversal = graph.traversal();
@@ -89,9 +93,9 @@ public class TPGraphMain {
         return parentVertex;
     }
 
-    public static List<String> verticesCreated = new ArrayList<String>();
+    public List<String> verticesCreated = new ArrayList<String>();
 
-    public static void processNode(String parentName, Vertex parentVertex, JsonNode node) throws EncryptionException {
+    public void processNode(Graph graph, String parentName, Vertex parentVertex, JsonNode node) throws EncryptionException {
 
         Iterator<Map.Entry<String, JsonNode>> entryIterator = node.fields();
         while (entryIterator.hasNext()) {
@@ -111,7 +115,7 @@ public class TPGraphMain {
     }
 
     // TODO: This method must exist outside in an EncryptionHelper.
-    public static JsonNode createEncryptedJson(String jsonString) throws IOException, EncryptionException {
+    public JsonNode createEncryptedJson(String jsonString) throws IOException, EncryptionException {
         encMap = new HashMap<String, Object>();
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(jsonString);
@@ -122,7 +126,7 @@ public class TPGraphMain {
         return rootNode;
     }
 
-    private static void populateObject(JsonNode rootNode) {
+    private void populateObject(JsonNode rootNode) {
         rootNode.fields().forEachRemaining(entry -> {
             JsonNode entryValue = entry.getValue();
             if(entryValue.isValueNode() && privatePropertyLst.contains(entry.getKey())) {
@@ -133,8 +137,9 @@ public class TPGraphMain {
         });
     }
 
-    public Map readGraph2Json(String osid) throws IOException {
+    public Map readGraph2Json(String osid) throws IOException, Exception {
         Map map = new HashMap();
+        Graph graph = dbProvider.getGraphStore();
         Transaction tx = graph.tx();
         StatementResult sr = neo4JGraph.execute("match (n) where n.osid='" + osid + "' return n");
         while(sr.hasNext()){
@@ -165,6 +170,7 @@ public class TPGraphMain {
         //GraphTraversal<Vertex, Vertex>  gt = gtRootTraversal.clone().V(679077).hasLabel("Teacher");
         //gt.hasNext();
         tx.commit();
+        graph.close();
         return map;
     }
 
@@ -177,37 +183,25 @@ public class TPGraphMain {
     // Multiple child vertex = address
     // For every parent vertex and child vertex, there is a single Edge between
     //    teacher -> address
+    public void createTPGraph(JsonNode rootNode) throws IOException, EncryptionException, Exception {
+        try {
+            Graph graph = dbProvider.getGraphStore();
 
-    // TODO: It is expected that this method would be called with already encrypted
-    // property values and with entity sigatures.
-    // Think of passing a ObjectNode directly; ObjectMapper().readTree is costly operation.
-    public void createTPGraph(JsonNode rootNode) throws IOException, EncryptionException {
-       /* ObjectMapper mapper = new ObjectMapper();
-        JsonNode rootNode = mapper.readTree(jsonString);*/
-
-        /*watch.start("Get Graph");
-        graph = dbProvider.getGraphStore();
-        watch.stop("End Graph");*/
-
-        watch.start("Start Transaction");
-        Transaction tx = graph.tx();
-        processNode(null, createParentVertex(), rootNode);
-        System.out.println("created");
-        tx.commit();
-        watch.stop("End Transaction");
-
-        // TODO
-        // How about creating a threaded transaction?
-        // When apib is invoked with 100 concurrent requests, there is an error that
-        //    Neo4Session is not getting closed
-        //  Is this influenced by what we do?
-
-//        watch.start("Close transaction");
-//        try {
-//            tx.close();
-//        } catch (Exception e) {
-//
-//        }
-//        watch.stop("End close Graph");
+            watch.start("Add Transaction");
+            try (Transaction tx = graph.tx()) {
+                processNode(graph, "Teacher", parentVertex, rootNode);
+                tx.commit();
+            }
+            new Thread(() -> {
+                try {
+                    graph.close();
+                } catch (Exception e) {
+                    logger.error("Can't close the graph");
+                }
+            }).start();
+            watch.stop("Add Transaction");
+        } catch (Exception e) {
+            logger.error(LogMarkers.FATAL, "Can't close graph");
+        }
     }
 }
