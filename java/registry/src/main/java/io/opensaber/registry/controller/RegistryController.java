@@ -6,8 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.jena.rdf.model.Model;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -89,31 +87,34 @@ public class RegistryController {
 	private DBShard dbshard;
 	@Autowired
 	private IShardAdvisor shardAdvisor;
-	private DatabaseProvider databaseProvider;
-	/*
-	 * Used init a DBshard
-	 * attribute: SerialNum 
-	 * value for attribute hard coded.
-	 * 
+
+	/**
+	 * intiatiate a DBShard and ensure activating a databaseProvider.
+	 * used for add end point. 
+	 * @param attributeValue
+	 * @throws IOException
 	 */
-	@PostConstruct
-	public void initDBshard() throws IOException{				
-		DBConnectionInfo connectionInfo = shardAdvisor.getShard("8");// {Param as Object}
-		databaseProvider = dbshard.getInstance(connectionInfo);
+	private void activateDBshard(Object attributeValue) throws IOException{				
+		DBConnectionInfo connectionInfo = shardAdvisor.getShard(attributeValue);
+		DatabaseProvider databaseProvider = dbshard.getInstance(connectionInfo);
 		registryService.setDatabaseProvider(databaseProvider);
 		searchService.setDatabaseProvider(databaseProvider);
 	}
 
+	//TODO: Cache the shardId + label(uuid) map
+	//      shardAdvisor must have shardId, and attribute key 
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
 	public ResponseEntity<Response> add(@RequestParam(value = "id", required = false) String id,
 			@RequestParam(value = "prop", required = false) String property) {
 
-		Model rdf = (Model) apiMessage.getLocalMap(Constants.CONTROLLER_INPUT);
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.CREATE, "OK", responseParams);
 		Map<String, Object> result = new HashMap<>();
-
 		try {
+			int slNum = (int) apiMessage.getRequest().getRequestMap().get("serialNum");
+			activateDBshard(slNum);	
+			Model rdf = (Model) apiMessage.getLocalMap(Constants.CONTROLLER_INPUT);
+			
 			watch.start("RegistryController.addToExistingEntity");
 			String dataObject = apiMessage.getLocalMap(Constants.LD_OBJECT).toString();
 			String label = registryService.addEntity(rdf, dataObject, id, property);
