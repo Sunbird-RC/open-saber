@@ -72,7 +72,7 @@ import io.opensaber.registry.tests.utility.TestHelper;
 @Ignore
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { RegistryDaoImpl.class, Environment.class, ObjectMapper.class, GenericConfiguration.class,
-		EncryptionServiceImpl.class })
+		EncryptionServiceImpl.class, AuditRecordReader.class })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @ActiveProfiles(Constants.TEST_ENVIRONMENT)
 public class EncryptionDaoImplTest extends RegistryTestBase {
@@ -98,7 +98,7 @@ public class EncryptionDaoImplTest extends RegistryTestBase {
 					String.format("Test %s failed. Error message: %s", description.getMethodName(), e.getMessage()));
 		}
 	};
-
+	@Autowired
 	AuditRecordReader auditRecordReader;
 
 	/*
