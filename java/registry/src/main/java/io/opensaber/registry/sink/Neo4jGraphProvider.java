@@ -48,7 +48,7 @@ public class Neo4jGraphProvider extends DatabaseProvider {
 
 	// TODO: We must have an abstract class to allow this possibility.
 	@Override
-	public Neo4JGraph getNeo4JGraph() {
+	public Neo4JGraph getRawGraph() {
 		return getGraph();
 	}
 

@@ -15,7 +15,7 @@ import org.umlg.sqlg.structure.SqlgGraph;
 public class SqlgProvider extends DatabaseProvider {
 
 	private Logger logger = LoggerFactory.getLogger(SqlgProvider.class);
-	private Graph graph;
+	private SqlgGraph graph;
 
 	public SqlgProvider(Environment environment) {
 		String jdbcUrl = environment.getProperty("database.jdbc.url");
@@ -34,8 +34,8 @@ public class SqlgProvider extends DatabaseProvider {
 	}
 
 	@Override
-	public Neo4JGraph getNeo4JGraph() {
-		return null;
+	public SqlgGraph getRawGraph() {
+		return graph;
 	}
 
 	@PostConstruct

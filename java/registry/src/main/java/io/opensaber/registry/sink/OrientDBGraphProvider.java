@@ -17,7 +17,7 @@ import io.opensaber.registry.middleware.util.Constants;
 public class OrientDBGraphProvider extends DatabaseProvider {
 
 	private Logger logger = LoggerFactory.getLogger(OrientDBGraphProvider.class);
-	private Graph graph;
+	private OrientGraph graph;
 
 	public OrientDBGraphProvider(Environment environment) {
 		String graphDbLocation = environment.getProperty(Constants.ORIENTDB_DIRECTORY);
@@ -33,8 +33,8 @@ public class OrientDBGraphProvider extends DatabaseProvider {
 	}
 
 	@Override
-	public Neo4JGraph getNeo4JGraph() {
-		return null;
+	public OrientGraph getRawGraph() {
+		return graph;
 	}
 
 	@PostConstruct

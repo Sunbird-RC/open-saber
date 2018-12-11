@@ -7,6 +7,7 @@ import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.janusgraph.core.JanusGraph;
 import org.janusgraph.core.JanusGraphFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,7 @@ import org.springframework.core.env.Environment;
 public class JanusGraphStorage extends DatabaseProvider {
 
 	private Logger logger = LoggerFactory.getLogger(JanusGraphStorage.class);
-	private Graph graph;
+	private JanusGraph graph;
 
 	public JanusGraphStorage(Environment environment) {
 		String graphFactory = environment.getProperty("database.janus_cassandra.graphFactory");
@@ -45,8 +46,8 @@ public class JanusGraphStorage extends DatabaseProvider {
 	}
 
 	@Override
-	public Neo4JGraph getNeo4JGraph() {
-		return null;
+	public JanusGraph getRawGraph() {
+		return graph;
 	}
 
 	@PostConstruct

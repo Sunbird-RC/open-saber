@@ -13,7 +13,7 @@ import org.springframework.core.env.Environment;
 public class TinkerGraphProvider extends DatabaseProvider {
 
 	private Logger logger = LoggerFactory.getLogger(TinkerGraphProvider.class);
-	private Graph graph;
+	private TinkerGraph graph;
 	private Object environment;
 
 	public TinkerGraphProvider(Environment inputEnv) {
@@ -27,8 +27,8 @@ public class TinkerGraphProvider extends DatabaseProvider {
 	}
 
 	@Override
-	public Neo4JGraph getNeo4JGraph() {
-		return null;
+	public TinkerGraph getRawGraph() {
+		return graph;
 	}
 
 	@PostConstruct
