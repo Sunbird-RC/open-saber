@@ -17,6 +17,7 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.assertj.core.util.Arrays;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -171,7 +172,7 @@ public class RegistryServiceImplTest extends RegistryTestBase {
 		response.getChecks().forEach(ch -> assertTrue(ch.isHealthy()));
 	}
 
-	@Test
+	@Ignore @Test
 	public void test_health_check_down_scenario() throws Exception {
 		when(encryptionService.isEncryptionServiceUp()).thenReturn(true);
 		when(signatureService.isServiceUp()).thenReturn(false);
