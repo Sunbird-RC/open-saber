@@ -12,12 +12,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
 
 import io.opensaber.registry.exception.audit.LabelCannotBeNullException;
 import io.opensaber.registry.sink.DatabaseProvider;
 
-@Component
 public class AuditRecordReader {
 
 	private static Logger logger = LoggerFactory.getLogger(AuditRecordReader.class);
@@ -27,10 +25,9 @@ public class AuditRecordReader {
 	@Value("${registry.system.base}")
 	private String registrySystemContext;
 
-	//TODO: for now commented.
-/*	public AuditRecordReader(DatabaseProvider databaseProvider) {
+	public AuditRecordReader(DatabaseProvider databaseProvider) {
 		this.databaseProvider = databaseProvider;
-	}*/
+	}
 
 	public List<AuditRecord> fetchAuditRecords(String label, String predicate) throws LabelCannotBeNullException {
 		List<AuditRecord> records = new ArrayList<>();

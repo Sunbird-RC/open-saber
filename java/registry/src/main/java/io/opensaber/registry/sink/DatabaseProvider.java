@@ -2,9 +2,12 @@ package io.opensaber.registry.sink;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.opensaber.registry.middleware.util.Constants;
 
 public abstract class DatabaseProvider {
 
@@ -37,7 +40,7 @@ public abstract class DatabaseProvider {
 	 * This method is used to initialize some global graph level configuration
 	 */
 	public void initializeGlobalGraphConfiguration() {
-		/*if (IteratorUtils.count(getGraphStore().traversal().V().has(T.label, Constants.GRAPH_GLOBAL_CONFIG)) == 0) {
+		if (IteratorUtils.count(getGraphStore().traversal().V().has(T.label, Constants.GRAPH_GLOBAL_CONFIG)) == 0) {
 			logger.info("Adding GRAPH_GLOBAL_CONFIG node...");
 			if (getGraphStore().features().graph().supportsTransactions()) {
 				org.apache.tinkerpop.gremlin.structure.Transaction tx;
@@ -52,7 +55,7 @@ public abstract class DatabaseProvider {
 				globalConfig.property(Constants.PERSISTENT_GRAPH, true);
 				logger.debug("Graph initialised without transaction !");
 			}
-		}*/
+		}
 	}
 
 }
