@@ -1,9 +1,5 @@
 package io.opensaber.registry.sink;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
-import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -12,6 +8,9 @@ import org.janusgraph.core.JanusGraphFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 public class JanusGraphStorage extends DatabaseProvider {
 

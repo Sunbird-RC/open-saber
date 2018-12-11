@@ -7,9 +7,6 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class Neo4jIdProvider implements Neo4JElementIdProvider<String> {
-    public Neo4jIdProvider() {
-    }
-
     public String fieldName() {
         return null;
     }
