@@ -31,7 +31,6 @@
 
     <modules>
         <module>pojos</module>
-        <module>converters</module>
         <module>middleware-commons</module>
         <module>middleware</module>
         <module>validators</module>
