@@ -23,7 +23,7 @@ public class DBProviderFactory {
 			provider.initializeGlobalGraphConfiguration();
 		} else if (dbProvider.equalsIgnoreCase(Constants.GraphDatabaseProvider.NEO4J.getName())) {			
 			if(connectionInfo == null)
-				throw new RuntimeException("No shard is configured. Please configure a shard");
+				throw new IOException("No shard is configured. Please configure a shard");
 			provider = new Neo4jGraphProvider(connectionInfo);
 		} else if (dbProvider.equalsIgnoreCase(Constants.GraphDatabaseProvider.SQLG.getName())) {
 			provider = new SqlgProvider(environment);

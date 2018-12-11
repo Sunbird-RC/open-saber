@@ -3,7 +3,6 @@ package io.opensaber.registry.shard.advisory;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import io.opensaber.registry.model.DBConnectionInfo;
@@ -16,8 +15,6 @@ import io.opensaber.registry.sink.DatabaseProvider;
 @Component("shardManager")
 public class ShardManager {
 	
-	@Autowired
-	Environment environment;
 	@Autowired
 	private DBConnectionInfoMgr dBConnectionInfoMgr;
 	@Autowired
