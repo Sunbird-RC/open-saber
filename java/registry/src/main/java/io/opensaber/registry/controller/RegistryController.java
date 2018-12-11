@@ -19,6 +19,7 @@ import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -71,8 +72,9 @@ public class RegistryController {
 	@Autowired
 	private OpenSaberInstrumentation watch;
 	private List<String> keyToPurge = new java.util.ArrayList<>();
-	@Autowired
-	private Vertex parentVertex;
+    @Qualifier("parentVertex")
+    @Autowired
+    private Vertex parentVertex;
 
 	@RequestMapping(value = "/add2", method = RequestMethod.POST)
 	public ResponseEntity<Response> add(@RequestParam(value = "id", required = false) String id,

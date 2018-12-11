@@ -12,6 +12,7 @@ import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -364,10 +365,12 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		return new CustomExceptionHandler(gson());
 	}
 
-	@Bean
+	@Bean(name = "parentVertex")
 	public Vertex parentVertex() {
 		Graph g = databaseProvider().getGraphStore();
+		Transaction tx = g.tx();
 		Vertex parentV = TPGraphMain.createParentVertex(g);
+		tx.commit();
 		try {
 			g.close();
 		} catch (Exception e) {
