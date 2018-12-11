@@ -37,7 +37,6 @@ import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.pojos.Response;
 import io.opensaber.pojos.ResponseParams;
 import io.opensaber.registry.exception.AuditFailedException;
-import io.opensaber.registry.exception.DuplicateRecordException;
 import io.opensaber.registry.exception.EntityCreationException;
 import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.exception.TypeNotProvidedException;
@@ -93,90 +92,6 @@ public class RegistryController {
 
 	@Autowired
 	ShardManager shardManager;
-
-	@RequestMapping(value = "/add2", method = RequestMethod.POST)
-	public ResponseEntity<Response> add(@RequestParam(value = "id", required = false) String id,
-			@RequestParam(value = "prop", required = false) String property) {
-
-		ResponseParams responseParams = new ResponseParams();
-		Response response = new Response(Response.API_ID.CREATE, "OK", responseParams);
-		Map<String, Object> result = new HashMap<>();
-		String entityType = apiMessage.getRequest().getEntityType();
-		try {
-			int slNum = (int) ((HashMap<String, Object>)apiMessage.getRequest().getRequestMap().get(entityType)).get(shardManager.getShardProperty());
-			shardManager.activateDbShard(slNum);	
-			Model rdf = (Model) apiMessage.getLocalMap(Constants.CONTROLLER_INPUT);
-			
-			watch.start("RegistryController.addToExistingEntity");
-			String dataObject = apiMessage.getLocalMap(Constants.LD_OBJECT).toString();
-			String label = registryService.addEntity(rdf, dataObject, id, property);
-			result.put("entity", label);
-			response.setResult(result);
-			responseParams.setStatus(Response.Status.SUCCESSFUL);
-			watch.stop("RegistryController.addToExistingEntity");
-			logger.debug("RegistryController : Entity with label {} added !", label);
-		} catch (DuplicateRecordException | EntityCreationException e) {
-			logger.error("DuplicateRecordException|EntityCreationException in controller while adding entity !", e);
-			response.setResult(result);
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg(e.getMessage());
-		} catch (Exception e) {
-			logger.error("Exception in controller while adding entity !", e);
-			response.setResult(result);
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg(e.getMessage());
-		}
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	/**
-	 * 
-	 * Note: Only one mime type is supported at a time. Picks up the first mime
-	 * type from the header.
-	 * 
-	 * @return
-	 */
-	@RequestMapping(value = "/read2", method = RequestMethod.POST)
-	public ResponseEntity<Response> readEntity(@RequestHeader HttpHeaders header) {
-
-		ResponseParams responseParams = new ResponseParams();
-		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
-		String dataObject = apiMessage.getRequest().getRequestMapAsString();
-		JSONParser parser = new JSONParser();
-		try {
-			JSONObject json = (JSONObject) parser.parse(dataObject);
-			String entityId = registryContext + json.get("id").toString();
-			boolean includeSign = Boolean.parseBoolean(json.getOrDefault("includeSignatures", false).toString());
-
-			watch.start("RegistryController.readEntity");
-			String content = registryService.getEntityFramedById(entityId, includeSign);
-			logger.info("RegistryController: Framed content " + content);
-
-			Configuration config = configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
-					Direction.OUT);
-			Data<Object> data = new Data<Object>(content);
-			ITransformer<Object> responseTransformer = transformer.getInstance(config);
-			responseTransformer.setPurgeData(getKeysToPurge());
-			Data<Object> responseContent = responseTransformer.transform(data);
-			response.setResult(responseContent.getData());
-			responseParams.setStatus(Response.Status.SUCCESSFUL);
-			watch.stop("RegistryController.readEntity");
-			logger.debug("RegistryController: entity for {} read !", entityId);
-		} catch (ParseException | RecordNotFoundException | UnsupportedOperationException | TransformationException e) {
-			logger.error("RegistryController: Exception while reading entity !", e);
-			response.setResult(null);
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg(e.getMessage());
-		} catch (Exception e) {
-			logger.error("RegistryController: Exception while reading entity!", e);
-			response.setResult(null);
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg("Ding! You encountered an error!");
-		}
-
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
 	/**
 	 *
 	 * Note: Only one mime type is supported at a time. Pick up the first mime

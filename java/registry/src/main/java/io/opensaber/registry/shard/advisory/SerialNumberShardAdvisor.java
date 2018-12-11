@@ -21,10 +21,13 @@ public class SerialNumberShardAdvisor implements IShardAdvisor {
 		DBConnectionInfo connectionInfo = null;
 		if (serialNumber instanceof Integer) {
 			Integer serNo = (Integer) serialNumber;
-			if (serNo % 2 == 0) {
+			switch (serNo % 2) {
+			case 0:
 				connectionInfo = dBConnectionInfoMgr.getConnectionInfo().get(1);
-			} else {
+				break;
+			case 1:
 				connectionInfo = dBConnectionInfoMgr.getConnectionInfo().get(0);
+				break;
 			}
 		}
 		shardId = connectionInfo.getShardId();

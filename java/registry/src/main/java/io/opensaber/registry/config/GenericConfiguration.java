@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.core.env.Environment;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -35,6 +36,7 @@ import io.opensaber.pojos.Response;
 import io.opensaber.registry.authorization.AuthorizationFilter;
 import io.opensaber.registry.authorization.KeyCloakServiceImpl;
 import io.opensaber.registry.exception.CustomException;
+import io.opensaber.registry.exception.CustomExceptionHandler;
 import io.opensaber.registry.frame.FrameContext;
 import io.opensaber.registry.frame.FrameEntity;
 import io.opensaber.registry.frame.FrameEntityImpl;
@@ -358,5 +360,11 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		}
 
 	}
+	
+	@Bean
+	public HandlerExceptionResolver customExceptionHandler() {
+		return new CustomExceptionHandler(gson());
+	}
+
 
 }
