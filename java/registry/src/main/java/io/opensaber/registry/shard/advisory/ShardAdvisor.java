@@ -8,7 +8,11 @@ import java.util.Map;
 public class ShardAdvisor {
 	
 	private Map<String,IShardAdvisor> advisors = new HashMap<String,IShardAdvisor>();
-	
+	/**
+	 * Registers the shardAdvisory by property 
+	 * @param property
+	 * @param shardAdvisory
+	 */
 	public void registerAdvisor(String property, IShardAdvisor shardAdvisory){		
 		advisors.put(property, shardAdvisory);		
 		

@@ -17,7 +17,6 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.assertj.core.util.Arrays;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -162,21 +161,20 @@ public class RegistryServiceImplTest extends RegistryTestBase {
 		closeDB();
 	}
 
-	@Ignore @Test 
+	@Test 
 	public void test_health_check_up_scenario() throws Exception {
 		when(encryptionService.isEncryptionServiceUp()).thenReturn(true);
-		when(databaseProvider.isDatabaseServiceUp()).thenReturn(true);
+		assertTrue(databaseProvider.isDatabaseServiceUp());
 		when(signatureService.isServiceUp()).thenReturn(true);
 		HealthCheckResponse response = registryService.health();
 		assertTrue(response.isHealthy());
 		response.getChecks().forEach(ch -> assertTrue(ch.isHealthy()));
 	}
 
-	@Ignore @Test
+	@Test
 	public void test_health_check_down_scenario() throws Exception {
 		when(encryptionService.isEncryptionServiceUp()).thenReturn(true);
-		when(databaseProvider.isDatabaseServiceUp()).thenReturn(false);
-		when(signatureService.isServiceUp()).thenReturn(true);
+		when(signatureService.isServiceUp()).thenReturn(false);
 		HealthCheckResponse response = registryService.health();
 		System.out.println(response.toString());
 
@@ -186,8 +184,6 @@ public class RegistryServiceImplTest extends RegistryTestBase {
 				assertTrue(ch.isHealthy());
 			}
 			if (ch.getName().equalsIgnoreCase(Constants.SUNBIRD_SIGNATURE_SERVICE_NAME)) {
-				assertTrue(ch.isHealthy());
-			} else {
 				assertFalse(ch.isHealthy());
 			}
 		});

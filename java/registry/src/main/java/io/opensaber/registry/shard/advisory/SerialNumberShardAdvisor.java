@@ -19,22 +19,13 @@ public class SerialNumberShardAdvisor implements IShardAdvisor {
 	public DBConnectionInfo getShard(Object serialNumber) {
 
 		DBConnectionInfo connectionInfo = null;
-		if (serialNumber != null) {
-			if (serialNumber.toString().length() % 2 == 0) {
-				connectionInfo = dBConnectionInfoMgr.getConnectionInfo().get(1);
-			} else {
-				connectionInfo = dBConnectionInfoMgr.getConnectionInfo().get(0);
-			}
-		} else if (serialNumber instanceof Integer) {
+		if (serialNumber instanceof Integer) {
 			Integer serNo = (Integer) serialNumber;
 			if (serNo % 2 == 0) {
 				connectionInfo = dBConnectionInfoMgr.getConnectionInfo().get(1);
 			} else {
 				connectionInfo = dBConnectionInfoMgr.getConnectionInfo().get(0);
 			}
-
-		}else{
-			connectionInfo = dBConnectionInfoMgr.getConnectionInfo().get(0);
 		}
 		shardId = connectionInfo.getShardId();
 		return connectionInfo;
