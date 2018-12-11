@@ -17,7 +17,6 @@ import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.assertj.core.util.Arrays;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -25,6 +24,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,6 +43,7 @@ import io.opensaber.registry.authorization.pojos.AuthInfo;
 import io.opensaber.registry.config.GenericConfiguration;
 import io.opensaber.registry.controller.RegistryController;
 import io.opensaber.registry.controller.RegistryTestBase;
+import io.opensaber.registry.dao.RegistryDao;
 import io.opensaber.registry.dao.impl.RegistryDaoImpl;
 import io.opensaber.registry.exception.AuditFailedException;
 import io.opensaber.registry.exception.DuplicateRecordException;
@@ -82,7 +83,10 @@ public class RegistryServiceImplTest extends RegistryTestBase {
 	@Mock
 	private EncryptionServiceImpl encryptionService;
 	@Mock
-	private SignatureServiceImpl signatureService;
+	private SignatureServiceImpl signatureService;	
+	private DatabaseProvider mockDatabaseProvider;
+	@Mock
+	private RegistryDao registryDao;
 	@InjectMocks
 	private RegistryServiceImpl registryServiceForHealth;
 	@Autowired
@@ -104,6 +108,8 @@ public class RegistryServiceImplTest extends RegistryTestBase {
 	public void initialize() throws IOException {
 	    databaseProvider = dbProviderFactory.getInstance(null);
 	    registryService.setDatabaseProvider(databaseProvider);
+	    mockDatabaseProvider = Mockito.mock(DatabaseProvider.class);
+	    registryServiceForHealth.setDatabaseProvider(mockDatabaseProvider);
 		setup();
 		MockitoAnnotations.initMocks(this);
 		TestHelper.clearData(databaseProvider);
@@ -162,21 +168,22 @@ public class RegistryServiceImplTest extends RegistryTestBase {
 		closeDB();
 	}
 
-	@Test 
+	@Test
 	public void test_health_check_up_scenario() throws Exception {
 		when(encryptionService.isEncryptionServiceUp()).thenReturn(true);
-		assertTrue(databaseProvider.isDatabaseServiceUp());
+		when(mockDatabaseProvider.isDatabaseServiceUp()).thenReturn(true);
 		when(signatureService.isServiceUp()).thenReturn(true);
-		HealthCheckResponse response = registryService.health();
+		HealthCheckResponse response = registryServiceForHealth.health();
 		assertTrue(response.isHealthy());
 		response.getChecks().forEach(ch -> assertTrue(ch.isHealthy()));
 	}
 
-	@Ignore @Test
+	@Test
 	public void test_health_check_down_scenario() throws Exception {
 		when(encryptionService.isEncryptionServiceUp()).thenReturn(true);
+		when(mockDatabaseProvider.isDatabaseServiceUp()).thenReturn(false);
 		when(signatureService.isServiceUp()).thenReturn(false);
-		HealthCheckResponse response = registryService.health();
+		HealthCheckResponse response = registryServiceForHealth.health();
 		System.out.println(response.toString());
 
 		assertFalse(response.isHealthy());
@@ -185,6 +192,8 @@ public class RegistryServiceImplTest extends RegistryTestBase {
 				assertTrue(ch.isHealthy());
 			}
 			if (ch.getName().equalsIgnoreCase(Constants.SUNBIRD_SIGNATURE_SERVICE_NAME)) {
+				assertTrue(ch.isHealthy());
+			} else {
 				assertFalse(ch.isHealthy());
 			}
 		});
