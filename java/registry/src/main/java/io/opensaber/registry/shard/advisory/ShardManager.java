@@ -27,8 +27,8 @@ public class ShardManager {
 	@Autowired
 	private RegistryService registryService;
 	@Autowired
-	private SearchService searchService;
-
+	private SearchService searchService;	
+	private DatabaseProvider databaseProvider;
 	
 	/**
 	 * intiatiate a DBShard and ensure activating a databaseProvider.
@@ -38,7 +38,7 @@ public class ShardManager {
 	 */
 	public void activateDbShard(Object attributeValue) throws IOException{
 		DBConnectionInfo connectionInfo = shardAdvisor.getShard(attributeValue);
-		DatabaseProvider databaseProvider = dbProviderFactory.getInstance(connectionInfo);
+	    databaseProvider = dbProviderFactory.getInstance(connectionInfo);
 		registryService.setDatabaseProvider(databaseProvider);
 		searchService.setDatabaseProvider(databaseProvider);
 	}
@@ -47,5 +47,9 @@ public class ShardManager {
 		return dBConnectionInfoMgr.getShardProperty();
 	}
 
+	public DatabaseProvider getDatabaseProvider(){
+		return databaseProvider;
+	}
+	
 
 }

@@ -1,11 +1,14 @@
 package io.opensaber.registry.controller;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.jena.rdf.model.Model;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -24,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -41,16 +45,20 @@ import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.Direction;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
 import io.opensaber.registry.middleware.util.JSONUtil;
+import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
+import io.opensaber.registry.service.EncryptionService;
 import io.opensaber.registry.service.RegistryAuditService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
 import io.opensaber.registry.shard.advisory.ShardManager;
+import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.transform.Configuration;
 import io.opensaber.registry.transform.ConfigurationHelper;
 import io.opensaber.registry.transform.Data;
 import io.opensaber.registry.transform.ITransformer;
 import io.opensaber.registry.transform.TransformationException;
 import io.opensaber.registry.transform.Transformer;
+import io.opensaber.registry.util.TPGraphMain;
 
 @RestController
 public class RegistryController {
@@ -70,6 +78,10 @@ public class RegistryController {
 	private String registryContext;
 	@Autowired
 	private APIMessage apiMessage;
+	@Autowired
+	private ISchemaConfigurator schemaConfigurator;
+	@Autowired
+	private EncryptionService encryptionService;
 	private Gson gson = new Gson();
 	private Type mapType = new TypeToken<Map<String, Object>>() {
 	}.getType();
@@ -82,7 +94,7 @@ public class RegistryController {
 	@Autowired
 	ShardManager shardManager;
 
-	@RequestMapping(value = "/add", method = RequestMethod.POST)
+	@RequestMapping(value = "/add2", method = RequestMethod.POST)
 	public ResponseEntity<Response> add(@RequestParam(value = "id", required = false) String id,
 			@RequestParam(value = "prop", required = false) String property) {
 
@@ -124,7 +136,7 @@ public class RegistryController {
 	 * 
 	 * @return
 	 */
-	@RequestMapping(value = "/read", method = RequestMethod.POST)
+	@RequestMapping(value = "/read2", method = RequestMethod.POST)
 	public ResponseEntity<Response> readEntity(@RequestHeader HttpHeaders header) {
 
 		ResponseParams responseParams = new ResponseParams();
@@ -328,6 +340,61 @@ public class RegistryController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+
+	@RequestMapping(value = "/add", method = RequestMethod.POST)
+	public ResponseEntity<Response> addTP2Graph(@RequestParam(value = "id", required = false) String id,
+										@RequestParam(value = "prop", required = false) String property) {
+
+		ResponseParams responseParams = new ResponseParams();
+		Response response = new Response(Response.API_ID.CREATE, "OK", responseParams);
+		Map<String, Object> result = new HashMap<>();
+		String jsonString = apiMessage.getRequest().getRequestMapAsString();
+		List<String> privateProperties = schemaConfigurator.getAllPrivateProperties();
+		String entityType = apiMessage.getRequest().getEntityType();
+		int slNum = (int) ((HashMap<String, Object>) apiMessage.getRequest().getRequestMap().get(entityType))
+				.get(shardManager.getShardProperty());
+
+		try {
+		    shardManager.activateDbShard(slNum);
+		    DatabaseProvider databaseProvider = shardManager.getDatabaseProvider();
+		    Vertex parentVertex = parentVertex(databaseProvider);
+			TPGraphMain tpGraph = new TPGraphMain(databaseProvider, parentVertex, privateProperties, encryptionService);
+			
+			watch.start("RegistryController.addToExistingEntity");
+			JsonNode rootNode = tpGraph.createEncryptedJson(jsonString);
+			tpGraph.createTPGraph(rootNode);
+			result.put("entity", "");
+			response.setResult(result);
+			responseParams.setStatus(Response.Status.SUCCESSFUL);
+			watch.stop("RegistryController.addToExistingEntity");
+			logger.debug("RegistryController : Entity with label {} added !", "");
+		} catch (Exception e) {
+			logger.error("Exception in controller while adding entity !", e);
+			response.setResult(result);
+			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+			responseParams.setErrmsg(e.getMessage());
+		}
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@RequestMapping(value = "/read", method = RequestMethod.POST)
+	public ResponseEntity<Response> readGraph2Json(@RequestHeader HttpHeaders header) throws ParseException,
+			IOException, Exception {
+		String dataObject = apiMessage.getRequest().getRequestMapAsString();
+		JSONParser parser = new JSONParser();
+		JSONObject json = (JSONObject) parser.parse(dataObject);
+		String osIdVal =  json.get("id").toString();
+		ResponseParams responseParams = new ResponseParams();
+		List<String> privateProperties = schemaConfigurator.getAllPrivateProperties();
+		DatabaseProvider databaseProvider = shardManager.getDatabaseProvider();
+	    Vertex parentVertex = parentVertex(databaseProvider);
+		TPGraphMain tpGraph = new TPGraphMain(databaseProvider, parentVertex, privateProperties, encryptionService);
+		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
+		response.setResult(tpGraph.readGraph2Json(osIdVal));
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	/*
 	 * To set the keys(like @type to be trim of a json
 	 */
@@ -335,6 +402,17 @@ public class RegistryController {
 		keyToPurge.add(JsonldConstants.TYPE);
 		return keyToPurge;
 
+	}
+	
+	private Vertex parentVertex(DatabaseProvider databaseProvider) {		
+		Graph g = databaseProvider.getGraphStore();
+		Vertex parentV = TPGraphMain.createParentVertex(g);
+		try {
+			g.close();
+		} catch (Exception e) {
+			logger.info(e.getMessage());
+		}
+		return parentV;
 	}
 
 }

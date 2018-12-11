@@ -4,7 +4,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.neo4j.driver.v1.AuthToken;
 import org.neo4j.driver.v1.AuthTokens;
 import org.neo4j.driver.v1.Driver;
 import org.neo4j.driver.v1.GraphDatabase;
@@ -20,34 +19,37 @@ import io.opensaber.registry.model.DBConnectionInfo;
 public class Neo4jGraphProvider extends DatabaseProvider {
 
 	private Logger logger = LoggerFactory.getLogger(Neo4jGraphProvider.class);
-
 	private Driver driver;
-	private Graph graph;
+	private boolean profilerEnabled;
+	private DBConnectionInfo connectionInfo;
+	private Neo4JElementIdProvider<?> idProvider = new Neo4JNativeElementIdProvider();
 
 	public Neo4jGraphProvider(DBConnectionInfo connection) {
+		connectionInfo = connection;
+		profilerEnabled = connection.isProfilerEnabled();
+		// TODO: Check with auth
+		driver = GraphDatabase.driver(connection.getUri(),
+				AuthTokens.none());
+		logger.info("Initialized db at ", connectionInfo.getUri());
+	}
 
-		try {
-			AuthToken authToken = AuthTokens.basic(connection.getUsername(), connection.getPassword());
-			if (authToken != null) {
-				driver = GraphDatabase.driver(connection.getUri(), authToken);
-			} else {
-				driver = GraphDatabase.driver(connection.getUri(), AuthTokens.none());
-			}
 
-			Neo4JElementIdProvider<?> idProvider = new Neo4JNativeElementIdProvider();
-			Neo4JGraph neo4JGraph = new Neo4JGraph(driver, idProvider, idProvider);
-			// neo4JGraph.setProfilerEnabled(profilerEnabled);
-			graph = neo4JGraph;
-			logger.info("Initializing remote graph db for " + connection.getShardId());
-		} catch (Exception ex) {
-			logger.error("Exception when initializing Neo4J DB connection...", ex);
-			throw ex;
-		}
+	private Neo4JGraph getGraph() {
+		Neo4JGraph neo4jGraph;
+		neo4jGraph = new Neo4JGraph(driver, idProvider, idProvider);
+		logger.info("Initialized db at {}", connectionInfo.getUri());
+		return neo4jGraph;
 	}
 
 	@Override
 	public Graph getGraphStore() {
-		return graph;
+		return getGraph();
+	}
+
+	// TODO: We must have an abstract class to allow this possibility.
+	@Override
+	public Neo4JGraph getNeo4JGraph() {
+		return getGraph();
 	}
 
 	@PostConstruct
@@ -62,10 +64,9 @@ public class Neo4jGraphProvider extends DatabaseProvider {
 		logger.info("**************************************************************************");
 		logger.info("Gracefully shutting down Neo4J GraphDB instance ...");
 		logger.info("**************************************************************************");
-		graph.close();
+
 		if (driver != null) {
 			driver.close();
 		}
 	}
-
 }

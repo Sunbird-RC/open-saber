@@ -33,6 +33,8 @@ public class SerialNumberShardAdvisor implements IShardAdvisor {
 				connectionInfo = dBConnectionInfoMgr.getConnectionInfo().get(0);
 			}
 
+		}else{
+			connectionInfo = dBConnectionInfoMgr.getConnectionInfo().get(0);
 		}
 		shardId = connectionInfo.getShardId();
 		return connectionInfo;
