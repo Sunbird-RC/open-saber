@@ -7,7 +7,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -23,11 +22,6 @@ public class DefinitionsReaderTest {
     @Autowired
     private DefinitionsReader definitionsReader;
 
-    @BeforeClass
-    public static void setUp() {
-
-    }
-
     @Test
     public void whenAtLeastOneDefinitionPresent_Then_ok() {
         Resource[] resources = null;
@@ -36,6 +30,6 @@ public class DefinitionsReaderTest {
         } catch (IOException ioe) {
             assertFalse(true);
         }
-        assertTrue("At least one definition must be present", resources.length >= 1);
+        assertTrue("At least one definition must be present", resources != null && resources.length >= 1);
     }
 }

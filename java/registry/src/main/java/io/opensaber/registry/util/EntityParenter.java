@@ -20,15 +20,19 @@ public class EntityParenter {
     private Set<String> defintionNames;
     private List<DBConnectionInfo> dbConnectionInfoList;
 
-    @Autowired
-    public EntityParenter(DefinitionsManager definitionsManager, DBConnectionInfoMgr dbConnectionInfoMgr) {
-        defintionNames = definitionsManager.getAllKnownDefinitions();
-        dbConnectionInfoList = dbConnectionInfoMgr.getConnectionInfo();
-    }
     /**
      * Holds information about a definition and a list of ShardParents
      */
     private HashMap<String, ShardParentInfoList> definitionShardParentMap;
+
+    @Autowired
+    public EntityParenter(DefinitionsManager definitionsManager, DBConnectionInfoMgr dbConnectionInfoMgr) {
+        this.definitionsManager = definitionsManager;
+        this.dbConnectionInfoMgr = dbConnectionInfoMgr;
+
+        defintionNames = definitionsManager.getAllKnownDefinitions();
+        dbConnectionInfoList = dbConnectionInfoMgr.getConnectionInfo();
+    }
 
     /**
      * Creates the parent vertex in all the shards for all default definitions
