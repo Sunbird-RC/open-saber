@@ -367,7 +367,8 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Bean
 	public Vertex parentVertex() {
 		Graph g = databaseProvider().getGraphStore();
-		Vertex parentV = TPGraphMain.createParentVertex(g);
+		// TODO: this label is temporal and will be removed.
+		Vertex parentV = TPGraphMain.createParentVertex(g, "Persons");
 		try {
 			g.close();
 		} catch (Exception e) {
