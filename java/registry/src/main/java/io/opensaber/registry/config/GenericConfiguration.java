@@ -367,10 +367,15 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Bean(name = "parentVertex")
 	public Vertex parentVertex() {
+		Vertex parentV = null;
 		Graph g = databaseProvider().getGraphStore();
-		Transaction tx = g.tx();
-		Vertex parentV = TPGraphMain.createParentVertex(g);
-		tx.commit();
+		if(g.features().graph().supportsTransactions()) {
+			Transaction tx = g.tx();
+			parentV = TPGraphMain.createParentVertex(g);
+			tx.commit();
+		} else {
+			parentV = TPGraphMain.createParentVertex(g);
+		}
 		try {
 			g.close();
 		} catch (Exception e) {
