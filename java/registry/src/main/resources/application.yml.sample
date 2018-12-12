@@ -36,8 +36,7 @@ database:
   #provider available are NEO4J, SQLG, TINKERGRAPH, CASSANDRA, ORIENTDB.
   #Note: Please avoid repeating the shardId.
   provider: ${database_provider:NEO4J}
-  shardPrefix: false
-  shardProperty: serialNum
+  shardProperty: ${database_shardProperty:serialNum}
   connectionInfo:
     -
       shardId: shard1

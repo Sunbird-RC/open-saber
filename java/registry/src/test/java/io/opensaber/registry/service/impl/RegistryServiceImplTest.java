@@ -182,7 +182,7 @@ public class RegistryServiceImplTest extends RegistryTestBase {
 	public void test_health_check_down_scenario() throws Exception {
 		when(encryptionService.isEncryptionServiceUp()).thenReturn(true);
 		when(mockDatabaseProvider.isDatabaseServiceUp()).thenReturn(false);
-		when(signatureService.isServiceUp()).thenReturn(false);
+		when(signatureService.isServiceUp()).thenReturn(true);
 		HealthCheckResponse response = registryServiceForHealth.health();
 		System.out.println(response.toString());
 
