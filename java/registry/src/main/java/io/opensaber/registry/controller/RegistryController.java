@@ -247,7 +247,7 @@ public class RegistryController {
 		Response response = new Response(Response.API_ID.CREATE, "OK", responseParams);
 		Map<String, Object> result = new HashMap<>();
 		String jsonString = apiMessage.getRequest().getRequestMapAsString();
-		List<String> privateProperties = schemaConfigurator.getAllPrivateProperties();
+		List<String> privatePropertyLst = schemaConfigurator.getAllPrivateProperties();
 		String entityType = apiMessage.getRequest().getEntityType();
 		int slNum = (int) ((HashMap<String, Object>) apiMessage.getRequest().getRequestMap().get(entityType))
 				.get(shardManager.getShardProperty());
@@ -256,12 +256,11 @@ public class RegistryController {
 		    shardManager.activateDbShard(slNum);
 		    DatabaseProvider databaseProvider = shardManager.getDatabaseProvider();
 		    Vertex parentVertex = parentVertex(databaseProvider);
-			TPGraphMain tpGraph = new TPGraphMain(databaseProvider, parentVertex, privateProperties, encryptionService);
+			TPGraphMain tpGraph = new TPGraphMain(databaseProvider, parentVertex, privatePropertyLst, encryptionService);
 			
 			watch.start("RegistryController.addToExistingEntity");
-			JsonNode rootNode = tpGraph.createEncryptedJson(jsonString);
-			tpGraph.createTPGraph(rootNode);
-			result.put("entity", "");
+			String osid = registryService.createTP2Graph(jsonString,privatePropertyLst,parentVertex,tpGraph);
+			result.put("entity", osid);
 			response.setResult(result);
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
 			watch.stop("RegistryController.addToExistingEntity");
@@ -302,7 +301,7 @@ public class RegistryController {
 
 	}
 	
-	private Vertex parentVertex(DatabaseProvider databaseProvider) {		
+	private Vertex parentVertex(DatabaseProvider databaseProvider) {
 		Graph g = databaseProvider.getGraphStore();
 		// TODO: Apply default grouping - to be removed.
 		Vertex parentV = TPGraphMain.createParentVertex(g, "Persons");
