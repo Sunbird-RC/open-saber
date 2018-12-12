@@ -13,15 +13,18 @@ import java.util.Set;
 
 @Component("entityParenter")
 public class EntityParenter {
-    @Autowired
-    private DefinitionsManager definitionsManager;
 
-    @Autowired
+    private DefinitionsManager definitionsManager;
     private DBConnectionInfoMgr dbConnectionInfoMgr;
 
-    private Set<String> defintionNames = definitionsManager.getAllKnownDefinitions();
-    private List<DBConnectionInfo> dbConnectionInfoList = dbConnectionInfoMgr.getConnectionInfo();
+    private Set<String> defintionNames;
+    private List<DBConnectionInfo> dbConnectionInfoList;
 
+    @Autowired
+    public EntityParenter(DefinitionsManager definitionsManager, DBConnectionInfoMgr dbConnectionInfoMgr) {
+        defintionNames = definitionsManager.getAllKnownDefinitions();
+        dbConnectionInfoList = dbConnectionInfoMgr.getConnectionInfo();
+    }
     /**
      * Holds information about a definition and a list of ShardParents
      */

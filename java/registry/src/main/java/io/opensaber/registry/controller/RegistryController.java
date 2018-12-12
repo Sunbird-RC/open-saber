@@ -321,7 +321,8 @@ public class RegistryController {
 	
 	private Vertex parentVertex(DatabaseProvider databaseProvider) {		
 		Graph g = databaseProvider.getGraphStore();
-		Vertex parentV = TPGraphMain.createParentVertex(g);
+		// TODO: Apply default grouping - to be removed.
+		Vertex parentV = TPGraphMain.createParentVertex(g, "Persons");
 		try {
 			g.close();
 		} catch (Exception e) {
