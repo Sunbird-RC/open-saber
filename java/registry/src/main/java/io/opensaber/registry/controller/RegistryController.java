@@ -260,7 +260,9 @@ public class RegistryController {
 			
 			watch.start("RegistryController.addToExistingEntity");
 			String osid = registryService.createTP2Graph(jsonString,privatePropertyLst,parentVertex,tpGraph);
-			result.put("entity", osid);
+			Map resultMap = new HashMap();
+			resultMap.put("id",osid);
+			result.put("entity", resultMap);
 			response.setResult(result);
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
 			watch.stop("RegistryController.addToExistingEntity");
