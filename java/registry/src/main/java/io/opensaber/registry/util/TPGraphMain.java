@@ -103,12 +103,13 @@ public class TPGraphMain {
         return parentVertex;
     }
 
-    public void processNode(Graph graph, String parentName, String parentVertexUuid, JsonNode node) {
+    public String processEntity(Graph graph, String parentName, String parentVertexUuid, JsonNode node) {
         Iterator<Vertex> vertexIterator = graph.vertices(parentVertexUuid);
         if (!vertexIterator.hasNext()) {
             throw new RuntimeException("Seems the uuid is unknown.");
         }
 
+        Vertex resultVertex = null;
         Vertex parentVertex = vertexIterator.next();
         Iterator<Map.Entry<String, JsonNode>> entryIterator = node.fields();
         while (entryIterator.hasNext()) {
@@ -121,25 +122,13 @@ public class TPGraphMain {
                 logger.debug(parentName + ":" + entry.getKey() + " --> " + entry.getValue());
                 parentVertex.property(entry.getKey(), entry.getValue());
             } else if (entry.getValue().isObject()) {
-                Vertex vertex = createVertex(graph, entry.getKey(), parentVertex, entry.getValue());
-                Edge edge = addEdge(entry.getKey(), parentVertex, vertex);
-                parentVertex.property(vertex.label() + uuidPropertyName, vertex.id());
-            } else if (entry.getValue().isArray()) {
-                logger.info("--- Not processing");
-//                List<Vertex> vertices = new ArrayList<>();
-//                entry.getValue().forEach(jsonNode -> {
-//                        System.out.println(jsonNode);
-//                        if(jsonNode.isObject()){
-//                            Vertex vertex = createVertex(graph, entry.getKey(), parentVertex, jsonNode);
-//                            vertices.add(vertex);
-//                        } else {
-//                            parentVertex.property(entry.getKey(),jsonNode);
-//                            return;
-//                        }
-//                    });
-//                parentVertex.property(entry.getKey() + uuidPropertyName, vertices.toArray().toString());
+                resultVertex = createVertex(graph, entry.getKey(), parentVertex, entry.getValue());
+                Edge edge = addEdge(entry.getKey(), parentVertex, resultVertex);
+                parentVertex.property(resultVertex.label() + uuidPropertyName, resultVertex.id());
             }
         }
+
+        return resultVertex.id().toString();
     }
 
     /**
@@ -198,7 +187,7 @@ public class TPGraphMain {
     public JsonNode readGraph2Json(Graph graph, String osid) {
         ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
 
-        try (Transaction tx = graph.tx()) {
+        try (Transaction tx = dbProvider.startTransaction(graph)) {
             System.out.println(graph.vertices(osid).hasNext());
 
             Iterator<Vertex> itrV = graph.vertices(osid);
@@ -213,7 +202,7 @@ public class TPGraphMain {
                         String childEntityName = propertyName.substring(0, uuidPropertyIdx);
                         Object valueObj = prop.value();
                         if (valueObj.getClass().isArray()) {
-                            objectNode.put(childEntityName, "arrayMan");
+                            objectNode.put(childEntityName, "TODO array");
                         } else {
                             objectNode.set(childEntityName, readGraph2Json(graph, prop.value().toString()));
                         }
@@ -222,6 +211,7 @@ public class TPGraphMain {
                     }
                 });
             }
+            dbProvider.commitTransaction(graph, tx);
         }
 
         return objectNode;
@@ -235,14 +225,17 @@ public class TPGraphMain {
     // Multiple child vertex = address
     // For every parent vertex and child vertex, there is a single Edge between
     //    teacher -> address
-    public void createTPGraph(JsonNode rootNode) throws IOException, EncryptionException, Exception {
+    public String createTPGraph(JsonNode rootNode) throws IOException, EncryptionException, Exception {
         Graph graph = dbProvider.getGraphStore();
 
         watch.start("Add Transaction");
-        try (Transaction tx = graph.tx()) {
-            processNode(graph, "Teacher", parentVertexUuid, rootNode);
-            tx.commit();
-        }
+        Transaction tx = dbProvider.startTransaction(graph);
+        // TODO:
+        // Could the parentName be derived from rootNode itself?
+        String entityId = processEntity(graph, "Teacher", parentVertexUuid, rootNode);
+        dbProvider.commitTransaction(graph, tx);
+
+        // Closing the thread async
         new Thread(() -> {
             try {
                 graph.close();
@@ -251,5 +244,6 @@ public class TPGraphMain {
             }
         }).start();
         watch.stop("Add Transaction");
+        return entityId;
     }
 }

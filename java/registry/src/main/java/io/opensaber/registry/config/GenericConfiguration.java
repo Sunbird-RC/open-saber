@@ -289,7 +289,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		ShardAdvisor shardAdvisor = new ShardAdvisor();
 		DBConnectionInfoMgr dbConnectionInfoMgr = dBConnectionInfoMgr();
 		String shardProperty = environment.getProperty("database.shardProperty");
-		if (shardProperty.compareToIgnoreCase("none") == 0) {
+		if (shardProperty.compareToIgnoreCase(Constants.NONE_STR) == 0) {
 			shardAdvisor.registerAdvisor(shardProperty, new DefaultShardAdvisor(dbConnectionInfoMgr));
 		} else {
 			shardAdvisor.registerAdvisor(shardProperty, new SerialNumberShardAdvisor(dbConnectionInfoMgr));
