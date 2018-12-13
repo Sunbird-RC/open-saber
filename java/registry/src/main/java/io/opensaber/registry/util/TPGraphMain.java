@@ -1,13 +1,12 @@
 package io.opensaber.registry.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
-import io.opensaber.pojos.OpenSaberInstrumentation;
-import io.opensaber.registry.exception.EncryptionException;
-import io.opensaber.registry.model.DBConnectionInfoMgr;
-import io.opensaber.registry.sink.DatabaseProvider;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -20,11 +19,16 @@ import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.StatementResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.io.IOException;
-import java.util.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
+
+import io.opensaber.pojos.OpenSaberInstrumentation;
+import io.opensaber.registry.exception.EncryptionException;
+import io.opensaber.registry.sink.DatabaseProvider;
 
 public class TPGraphMain {
     private DatabaseProvider dbProvider;
@@ -130,23 +134,35 @@ public class TPGraphMain {
 
         return resultVertex.id().toString();
     }
-
     /**
      * Retrieves all UUID of a given all labels.
      */
-    public List<String> getUUIDs(List<String> parentLabels, DatabaseProvider dbProvider) {
-        List<String> uuids = new ArrayList<>();
-        Graph graph = dbProvider.getGraphStore();
-        GraphTraversal<Vertex, Vertex> graphTraversal = graph.traversal().V();
-        for (String label : parentLabels) {
-            GraphTraversal<Vertex, Vertex> gvs = graphTraversal.hasLabel(label);
-            Vertex v = gvs.hasNext() ? gvs.next() : null;
-            if (v != null) {
-                uuids.add(v.property(uuidPropertyName).value().toString());
-            }
-        }
-        return uuids;
+    public static List<String> getUUIDs(List<String> parentLabels, DatabaseProvider dbProvider){
+    	List<String> uuids = new ArrayList<>();
+    	Graph graph = dbProvider.getGraphStore();
+    	P<String> predicate = P.within(parentLabels);
+    	GraphTraversal<Vertex, Vertex> graphTraversal = graph.traversal().V().hasLabel(predicate);
+        while(graphTraversal.hasNext()){
+        	Vertex v = graphTraversal.next();
+        	uuids.add(v.property("osid").value().toString());
+        }    	
+    	return uuids;    	
     }
+    
+    /**
+     * Retrieves all UUID of a given label(example: Teacher, Signature).
+     */
+    public static List<String> getUUIDs(String label, DatabaseProvider dbProvider){
+    	List<String> uuids = new ArrayList<>();
+    	Graph graph = dbProvider.getGraphStore();
+    	GraphTraversal<Vertex, Vertex> graphTraversal = graph.traversal().V().hasLabel(label);
+        while(graphTraversal.hasNext()){
+        	Vertex v = graphTraversal.next();
+        	uuids.add(v.property("osid").value().toString());
+        }    	
+    	return uuids;    	
+    }
+    
 
     public Map readGraph2Json_neo4j(String osid) throws IOException, Exception {
         Map map = new HashMap();
