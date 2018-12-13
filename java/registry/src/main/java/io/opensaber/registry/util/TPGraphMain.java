@@ -98,14 +98,9 @@ public class TPGraphMain {
         GraphTraversal<Vertex, Vertex> rootVertex = gtRootTraversal.V().hasLabel(parentLabel);
         Vertex parentVertex = null;
         if (!rootVertex.hasNext()) {
-        	if (graph.features().graph().supportsTransactions()) {
-    			org.apache.tinkerpop.gremlin.structure.Transaction tx = graph.tx();
-    			tx.onReadWrite(org.apache.tinkerpop.gremlin.structure.Transaction.READ_WRITE_BEHAVIOR.AUTO);
-    		}
             parentVertex = graph.addVertex(parentLabel);
             // TODO: this could be parentVertex.id() after we make our own Neo4jIdProvider
             parentVertex.property("osid", UUID.randomUUID().toString());           
-            graph.tx().commit();
         } else {
             parentVertex = rootVertex.next();
         }
@@ -171,9 +166,9 @@ public class TPGraphMain {
     public static List<String> getUUIDs(List<String> parentLabels, DatabaseProvider dbProvider){
     	List<String> uuids = new ArrayList<>();
     	Graph graph = dbProvider.getGraphStore();
-        Transaction tx = graph.tx();
+        GraphTraversal<Vertex, Vertex> graphTraversal = graph.traversal().V();
         for(String label: parentLabels){
-        	 GraphTraversal<Vertex, Vertex> gvs = graph.traversal().V().hasLabel(label);
+        	 GraphTraversal<Vertex, Vertex> gvs = graphTraversal.hasLabel(label);
         	 Vertex v = gvs.hasNext()? gvs.next():null;
         	 if(v!=null){
         		 uuids.add(v.property("osid").value().toString());

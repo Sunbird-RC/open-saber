@@ -89,7 +89,7 @@ import io.opensaber.registry.sink.DBProviderFactory;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.tests.utility.TestHelper;
 import io.opensaber.utils.converters.RDF2Graph;
-@Ignore
+
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { RegistryDaoImpl.class, Environment.class, ObjectMapper.class, GenericConfiguration.class,
 		EncryptionServiceImpl.class, APIMessage.class})
