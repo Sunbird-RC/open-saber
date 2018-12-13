@@ -3,13 +3,11 @@ package io.opensaber.registry.sink;
 import com.steelbridgelabs.oss.neo4j.structure.Neo4JElementIdProvider;
 import org.neo4j.driver.internal.InternalNode;
 import org.neo4j.driver.v1.types.Entity;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Objects;
 import java.util.UUID;
 
 public class Neo4jIdProvider implements Neo4JElementIdProvider<String> {
-    @Value("${database.uuidPropertyName}")
     private String uuidPropertyName;
 
     public String fieldName() {
@@ -54,6 +52,15 @@ public class Neo4jIdProvider implements Neo4JElementIdProvider<String> {
         Objects.requireNonNull(alias, "alias cannot be null");
         return alias + "." + uuidPropertyName;
     }
+
+    public String getUuidPropertyName() {
+        return uuidPropertyName;
+    }
+
+    public void setUuidPropertyName(String uuidPropertyName) {
+        this.uuidPropertyName = uuidPropertyName;
+    }
+
 }
 
 
