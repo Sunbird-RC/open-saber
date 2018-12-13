@@ -24,23 +24,19 @@ import java.io.IOException;
 import java.util.*;
 
 public class TPGraphMain {
-    private static List<String> privatePropertyLst;
+
     private static List<String> uuidList;
-    private static EncryptionService encryptionService;
+
     private static Map<String, Object> encodedMap;
     private DatabaseProvider dbProvider;
-    private Vertex parentVertex;
     private String teacherOsid;
 
     private Logger logger = LoggerFactory.getLogger(TPGraphMain.class);
 
     private OpenSaberInstrumentation watch = new OpenSaberInstrumentation(true);
 
-    public TPGraphMain(DatabaseProvider db, Vertex parentVertex, List<String> privatePropertyLst, EncryptionService encryptionService) {
+    public TPGraphMain(DatabaseProvider db) {
         dbProvider = db;
-        this.parentVertex = parentVertex;
-        this.privatePropertyLst = privatePropertyLst;
-        this.encryptionService = encryptionService;
         uuidList = new ArrayList<String>();
     }
 
@@ -53,13 +49,7 @@ public class TPGraphMain {
         jsonObject.fields().forEachRemaining(entry -> {
             JsonNode entryValue = entry.getValue();
             if (entryValue.isValueNode()) {
-                if(privatePropertyLst.contains(entry.getKey())) {
-                    String encValue = encodedMap.get(entry.getKey()).toString();
-                    vertex.property(entry.getKey(), encValue.substring(encValue.lastIndexOf("|")+1));
-                } else {
-                    vertex.property(entry.getKey(), entryValue.asText());
-                }
-
+                vertex.property(entry.getKey(), entryValue.asText());
             } else if (entryValue.isObject()) {
                 createVertex(graph, entry.getKey(), vertex, entryValue);
             } else if(entryValue.isArray()){
@@ -185,8 +175,7 @@ public class TPGraphMain {
     // Multiple child vertex = address
     // For every parent vertex and child vertex, there is a single Edge between
     //    teacher -> address
-    public String createTPGraph(JsonNode rootNode, Map<String, Object> encodedMap) throws IOException, EncryptionException, Exception {
-        this.encodedMap = encodedMap;
+    public String createTPGraph(JsonNode rootNode, Vertex parentVertex) throws IOException, EncryptionException, Exception {
         try {
             Graph graph = dbProvider.getGraphStore();
 

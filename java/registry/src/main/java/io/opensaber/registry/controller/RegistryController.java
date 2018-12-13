@@ -1,6 +1,5 @@
 package io.opensaber.registry.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.opensaber.pojos.*;
@@ -247,7 +246,6 @@ public class RegistryController {
 		Response response = new Response(Response.API_ID.CREATE, "OK", responseParams);
 		Map<String, Object> result = new HashMap<>();
 		String jsonString = apiMessage.getRequest().getRequestMapAsString();
-		List<String> privatePropertyLst = schemaConfigurator.getAllPrivateProperties();
 		String entityType = apiMessage.getRequest().getEntityType();
 		int slNum = (int) ((HashMap<String, Object>) apiMessage.getRequest().getRequestMap().get(entityType))
 				.get(shardManager.getShardProperty());
@@ -256,10 +254,10 @@ public class RegistryController {
 		    shardManager.activateDbShard(slNum);
 		    DatabaseProvider databaseProvider = shardManager.getDatabaseProvider();
 		    Vertex parentVertex = parentVertex(databaseProvider);
-			TPGraphMain tpGraph = new TPGraphMain(databaseProvider, parentVertex, privatePropertyLst, encryptionService);
+			TPGraphMain tpGraph = new TPGraphMain(databaseProvider);
 			
 			watch.start("RegistryController.addToExistingEntity");
-			String osid = registryService.createTP2Graph(jsonString,privatePropertyLst,parentVertex,tpGraph);
+			String osid = registryService.createTP2Graph(jsonString,parentVertex,tpGraph);
 			Map resultMap = new HashMap();
 			resultMap.put("id",osid);
 			result.put("entity", resultMap);
@@ -277,20 +275,16 @@ public class RegistryController {
 	}
 
 	@RequestMapping(value = "/read", method = RequestMethod.POST)
-	public ResponseEntity<Response> readGraph2Json(@RequestHeader HttpHeaders header) throws ParseException,
-			IOException, Exception {
+	public ResponseEntity<Response> readGraph2Json(@RequestHeader HttpHeaders header) throws Exception {
 		String dataObject = apiMessage.getRequest().getRequestMapAsString();
 		JSONParser parser = new JSONParser();
 		JSONObject json = (JSONObject) parser.parse(dataObject);
 		String osIdVal =  json.get("id").toString();
 		ResponseParams responseParams = new ResponseParams();
-		List<String> privateProperties = schemaConfigurator.getAllPrivateProperties();
 		DatabaseProvider databaseProvider = shardManager.getDatabaseProvider();
-	    Vertex parentVertex = parentVertex(databaseProvider);
-		TPGraphMain tpGraph = new TPGraphMain(databaseProvider, parentVertex, privateProperties, encryptionService);
+		TPGraphMain tpGraph = new TPGraphMain(databaseProvider);
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 		response.setResult(tpGraph.readGraph2Json(osIdVal));
-
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

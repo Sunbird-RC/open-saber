@@ -42,5 +42,5 @@ public interface RegistryService {
 	
 	public void setDatabaseProvider(DatabaseProvider databaseProvider);
 
-	public String createTP2Graph(String jsonString, List<String> privatePropertyLst, Vertex parentVertex, TPGraphMain tpGraph) throws Exception;
+	public String createTP2Graph(String jsonString, Vertex parentVertex, TPGraphMain tpGraph) throws Exception;
 }

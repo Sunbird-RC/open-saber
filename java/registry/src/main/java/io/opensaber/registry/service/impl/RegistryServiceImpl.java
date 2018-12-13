@@ -11,7 +11,6 @@ import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.opensaber.registry.helper.Encryption;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.util.TPGraphMain;
 import org.apache.commons.lang3.StringUtils;
@@ -64,6 +63,7 @@ import io.opensaber.registry.model.RegistrySignature;
 import io.opensaber.registry.service.EncryptionService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SignatureService;
+import io.opensaber.registry.service.EncryptionHelper;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.util.GraphDBFactory;
 import io.opensaber.utils.converters.RDF2Graph;
@@ -86,7 +86,7 @@ public class RegistryServiceImpl implements RegistryService {
 	@Autowired
 	private ISchemaConfigurator schemaConfigurator;
 	@Autowired
-	private Encryption encryption;
+	private EncryptionHelper encryptionHelper;
 	@Value("${encryption.enabled}")
 	private boolean encryptionEnabled;
 
@@ -502,12 +502,12 @@ public class RegistryServiceImpl implements RegistryService {
 		registryDao.setDatabaseProvider(this.databaseProvider);		
 	}
 
-	public String createTP2Graph(String jsonString, List<String> privatePropertyLst, Vertex parentVertex, TPGraphMain tpGraph) throws Exception {
-		Map<String, Object> encodedMap;
+	public String createTP2Graph(String jsonString, Vertex parentVertex, TPGraphMain tpGraph) throws Exception {
+
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode rootNode = mapper.readTree(jsonString);
-		encodedMap = encryption.createEncryptedJson(rootNode,privatePropertyLst);
-		return tpGraph.createTPGraph(rootNode,encodedMap);
+		rootNode = encryptionHelper.createEncryptedJson(rootNode);
+		return tpGraph.createTPGraph(rootNode,parentVertex);
 	}
 
 }
