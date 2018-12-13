@@ -62,7 +62,6 @@ import io.opensaber.registry.transform.Ld2JsonTransformer;
 import io.opensaber.registry.transform.Ld2LdTransformer;
 import io.opensaber.registry.transform.Ld2RdfTransformer;
 import io.opensaber.registry.transform.Transformer;
-import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.validators.IValidate;
 import io.opensaber.validators.ValidationFilter;
 import io.opensaber.validators.json.jsonschema.JsonValidationServiceImpl;
@@ -365,15 +364,4 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	public HandlerExceptionResolver customExceptionHandler() {
 		return new CustomExceptionHandler(gson());
 	}
-
-	@Bean 
-	public DefinitionsManager definitionsManager(){
-		return new DefinitionsManager();
-	}
-/*	
-	@Bean
-	public EntityParenter entityParenter(){
-		EntityParenter ep = new EntityParenter(definitionsManager(),dBConnectionInfoMgr());	
-		return ep;
-	}*/
 }
