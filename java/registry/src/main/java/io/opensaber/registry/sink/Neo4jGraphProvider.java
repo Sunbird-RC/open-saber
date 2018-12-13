@@ -20,7 +20,7 @@ public class Neo4jGraphProvider extends DatabaseProvider {
 	private Driver driver;
 	private boolean profilerEnabled;
 	private DBConnectionInfo connectionInfo;
-	private Neo4JElementIdProvider<?> idProvider = new Neo4JNativeElementIdProvider();
+	private Neo4JElementIdProvider<?> idProvider = new Neo4jIdProvider();
 
 	public Neo4jGraphProvider(DBConnectionInfo connection) {
 		connectionInfo = connection;
@@ -28,14 +28,14 @@ public class Neo4jGraphProvider extends DatabaseProvider {
 		// TODO: Check with auth
 		driver = GraphDatabase.driver(connection.getUri(),
 				AuthTokens.none());
-		logger.info("Initialized db at ", connectionInfo.getUri());
+		logger.info("Initialized db driver at {}", connectionInfo.getUri());
 	}
 
 
 	private Neo4JGraph getGraph() {
 		Neo4JGraph neo4jGraph;
 		neo4jGraph = new Neo4JGraph(driver, idProvider, idProvider);
-		logger.info("Initialized db at {}", connectionInfo.getUri());
+		logger.debug("Getting a new graph unit of work");
 		return neo4jGraph;
 	}
 

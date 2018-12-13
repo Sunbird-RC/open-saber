@@ -20,6 +20,7 @@ import io.opensaber.registry.transform.*;
 import io.opensaber.registry.util.TPGraphMain;
 import org.apache.jena.rdf.model.Model;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -243,11 +244,11 @@ public class RegistryController {
 				.get(shardManager.getShardProperty());
 
 		try {
-		    shardManager.activateDbShard(slNum);
-		    DatabaseProvider databaseProvider = shardManager.getDatabaseProvider();
+		    DatabaseProvider databaseProvider = shardManager.getDatabaseProvider(slNum);
+		    // TODO - fetch this from some cache
 		    Vertex parentVertex = parentVertex(databaseProvider);
-			TPGraphMain tpGraph = new TPGraphMain(databaseProvider);
-			
+			TPGraphMain tpGraph = new TPGraphMain(databaseProvider, (String) parentVertex.id());
+
 			watch.start("RegistryController.addToExistingEntity");
 			String osid = registryService.createTP2Graph(jsonString,parentVertex,tpGraph);
 			Map resultMap = new HashMap();
@@ -273,10 +274,35 @@ public class RegistryController {
 		JSONObject json = (JSONObject) parser.parse(dataObject);
 		String osIdVal =  json.get("id").toString();
 		ResponseParams responseParams = new ResponseParams();
-		DatabaseProvider databaseProvider = shardManager.getDatabaseProvider();
-		TPGraphMain tpGraph = new TPGraphMain(databaseProvider);
+
+		// TODO
+		// Until we implement the cache for the shard, lets use the default.
+		DatabaseProvider databaseProvider = shardManager.getDefaultDatabaseProvider();
+	    Vertex parentVertex = parentVertex(databaseProvider);
+		TPGraphMain tpGraph = new TPGraphMain(databaseProvider, (String) parentVertex.id());
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
-		response.setResult(tpGraph.readGraph2Json(osIdVal));
+		response.setResult(tpGraph.readGraph2Json_neo4j(osIdVal));
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@RequestMapping(value = "/readg", method = RequestMethod.POST)
+	public ResponseEntity<Response> greadGraph2Json(@RequestHeader HttpHeaders header) throws Exception {
+		String dataObject = apiMessage.getRequest().getRequestMapAsString();
+		JSONParser parser = new JSONParser();
+		JSONObject json = (JSONObject) parser.parse(dataObject);
+		String osIdVal =  json.get("id").toString();
+		ResponseParams responseParams = new ResponseParams();
+
+		// TODO
+		// Until we implement the cache for the shard, lets use the default.
+		DatabaseProvider databaseProvider = shardManager.getDefaultDatabaseProvider();
+		TPGraphMain tpGraph = new TPGraphMain(databaseProvider, null);
+		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
+
+		try (Graph graph = databaseProvider.getGraphStore()) {
+			response.setResult(tpGraph.readGraph2Json(graph, osIdVal));
+		}
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
@@ -288,16 +314,19 @@ public class RegistryController {
 		return keyToPurge;
 
 	}
-	
+
 	private Vertex parentVertex(DatabaseProvider databaseProvider) {
 		Graph g = databaseProvider.getGraphStore();
 		// TODO: Apply default grouping - to be removed.
-		Vertex parentV = TPGraphMain.createParentVertex(g, "Persons");
+		Transaction tx = databaseProvider.startTransaction(g);
+		Vertex parentV = new TPGraphMain().createParentVertex(g, "Teacher_GROUP");
 		try {
 			g.close();
 		} catch (Exception e) {
 			logger.info(e.getMessage());
 		}
+		databaseProvider.commitTransaction(g, tx);
+
 		return parentV;
 	}
 

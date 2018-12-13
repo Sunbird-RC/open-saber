@@ -9,7 +9,8 @@ import org.springframework.stereotype.Component;
 
 @Component("dbProviderFactory")
 public class DBProviderFactory {
-	
+
+	// This must not be needed. All vars must be sought from DBConnectionInfoMgr only.
 	@Autowired
 	Environment environment;
 
