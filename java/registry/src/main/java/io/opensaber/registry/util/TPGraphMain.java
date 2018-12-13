@@ -1,13 +1,13 @@
 package io.opensaber.registry.util;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
-import io.opensaber.pojos.OpenSaberInstrumentation;
-import io.opensaber.registry.exception.EncryptionException;
-import io.opensaber.registry.middleware.util.LogMarkers;
-import io.opensaber.registry.service.EncryptionService;
-import io.opensaber.registry.sink.DatabaseProvider;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -20,27 +20,26 @@ import org.neo4j.driver.v1.StatementResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
+
+import io.opensaber.pojos.OpenSaberInstrumentation;
+import io.opensaber.registry.exception.EncryptionException;
+import io.opensaber.registry.middleware.util.LogMarkers;
+import io.opensaber.registry.sink.DatabaseProvider;
 
 public class TPGraphMain {
-    private static List<String> privatePropertyLst;
+
     private static List<String> uuidList;
-    private static EncryptionService encryptionService;
-    private static Map<String, Object> encMap;
-    private static Map<String, Object> encodedMap;
     private DatabaseProvider dbProvider;
-    private Vertex parentVertex;
+    private String teacherOsid;
 
     private Logger logger = LoggerFactory.getLogger(TPGraphMain.class);
 
     private OpenSaberInstrumentation watch = new OpenSaberInstrumentation(true);
 
-    public TPGraphMain(DatabaseProvider db, Vertex parentVertex, List<String> privatePropertyLst, EncryptionService encryptionService) {
+    public TPGraphMain(DatabaseProvider db) {
         dbProvider = db;
-        this.parentVertex = parentVertex;
-        this.privatePropertyLst = privatePropertyLst;
-        this.encryptionService = encryptionService;
         uuidList = new ArrayList<String>();
     }
 
@@ -53,13 +52,7 @@ public class TPGraphMain {
         jsonObject.fields().forEachRemaining(entry -> {
             JsonNode entryValue = entry.getValue();
             if (entryValue.isValueNode()) {
-                if(privatePropertyLst.contains(entry.getKey())) {
-                    String encValue = encodedMap.get(entry.getKey()).toString();
-                    vertex.property(entry.getKey(), encValue.substring(encValue.lastIndexOf("|")+1));
-                } else {
-                    vertex.property(entry.getKey(), entryValue.asText());
-                }
-
+                vertex.property(entry.getKey(), entryValue.asText());
             } else if (entryValue.isObject()) {
                 createVertex(graph, entry.getKey(), vertex, entryValue);
             } else if(entryValue.isArray()){
@@ -77,6 +70,9 @@ public class TPGraphMain {
         String edgeId = UUID.randomUUID().toString();
         vertex.property("osid", edgeId);
         parentVertex.property(vertex.label()+ "id", edgeId);
+        if(label.equalsIgnoreCase("Teacher")){
+            teacherOsid = edgeId;
+        }
         System.out.println("osid:"+edgeId);
         uuidList.add(edgeId);
     }
@@ -86,13 +82,22 @@ public class TPGraphMain {
     }
 
     public static Vertex createParentVertex(Graph graph, String parentLabel) {
+    	
         GraphTraversalSource gtRootTraversal = graph.traversal();
         GraphTraversal<Vertex, Vertex> rootVertex = gtRootTraversal.V().hasLabel(parentLabel);
         Vertex parentVertex = null;
         if (!rootVertex.hasNext()) {
-            parentVertex = graph.addVertex(parentLabel);
-            // TODO: this could be parentVertex.id() after we make our own Neo4jIdProvider
-            parentVertex.property("osid", parentLabel + "osid");
+            if(graph.features().graph().supportsTransactions()){
+                Transaction tx = graph.tx();
+                parentVertex = graph.addVertex(parentLabel);
+                // TODO: this could be parentVertex.id() after we make our own Neo4jIdProvider
+                parentVertex.property("osid", UUID.randomUUID().toString());
+                tx.commit();
+            } else {
+                parentVertex = graph.addVertex(parentLabel);
+                // TODO: this could be parentVertex.id() after we make our own Neo4jIdProvider
+                parentVertex.property("osid", UUID.randomUUID().toString());
+            }
         } else {
             parentVertex = rootVertex.next();
         }
@@ -129,28 +134,21 @@ public class TPGraphMain {
         }
     }
 
-    // TODO: This method must exist outside in an EncryptionHelper.
-    public JsonNode createEncryptedJson(String jsonString) throws IOException, EncryptionException {
-        encMap = new HashMap<String, Object>();
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode rootNode = mapper.readTree(jsonString);
-        if(rootNode.isObject()){
-            populateObject(rootNode);
-        }
-        encodedMap = (Map<String, Object>)encryptionService.encrypt(encMap);
-        return rootNode;
-    }
-
-    private void populateObject(JsonNode rootNode) {
-        rootNode.fields().forEachRemaining(entry -> {
-            JsonNode entryValue = entry.getValue();
-            if(entryValue.isValueNode()) {
-                if(privatePropertyLst.contains(entry.getKey()))
-                  encMap.put(entry.getKey(),entryValue.asText());
-            } else if(entryValue.isObject()) {
-                populateObject(entryValue);
-            }
-        });
+    /**
+     * Retrieves all UUID of a given all labels.
+     */
+    public static List<String> getUUIDs(List<String> parentLabels, DatabaseProvider dbProvider){
+    	List<String> uuids = new ArrayList<>();
+    	Graph graph = dbProvider.getGraphStore();
+        GraphTraversal<Vertex, Vertex> graphTraversal = graph.traversal().V();
+        for(String label: parentLabels){
+        	 GraphTraversal<Vertex, Vertex> gvs = graphTraversal.hasLabel(label);
+        	 Vertex v = gvs.hasNext()? gvs.next():null;
+        	 if(v!=null){
+        		 uuids.add(v.property("osid").value().toString());
+        	 }       	 
+        }      	
+    	return uuids;	
     }
 
     public Map readGraph2Json(String osid) throws IOException, Exception {
@@ -198,7 +196,7 @@ public class TPGraphMain {
     // Multiple child vertex = address
     // For every parent vertex and child vertex, there is a single Edge between
     //    teacher -> address
-    public void createTPGraph(JsonNode rootNode) throws IOException, EncryptionException, Exception {
+    public String createTPGraph(JsonNode rootNode, Vertex parentVertex) throws IOException, EncryptionException, Exception {
         try {
             Graph graph = dbProvider.getGraphStore();
 
@@ -218,5 +216,6 @@ public class TPGraphMain {
         } catch (Exception e) {
             logger.error(LogMarkers.FATAL, "Can't close graph");
         }
+        return teacherOsid;
     }
 }
