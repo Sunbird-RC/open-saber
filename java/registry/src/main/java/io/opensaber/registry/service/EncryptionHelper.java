@@ -20,7 +20,6 @@ public class EncryptionHelper {
 
     public JsonNode getEncryptedJson(JsonNode rootNode) throws EncryptionException {
         JsonNode encryptedRoot = rootNode;
-        Map<String, Object> encMap = new HashMap<String, Object>();
         List<String> privatePropertyLst = schemaConfigurator.getAllPrivateProperties();
         if (rootNode.isObject()) {
             Map<String, Object> plainMap = getToBeEncryptedMap(rootNode, privatePropertyLst);
