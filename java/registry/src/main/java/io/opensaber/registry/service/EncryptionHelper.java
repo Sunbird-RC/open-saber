@@ -14,33 +14,40 @@ import java.util.Map;
 @Component
 public class EncryptionHelper {
     @Autowired
-    EncryptionService encryptionService;
+    private EncryptionService encryptionService;
     @Autowired
     private ISchemaConfigurator schemaConfigurator;
 
-    public JsonNode createEncryptedJson(JsonNode rootNode) throws EncryptionException {
+    public JsonNode getEncryptedJson(JsonNode rootNode) throws EncryptionException {
+        JsonNode encryptedRoot = rootNode;
         Map<String, Object> encMap = new HashMap<String, Object>();
         List<String> privatePropertyLst = schemaConfigurator.getAllPrivateProperties();
         if (rootNode.isObject()) {
-            populateObject(rootNode, privatePropertyLst, encMap);
+            Map<String, Object> plainMap = getToBeEncryptedMap(rootNode, privatePropertyLst);
+            Map<String, Object> encodedMap = encryptionService.encrypt(plainMap);
+            encryptedRoot  = replaceWithEncryptedValues(rootNode, privatePropertyLst, encodedMap);
         }
-        Map<String, Object> encodedMap = (Map<String, Object>) encryptionService.encrypt(encMap);
-        if (rootNode.isObject()) {
-            populateJsonObject(rootNode, privatePropertyLst, encodedMap);
-        }
-        return rootNode;
+        return encryptedRoot;
     }
 
-    private void populateObject(JsonNode rootNode, List<String> privatePropertyLst, Map<String, Object> encMap) {
-         rootNode.fields().forEachRemaining(entry -> {
+    /**
+     * Identifies the keys in the rootNode that needs to be encrypted.
+     * @param rootNode
+     * @param privatePropertyLst
+     * @return the keys and values that need to be encrypted
+     */
+    private Map<String, Object> getToBeEncryptedMap(JsonNode rootNode, List<String> privatePropertyLst) {
+        Map<String, Object> plainKeyValues = new HashMap<>();
+        rootNode.fields().forEachRemaining(entry -> {
             JsonNode entryValue = entry.getValue();
             if (entryValue.isValueNode()) {
                 if (privatePropertyLst.contains(entry.getKey()))
-                    encMap.put(entry.getKey(), entryValue.asText());
+                    plainKeyValues.put(entry.getKey(), entryValue.asText());
             } else if (entryValue.isObject()) {
-                populateObject(entryValue, privatePropertyLst, encMap);
+                plainKeyValues.putAll(getToBeEncryptedMap(entryValue, privatePropertyLst));
             }
         });
+        return plainKeyValues;
     }
 
     /**
@@ -49,10 +56,12 @@ public class EncryptionHelper {
      *
      * @param rootNode
      * @param privatePropertyLst
-     * @param encodedMap
+     * @param encodedMap Contains the values encrypted
      */
-    private void populateJsonObject(JsonNode rootNode, List<String> privatePropertyLst, Map<String, Object> encodedMap) {
-        rootNode.fields().forEachRemaining(entry -> {
+    private JsonNode replaceWithEncryptedValues(JsonNode rootNode, List<String> privatePropertyLst, Map<String, Object> encodedMap) {
+        JsonNode encryptedRootNode = rootNode;
+
+        encryptedRootNode.fields().forEachRemaining(entry -> {
             JsonNode entryValue = entry.getValue();
 
             if (entryValue.isValueNode() && privatePropertyLst.contains(entry.getKey())) {
@@ -61,8 +70,9 @@ public class EncryptionHelper {
                 JsonNode encryptedValNode = JsonNodeFactory.instance.textNode(encryptedVal);
                 entry.setValue(encryptedValNode);
             } else if (entryValue.isObject()) {
-                populateJsonObject(entryValue, privatePropertyLst, encodedMap);
+                replaceWithEncryptedValues(entryValue, privatePropertyLst, encodedMap);
             }
         });
+        return encryptedRootNode;
     }
 }

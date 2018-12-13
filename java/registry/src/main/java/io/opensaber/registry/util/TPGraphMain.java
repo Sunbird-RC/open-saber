@@ -1,12 +1,10 @@
 package io.opensaber.registry.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.exception.EncryptionException;
 import io.opensaber.registry.middleware.util.LogMarkers;
-import io.opensaber.registry.service.EncryptionService;
 import io.opensaber.registry.sink.DatabaseProvider;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -26,8 +24,6 @@ import java.util.*;
 public class TPGraphMain {
 
     private static List<String> uuidList;
-
-    private static Map<String, Object> encodedMap;
     private DatabaseProvider dbProvider;
     private String teacherOsid;
 

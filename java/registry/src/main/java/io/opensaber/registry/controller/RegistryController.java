@@ -25,7 +25,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +34,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
@@ -59,10 +57,6 @@ public class RegistryController {
 	private String registryContext;
 	@Autowired
 	private APIMessage apiMessage;
-	@Autowired
-	private ISchemaConfigurator schemaConfigurator;
-	@Autowired
-	private EncryptionService encryptionService;
 	private Gson gson = new Gson();
 	private Type mapType = new TypeToken<Map<String, Object>>() {
 	}.getType();
