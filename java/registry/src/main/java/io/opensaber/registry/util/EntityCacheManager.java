@@ -34,6 +34,11 @@ public class EntityCacheManager {
 		shardUUIDSMap = new HashMap<>();
 	}
 
+	/**
+	 * Retrive Ids for all vertices of each shard and creates the mapping
+	 * between the shard and its vertices. 
+	 * Loads at application start up
+	 */
 	public void loadShardUUIDS() {
 
 		dbConnectionInfoList.forEach(dbConnectionInfo -> {

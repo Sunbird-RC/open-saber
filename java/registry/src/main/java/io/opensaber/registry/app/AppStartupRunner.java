@@ -10,19 +10,18 @@ import io.opensaber.registry.util.EntityParenter;
 
 @Component
 public class AppStartupRunner implements ApplicationRunner {
-	
+
 	@Autowired
 	EntityParenter entityParenter;
-	
-	@Autowired 
+
+	@Autowired
 	EntityCacheManager entityCacheManager;
- 
-    @Override
-    public void run(ApplicationArguments args) throws Exception {
-    	entityParenter.ensureKnownParenters();
-    	entityParenter.identifyKnownParents();
-    	
-    	entityCacheManager.loadShardUUIDS();
-    	
-    }
+
+	@Override
+	public void run(ApplicationArguments args) throws Exception {
+		entityParenter.ensureKnownParenters();
+		entityParenter.identifyKnownParents();
+		entityCacheManager.loadShardUUIDS();
+
+	}
 }
