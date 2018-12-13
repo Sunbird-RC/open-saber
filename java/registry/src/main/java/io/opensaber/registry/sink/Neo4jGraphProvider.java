@@ -1,9 +1,8 @@
 package io.opensaber.registry.sink;
 
-import com.steelbridgelabs.oss.neo4j.structure.Neo4JElementIdProvider;
-import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
-import com.steelbridgelabs.oss.neo4j.structure.providers.Neo4JNativeElementIdProvider;
-import io.opensaber.registry.model.DBConnectionInfo;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.neo4j.driver.v1.AuthTokens;
 import org.neo4j.driver.v1.Driver;
@@ -11,8 +10,11 @@ import org.neo4j.driver.v1.GraphDatabase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import com.steelbridgelabs.oss.neo4j.structure.Neo4JElementIdProvider;
+import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
+import com.steelbridgelabs.oss.neo4j.structure.providers.Neo4JNativeElementIdProvider;
+
+import io.opensaber.registry.model.DBConnectionInfo;
 
 public class Neo4jGraphProvider extends DatabaseProvider {
 
@@ -28,7 +30,7 @@ public class Neo4jGraphProvider extends DatabaseProvider {
 		// TODO: Check with auth
 		driver = GraphDatabase.driver(connection.getUri(),
 				AuthTokens.none());
-		logger.info("Initialized db at ", connectionInfo.getUri());
+		//logger.info("Initialized db at ", connectionInfo.getUri());
 	}
 
 

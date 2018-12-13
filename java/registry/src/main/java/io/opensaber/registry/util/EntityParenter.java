@@ -1,24 +1,40 @@
 package io.opensaber.registry.util;
 
-import io.opensaber.registry.model.DBConnectionInfo;
-import io.opensaber.registry.model.DBConnectionInfoMgr;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import io.opensaber.registry.model.DBConnectionInfo;
+import io.opensaber.registry.model.DBConnectionInfoMgr;
+import io.opensaber.registry.sink.DBProviderFactory;
+import io.opensaber.registry.sink.DatabaseProvider;
+
 @Component("entityParenter")
 public class EntityParenter {
+	private static Logger logger = LoggerFactory.getLogger(EntityParenter.class);
 
+	
+	@Autowired
+	private DBProviderFactory dbProviderFactory;
     private DefinitionsManager definitionsManager;
     private DBConnectionInfoMgr dbConnectionInfoMgr;
 
     private Set<String> defintionNames;
     private List<DBConnectionInfo> dbConnectionInfoList;
+    /**
+     * Holds relation with shard and parentLabels
+     */
+    private Map<String, List<String>> shardIdParentLabelsMap;
+    private List<String> parentLabels;
 
     /**
      * Holds information about a definition and a list of ShardParents
@@ -30,28 +46,34 @@ public class EntityParenter {
         this.definitionsManager = definitionsManager;
         this.dbConnectionInfoMgr = dbConnectionInfoMgr;
 
-        defintionNames = definitionsManager.getAllKnownDefinitions();
-        dbConnectionInfoList = dbConnectionInfoMgr.getConnectionInfo();
+        defintionNames = this.definitionsManager.getAllKnownDefinitions();
+        dbConnectionInfoList = this.dbConnectionInfoMgr.getConnectionInfo();
+        
+        definitionShardParentMap = new HashMap<>();
+        shardIdParentLabelsMap = new HashMap<>();
+        
     }
 
     /**
      * Creates the parent vertex in all the shards for all default definitions
      * @return
      */
-    public Optional<String> createKnownParenters(Graph graph) {
+    public Optional<String> createKnownParenters() {
         Optional<String> result;
-        String msg = null;
 
         dbConnectionInfoList.forEach(dbConnectionInfo -> {
-            // Get the shard
-
+            // Get the graph.
+        	Graph graph = dbProviderFactory.getInstance(dbConnectionInfo).getGraphStore();
+        	parentLabels = new ArrayList<>();
             defintionNames.forEach(defintionName -> {
                 String parentLabel = ParentLabelGenerator.getLabel(defintionName);
+                parentLabels.add(parentLabel);
                 TPGraphMain.createParentVertex(graph, parentLabel);
             });
+            shardIdParentLabelsMap.put(dbConnectionInfo.getShardId(), parentLabels);
         });
 
-        result = Optional.of(msg);
+        result = Optional.empty();
         return result;
     }
 
@@ -64,16 +86,19 @@ public class EntityParenter {
         defintionNames.forEach(defintionName -> {
         // Create the vertex with label if not already found
             ShardParentInfoList parentInfoList = new ShardParentInfoList();
-
+            
             dbConnectionInfoList.forEach(dbConnectionInfo -> {
-                // TODO
-                // Get the shard and fetch uuid from label
 
-                String shardId = "";
-                String uuid = "";
-                parentInfoList.getParentInfos().add(new ShardParentInfo(shardId, uuid));
+                String shardId = dbConnectionInfo.getShardId();               
+                List<String> parentLabels = shardIdParentLabelsMap.get(shardId);
+                logger.info("Shard ID :"+shardId +" --  parentlabels: "+parentLabels.size());
+                DatabaseProvider dbProvider = dbProviderFactory.getInstance(dbConnectionInfo);
+                List<String> uuids = TPGraphMain.getUUIDs(parentLabels, dbProvider);
+                for(String uuid:uuids){
+                    parentInfoList.getParentInfos().add(new ShardParentInfo(shardId, uuid));
+                }               
             });
-
+            logger.info("definitionShardParentMap adding key: "+defintionName+" parentInfoList: "+parentInfoList.getParentInfos().size());
             definitionShardParentMap.put(defintionName, parentInfoList);
         });
     }
