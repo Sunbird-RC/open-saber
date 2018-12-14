@@ -17,11 +17,9 @@ public class AppStartupRunner implements ApplicationRunner {
 	@Autowired
 	EntityCacheManager entityCacheManager;
 
-	@Override
-	public void run(ApplicationArguments args) throws Exception {
-		entityParenter.ensureKnownParenters();
-		entityParenter.identifyKnownParents();
-		entityCacheManager.loadShardUUIDS();
-
-	}
+    @Override
+    public void run(ApplicationArguments args) throws Exception {
+    	entityParenter.ensureKnownParenters();
+    	entityCacheManager.loadShardUUIDS();
+    }
 }

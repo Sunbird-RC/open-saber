@@ -227,7 +227,11 @@ public class TPGraphMain {
                     }
                 });
             }
-            dbProvider.commitTransaction(graph, tx);
+            try {
+				dbProvider.commitTransaction(graph, tx);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
         }
 
         return objectNode;
