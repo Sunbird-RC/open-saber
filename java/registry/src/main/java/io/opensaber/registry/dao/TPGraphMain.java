@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.orientechnologies.orient.server.distributed.ODistributedServerLog;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.sink.DatabaseProvider;
@@ -12,10 +13,7 @@ import io.opensaber.registry.util.*;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -220,27 +218,9 @@ public class TPGraphMain {
         return uuids;
     }
 
-    /**
-     * Hits the database to read contents
-     * @param graph
-     * @param wrapRequired whether or not to wrap the read content from database
-     * @param configurator defines the configuration for this read operation
-     * @param osid the id to be read
-     * @return
-     * @throws Exception
-     */
-    public JsonNode readGraph2Json(Graph graph, boolean wrapRequired, ReadConfigurator configurator, String osid) throws Exception {
-        ObjectNode entityNode = JsonNodeFactory.instance.objectNode();
-        ObjectNode contentNode = JsonNodeFactory.instance.objectNode();
-        String entityType = "";
-
-        Iterator<Vertex> itrV = graph.vertices(osid);
-        if (!itrV.hasNext()) {
-            throw new Exception("Invalid id");
-        }
-
-        Vertex currVertex = itrV.next();
+    void constructObject(Graph graph, Vertex currVertex, ReadConfigurator configurator, ObjectNode contentNode) {
         currVertex.properties().forEachRemaining(prop -> {
+            String entityType = "";
             if (!RefLabelHelper.isParentLabel(prop.key())) {
                 if (RefLabelHelper.isRefLabel(prop.key(), uuidPropertyName) &&
                         configurator.isFetchChildren()) {
@@ -275,17 +255,46 @@ public class TPGraphMain {
             } else {
                 logger.debug("Root type, ignoring");
             }
+
+            // Here we set the id
+            contentNode.put(uuidPropertyName, currVertex.id().toString());
         });
+    }
 
-        // Here we set the id
-        contentNode.put(uuidPropertyName, currVertex.id().toString());
-
-        if (wrapRequired) {
-            entityType = currVertex.value(TypePropertyHelper.getTypeName());
-            entityNode.set(entityType, contentNode);
-        } else {
-            entityNode = contentNode;
+    void constructObject(Graph graph, Iterator<Vertex> vertexIterator, ReadConfigurator configurator, ObjectNode contentNode) {
+        while (vertexIterator.hasNext()) {
+            Vertex currVertex = vertexIterator.next();
+            constructObject(graph, currVertex, configurator, contentNode);
         }
+    }
+
+    /**
+     * Hits the database to read contents
+     * @param graph
+     * @param wrapRequired whether or not to wrap the read content from database
+     * @param configurator defines the configuration for this read operation
+     * @param osid the id to be read
+     * @return
+     * @throws Exception
+     */
+    public JsonNode readGraph2Json(Graph graph, boolean wrapRequired, ReadConfigurator configurator, String osid) throws Exception {
+        ObjectNode entityNode = JsonNodeFactory.instance.objectNode();
+        ObjectNode contentNode = JsonNodeFactory.instance.objectNode();
+        String entityType = "";
+
+        Iterator<Vertex> itrV = graph.vertices(osid);
+        if (!itrV.hasNext()) {
+            throw new Exception("Invalid id");
+        }
+
+        Vertex currVertex = itrV.next();
+        Iterator<Vertex> associatedVertices = currVertex.vertices(Direction.OUT);
+
+        constructObject(graph, currVertex, configurator, entityNode);
+        constructObject(graph, associatedVertices, configurator, contentNode);
+
+        entityType = currVertex.value(TypePropertyHelper.getTypeName());
+        entityNode.set(entityType, contentNode);
 
         return entityNode;
     }
