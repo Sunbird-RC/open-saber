@@ -83,6 +83,9 @@ public abstract class DatabaseProvider {
 		return tx;
 	}
 
+	/**
+	 * option to close a graph while commiting 
+	 */
 	protected void commitTransaction(Graph graph, Transaction tx, boolean closeGraph){	
 		commitTransaction(graph, tx);
 		if (closeGraph) {
@@ -94,7 +97,10 @@ public abstract class DatabaseProvider {
 		}
 
 	}
-	
+	/**
+	 * Default commit transaction used by any caller.
+	 * 
+	 */
 	public void commitTransaction(Graph graph, Transaction tx){
 		if (null != tx && supportsTransaction(graph)) {
 			tx.commit();

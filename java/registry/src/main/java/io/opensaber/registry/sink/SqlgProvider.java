@@ -1,17 +1,14 @@
 package io.opensaber.registry.sink;
 
+import io.opensaber.registry.model.DBConnectionInfo;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.umlg.sqlg.structure.SqlgGraph;
-
-import io.opensaber.registry.model.DBConnectionInfo;
 
 public class SqlgProvider extends DatabaseProvider {
 
@@ -51,8 +48,4 @@ public class SqlgProvider extends DatabaseProvider {
 		graph.close();
 	}
 
-	@Override
-	public void commitTransaction(Graph graph, Transaction tx) {
-		commitTransaction(graph, tx, false);
-	}
 }
