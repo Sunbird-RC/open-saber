@@ -13,12 +13,10 @@ import org.springframework.stereotype.Component;
 public class EntityCache {
 	
     private static Logger logger = LoggerFactory.getLogger(EntityCache.class);
-    private final static String RECORD_NOT_FOUND ="Record not found" ;
-	@Autowired
-	private EntityCacheManager entityCacheManager;	
+    private final static String RECORD_NOT_FOUND ="Record not found" ;	
 	private Map<String, List<String>> recordShardMap;
-	
-	public EntityCache(){
+	@Autowired
+	public EntityCache(EntityCacheManager entityCacheManager){
 		this.recordShardMap = entityCacheManager.getShardUUIDs();
 	}
 	

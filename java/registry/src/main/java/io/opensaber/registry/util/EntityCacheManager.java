@@ -1,5 +1,6 @@
 package io.opensaber.registry.util;
 
+import io.opensaber.registry.dao.TPGraphMain;
 import io.opensaber.registry.model.DBConnectionInfo;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.sink.DBProviderFactory;
@@ -38,12 +39,12 @@ public class EntityCacheManager {
 	 * Loads at application start up
 	 */
 	public void loadShardUUIDS() {
-
+		TPGraphMain tpGraphMain = new TPGraphMain();
 		dbConnectionInfoList.forEach(dbConnectionInfo -> {
 			DatabaseProvider dbProvider = dbProviderFactory.getInstance(dbConnectionInfo);
 			List<String> uuids = new ArrayList<>();
 			defintionNames.forEach(defintionName -> {
-				uuids.addAll(TPGraphMain.getUUIDs(defintionName, dbProvider));
+				uuids.addAll(tpGraphMain.getUUIDs(defintionName, dbProvider));
 			});
 			shardUUIDSMap.put(dbConnectionInfo.getShardId(), uuids);
 		});
