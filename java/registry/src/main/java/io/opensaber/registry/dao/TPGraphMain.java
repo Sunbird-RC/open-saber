@@ -61,7 +61,15 @@ public class TPGraphMain {
         return graph.addVertex(label);
     }
 
-    private void processArrayNode(Graph graph, Vertex vertex, String entryKey, ArrayNode arrayNode) {
+    /**
+     * Writes an array into the database. For each array item, if it is an object
+     * creates/populates a new vertex/table and stores the reference
+     * @param graph
+     * @param vertex
+     * @param entryKey
+     * @param arrayNode
+     */
+    private void writeArrayNode(Graph graph, Vertex vertex, String entryKey, ArrayNode arrayNode) {
         List<String> arrayEntries = new ArrayList<>();
         boolean isArrayItemObject = arrayNode.get(0).isObject();
 
@@ -111,12 +119,19 @@ public class TPGraphMain {
                 vertex.property(RefLabelHelper.getLabel(entry.getKey(), uuidPropertyName), v.id());
                 logger.debug("Added edge between {} and {}", vertex.label(), v.label());
             } else if (entryValue.isArray()) {
-                processArrayNode(graph, vertex, entry.getKey(), (ArrayNode) entry.getValue());
+                writeArrayNode(graph, vertex, entry.getKey(), (ArrayNode) entry.getValue());
             }
         });
         return vertex;
     }
 
+    /**
+     * Adds an edge between two vertices
+     * @param label
+     * @param v1 the source
+     * @param v2 the target
+     * @return
+     */
     private Edge addEdge(String label, Vertex v1, Vertex v2) {
         return v1.addEdge(label, v2);
     }
@@ -146,11 +161,23 @@ public class TPGraphMain {
         return parentVertex;
     }
 
+    /**
+     * Fetches the parent. In the current use cases, we expect only one
+     * top level parent is passed.
+     * @param node
+     * @return
+     */
     public String getParentName(JsonNode node) {
         return node.fieldNames().next();
     }
 
-    public String processEntity(Graph graph, JsonNode node) {
+    /**
+     * Writes the node entity into the database.
+     * @param graph
+     * @param node
+     * @return
+     */
+    public String writeNodeEntity(Graph graph, JsonNode node) {
         String parentName = getParentName(node);
         String parentGroupName = ParentLabelGenerator.getLabel(parentName);
         Vertex parentVertex = entityParenter.getKnownParentVertex(parentName, "shard1");
@@ -175,7 +202,7 @@ public class TPGraphMain {
     }
 
     /**
-     * Retrieves all UUID of a given all labels.
+     * Retrieves all UUID for the given labels.
      */
     public List<String> getUUIDs(Graph graph, List<String> parentLabels) {
         List<String> uuids = new ArrayList<>();
@@ -193,52 +220,68 @@ public class TPGraphMain {
         return uuids;
     }
 
-
-    public JsonNode readGraph2Json(Graph graph, boolean encloseInParent, ReadConfigurator configurator , String osid) {
+    /**
+     * Hits the database to read contents
+     * @param graph
+     * @param wrapRequired whether or not to wrap the read content from database
+     * @param configurator defines the configuration for this read operation
+     * @param osid the id to be read
+     * @return
+     * @throws Exception
+     */
+    public JsonNode readGraph2Json(Graph graph, boolean wrapRequired, ReadConfigurator configurator, String osid) throws Exception {
         ObjectNode entityNode = JsonNodeFactory.instance.objectNode();
         ObjectNode contentNode = JsonNodeFactory.instance.objectNode();
         String entityType = "";
 
         Iterator<Vertex> itrV = graph.vertices(osid);
-        if (itrV.hasNext()) {
-            Vertex currVertex = itrV.next();
-            currVertex.properties().forEachRemaining(prop -> {
-                if (!RefLabelHelper.isParentLabel(prop.key())) {
-                    if (RefLabelHelper.isRefLabel(prop.key(), uuidPropertyName) &&
-                            configurator.isFetchChildren()) {
-                        logger.debug("{} is a referenced entity", prop.key());
-                        // This is another entity. Go retrieve that
-                        String refEntityName = RefLabelHelper.getRefEntityName(prop.key());
-                        String[] valueArr = prop.value().toString().split("\\s*,\\s*");
-
-                        ArrayNode resultNode = JsonNodeFactory.instance.arrayNode();
-                        for (String value : valueArr) {
-                            JsonNode oneEntity = readGraph2Json(graph, false, configurator, value);
-                            resultNode.add(oneEntity);
-                        }
-                        contentNode.set(refEntityName, resultNode);
-                    } else {
-                        logger.debug("{} is a simple value", prop.key());
-                        boolean canAdd = true;
-                        if (TypePropertyHelper.isTypeProperty(prop.key())) {
-                            canAdd &= configurator.isIncludeTypeAttributes();
-                        } else if (privatePropertyList.contains(prop.key())) {
-                            canAdd &= configurator.isIncludeEncryptedProp();
-                        }
-
-                        if (canAdd) {
-                            contentNode.put(prop.key(), prop.value().toString());
-                        }
-                    }
-                }
-            });
-            if (encloseInParent) {
-                entityType = currVertex.value(TypePropertyHelper.getTypeName());
-            }
-
+        if (!itrV.hasNext()) {
+            throw new Exception("Invalid id");
         }
 
-        if (encloseInParent) {
+        Vertex currVertex = itrV.next();
+        currVertex.properties().forEachRemaining(prop -> {
+            if (!RefLabelHelper.isParentLabel(prop.key())) {
+                if (RefLabelHelper.isRefLabel(prop.key(), uuidPropertyName) &&
+                        configurator.isFetchChildren()) {
+                    logger.debug("{} is a referenced entity", prop.key());
+
+                    String refEntityName = RefLabelHelper.getRefEntityName(prop.key());
+                    String[] valueArr = prop.value().toString().split("\\s*,\\s*");
+
+                    ArrayNode resultNode = JsonNodeFactory.instance.arrayNode();
+                    for (String value : valueArr) {
+                        try {
+                            JsonNode oneEntity = readGraph2Json(graph, false, configurator, value);
+                            resultNode.add(oneEntity);
+                        } catch (Exception e) {
+                            logger.info("No entity exists with uuid {}", value);
+                        }
+                    }
+                    contentNode.set(refEntityName, resultNode);
+                } else {
+                    logger.debug("{} is a simple value", prop.key());
+                    boolean canAdd = true;
+                    if (TypePropertyHelper.isTypeProperty(prop.key())) {
+                        canAdd &= configurator.isIncludeTypeAttributes();
+                    } else if (privatePropertyList.contains(prop.key())) {
+                        canAdd &= configurator.isIncludeEncryptedProp();
+                    }
+
+                    if (canAdd) {
+                        contentNode.put(prop.key(), prop.value().toString());
+                    }
+                }
+            } else {
+                logger.debug("Root type, ignoring");
+            }
+        });
+
+        // Here we set the id
+        contentNode.put(uuidPropertyName, currVertex.id().toString());
+
+        if (wrapRequired) {
+            entityType = currVertex.value(TypePropertyHelper.getTypeName());
             entityNode.set(entityType, contentNode);
         } else {
             entityNode = contentNode;
@@ -247,12 +290,18 @@ public class TPGraphMain {
         return entityNode;
     }
 
+    /**
+     * Entry point to the dao layer to write a JsonNode entity.
+     * @param shardId
+     * @param rootNode
+     * @return
+     */
     public String addEntity(String shardId, JsonNode rootNode) {
         String entityId = "";
         DatabaseProvider databaseProvider = databaseProviderWrapper.getDatabaseProvider();
         try (Graph graph = databaseProvider.getGraphStore()) {
             try (Transaction tx = databaseProvider.startTransaction(graph)) {
-                entityId = processEntity(graph, rootNode);
+                entityId = writeNodeEntity(graph, rootNode);
                 databaseProvider.commitTransaction(graph, tx);
             }
         } catch (Exception e) {
@@ -261,6 +310,12 @@ public class TPGraphMain {
         return entityId;
     }
 
+    /**
+     * Retrieves a record from the database
+     * @param shardId
+     * @param uuid entity identifier to retrieve
+     * @return
+     */
     public JsonNode getEntity(String shardId, String uuid) {
         if (null == privatePropertyList) {
             privatePropertyList = new ArrayList<>();
@@ -276,7 +331,7 @@ public class TPGraphMain {
                 databaseProvider.commitTransaction(graph, tx);
             }
         } catch (Exception e) {
-            logger.error("Can't close graph");
+            logger.error("Exception occurred during read entity ", e);
         }
         return result;
     }
