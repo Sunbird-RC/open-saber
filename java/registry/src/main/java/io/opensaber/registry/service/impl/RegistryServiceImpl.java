@@ -2,6 +2,7 @@ package io.opensaber.registry.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.github.jsonldjava.core.JsonLdError;
 import com.google.gson.Gson;
 import io.opensaber.converters.JenaRDF4J;
@@ -19,9 +20,9 @@ import io.opensaber.registry.service.EncryptionService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SignatureService;
 import io.opensaber.registry.sink.DatabaseProvider;
-import io.opensaber.registry.util.EntityParenter;
+import io.opensaber.registry.sink.DatabaseProviderWrapper;
 import io.opensaber.registry.util.GraphDBFactory;
-import io.opensaber.registry.util.TPGraphMain;
+import io.opensaber.registry.dao.TPGraphMain;
 import io.opensaber.utils.converters.RDF2Graph;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.datatypes.RDFDatatype;
@@ -36,7 +37,6 @@ import org.apache.jena.riot.system.PrefixMap;
 import org.apache.jena.riot.system.RiotLib;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,6 +97,12 @@ public class RegistryServiceImpl implements RegistryService {
 
     @Value("${registry.context.base}")
     private String registryContext;
+
+    @Autowired
+    TPGraphMain tpGraphMain;
+
+    @Autowired
+    DatabaseProviderWrapper databaseProviderWrapper;
 
     @Override
     public List getEntityList() {
@@ -481,14 +487,12 @@ public class RegistryServiceImpl implements RegistryService {
         return frameEntity(jenaEntityModel);
     }
 
+    // Presently only existing for test cases, must be removed.
     @Override
     public void setDatabaseProvider(DatabaseProvider databaseProvider) {
         this.databaseProvider = databaseProvider;
         registryDao.setDatabaseProvider(databaseProvider);
     }
-
-    @Autowired
-    TPGraphMain tpGraphMain;
 
     public String addEntity(String shardId, String jsonString) throws Exception {
         String entityId = "";
@@ -501,4 +505,8 @@ public class RegistryServiceImpl implements RegistryService {
         return entityId;
     }
 
+    public JsonNode getEntity(String id) {
+        JsonNode result = tpGraphMain.getEntity("", id);
+        return result;
+    }
 }

@@ -1,10 +1,10 @@
 package io.opensaber.registry.util;
 
+import io.opensaber.registry.dao.TPGraphMain;
 import io.opensaber.registry.model.DBConnectionInfo;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.sink.DBProviderFactory;
 import io.opensaber.registry.sink.DatabaseProvider;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -54,7 +54,7 @@ public class EntityParenter {
         Optional<String> result;
 
         dbConnectionInfoList.forEach(dbConnectionInfo -> {
-            // Get the graph.
+            logger.info("Starting to parents for {} definitions in shard {}", defintionNames.size(), dbConnectionInfo.getShardId());
             DatabaseProvider dbProvider = dbProviderFactory.getInstance(dbConnectionInfo);
             try {
                 try (Graph graph = dbProvider.getGraphStore()) {
@@ -66,7 +66,7 @@ public class EntityParenter {
                         defintionNames.forEach(defintionName -> {
                             String parentLabel = ParentLabelGenerator.getLabel(defintionName);
                             parentLabels.add(parentLabel);
-                            Vertex v = tpGraphMain.createParentVertex(graph, parentLabel);
+                            Vertex v = tpGraphMain.ensureParentVertex(graph, parentLabel);
 
                             ShardParentInfo shardParentInfo = new ShardParentInfo(defintionName, v);
                             shardParentInfo.setUuid(v.id().toString());

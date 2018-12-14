@@ -18,7 +18,7 @@ import io.opensaber.registry.shard.advisory.ShardManager;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.DatabaseProviderWrapper;
 import io.opensaber.registry.transform.*;
-import io.opensaber.registry.util.TPGraphMain;
+import io.opensaber.registry.dao.TPGraphMain;
 import org.apache.jena.rdf.model.Model;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -280,15 +280,18 @@ public class RegistryController {
         JSONObject json = (JSONObject) parser.parse(dataObject);
         String osIdVal = json.get("id").toString();
         ResponseParams responseParams = new ResponseParams();
-
-        // TODO
-        // Until we implement the cache for the shard, lets use the default.
-        DatabaseProvider databaseProvider = shardManager.getDefaultDatabaseProvider();
         Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
-        try (Graph graph = databaseProvider.getGraphStore()) {
-            response.setResult(new TPGraphMain().readGraph2Json(graph, osIdVal));
+        // TODO: The shard id must be fetched from the cache for this uuid and supplied.
+        databaseProviderWrapper.setDatabaseProvider(shardManager.getDefaultDatabaseProvider());
+
+        try {
+            response.setResult(registryService.getEntity(osIdVal));
+        } catch (Exception e) {
+            responseParams.setErr(e.getMessage());
+            responseParams.setStatus(Response.Status.UNSUCCESSFUL);
         }
+
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -309,7 +312,7 @@ public class RegistryController {
 
             // TODO: Apply default grouping - to be removed.
             Transaction tx = databaseProvider.startTransaction(g);
-            parentV = new TPGraphMain().createParentVertex(g, "Teacher_GROUP");
+            parentV = new TPGraphMain().ensureParentVertex(g, "Teacher_GROUP");
             databaseProvider.commitTransaction(g, tx);
 
         } catch (Exception e) {

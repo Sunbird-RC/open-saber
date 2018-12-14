@@ -1,14 +1,16 @@
-package io.opensaber.registry.util;
+package io.opensaber.registry.dao;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
 import io.opensaber.pojos.OpenSaberInstrumentation;
-import io.opensaber.registry.exception.EncryptionException;
-import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.DatabaseProviderWrapper;
+import io.opensaber.registry.util.EntityParenter;
+import io.opensaber.registry.util.RefLabelHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -16,24 +18,26 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.neo4j.driver.internal.InternalNode;
-import org.neo4j.driver.v1.Record;
-import org.neo4j.driver.v1.StatementResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.util.*;
 
 @Component("tpGraphMain")
 public class TPGraphMain {
     @Value("${database.uuidPropertyName}")
     public String uuidPropertyName;
+
+    @Autowired
+    EntityParenter entityParenter;
+
+    @Autowired
+    private DatabaseProviderWrapper databaseProviderWrapper;
+
+    public static enum DBTYPE {NEO4J, POSTGRES}
 
     private Logger logger = LoggerFactory.getLogger(TPGraphMain.class);
 
@@ -56,14 +60,15 @@ public class TPGraphMain {
         });
 
         if (!arrayEntries.isEmpty()) {
-            String vIds = "[";
+            String vIds = "";
             for (String oneV : arrayEntries) {
                 vIds = vIds + oneV + ",";
             }
+            // Remove the last comma
             vIds = vIds.substring(0, vIds.length() - 1);
-            vIds += "]";
+            //vIds += "]";
 
-            vertex.property(entryKey + uuidPropertyName, vIds);
+            vertex.property(RefLabelHelper.getLabel(entryKey, uuidPropertyName), vIds);
         }
     }
 
@@ -80,7 +85,7 @@ public class TPGraphMain {
                 // Recursive calls
                 Vertex v = processNode(graph, entry.getKey(), vertex, entryValue);
                 addEdge(entry.getKey(), vertex, v);
-                vertex.property(entry.getKey() + uuidPropertyName, v.id());
+                vertex.property(RefLabelHelper.getLabel(entry.getKey(), uuidPropertyName), v.id());
                 logger.debug("Added edge between {} and {}", vertex.label(), v.label());
             } else if (entryValue.isArray()) {
                 processArrayNode(graph, vertex, entry.getKey(), entry.getValue());
@@ -93,19 +98,25 @@ public class TPGraphMain {
         return v1.addEdge(label, v2);
     }
 
-    public Vertex createParentVertex(Graph graph, String parentLabel) {
+    /**
+     * Ensures a parent vertex existence at the exit of this function
+     * @param graph
+     * @param parentLabel
+     * @return
+     */
+    public Vertex ensureParentVertex(Graph graph, String parentLabel) {
         Vertex parentVertex = null;
         P<String> lblPredicate = P.eq(parentLabel);
 
-        GraphTraversalSource gtRootTraversal = graph.traversal();
-//        GraphTraversal<Vertex, Vertex> rootVertex = gtRootTraversal.clone().V().hasLabel(parentLabel);
+        GraphTraversalSource gtRootTraversal = graph.traversal().clone();
         Iterator<Vertex> iterVertex = gtRootTraversal.V().hasLabel(lblPredicate);
         if (!iterVertex.hasNext()) {
             parentVertex = graph.addVertex(parentLabel);
             parentVertex.property(uuidPropertyName, parentVertex.id().toString());
+            logger.info("Parent label {} created {}", parentLabel, parentVertex.id().toString());
         } else {
             parentVertex = iterVertex.next();
-            System.out.println(parentVertex.id().toString());
+            logger.info("Parent label {} already existing {}", parentLabel, parentVertex.id().toString());
         }
 
         return parentVertex;
@@ -114,9 +125,6 @@ public class TPGraphMain {
     public String getParentName(JsonNode node) {
         return node.fieldNames().next();
     }
-
-    @Autowired
-    EntityParenter entityParenter;
 
     public String processEntity(Graph graph, JsonNode node) {
         String parentName = getParentName(node);
@@ -132,7 +140,7 @@ public class TPGraphMain {
                 resultVertex = processNode(graph, entry.getKey(), parentVertex, entry.getValue());
                 // The parentVertex and the entity are connected. The parentVertex doesn't have
                 // identifiers set on itself, whereas the entity just created has reference to parent.
-                resultVertex.property(uuidPropertyName, parentVertex.id());
+                resultVertex.property(parentName + "_" + uuidPropertyName, parentVertex.id());
 
                 Edge edge = addEdge(entry.getKey(), parentVertex, resultVertex);
             }
@@ -166,32 +174,27 @@ public class TPGraphMain {
         if (itrV.hasNext()) {
             Vertex currVertex = itrV.next();
             currVertex.properties().forEachRemaining(prop -> {
-                String propertyName = prop.label();
-                int uuidPropertyIdx = propertyName.indexOf(uuidPropertyName);
-                if (propertyName.compareTo(uuidPropertyName) != 0 &&
-                        uuidPropertyIdx != -1) {
-                    // This is a child entity. Go retrieve that
-                    String childEntityName = propertyName.substring(0, uuidPropertyIdx);
-                    Object valueObj = prop.value();
-                    if (valueObj.getClass().isArray()) {
-                        objectNode.put(childEntityName, "TODO array");
-                    } else {
-                        objectNode.set(childEntityName, readGraph2Json(graph, prop.value().toString()));
+                if (RefLabelHelper.isRefLabel(prop.key(), uuidPropertyName)) {
+                    logger.debug("{} is a referenced entity", prop.key());
+                    // This is another entity. Go retrieve that
+                    String refEntityName = RefLabelHelper.getRefEntityName(prop.key());
+                    String[] valueArr = new String[]{prop.value().toString()};
+
+                    ArrayNode resultNode = JsonNodeFactory.instance.arrayNode();
+                    for(String value: valueArr) {
+                        JsonNode oneEntity = readGraph2Json(graph, value);
+                        resultNode.add(oneEntity);
                     }
+                    objectNode.set(refEntityName, resultNode);
                 } else {
-                    objectNode.put(prop.label(), prop.value().toString());
+                    logger.debug("{} is a simple value", prop.key());
+                    objectNode.put(prop.key(), prop.value().toString());
                 }
             });
         }
 
         return objectNode;
     }
-
-    public static enum DBTYPE {NEO4J, POSTGRES}
-
-    @Autowired
-    private DatabaseProviderWrapper databaseProviderWrapper;
-
 
     public String addEntity(String shardId, JsonNode rootNode) {
         String entityId = "";
@@ -205,5 +208,19 @@ public class TPGraphMain {
             logger.error("Can't close graph");
         }
         return entityId;
+    }
+
+    public JsonNode getEntity(String shardId, String uuid) {
+        JsonNode result = JsonNodeFactory.instance.objectNode();
+        DatabaseProvider databaseProvider = databaseProviderWrapper.getDatabaseProvider();
+        try (Graph graph = databaseProvider.getGraphStore()) {
+            try (Transaction tx = databaseProvider.startTransaction(graph)) {
+                result = readGraph2Json(graph, uuid);
+                databaseProvider.commitTransaction(graph, tx);
+            }
+        } catch (Exception e) {
+            logger.error("Can't close graph");
+        }
+        return result;
     }
 }
