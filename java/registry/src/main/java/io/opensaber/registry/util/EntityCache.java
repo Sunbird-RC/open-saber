@@ -28,6 +28,7 @@ public class EntityCache {
 	 * @return
 	 * @throws IOException
 	 */
+
 	public String getShard(String recordId) throws IOException {
 		String shardId = "";
 		for (Entry<String, List<String>> entry : recordShardMap.entrySet()) {
