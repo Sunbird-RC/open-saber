@@ -9,10 +9,15 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import io.opensaber.registry.util.TPGraphMain;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils;
 import org.assertj.core.util.Arrays;
 import org.junit.Before;
@@ -69,6 +74,7 @@ public class RegistryServiceImplTest extends RegistryTestBase {
 	private static final String VALID_JSONLD = "school.jsonld";
 	private static final String VALIDNEW_JSONLD = "school1.jsonld";
 	private static final String CONTEXT_CONSTANT = "sample:";
+	private static final String VALID_TEST_INPUT_JSON = "teacher-valid.json";
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 	private boolean isInitialized = false;
@@ -212,6 +218,23 @@ public class RegistryServiceImplTest extends RegistryTestBase {
 		String response = registryService.addEntity(model, null, null);
 		Model responseModel = registryService.getEntityById(response, false);
 		assertTrue(responseModel.isIsomorphicWith(model));
+		closeDB();
+	}
+
+	@Test
+	public void test_update_parent_entity_after_creating() throws Exception {
+
+		String validJsonString = getValidJsonString(VALID_TEST_INPUT_JSON);
+		Vertex parentVertex = parentVertex(databaseProvider);
+		TPGraphMain tpGraph = new TPGraphMain(databaseProvider, String.valueOf(parentVertex.id()));
+		String resultId = registryService.createTP2Graph(validJsonString, parentVertex, tpGraph);
+		String updatedInput = getValidStringForUpdate(resultId);
+		registryService.updateTP2Graph(updatedInput, tpGraph);
+		JsonNode readJson = tpGraph.readGraph2Json(databaseProvider.getGraphStore(),resultId);
+		JsonNode updateInputJson = new ObjectMapper().readTree(updatedInput);
+		assertEquals(readJson.get("gender"),updateInputJson.get("Teacher").get("gender"));
+		System.out.println("graph::::"+readJson.toString());
+
 		closeDB();
 	}
 
