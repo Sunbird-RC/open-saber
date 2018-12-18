@@ -87,6 +87,8 @@ public class RegistryServiceImpl implements RegistryService {
 	private ISchemaConfigurator schemaConfigurator;
 	@Autowired
 	private EncryptionHelper encryptionHelper;
+	@Autowired
+	private ObjectMapper objectMapper;
 	@Value("${encryption.enabled}")
 	private boolean encryptionEnabled;
 
@@ -503,11 +505,16 @@ public class RegistryServiceImpl implements RegistryService {
 	}
 
 	public String createTP2Graph(String jsonString, Vertex parentVertex, TPGraphMain tpGraph) throws Exception {
-
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode rootNode = mapper.readTree(jsonString);
+		JsonNode rootNode = objectMapper.readTree(jsonString);
 		rootNode = encryptionHelper.getEncryptedJson(rootNode);
 		return tpGraph.createTPGraph(rootNode);
+	}
+
+	@Override
+	public void updateTP2Graph(String jsonString, TPGraphMain tpGraph) throws IOException, EncryptionException {
+		JsonNode rootNode = objectMapper.readTree(jsonString);
+		rootNode = encryptionHelper.getEncryptedJson(rootNode);
+		tpGraph.updateTPGraph(rootNode);
 	}
 
 }

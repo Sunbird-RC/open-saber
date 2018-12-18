@@ -1,26 +1,23 @@
 package io.opensaber.registry.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.exception.EncryptionException;
-import io.opensaber.registry.model.DBConnectionInfoMgr;
+import io.opensaber.registry.middleware.util.LogMarkers;
 import io.opensaber.registry.sink.DatabaseProvider;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.*;
 import org.neo4j.driver.internal.InternalNode;
 import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.StatementResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
@@ -31,7 +28,7 @@ public class TPGraphMain {
     private String parentVertexUuid;
 
     @Value("${database.uuidPropertyName}")
-    public String uuidPropertyName = "testuuid";
+    public String uuidPropertyName = "osid";
 
     private Logger logger = LoggerFactory.getLogger(TPGraphMain.class);
 
@@ -137,12 +134,14 @@ public class TPGraphMain {
     public List<String> getUUIDs(List<String> parentLabels, DatabaseProvider dbProvider) {
         List<String> uuids = new ArrayList<>();
         Graph graph = dbProvider.getGraphStore();
+        P<String> predicateStr = P.within(parentLabels);
         GraphTraversal<Vertex, Vertex> graphTraversal = graph.traversal().V();
-        for (String label : parentLabels) {
-            GraphTraversal<Vertex, Vertex> gvs = graphTraversal.hasLabel(label);
-            Vertex v = gvs.hasNext() ? gvs.next() : null;
+        GraphTraversal<Vertex, Vertex> gvs = graphTraversal.hasLabel(predicateStr);
+
+        while (gvs.hasNext()){
+            Vertex v = gvs.next();
             if (v != null) {
-                uuids.add(v.property(uuidPropertyName).value().toString());
+                uuids.add(v.id().toString());
             }
         }
         return uuids;
@@ -214,6 +213,92 @@ public class TPGraphMain {
             dbProvider.commitTransaction(graph, tx);
         }
 
+        return objectNode;
+    }
+
+    public void updateTPGraph(JsonNode rootNode) {
+        try {
+            ObjectNode objectNode = null;
+            Graph graph = dbProvider.getGraphStore();
+            GraphTraversalSource gtRootTraversal = graph.traversal();
+            watch.start("Add Transaction");
+            try (Transaction tx = graph.tx()) {
+                String idProp = rootNode.elements().next().get("id").asText();
+                JsonNode node = rootNode.elements().next();
+
+                //GraphTraversal<Vertex, Vertex> rootVertex = gtRootTraversal.V(idProp);
+                Iterator<Vertex> vertexIterator = graph.vertices(idProp);
+                Vertex rootVertex = vertexIterator.hasNext() ? vertexIterator.next(): null;
+
+                objectNode = mergePropertiesFromVertexAndNode(rootVertex,rootNode.deepCopy());
+                Iterator<Vertex> vertexLst = rootVertex.vertices(Direction.OUT);
+                while(vertexLst.hasNext()){
+                    Vertex childVertex = vertexLst.next();
+                    if(null == objectNode.get(childVertex.label())){
+                        objectNode.set(childVertex.label(),(ObjectNode)JsonNodeFactory.instance.objectNode());
+                    }
+                    objectNode = mergePropertiesFromVertexAndNode(childVertex,objectNode);
+                }
+                //If validation works
+                /*JsonValidationServiceImpl validate = new JsonValidationServiceImpl();
+                if(validate.validate(objectNode.toString(),rootVertex.label())){
+                    updateVertex(rootVertex,node);
+                } else {
+
+                }*/
+                updateVertex(rootVertex,node);
+                tx.commit();
+            }
+            new Thread(() -> {
+                try {
+                    graph.close();
+                } catch (Exception e) {
+                    logger.error("Can't close the graph");
+                }
+            }).start();
+            watch.stop("Add Transaction");
+        } catch (Exception e) {
+            logger.error(LogMarkers.FATAL, "Can't close graph");
+        }
+    }
+
+    private void updateVertex(Vertex rootVertex, JsonNode node) {
+        node.fields().forEachRemaining(record -> {
+            rootVertex.property(record.getKey(),record.getValue().asText());
+        });
+    }
+
+    ObjectNode mergePropertiesFromVertexAndNode(Vertex vertex, ObjectNode objectNode) {
+        List<String> osidLst =  null;
+        ObjectNode childObjetcNode = null;
+        ArrayNode childArrayObjetcNode = null;
+        if(objectNode.get(vertex.label()) instanceof ObjectNode) {
+            childObjetcNode = (ObjectNode)objectNode.get(vertex.label());
+        } else if(objectNode.get(vertex.label()) instanceof ArrayNode) {
+            childArrayObjetcNode = (ArrayNode) objectNode.get(vertex.label());
+        }
+        if(null != childObjetcNode && childObjetcNode.size()!=0 && !childObjetcNode.isArray() && !vertex.label().equalsIgnoreCase("Teacher")){
+            childArrayObjetcNode = JsonNodeFactory.instance.arrayNode();
+            childArrayObjetcNode.add(childObjetcNode);
+            objectNode.set(vertex.label(),childArrayObjetcNode);
+        }
+        if(childArrayObjetcNode !=  null){
+            ObjectNode childNode = JsonNodeFactory.instance.objectNode();
+            vertex.properties().forEachRemaining(vtx -> {
+                if(!(vtx.key().contains("osid"))){
+                    childNode.put(vtx.key(),vtx.value().toString());
+                }
+            });
+            childArrayObjetcNode.add(childNode);
+        } else {
+            for (Iterator<VertexProperty<Object>> it = vertex.properties(); it.hasNext(); ) {
+                VertexProperty vtx = it.next();
+                if(!(vtx.key().contains("osid")) && childObjetcNode.get(vtx.key()) == null){
+                    childObjetcNode.put(vtx.key(),vtx.value().toString());
+                }
+
+            }
+        }
         return objectNode;
     }
 

@@ -113,7 +113,7 @@ public class RegistryController {
     }
 
     @ResponseBody
-    @RequestMapping(value = "/update", method = RequestMethod.POST)
+    @RequestMapping(value = "/update2", method = RequestMethod.POST)
     public ResponseEntity<Response> update() {
         Model rdf = (Model) apiMessage.getLocalMap(Constants.RDF_OBJECT);
         ResponseParams responseParams = new ResponseParams();
@@ -309,6 +309,39 @@ public class RegistryController {
 
         try (Graph graph = databaseProvider.getGraphStore()) {
             response.setResult(tpGraph.readGraph2Json(graph, osIdVal));
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/update", method = RequestMethod.POST)
+    public ResponseEntity<Response> updateTP2Graph() {
+        ResponseParams responseParams = new ResponseParams();
+        Response response = new Response(Response.API_ID.UPDATE, "OK", responseParams);
+        Map<String, Object> result = new HashMap<>();
+        String jsonString = apiMessage.getRequest().getRequestMapAsString();
+        String entityType = apiMessage.getRequest().getEntityType();
+        DatabaseProvider databaseProvider;
+        try {
+            if (shardManager.getShardProperty().compareToIgnoreCase(Constants.NONE_STR) != 0) {
+                int slNum = (int) ((HashMap<String, Object>) apiMessage.getRequest().getRequestMap().get(entityType))
+                        .get(shardManager.getShardProperty());
+                databaseProvider = shardManager.getDatabaseProvider(slNum);
+            } else {
+                databaseProvider = shardManager.getDefaultDatabaseProvider();
+            }
+            Vertex parentVertex = parentVertex(databaseProvider);
+            TPGraphMain tpGraph = new TPGraphMain(databaseProvider, (String) parentVertex.id());
+            watch.start("RegistryController.update");
+            registryService.updateTP2Graph(jsonString,tpGraph);
+            responseParams.setErrmsg("");
+            responseParams.setStatus(Response.Status.SUCCESSFUL);
+            watch.stop("RegistryController.update");
+            logger.debug("RegistryController: entity updated !");
+        } catch (Exception e) {
+            logger.error("RegistryController: Exception while updating entity (without id)!", e);
+            responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+            responseParams.setErrmsg(e.getMessage());
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
