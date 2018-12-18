@@ -1,6 +1,7 @@
 package io.opensaber.registry.util;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -43,6 +44,22 @@ public class EntityCache {
 			throw new IOException(RECORD_NOT_FOUND);
 		}
 		return shardId;
+	}
+	/**
+	 * Cache to add with a new shard record mapping
+	 * @param shardId
+	 * @param recordId
+	 * @return
+	 */
+	public boolean addShardRecord(String shardId, String recordId){
+		if(recordShardMap.entrySet().contains(shardId)){
+			recordShardMap.get(shardId).add(recordId);
+		}else{
+			List<String> recordIds = new ArrayList<>();
+			recordIds.add(recordId);			
+			recordShardMap.put(shardId,recordIds);
+		}
+		return true;
 	}
 
 }

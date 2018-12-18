@@ -21,6 +21,7 @@ import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.DatabaseProviderWrapper;
+import io.opensaber.registry.sink.shard.ShardDatabaseProvider;
 import io.opensaber.registry.sink.shard.ShardManager;
 import io.opensaber.registry.transform.Configuration;
 import io.opensaber.registry.transform.ConfigurationHelper;
@@ -28,6 +29,7 @@ import io.opensaber.registry.transform.Data;
 import io.opensaber.registry.transform.ITransformer;
 import io.opensaber.registry.transform.TransformationException;
 import io.opensaber.registry.transform.Transformer;
+import io.opensaber.registry.util.EntityCache;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
@@ -85,7 +87,9 @@ public class RegistryController {
 	private List<String> keyToPurge = new java.util.ArrayList<>();
 
 	@Autowired
-	ShardManager shardManager;
+	private ShardManager shardManager;
+	@Autowired 
+	private EntityCache entityCache;
 
 	/**
 	 * Note: Only one mime type is supported at a time. Pick up the first mime
@@ -259,20 +263,24 @@ public class RegistryController {
 		String jsonString = apiMessage.getRequest().getRequestMapAsString();
 		String entityType = apiMessage.getRequest().getEntityType();
 
+		ShardDatabaseProvider shardDbProvider;
 		try {
 			if (shardManager.getShardProperty().compareToIgnoreCase(Constants.NONE_STR) != 0) {
 				int slNum = (int) ((HashMap<String, Object>) apiMessage.getRequest().getRequestMap().get(entityType))
 						.get(shardManager.getShardProperty());
-				databaseProviderWrapper.setDatabaseProvider(shardManager.getDatabaseProvider(slNum));
+				shardDbProvider = shardManager.getDatabaseProvider(slNum);
+				databaseProviderWrapper.setDatabaseProvider(shardDbProvider.getDatabaseProvider());
 			} else {
-				databaseProviderWrapper.setDatabaseProvider(shardManager.getDefaultDatabaseProvider());
+				shardDbProvider = shardManager.getDefaultDatabaseProvider();
+				databaseProviderWrapper.setDatabaseProvider(shardDbProvider.getDatabaseProvider());
 			}
 
 			watch.start("RegistryController.addToExistingEntity");
 			String resultId = registryService.addEntity("shard1", jsonString);
+			//adds cache for new shard and record map 
+			entityCache.addShardRecord(shardDbProvider.getShardId(), resultId);
 			Map resultMap = new HashMap();
 			resultMap.put("id", resultId);
-
 			result.put("entity", resultMap);
 			response.setResult(result);
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
@@ -296,9 +304,8 @@ public class RegistryController {
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
-		// TODO: The shard id must be fetched from the cache for this uuid and
-		// supplied.
-		databaseProviderWrapper.setDatabaseProvider(shardManager.getDefaultDatabaseProvider());
+		String shardId = entityCache.getShard(osIdVal);
+		databaseProviderWrapper.setDatabaseProvider(shardManager.getDatabaseProvider(shardId));
 
 		try {
 			response.setResult(registryService.getEntity(osIdVal));
