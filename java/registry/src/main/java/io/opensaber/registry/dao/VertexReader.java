@@ -120,7 +120,7 @@ public class VertexReader {
      * @return
      */
     private boolean canLoadVertex(int currLevel, int maxLevel) {
-        return currLevel <= maxLevel;
+        return currLevel < maxLevel;
     }
 
     /**
@@ -140,7 +140,7 @@ public class VertexReader {
                 node.set("Signatures", signatureNode);
             }
 
-            if (canLoadVertex(currLevel, configurator.getDepth())) {
+            if (canLoadVertex(++currLevel, configurator.getDepth())) {
                 loadOtherVertices(currVertex, currLevel);
             }
         }

@@ -234,7 +234,7 @@ public class TPGraphMain {
      * @param uuid    entity identifier to retrieve
      * @return
      */
-    public JsonNode getEntity(String shardId, String uuid) {
+    public JsonNode getEntity(String shardId, String uuid, ReadConfigurator readConfigurator) {
         if (null == privatePropertyList) {
             privatePropertyList = new ArrayList<>();
             setPrivatePropertyList(schemaConfigurator.getAllPrivateProperties());
@@ -242,7 +242,6 @@ public class TPGraphMain {
 
         JsonNode result = JsonNodeFactory.instance.objectNode();
         DatabaseProvider databaseProvider = databaseProviderWrapper.getDatabaseProvider();
-        ReadConfigurator readConfigurator = new ReadConfigurator();
         try (Graph graph = databaseProvider.getGraphStore()) {
             try (Transaction tx = databaseProvider.startTransaction(graph)) {
                 VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);

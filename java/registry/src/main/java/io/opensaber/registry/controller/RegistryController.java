@@ -282,6 +282,7 @@ public class RegistryController {
         JSONParser parser = new JSONParser();
         JSONObject json = (JSONObject) parser.parse(dataObject);
         String osIdVal = json.get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
+
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
