@@ -10,21 +10,15 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.github.jsonldjava.utils.Obj;
-import com.google.gson.JsonObject;
 import io.opensaber.registry.sink.DatabaseProvider;
-import io.opensaber.registry.util.TPGraphMain;
 import org.apache.commons.lang.StringUtils;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.codehaus.jackson.JsonFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import io.opensaber.converters.JenaRDF4J;
@@ -182,7 +176,7 @@ public class RegistryTestBase {
 		return generatedGraph;
 	}
 
-	protected Vertex parentVertex(DatabaseProvider databaseProvider) {
+	/*protected Vertex parentVertex(DatabaseProvider databaseProvider) {
 		Graph g = databaseProvider.getGraphStore();
 		// TODO: Apply default grouping - to be removed.
 		Vertex parentV = new TPGraphMain().createParentVertex(g, "Teacher_GROUP");
@@ -192,7 +186,7 @@ public class RegistryTestBase {
 			//logger.info(e.getMessage());
 		}
 		return parentV;
-	}
+	}*/
 
 	public String getValidStringForUpdate(String reqId){
 		ObjectNode childnode = JsonNodeFactory.instance.objectNode();

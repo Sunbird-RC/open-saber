@@ -221,7 +221,7 @@ public class RegistryServiceImplTest extends RegistryTestBase {
 	public void test_update_parent_entity_after_creating() throws Exception {
 
 		String validJsonString = getValidJsonString(VALID_TEST_INPUT_JSON);
-		Vertex parentVertex = parentVertex(databaseProvider);
+		//Vertex parentVertex = parentVertex(databaseProvider);
 		//TPGraphMain tpGraph = new TPGraphMain(databaseProvider, String.valueOf(parentVertex.id()));
 		/*String resultId = registryService.createTP2Graph(validJsonString, parentVertex, tpGraph);
         String updatedInput = getValidStringForUpdate(resultId);
