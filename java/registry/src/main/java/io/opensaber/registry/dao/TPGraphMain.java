@@ -3,12 +3,18 @@ package io.opensaber.registry.dao;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.DatabaseProviderWrapper;
 import io.opensaber.registry.util.*;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -19,8 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-
-import java.util.*;
 
 @Component("tpGraphMain")
 public class TPGraphMain {
@@ -190,19 +194,16 @@ public class TPGraphMain {
     }
 
     /**
-     * Retrieves all UUID for the given labels.
+     * Retrieves all vertex UUID for given all labels.
      */
-    public List<String> getUUIDs(Graph graph, List<String> parentLabels) {
-        List<String> uuids = new ArrayList<>();
-        ;
-        P<String> predicateStr = P.within(parentLabels);
-        GraphTraversal<Vertex, Vertex> graphTraversal = graph.traversal().V();
-        GraphTraversal<Vertex, Vertex> gvs = graphTraversal.hasLabel(predicateStr);
-
-        while (gvs.hasNext()) {
-            Vertex v = gvs.next();
+    public List<String> getUUIDs(Graph graph, Set<String> labels) {
+        List<String> uuids = new ArrayList<>();;
+        P<String> predicateStr = P.within(labels);
+        GraphTraversal<Vertex, Vertex> graphTraversal = graph.traversal().V().hasLabel(predicateStr);
+        while (graphTraversal.hasNext()){
+            Vertex v = graphTraversal.next();
             if (v != null) {
-                uuids.add(v.value(uuidPropertyName).toString());
+                uuids.add(v.id().toString());
             }
         }
         return uuids;
@@ -232,6 +233,7 @@ public class TPGraphMain {
      *
      * @param shardId
      * @param uuid    entity identifier to retrieve
+     * @param readConfigurator
      * @return
      */
     public JsonNode getEntity(String shardId, String uuid, ReadConfigurator readConfigurator) {
