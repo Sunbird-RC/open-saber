@@ -5,6 +5,7 @@ import com.github.jsonldjava.core.JsonLdError;
 import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.registry.exception.*;
 import io.opensaber.registry.sink.DatabaseProvider;
+import io.opensaber.registry.util.ReadConfigurator;
 import org.apache.jena.rdf.model.Model;
 
 import java.io.IOException;
@@ -41,10 +42,9 @@ public interface RegistryService {
 
 	public void setDatabaseProvider(DatabaseProvider databaseProvider);
 
-    public void updateEntity(String jsonString) throws IOException, EncryptionException;
-
 	public String addEntity(String shardId, String jsonString) throws Exception;
 
-	JsonNode getEntity(String id);
+	JsonNode getEntity(String id, ReadConfigurator configurator);
 
+	public void updateEntity(String jsonString) throws IOException, EncryptionException;
 }

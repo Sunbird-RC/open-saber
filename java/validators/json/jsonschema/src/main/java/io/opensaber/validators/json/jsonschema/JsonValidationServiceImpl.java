@@ -61,23 +61,6 @@ public class JsonValidationServiceImpl implements IValidate {
 	}
 
 	@Override
-	public boolean validate(APIMessage apiMessage) throws MiddlewareHaltException {
-		boolean result = false;
-		Schema schema = getEntitySchema(apiMessage.getRequest().getEntityType());
-		JSONObject obj = new JSONObject(new JSONTokener(apiMessage.getRequest().getRequestMapAsString()));
-		try {
-			schema.validate(obj); // throws a ValidationException if this object is invalid
-			result = true;
-		} catch (ValidationException e) {
-			logger.error(e.getMessage() + " : " + e.getErrorMessage());
-			e.getCausingExceptions().stream()
-					.map(ValidationException::getMessage)
-					.forEach(logger::error);
-		}
-		return result;
-
-	}
-
 	public boolean validate(String objString, String entityType) throws MiddlewareHaltException {
 		boolean result = false;
 		Schema schema = getEntitySchema(entityType);

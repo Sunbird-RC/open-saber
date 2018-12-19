@@ -10,9 +10,13 @@ import org.slf4j.LoggerFactory;
 
 import io.opensaber.registry.middleware.util.Constants;
 
+import java.util.Optional;
+
 public abstract class DatabaseProvider {
 
 	private static Logger logger = LoggerFactory.getLogger(DatabaseProvider.class);
+
+    private Optional<Boolean> supportsTransaction = Optional.empty();
 
 	public abstract Graph getGraphStore();
 
@@ -71,8 +75,11 @@ public abstract class DatabaseProvider {
 		}
 	}
 
-	private boolean supportsTransaction(Graph graph) {
-		return graph.features().graph().supportsTransactions();
+	public boolean supportsTransaction(Graph graph) {
+	    if(!supportsTransaction.isPresent()){
+            supportsTransaction = Optional.ofNullable(graph.features().graph().supportsTransactions());
+        }
+		return supportsTransaction.get();
 	}
 
 	public Transaction startTransaction(Graph graph) {
@@ -86,8 +93,10 @@ public abstract class DatabaseProvider {
 	/**
 	 * option to close a graph while commiting 
 	 */
-	protected void commitTransaction(Graph graph, Transaction tx, boolean closeGraph){	
-		commitTransaction(graph, tx);
+	protected void commitTransaction(Graph graph, Transaction tx, boolean closeGraph){
+		if (null != tx && supportsTransaction(graph)) {
+			tx.commit();
+		}
 		if (closeGraph) {
 			try {
 				graph.close();
@@ -97,6 +106,7 @@ public abstract class DatabaseProvider {
 		}
 
 	}
+
 	/**
 	 * Default commit transaction used by any caller.
 	 * 

@@ -11,6 +11,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.opensaber.registry.util.ReadConfigurator;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -227,10 +228,11 @@ public class RegistryServiceImplTest extends RegistryTestBase {
         String updatedInput = getValidStringForUpdate(resultId);
         registryService.updateEntity(updatedInput, tpGraph);
         JsonNode readJson = tpGraph.readGraph2Json(databaseProvider.getGraphStore(),resultId);*/
+		ReadConfigurator configurator = new ReadConfigurator();
         String resultId = registryService.addEntity("",validJsonString);
         String updatedInput = getValidStringForUpdate(resultId);
         registryService.updateEntity(updatedInput);
-        JsonNode readJson = registryService.getEntity(resultId);
+        JsonNode readJson = registryService.getEntity(resultId,configurator);
 		JsonNode updateInputJson = new ObjectMapper().readTree(updatedInput);
 		assertEquals(readJson.get("gender"),updateInputJson.get("Teacher").get("gender"));
 		System.out.println("graph::::"+readJson.toString());
