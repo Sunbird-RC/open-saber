@@ -21,7 +21,7 @@ import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.DatabaseProviderWrapper;
-import io.opensaber.registry.sink.shard.ShardDatabaseProvider;
+import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.sink.shard.ShardManager;
 import io.opensaber.registry.transform.Configuration;
 import io.opensaber.registry.transform.ConfigurationHelper;
@@ -54,7 +54,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-
 
 @RestController
 public class RegistryController {
@@ -263,22 +262,22 @@ public class RegistryController {
 		String jsonString = apiMessage.getRequest().getRequestMapAsString();
 		String entityType = apiMessage.getRequest().getEntityType();
 
-		ShardDatabaseProvider shardDbProvider = null;
 		try {
-			if (shardManager.getShardProperty().compareToIgnoreCase(Constants.NONE_STR) != 0) {
-				int slNum = (int) ((HashMap<String, Object>) apiMessage.getRequest().getRequestMap().get(entityType))
-						.get(shardManager.getShardProperty());
-				shardDbProvider = shardManager.getDatabaseProvider(slNum);
-				databaseProviderWrapper.setDatabaseProvider(shardDbProvider.getDatabaseProvider());
-			} else {
-				shardDbProvider = shardManager.getDefaultDatabaseProvider();
-				databaseProviderWrapper.setDatabaseProvider(shardDbProvider.getDatabaseProvider());
+			Map requestMap = ((HashMap<String, Object>) apiMessage.getRequest().getRequestMap().get(entityType));
+			logger.info("Add api: entity type " + requestMap + " and shard propery: " + shardManager.getShardProperty());
+			
+			logger.info("request: "+requestMap.get(shardManager.getShardProperty()));
+			Object attribute = null;
+			if(requestMap.containsKey(shardManager.getShardProperty())){
+				attribute = requestMap.get(shardManager.getShardProperty());
 			}
+			logger.info("attribute "+ attribute );
+			Shard shard = shardManager.getShard(attribute);
 
 			watch.start("RegistryController.addToExistingEntity");
 			String resultId = registryService.addEntity("shard1", jsonString);
-			//adds cache for new shard and record map 
-			entityCache.addShardRecord(shardDbProvider.getShardId(), resultId);
+			// adds cache for new shard and record map
+			entityCache.addEntity(shard.getShardId(), resultId);
 			Map resultMap = new HashMap();
 			resultMap.put("id", resultId);
 
@@ -306,8 +305,7 @@ public class RegistryController {
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
 		String shardId = entityCache.getShard(osIdVal);
-		databaseProviderWrapper.setDatabaseProvider(shardManager.getDatabaseProvider(shardId));
-
+		shardManager.activateShard(shardId);
 		try {
 			response.setResult(registryService.getEntity(osIdVal));
 		} catch (Exception e) {

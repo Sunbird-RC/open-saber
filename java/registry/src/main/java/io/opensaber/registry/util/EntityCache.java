@@ -51,7 +51,7 @@ public class EntityCache {
 	 * @param recordId
 	 * @return
 	 */
-	public boolean addShardRecord(String shardId, String recordId){
+	public boolean addEntity(String shardId, String recordId){
 		boolean added = false;
 		if(recordShardMap.entrySet().contains(shardId)){
 			recordShardMap.get(shardId).add(recordId);

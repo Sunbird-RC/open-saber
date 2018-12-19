@@ -5,6 +5,7 @@ import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.sink.DBProviderFactory;
 import io.opensaber.registry.sink.DatabaseProviderWrapper;
+import io.opensaber.registry.sink.shard.Shard;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -62,6 +63,11 @@ public class ConfigurationTest {
 	@Bean 
 	EntityCache entityCache(){
 		return new EntityCache(entityCacheManager());
+	}
+	@Bean
+	Shard shard(){
+		return Mockito.mock(Shard.class); 
+
 	}
 
 }

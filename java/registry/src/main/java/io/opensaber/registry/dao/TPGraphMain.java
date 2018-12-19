@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.sink.DatabaseProvider;
-import io.opensaber.registry.sink.DatabaseProviderWrapper;
+import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.util.EntityParenter;
 import io.opensaber.registry.util.RefLabelHelper;
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ public class TPGraphMain {
     EntityParenter entityParenter;
 
     @Autowired
-    private DatabaseProviderWrapper databaseProviderWrapper;
+    private Shard shard;
 
     public static enum DBTYPE {NEO4J, POSTGRES}
 
@@ -153,18 +153,18 @@ public class TPGraphMain {
     /**
      * Retrieves all vertex UUID for given all labels.
      */
-    public List<String> getUUIDs(Graph graph, Set<String> labels) {
-        List<String> uuids = new ArrayList<>();;
-        P<String> predicateStr = P.within(labels);
-        GraphTraversal<Vertex, Vertex> graphTraversal = graph.traversal().V().hasLabel(predicateStr);
-        while (graphTraversal.hasNext()){
-            Vertex v = graphTraversal.next();
-            if (v != null) {
-                uuids.add(v.value(uuidPropertyName).toString());
-            }
-        }
-        return uuids;
-    }
+	public List<String> getUUIDs(Graph graph, Set<String> labels) {
+		List<String> uuids = new ArrayList<>();
+		// Temporarily adding all the vertex ids.
+		//TODO: get graph traversal by passed labels
+		GraphTraversal<Vertex, Vertex> graphTraversal = graph.traversal().V();
+		while (graphTraversal.hasNext()) {
+			Vertex v = graphTraversal.next();
+			uuids.add(v.id().toString());
+			logger.info("vertex info- label :" + v.label() + " id: " + v.id());
+		}
+		return uuids;
+	}
 
     public JsonNode readGraph2Json(Graph graph, String osid) {
         ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
@@ -197,7 +197,7 @@ public class TPGraphMain {
 
     public String addEntity(String shardId, JsonNode rootNode) {
         String entityId = "";
-        DatabaseProvider databaseProvider = databaseProviderWrapper.getDatabaseProvider();
+        DatabaseProvider databaseProvider = shard.getDatabaseProvider();
         try (Graph graph = databaseProvider.getGraphStore()) {
             try (Transaction tx = databaseProvider.startTransaction(graph)) {
                 entityId = processEntity(graph, rootNode);
@@ -211,7 +211,7 @@ public class TPGraphMain {
 
     public JsonNode getEntity(String shardId, String uuid) {
         JsonNode result = JsonNodeFactory.instance.objectNode();
-        DatabaseProvider databaseProvider = databaseProviderWrapper.getDatabaseProvider();
+        DatabaseProvider databaseProvider = shard.getDatabaseProvider();
         try (Graph graph = databaseProvider.getGraphStore()) {
             try (Transaction tx = databaseProvider.startTransaction(graph)) {
                 result = readGraph2Json(graph, uuid);

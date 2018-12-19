@@ -24,7 +24,9 @@ public class ShardManager {
 	private IShardAdvisor shardAdvisor;	
 	@Autowired
 	private SearchService searchService;
-	private ShardDatabaseProvider shardDbProvider;
+	
+	@Autowired
+	private Shard shard;
 	
 	/**
 	 * intiatiate a DBShard and ensure activating a databaseProvider.
@@ -32,41 +34,63 @@ public class ShardManager {
 	 * @param attributeValue
 	 * @throws IOException
 	 */
-	private ShardDatabaseProvider activateDbShard(Object attributeValue) throws CustomException {
+	private void activateDbShard(Object attributeValue) throws CustomException {
 		DBConnectionInfo connectionInfo = shardAdvisor.getShard(attributeValue);
 	    DatabaseProvider databaseProvider = dbProviderFactory.getInstance(connectionInfo);
-	    shardDbProvider = new ShardDatabaseProvider(connectionInfo.getShardId(), databaseProvider);
-		searchService.setDatabaseProvider(databaseProvider);
-		logger.info("Activate db shard "+connectionInfo.getShardId()+" for attribute value "+attributeValue);
-		return shardDbProvider;
+	    shard.setShardId(connectionInfo.getShardId());
+	    shard.setDatabaseProvider(databaseProvider);
+	    searchService.setDatabaseProvider(databaseProvider);
+		logger.info("Activated shard "+connectionInfo.getShardId()+" for attribute value "+attributeValue);
 	}
 
 	public String getShardProperty() {
 		return dbConnectionInfoMgr.getShardProperty();
 	}
 
-	public ShardDatabaseProvider getDatabaseProvider(Object attributeValue) throws CustomException {
-		return activateDbShard(attributeValue);
+	/**
+	 * activates a shard (Default or others) and returns it.
+	 * @param attributeValue
+	 * @return
+	 * @throws CustomException
+	 */
+	public Shard getShard(Object attributeValue) throws CustomException {
+		if(attributeValue != null){
+			activateDbShard(attributeValue);
+		}else{
+			activateDbShard(null);
+		}
+		return shard;
 	}
-
-	public ShardDatabaseProvider getDefaultDatabaseProvider() throws CustomException {
-		return activateDbShard(null);
+	
+	/**
+	 * Default shard return first shard.
+	 * Atlease one shard configuration is mandatory.
+	 * @return
+	 * @throws CustomException
+	 */
+	public Shard getDefaultShard() throws CustomException {
+		activateDbShard(null);
+		return shard;
 	}
 	/**
-	 * Get a databaseProvider given a shardId from entity cache
+	 * activate a shard given a shardId from entity cache
 	 * @param shardId
 	 * @return
 	 */
-	public DatabaseProvider getDatabaseProvider(String shardId) throws CustomException{
-		DatabaseProvider databaseProvider = null;
+	public void activateShard(String shardId) throws CustomException{
 		DBConnectionInfo connectionInfo = dbConnectionInfoMgr.getDBConnectionInfo(shardId);
 		if(connectionInfo != null){
-			databaseProvider = dbProviderFactory.getInstance(connectionInfo);
+			DatabaseProvider databaseProvider = dbProviderFactory.getInstance(connectionInfo);
+			shard.setShardId(connectionInfo.getShardId());
+		    shard.setDatabaseProvider(databaseProvider);
 		}else{
 			logger.error("Exception thrown:"+shardId+" ShardId is invalid");
 			throw new CustomException(shardId+" shardId is invalid");
 		}
-		return databaseProvider;
+	}
+	
+	public Shard getShard(){
+		return shard;
 	}
 
 }

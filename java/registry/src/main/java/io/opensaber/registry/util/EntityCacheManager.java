@@ -45,7 +45,9 @@ public class EntityCacheManager {
 			DatabaseProvider dbProvider = dbProviderFactory.getInstance(dbConnectionInfo);
 			Graph graph = dbProvider.getGraphStore();
 			List<String> uuids = new ArrayList<>();
+			logger.info("defintionNames for getting UUIDS: "+defintionNames);
 			uuids.addAll(tpGraphMain.getUUIDs(graph, defintionNames));
+			logger.info("UUIDS for definationNames: "+tpGraphMain.getUUIDs(graph, defintionNames));
 			shardUUIDSMap.put(dbConnectionInfo.getShardId(), uuids);
 		});
 
