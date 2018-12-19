@@ -11,16 +11,22 @@ public class ReadConfigurator {
     private boolean includeTypeAttributes = true;
 
     /**
-     * Whether or not to eagerly fetch the children
-     * True, by default
-     */
-    private boolean fetchChildren = true;
-
-    /**
      * Whether or not to include encrypted properties
      * False, by default
      */
     private boolean includeEncryptedProp = false;
+
+    /**
+     * Expands the children objects on read
+     * 1, by default
+     */
+    private int depth = 1;
+
+    /**
+     * Whether or not to include signatures
+     * False, by default
+     */
+    private boolean includeSignatures = false;
 
     public boolean isIncludeTypeAttributes() {
         return includeTypeAttributes;
@@ -30,19 +36,27 @@ public class ReadConfigurator {
         this.includeTypeAttributes = includeTypeAttributes;
     }
 
-    public boolean isFetchChildren() {
-        return fetchChildren;
-    }
-
-    public void setFetchChildren(boolean fetchChildren) {
-        this.fetchChildren = fetchChildren;
-    }
-
     public boolean isIncludeEncryptedProp() {
         return includeEncryptedProp;
     }
 
     public void setIncludeEncryptedProp(boolean includeEncryptedProp) {
         this.includeEncryptedProp = includeEncryptedProp;
+    }
+
+    public boolean isIncludeSignatures() {
+        return includeSignatures;
+    }
+
+    public void setIncludeSignatures(boolean includeSignatures) {
+        this.includeSignatures = includeSignatures;
+    }
+
+    public int getDepth() {
+        return depth;
+    }
+
+    public void setDepth(int depth) {
+        this.depth = depth;
     }
 }

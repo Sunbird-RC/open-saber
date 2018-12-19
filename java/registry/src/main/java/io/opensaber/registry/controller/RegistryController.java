@@ -11,6 +11,7 @@ import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.Direction;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
 import io.opensaber.registry.middleware.util.JSONUtil;
+import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.service.RegistryAuditService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
@@ -59,6 +60,8 @@ public class RegistryController {
     private APIMessage apiMessage;
     @Autowired
     private DatabaseProviderWrapper databaseProviderWrapper;
+    @Autowired
+    private DBConnectionInfoMgr dbConnectionInfoMgr;
 
     private Gson gson = new Gson();
     private Type mapType = new TypeToken<Map<String, Object>>() {
@@ -257,7 +260,7 @@ public class RegistryController {
             watch.start("RegistryController.addToExistingEntity");
             String resultId = registryService.addEntity("shard1", jsonString);
             Map resultMap = new HashMap();
-            resultMap.put("id", resultId);
+            resultMap.put(dbConnectionInfoMgr.getUuidPropertyName(), resultId);
 
             result.put("entity", resultMap);
             response.setResult(result);
@@ -278,7 +281,7 @@ public class RegistryController {
         String dataObject = apiMessage.getRequest().getRequestMapAsString();
         JSONParser parser = new JSONParser();
         JSONObject json = (JSONObject) parser.parse(dataObject);
-        String osIdVal = json.get("id").toString();
+        String osIdVal = json.get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
