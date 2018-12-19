@@ -305,6 +305,7 @@ public class RegistryController {
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
 		String shardId = entityCache.getShard(osIdVal);
+		logger.info("Read Api: shard id: "+shardId+" for record id: "+osIdVal);
 		shardManager.activateShard(shardId);
 		try {
 			response.setResult(registryService.getEntity(osIdVal));
