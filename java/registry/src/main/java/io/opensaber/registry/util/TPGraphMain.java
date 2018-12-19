@@ -239,9 +239,7 @@ public class TPGraphMain {
 
     public void updateTPGraph(JsonNode rootNode) {
         try {
-            ObjectNode objectNode = null;
             Graph graph = dbProvider.getGraphStore();
-            GraphTraversalSource gtRootTraversal = graph.traversal();
             watch.start("Add Transaction");
             if(graph.features().graph().supportsTransactions()){
                 try (Transaction tx = graph.tx()) {
@@ -271,7 +269,6 @@ public class TPGraphMain {
         String idProp = rootNode.elements().next().get("id").asText();
         JsonNode node = rootNode.elements().next();
 
-        //GraphTraversal<Vertex, Vertex> rootVertex = gtRootTraversal.V(idProp);
         if(graph.features().graph().supportsTransactions()){
             vertexIterator = graph.vertices(idProp);
         } else {
