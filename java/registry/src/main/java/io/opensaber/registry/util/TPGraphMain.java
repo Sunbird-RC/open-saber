@@ -267,6 +267,7 @@ public class TPGraphMain {
     private void mergeAndUpdateVertices(JsonNode rootNode, Graph graph){
         ObjectNode objectNode = null;
         Iterator<Vertex> vertexIterator = null;
+        Iterator<Vertex> vertexLst = null;
         String idProp = rootNode.elements().next().get("id").asText();
         JsonNode node = rootNode.elements().next();
 
@@ -279,10 +280,16 @@ public class TPGraphMain {
         Vertex rootVertex = vertexIterator.hasNext() ? vertexIterator.next(): null;
 
         objectNode = mergePropertiesFromTPVertexAndNode(rootVertex,rootNode.deepCopy());
-        Iterator<Vertex> vertexLst = rootVertex.vertices(Direction.OUT);
+        if(rootVertex.label().equalsIgnoreCase("Teacher")){
+            vertexLst = rootVertex.vertices(Direction.OUT);
+        } else {
+            vertexLst = rootVertex.vertices(Direction.IN,rootVertex.label()).next().vertices(Direction.OUT);
+        }
+        //rootVertex.vertices(Direction.IN,rootVertex.label()).next().vertices(Direction.OUT);
+        //Iterator<Vertex> vertexLst = rootVertex.vertices(Direction.OUT);
         while(vertexLst.hasNext()){
             Vertex childVertex = vertexLst.next();
-            if(null == objectNode.get(childVertex.label())){
+            if(!childVertex.id().equals(rootVertex.id()) && null == objectNode.get(childVertex.label())){
                 objectNode.set(childVertex.label(),(ObjectNode)JsonNodeFactory.instance.objectNode());
             }
             objectNode = mergePropertiesFromTPVertexAndNode(childVertex,objectNode);
