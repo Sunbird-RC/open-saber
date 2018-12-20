@@ -267,10 +267,7 @@ public class RegistryController {
 			logger.info("Add api: entity type " + requestMap + " and shard propery: " + shardManager.getShardProperty());
 			
 			logger.info("request: "+requestMap.get(shardManager.getShardProperty()));
-			Object attribute = null;
-			if(requestMap.containsKey(shardManager.getShardProperty())){
-				attribute = requestMap.get(shardManager.getShardProperty());
-			}
+			Object attribute = requestMap.getOrDefault(shardManager.getShardProperty(), null);
 			logger.info("attribute "+ attribute );
 			Shard shard = shardManager.getShard(attribute);
 
@@ -310,6 +307,7 @@ public class RegistryController {
 		try {
 			response.setResult(registryService.getEntity(osIdVal));
 		} catch (Exception e) {
+			logger.error("Read Api Exception occoured ", e);
 			responseParams.setErr(e.getMessage());
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 		}

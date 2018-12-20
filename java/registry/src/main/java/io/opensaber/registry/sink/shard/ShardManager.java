@@ -88,9 +88,6 @@ public class ShardManager {
 			throw new CustomException(shardId+" shardId is invalid");
 		}
 	}
-	
-	public Shard getShard(){
-		return shard;
-	}
+
 
 }

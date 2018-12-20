@@ -1,7 +1,6 @@
 package io.opensaber.registry.util;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import io.opensaber.registry.middleware.util.Constants;
 import java.io.IOException;
@@ -69,21 +68,11 @@ public class EntityCacheTest {
 	@Test
 	public void testGetShardOneforPresentRecord() throws IOException {
 		assertEquals("Shard1", entityCache.getShard("UUID1"));
-		assertEquals("Shard1", entityCache.getShard("UUID2"));
 	}
 	
 	@Test
 	public void testGetShardTwoforPresentRecord() throws IOException {
 		assertEquals("Shard2", entityCache.getShard("UUID3"));
-		assertEquals("Shard2", entityCache.getShard("UUID4"));
-	}
-	@Test
-	public void testAddEntityForExistingShard(){
-		assertTrue(entityCache.addEntity("Shard1", "NEW_UUID"));
-	}
-	@Test
-	public void testAddEntityForNewShard(){
-		assertTrue(entityCache.addEntity("New_Shard_ID", "NEW_UUID"));
 	}
 
 }

@@ -21,10 +21,6 @@ public class Shard {
 		this.databaseProvider = databaseProvider;
 	}
 
-	/*	public Shard(String shardId, DatabaseProvider databaseProvider){
-		this.shardId = shardId;
-		this.databaseProvider = databaseProvider;
-	}*/
 	public String getShardId() {
 		return shardId;
 	}
