@@ -16,6 +16,7 @@ import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.Direction;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
 import io.opensaber.registry.middleware.util.JSONUtil;
+import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.service.RegistryAuditService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
@@ -30,6 +31,7 @@ import io.opensaber.registry.transform.ITransformer;
 import io.opensaber.registry.transform.TransformationException;
 import io.opensaber.registry.transform.Transformer;
 import io.opensaber.registry.util.EntityCache;
+import io.opensaber.registry.util.ReadConfigurator;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
@@ -75,6 +77,8 @@ public class RegistryController {
 	private APIMessage apiMessage;
 	@Autowired
 	private DatabaseProviderWrapper databaseProviderWrapper;
+	@Autowired
+	private DBConnectionInfoMgr dbConnectionInfoMgr;
 
 	private Gson gson = new Gson();
 	private Type mapType = new TypeToken<Map<String, Object>>() {
@@ -276,7 +280,7 @@ public class RegistryController {
 			// adds cache for new shard and record map
 			entityCache.addEntity(shard.getShardId(), resultId);
 			Map resultMap = new HashMap();
-			resultMap.put("id", resultId);
+			resultMap.put(dbConnectionInfoMgr.getUuidPropertyName(), resultId);
 
 			result.put("entity", resultMap);
 			response.setResult(result);
@@ -297,15 +301,19 @@ public class RegistryController {
 		String dataObject = apiMessage.getRequest().getRequestMapAsString();
 		JSONParser parser = new JSONParser();
 		JSONObject json = (JSONObject) parser.parse(dataObject);
-		String osIdVal = json.get("id").toString();
+		String osIdVal = json.get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
 		String shardId = entityCache.getShard(osIdVal);
 		logger.info("Read Api: shard id: "+shardId+" for record id: "+osIdVal);
 		shardManager.activateShard(shardId);
+
+        ReadConfigurator configurator = new ReadConfigurator();
+        boolean includeSignatures = (boolean) apiMessage.getRequest().getRequestMap().getOrDefault("includeSignatures", false);
+        configurator.setIncludeSignatures(includeSignatures);
 		try {
-			response.setResult(registryService.getEntity(osIdVal));
+			response.setResult(registryService.getEntity(osIdVal, configurator));
 		} catch (Exception e) {
 			logger.error("Read Api Exception occoured ", e);
 			responseParams.setErr(e.getMessage());
