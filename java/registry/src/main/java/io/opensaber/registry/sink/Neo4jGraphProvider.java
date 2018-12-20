@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
-public class Neo4jGraphProvider extends DatabaseProvider implements AutoCloseable{
+public class Neo4jGraphProvider extends DatabaseProvider {
 
 	private Logger logger = LoggerFactory.getLogger(Neo4jGraphProvider.class);
 	private Driver driver;
@@ -71,15 +71,6 @@ public class Neo4jGraphProvider extends DatabaseProvider implements AutoCloseabl
 		if (driver != null) {
 			driver.close();
 		}
-	}
-
-	@Override
-	public void close() throws Exception {
-		try {
-			graph.close();
-		} catch (Exception e) {
-			logger.error("Can't close Neo4j graph instance  " + e.getMessage());
-		}		
 	}
 
 }

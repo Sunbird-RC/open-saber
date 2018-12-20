@@ -45,27 +45,28 @@ public class EntityCache {
 		}
 		return shardId;
 	}
+
 	/**
 	 * Cache to add with a new shard record mapping
+	 * 
 	 * @param shardId
 	 * @param recordId
 	 * @return
 	 */
-	public boolean addEntity(String shardId, String recordId){
+	public boolean addEntity(String shardId, String recordId) {
 		boolean added = false;
-		if(recordShardMap.entrySet().contains(shardId)){
+		if (recordShardMap.entrySet().contains(shardId)) {
 			recordShardMap.get(shardId).add(recordId);
-			logger.info("Existing shard id "+shardId+" added with record id "+recordId+" in cache");
+			logger.info("Existing shard id " + shardId + " added with record id " + recordId + " in cache");
 			added = true;
-		}else{
+		} else {
 			List<String> recordIds = new ArrayList<>();
-			recordIds.add(recordId);			
-			recordShardMap.put(shardId,recordIds);
-			logger.info("Shard id "+shardId+" and record id "+recordId+" added in cache");
+			recordIds.add(recordId);
+			recordShardMap.put(shardId, recordIds);
+			logger.info("Shard id " + shardId + " and record id " + recordId + " added in cache");
 			added = true;
 		}
 		return added;
 	}
-
 
 }
