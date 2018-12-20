@@ -23,6 +23,7 @@ import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.DatabaseProviderWrapper;
+import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.sink.shard.ShardManager;
 import io.opensaber.registry.transform.Configuration;
 import io.opensaber.registry.transform.ConfigurationHelper;
@@ -30,6 +31,7 @@ import io.opensaber.registry.transform.Data;
 import io.opensaber.registry.transform.ITransformer;
 import io.opensaber.registry.transform.TransformationException;
 import io.opensaber.registry.transform.Transformer;
+import io.opensaber.registry.util.EntityCache;
 import io.opensaber.registry.util.ReadConfigurator;
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -89,7 +91,9 @@ public class RegistryController {
 	private List<String> keyToPurge = new java.util.ArrayList<>();
 
 	@Autowired
-	ShardManager shardManager;
+	private ShardManager shardManager;
+	@Autowired
+	private EntityCache entityCache;
 
 	/**
 	 * Note: Only one mime type is supported at a time. Pick up the first mime
@@ -264,16 +268,18 @@ public class RegistryController {
 		String entityType = apiMessage.getRequest().getEntityType();
 
 		try {
-			if (shardManager.getShardProperty().compareToIgnoreCase(Constants.NONE_STR) != 0) {
-				int slNum = (int) ((HashMap<String, Object>) apiMessage.getRequest().getRequestMap().get(entityType))
-						.get(shardManager.getShardProperty());
-				databaseProviderWrapper.setDatabaseProvider(shardManager.getDatabaseProvider(slNum));
-			} else {
-				databaseProviderWrapper.setDatabaseProvider(shardManager.getDefaultDatabaseProvider());
-			}
+			Map requestMap = ((HashMap<String, Object>) apiMessage.getRequest().getRequestMap().get(entityType));
+			logger.info("Add api: entity type " + requestMap + " and shard propery: " + shardManager.getShardProperty());
+			
+			logger.info("request: "+requestMap.get(shardManager.getShardProperty()));
+			Object attribute = requestMap.getOrDefault(shardManager.getShardProperty(), null);
+			logger.info("attribute "+ attribute );
+			Shard shard = shardManager.getShard(attribute);
 
 			watch.start("RegistryController.addToExistingEntity");
 			String resultId = registryService.addEntity("shard1", jsonString);
+			// adds cache for new shard and record map
+			entityCache.addEntity(shard.getShardId(), resultId);
 			Map resultMap = new HashMap();
 			resultMap.put(dbConnectionInfoMgr.getUuidPropertyName(), resultId);
 
@@ -300,9 +306,9 @@ public class RegistryController {
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
-		// TODO: The shard id must be fetched from the cache for this uuid and
-		// supplied.
-		databaseProviderWrapper.setDatabaseProvider(shardManager.getDefaultDatabaseProvider());
+		String shardId = entityCache.getShard(osIdVal);
+		logger.info("Read Api: shard id: "+shardId+" for record id: "+osIdVal);
+		shardManager.activateShard(shardId);
 
 		ReadConfigurator configurator = new ReadConfigurator();
 		boolean includeSignatures = (boolean) apiMessage.getRequest().getRequestMap().getOrDefault("includeSignatures",
@@ -321,6 +327,7 @@ public class RegistryController {
 			response.setResult(resultContent.getData());
 
 		} catch (Exception e) {
+			logger.error("Read Api Exception occoured ", e);
 			responseParams.setErr(e.getMessage());
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 		}
