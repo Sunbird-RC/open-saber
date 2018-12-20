@@ -268,11 +268,12 @@ public class RegistryController {
 
 		try {
 			Map requestMap = ((HashMap<String, Object>) apiMessage.getRequest().getRequestMap().get(entityType));
-			logger.info("Add api: entity type " + requestMap + " and shard propery: " + shardManager.getShardProperty());
-			
-			logger.info("request: "+requestMap.get(shardManager.getShardProperty()));
+			logger.info(
+					"Add api: entity type " + requestMap + " and shard propery: " + shardManager.getShardProperty());
+
+			logger.info("request: " + requestMap.get(shardManager.getShardProperty()));
 			Object attribute = requestMap.getOrDefault(shardManager.getShardProperty(), null);
-			logger.info("attribute "+ attribute );
+			logger.info("attribute " + attribute);
 			Shard shard = shardManager.getShard(attribute);
 
 			watch.start("RegistryController.addToExistingEntity");
@@ -305,13 +306,19 @@ public class RegistryController {
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
-		String shardId = entityCache.getShard(osIdVal);
-		logger.info("Read Api: shard id: "+shardId+" for record id: "+osIdVal);
+		String shardId = null;
+		try {
+			shardId = entityCache.getShard(osIdVal);
+		} catch (Exception e1) {
+			logger.error("Read Api Exception occoured ", e1);
+		}
 		shardManager.activateShard(shardId);
+		logger.info("Read Api: shard id: " + shardId + " for record id: " + osIdVal);
 
-        ReadConfigurator configurator = new ReadConfigurator();
-        boolean includeSignatures = (boolean) apiMessage.getRequest().getRequestMap().getOrDefault("includeSignatures", false);
-        configurator.setIncludeSignatures(includeSignatures);
+		ReadConfigurator configurator = new ReadConfigurator();
+		boolean includeSignatures = (boolean) apiMessage.getRequest().getRequestMap().getOrDefault("includeSignatures",
+				false);
+		configurator.setIncludeSignatures(includeSignatures);
 		try {
 			response.setResult(registryService.getEntity(osIdVal, configurator));
 		} catch (Exception e) {
