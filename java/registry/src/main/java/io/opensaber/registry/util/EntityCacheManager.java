@@ -34,6 +34,7 @@ public class EntityCacheManager {
 		this.defintionNames = definitionsManager.getAllKnownDefinitions();
 		this.dbConnectionInfoList = dbConnectionInfoMgr.getConnectionInfo();
 		shardUUIDSMap = new ConcurrentHashMap<>();
+		logger.info("defintionNames for getting UUIDS: " + defintionNames);
 	}
 
 	/**
@@ -49,15 +50,16 @@ public class EntityCacheManager {
 
 					List<String> uuids = tpGraphMain.getUUIDs(graph, defintionNames);
 					if (!uuids.isEmpty()) {
+						logger.info("UUIDS for definitionNames: " + uuids);
 						shardUUIDSMap.put(dbConnectionInfo.getShardId(), uuids);
 					}
+					logger.info("Shard: " + dbConnectionInfo.getShardId() + " added cache with " + uuids.size() + " uuids");
 				}
 			} catch (Exception e) {
 				logger.debug("Can't load shard uuids. No harm in silent failures");
 			}
 		});
 
-		logger.info("shard's UUIDS map size: " + shardUUIDSMap.size());
 	}
 
 	public Map<String, List<String>> getShardUUIDs() {

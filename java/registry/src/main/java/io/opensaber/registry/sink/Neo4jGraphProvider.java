@@ -25,6 +25,7 @@ public class Neo4jGraphProvider extends DatabaseProvider {
 	private boolean profilerEnabled;
 	private DBConnectionInfo connectionInfo;
 	private Neo4jIdProvider neo4jIdProvider = new Neo4jIdProvider();
+	private Graph graph;
 
 	public Neo4jGraphProvider(DBConnectionInfo connection, String uuidPropName) {
 		connectionInfo = connection;

@@ -3,12 +3,17 @@ package io.opensaber.registry.dao;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.sink.DatabaseProvider;
-import io.opensaber.registry.sink.DatabaseProviderWrapper;
 import io.opensaber.registry.sink.OSGraph;
-import io.opensaber.registry.util.*;
+import io.opensaber.registry.sink.shard.Shard;
+import io.opensaber.registry.util.EntityParenter;
+import io.opensaber.registry.util.ParentLabelGenerator;
+import io.opensaber.registry.util.ReadConfigurator;
+import io.opensaber.registry.util.RefLabelHelper;
+import io.opensaber.registry.util.TypePropertyHelper;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -20,7 +25,10 @@ import java.util.UUID;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +45,7 @@ public class TPGraphMain {
     EntityParenter entityParenter;
 
     @Autowired
-    private DatabaseProviderWrapper databaseProviderWrapper;
+    private Shard shard;
 
     @Autowired
     private ISchemaConfigurator schemaConfigurator;
@@ -68,7 +76,7 @@ public class TPGraphMain {
             // Must be not a neo4j store. Create an explicit osid property.
             // Note this will be OS unique record, but the database provider might choose to use only
             // id field.
-            vertex.property(uuidPropertyName, databaseProviderWrapper.getDatabaseProvider().generateId(vertex));
+            vertex.property(uuidPropertyName, shard.getDatabaseProvider().generateId(vertex));
         }
 
         return vertex;
@@ -210,16 +218,18 @@ public class TPGraphMain {
     /**
      * Retrieves all vertex UUID for given all labels.
      */
-    public List<String> getUUIDs(Graph graph, Set<String> labels) {
-        List<String> uuids = new ArrayList<>();;
-        P<String> predicateStr = P.within(labels);
-        GraphTraversal<Vertex, Vertex> graphTraversal = graph.traversal().V().hasLabel(predicateStr);
-        while (graphTraversal.hasNext()){
-            Vertex v = graphTraversal.next();
-            uuids.add(v.id().toString());
-        }
-        return uuids;
-    }
+	public List<String> getUUIDs(Graph graph, Set<String> labels) {
+		List<String> uuids = new ArrayList<>();
+		// Temporarily adding all the vertex ids.
+		//TODO: get graph traversal by passed labels
+		GraphTraversal<Vertex, Vertex> graphTraversal = graph.traversal().V();
+		while (graphTraversal.hasNext()) {
+			Vertex v = graphTraversal.next();
+			uuids.add(v.id().toString());
+			logger.debug("vertex info- label :" + v.label() + " id: " + v.id());
+		}
+		return uuids;
+	}
 
     /**
      * Entry point to the dao layer to write a JsonNode entity.
@@ -230,7 +240,7 @@ public class TPGraphMain {
      */
     public String addEntity(String shardId, JsonNode rootNode) throws Exception {
         String entityId = "";
-        DatabaseProvider databaseProvider = databaseProviderWrapper.getDatabaseProvider();
+        DatabaseProvider databaseProvider = shard.getDatabaseProvider();
         try (OSGraph osGraph = databaseProvider.getOSGraph()) {
             Graph graph = osGraph.getGraphStore();
             try (Transaction tx = databaseProvider.startTransaction(graph)) {
@@ -256,7 +266,7 @@ public class TPGraphMain {
         }
 
         JsonNode result = JsonNodeFactory.instance.objectNode();
-        DatabaseProvider databaseProvider = databaseProviderWrapper.getDatabaseProvider();
+        DatabaseProvider databaseProvider = shard.getDatabaseProvider();
         try (OSGraph osGraph = databaseProvider.getOSGraph()) {
             Graph graph = osGraph.getGraphStore();
             try (Transaction tx = databaseProvider.startTransaction(graph)) {
