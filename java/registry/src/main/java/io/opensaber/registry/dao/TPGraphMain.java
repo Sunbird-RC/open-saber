@@ -43,9 +43,6 @@ public class TPGraphMain {
     @Autowired
     private ISchemaConfigurator schemaConfigurator;
 
-    @Autowired
-    private IValidate iValidate;
-
     private List<String> privatePropertyList;
 
     public static enum DBTYPE {NEO4J, POSTGRES}
@@ -267,107 +264,47 @@ public class TPGraphMain {
     /** Updates a record to the database
      * @param inputJsonNode
      */
-    public void updateEntity(JsonNode inputJsonNode) {
+    /*public ObjectNode updateEntity(JsonNode inputJsonNode) {
+        Iterator<Vertex> vertexIterator = null;
+        Vertex rootVertex = null;
+        ObjectNode entityObjectNode = null;
         try {
             DatabaseProvider databaseProvider = databaseProviderWrapper.getDatabaseProvider();
             Graph graph = databaseProvider.getGraphStore();
             boolean isTransactionEnabled = databaseProvider.supportsTransaction(graph);
+            String idProp = inputJsonNode.elements().next().get("id").asText();
+            JsonNode node = inputJsonNode.elements().next();
             watch.start("Add Transaction");
             if(isTransactionEnabled){
                 try (Transaction tx = graph.tx()) {
-                    mergeAndUpdateGraph(inputJsonNode,graph,isTransactionEnabled);
+                    vertexIterator = graph.vertices(idProp);
+                    rootVertex = vertexIterator.hasNext() ? vertexIterator.next(): null;
+                    entityObjectNode =  mergeAndUpdateGraph(rootVertex,inputJsonNode);
                     tx.commit();
                 }
             } else {
-                mergeAndUpdateGraph(inputJsonNode,graph,isTransactionEnabled);
+                vertexIterator = graph.vertices(new Long(idProp));
+                rootVertex = vertexIterator.hasNext() ? vertexIterator.next(): null;
+                entityObjectNode =  mergeAndUpdateGraph(rootVertex, inputJsonNode);
             }
             watch.stop("Add Transaction");
         } catch (Exception e) {
             logger.error("Exception occurred during updating entity",e);
         }
-    }
+        return entityObjectNode;
+    }*/
 
-    /** This method merges the input node to the existing record in the database
-     * @param inputJsonNode
-     * @param graph
-     * @param isTransactionEnabled
-     */
-    private void mergeAndUpdateGraph(JsonNode inputJsonNode, Graph graph, boolean isTransactionEnabled) throws MiddlewareHaltException {
-        ObjectNode entityObjectNode = null;
-        Iterator<Vertex> vertexIterator = null;
-        Iterator<Vertex> vertexLst = null;
-        String idProp = inputJsonNode.elements().next().get("id").asText();
-        JsonNode node = inputJsonNode.elements().next();
-        if(isTransactionEnabled){
-            vertexIterator = graph.vertices(idProp);
-        } else {
-            vertexIterator = graph.vertices(new Long(idProp));
-        }
-        Vertex rootVertex = vertexIterator.hasNext() ? vertexIterator.next(): null;
-
-        entityObjectNode = mergePropertiesFromVertexAndInputJson(rootVertex,inputJsonNode.deepCopy());
-        if(rootVertex.label().equalsIgnoreCase("Teacher")){
-            vertexLst = rootVertex.vertices(Direction.OUT);
-        } else {
-            vertexLst = rootVertex.vertices(Direction.IN,rootVertex.label()).next().vertices(Direction.OUT);
-        }
-        while(vertexLst.hasNext()){
-            Vertex childVertex = vertexLst.next();
-            if(!childVertex.id().equals(rootVertex.id()) && null == entityObjectNode.get(childVertex.label()) && !childVertex.label().contains("GROUP")){
-                entityObjectNode.set(childVertex.label(),(ObjectNode)JsonNodeFactory.instance.objectNode());
-            }
-            entityObjectNode = mergePropertiesFromVertexAndInputJson(childVertex,entityObjectNode);
-        }
-        //TO-DO validation is getting failing
-        boolean isValidate = iValidate.validate(entityObjectNode.toString(),"Teacher");
-        updateVertex(rootVertex,node);
-    }
 
     /** This method update the vertex with inputJsonNode
      * @param rootVertex
      * @param inputJsonNode
      */
-    private void updateVertex(Vertex rootVertex, JsonNode inputJsonNode) {
+    public void updateVertex(Vertex rootVertex, JsonNode inputJsonNode) {
         inputJsonNode.fields().forEachRemaining(record -> {
-            rootVertex.property(record.getKey(),record.getValue().asText());
+            if(record.getValue().isValueNode()){
+                rootVertex.property(record.getKey(),record.getValue().asText());
+            }
         });
     }
 
-    /** This method merges the input json node and construct the complete entity by connecting to remaining nodes
-     * @param vertex
-     * @param inputJsonNode
-     * @return ObjectNode
-     */
-    private ObjectNode mergePropertiesFromVertexAndInputJson(Vertex vertex, ObjectNode inputJsonNode) {
-        ObjectNode childObjetcNode = null;
-        ArrayNode childArrayObjetcNode = null;
-        if(inputJsonNode.get(vertex.label()) instanceof ObjectNode) {
-            childObjetcNode = (ObjectNode)inputJsonNode.get(vertex.label());
-        } else if(inputJsonNode.get(vertex.label()) instanceof ArrayNode) {
-            childArrayObjetcNode = (ArrayNode) inputJsonNode.get(vertex.label());
-        }
-        if(null != childObjetcNode && childObjetcNode.size()!=0 && !childObjetcNode.isArray() && !vertex.label().equalsIgnoreCase("Teacher")){
-            childArrayObjetcNode = JsonNodeFactory.instance.arrayNode();
-            childArrayObjetcNode.add(childObjetcNode);
-            inputJsonNode.set(vertex.label(),childArrayObjetcNode);
-        }
-        if(childArrayObjetcNode !=  null){
-            ObjectNode childNode = JsonNodeFactory.instance.objectNode();
-            vertex.properties().forEachRemaining(vtx -> {
-                if(!(vtx.key().contains("osid"))){
-                    childNode.put(vtx.key(),vtx.value().toString());
-                }
-            });
-            childArrayObjetcNode.add(childNode);
-        } else {
-            for (Iterator<VertexProperty<Object>> it = vertex.properties(); it.hasNext(); ) {
-                VertexProperty vtx = it.next();
-                if(!(vtx.key().contains("osid")) && childObjetcNode.get(vtx.key()) == null){
-                    childObjetcNode.put(vtx.key(),vtx.value().toString());
-                }
-
-            }
-        }
-        return inputJsonNode;
-    }
 }

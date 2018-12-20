@@ -325,7 +325,6 @@ public class RegistryController {
         Response response = new Response(Response.API_ID.UPDATE, "OK", responseParams);
         Map<String, Object> result = new HashMap<>();
         String jsonString = apiMessage.getRequest().getRequestMapAsString();
-        String entityType = apiMessage.getRequest().getEntityType();
         try {
             databaseProviderWrapper.setDatabaseProvider(shardManager.getDefaultDatabaseProvider());
             watch.start("RegistryController.update");
