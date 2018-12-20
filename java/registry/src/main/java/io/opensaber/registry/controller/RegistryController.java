@@ -9,7 +9,11 @@ import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.pojos.Response;
 import io.opensaber.pojos.ResponseParams;
 import io.opensaber.registry.dao.TPGraphMain;
-import io.opensaber.registry.exception.*;
+import io.opensaber.registry.exception.AuditFailedException;
+import io.opensaber.registry.exception.CustomException;
+import io.opensaber.registry.exception.EntityCreationException;
+import io.opensaber.registry.exception.RecordNotFoundException;
+import io.opensaber.registry.exception.TypeNotProvidedException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.Direction;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
@@ -30,7 +34,6 @@ import io.opensaber.registry.transform.TransformationException;
 import io.opensaber.registry.transform.Transformer;
 import io.opensaber.registry.util.EntityCache;
 import io.opensaber.registry.util.ReadConfigurator;
-
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -347,19 +350,22 @@ public class RegistryController {
     public ResponseEntity<Response> updateTP2Graph() throws ParseException, IOException, CustomException {
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.UPDATE, "OK", responseParams);
-        Map<String, Object> result = new HashMap<>();
-       /* String jsonString = apiMessage.getRequest().getRequestMapAsString();*/
-
 
 		String dataObject = apiMessage.getRequest().getRequestMapAsString();
 		JSONParser parser = new JSONParser();
 		JSONObject json = (JSONObject) parser.parse(dataObject);
 		String osIdVal = json.get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
-		String shardId = entityCache.getShard(osIdVal);
-		logger.info("Read Api: shard id: "+shardId+" for record id: "+osIdVal);
+
+		String shardId = null;
+		try {
+			shardId = entityCache.getShard(osIdVal);
+		} catch (Exception e1) {
+			logger.error("Read Api Exception occoured ", e1);
+		}
 		shardManager.activateShard(shardId);
+		logger.info("Read Api: shard id: " + shardId + " for record id: " + osIdVal);
+		
         try {
-            //databaseProviderWrapper.setDatabaseProvider(shardManager.getDefaultShard());
             watch.start("RegistryController.update");
             registryService.updateEntity(dataObject);
             responseParams.setErrmsg("");
