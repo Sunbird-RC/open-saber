@@ -46,7 +46,7 @@ public class EntityCacheManager {
 	 */
 	public void loadShardUUIDS() {
 		String shardProperty = environment.getProperty("database.shardProperty");
-		if (shardProperty.compareToIgnoreCase(Constants.NONE_STR) == 0) {
+		if (!(shardProperty.compareToIgnoreCase(Constants.NONE_STR) == 0)) {
 			dbConnectionInfoList.forEach(dbConnectionInfo -> {
 				DatabaseProvider dbProvider = dbProviderFactory.getInstance(dbConnectionInfo);
 				Graph graph = dbProvider.getGraphStore();
