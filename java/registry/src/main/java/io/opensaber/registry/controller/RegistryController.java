@@ -1,5 +1,6 @@
 package io.opensaber.registry.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.opensaber.pojos.APIMessage;
@@ -29,12 +30,11 @@ import io.opensaber.registry.transform.Data;
 import io.opensaber.registry.transform.ITransformer;
 import io.opensaber.registry.transform.TransformationException;
 import io.opensaber.registry.transform.Transformer;
+import io.opensaber.registry.util.ReadConfigurator;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import io.opensaber.registry.util.ReadConfigurator;
 import org.apache.jena.rdf.model.Model;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -55,7 +55,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-
 
 @RestController
 public class RegistryController {
@@ -305,11 +304,22 @@ public class RegistryController {
 		// supplied.
 		databaseProviderWrapper.setDatabaseProvider(shardManager.getDefaultDatabaseProvider());
 
-        ReadConfigurator configurator = new ReadConfigurator();
-        boolean includeSignatures = (boolean) apiMessage.getRequest().getRequestMap().getOrDefault("includeSignatures", false);
-        configurator.setIncludeSignatures(includeSignatures);
+		ReadConfigurator configurator = new ReadConfigurator();
+		boolean includeSignatures = (boolean) apiMessage.getRequest().getRequestMap().getOrDefault("includeSignatures",
+				false);
+		configurator.setIncludeSignatures(includeSignatures);
 		try {
-			response.setResult(registryService.getEntity(osIdVal, configurator));
+			JsonNode resultNode = registryService.getEntity(osIdVal, configurator);
+			// Transformation based on the mediaType
+			Data<Object> data = new Data<>(resultNode);
+			Configuration config = configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
+					Direction.OUT);
+			logger.info("config : " + config);
+			ITransformer<Object> responseTransformer = transformer.getInstance(config);
+			Data<Object> resultContent = responseTransformer.transform(data);
+			logger.info("JSON LD: " + resultContent.getData());
+			response.setResult(resultContent.getData());
+
 		} catch (Exception e) {
 			responseParams.setErr(e.getMessage());
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);

@@ -1,18 +1,15 @@
 package io.opensaber.registry.transform;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
 import io.opensaber.registry.middleware.util.JSONUtil;
+import java.util.ArrayList;
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Json2LdTransformer implements ITransformer<Object> {
 
@@ -23,7 +20,7 @@ public class Json2LdTransformer implements ITransformer<Object> {
 	private String prefix = "";
 	private String domain = "";
 
-	public Json2LdTransformer(String context, String domain){
+	public Json2LdTransformer(String context, String domain) {
 		this.context = context;
 		this.domain = domain;
 	}
@@ -32,15 +29,16 @@ public class Json2LdTransformer implements ITransformer<Object> {
 	public Data<Object> transform(Data<Object> data) throws TransformationException {
 		try {
 			ObjectMapper mapper = new ObjectMapper();
-			ObjectNode input = (ObjectNode) mapper.readTree(data.getData().toString());
-			ObjectNode fieldObjects = (ObjectNode) mapper.readTree(context);
-			setNodeTypeToAppend(fieldObjects);
-			ObjectNode resultNode = input;
-
+			ObjectNode resultNode = (ObjectNode) mapper.readTree(data.getData().toString());
 			String rootType = getTypeFromNode(resultNode);
-			logger.debug("Domain  value "+domain);
-			if(domain.isEmpty())
-				throw new TransformationException(Constants.INVALID_FRAME, ErrorCode.JSON_TO_JSONLD_TRANFORMATION_ERROR);
+			String modifiedConted = context.replace("<@type>", rootType);
+			ObjectNode fieldObjects = (ObjectNode) mapper.readTree(modifiedConted);
+
+			setNodeTypeToAppend(fieldObjects);
+			logger.debug("Domain  value " + domain);
+			if (domain.isEmpty())
+				throw new TransformationException(Constants.INVALID_FRAME,
+						ErrorCode.JSON_TO_JSONLD_TRANFORMATION_ERROR);
 			setPrefix(domain);
 			JSONUtil.addPrefix(resultNode, prefix, nodeTypes);
 			logger.debug("Appended prefix to requestNode.");
@@ -48,17 +46,16 @@ public class Json2LdTransformer implements ITransformer<Object> {
 			resultNode = (ObjectNode) resultNode.path(rootType);
 			resultNode.setAll(fieldObjects);
 
-			String jsonldResult = mapper.writeValueAsString(resultNode);
-			return new Data<>(jsonldResult.replace("<@type>", rootType));
+			return new Data<>(resultNode);
 		} catch (Exception ex) {
-			logger.error("Error trnsx : "+ex.getMessage(), ex);
+			logger.error("Error trnsx : " + ex.getMessage(), ex);
 			throw new TransformationException(ex.getMessage(), ex, ErrorCode.JSON_TO_JSONLD_TRANFORMATION_ERROR);
 		}
 	}
 
 	/*
-	 * Given a input like the following, {entity:{"a":1, "b":1}}
-	 * returns "entity" being the type of the json object.
+	 * Given a input like the following, {entity:{"a":1, "b":1}} returns
+	 * "entity" being the type of the json object.
 	 */
 	private String getTypeFromNode(ObjectNode requestNode) throws JsonProcessingException {
 		String rootValue = "";
