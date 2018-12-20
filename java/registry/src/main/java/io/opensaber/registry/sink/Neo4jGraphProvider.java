@@ -6,7 +6,6 @@ import io.opensaber.registry.model.DBConnectionInfo;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.neo4j.driver.v1.AuthTokens;
 import org.neo4j.driver.v1.Driver;
 import org.neo4j.driver.v1.GraphDatabase;
@@ -43,10 +42,11 @@ public class Neo4jGraphProvider extends DatabaseProvider {
         return neo4jGraph;
     }
 
-    @Override
-    public Graph getGraphStore() {
-        return getGraph();
-    }
+	  @Override
+	  public Graph getGraphStore() {
+		  Graph graph = getGraph();
+	  	return graph;
+  	}
 
     // TODO: We must have an abstract class to allow this possibility.
     @Override
@@ -70,10 +70,5 @@ public class Neo4jGraphProvider extends DatabaseProvider {
         if (driver != null) {
             driver.close();
         }
-    }
-
-    @Override
-    public void commitTransaction(Graph graph, Transaction tx) {
-        commitTransaction(graph, tx, true);
     }
 }
