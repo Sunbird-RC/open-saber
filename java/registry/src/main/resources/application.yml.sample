@@ -67,7 +67,6 @@ database:
       password: ${connectionInfo_password:}
 
       # Any other shard information follows...
-
     #-
       #shardId: shard2
       #uri: ${connectionInfo_uri:bolt://localhost:7688}

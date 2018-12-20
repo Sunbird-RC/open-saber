@@ -20,12 +20,11 @@ import org.slf4j.LoggerFactory;
 
 public class Neo4jGraphProvider extends DatabaseProvider {
 
-	private Logger logger = LoggerFactory.getLogger(Neo4jGraphProvider.class);
-	private Driver driver;
-	private boolean profilerEnabled;
-	private DBConnectionInfo connectionInfo;
-	private Neo4jIdProvider neo4jIdProvider = new Neo4jIdProvider();
-	private Graph graph;
+    private Logger logger = LoggerFactory.getLogger(Neo4jGraphProvider.class);
+    private Driver driver;
+    private boolean profilerEnabled;
+    private DBConnectionInfo connectionInfo;
+    private Neo4jIdProvider neo4jIdProvider = new Neo4jIdProvider();
 
 	public Neo4jGraphProvider(DBConnectionInfo connection, String uuidPropName) {
 		connectionInfo = connection;
@@ -38,14 +37,14 @@ public class Neo4jGraphProvider extends DatabaseProvider {
 		logger.info("Initialized db driver at {}", connectionInfo.getUri());
 	}
 
-	private Neo4JGraph getGraph() {
-		Neo4JGraph neo4jGraph;
-		Neo4JElementIdProvider<?> idProvider = neo4jIdProvider;
+    private Neo4JGraph getGraph() {
+        Neo4JGraph neo4jGraph;
+        Neo4JElementIdProvider<?> idProvider = neo4jIdProvider;
 
-		neo4jGraph = new Neo4JGraph(driver, idProvider, idProvider);
-		logger.debug("Getting a new graph unit of work");
-		return neo4jGraph;
-	}
+        neo4jGraph = new Neo4JGraph(driver, idProvider, idProvider);
+        logger.debug("Getting a new graph unit of work");
+        return neo4jGraph;
+    }
 
 	@PostConstruct
 	public void init() {
@@ -54,15 +53,11 @@ public class Neo4jGraphProvider extends DatabaseProvider {
 		logger.info("**************************************************************************");
 	}
 
-	@PreDestroy
-	public void shutdown() throws Exception {
+    @PreDestroy
+    public void shutdown() throws Exception {
 		logger.info("**************************************************************************");
 		logger.info("Gracefully shutting down Neo4J GraphDB instance ...");
 		logger.info("**************************************************************************");
-
-		if (driver != null) {
-			driver.close();
-		}
 	}
 
 	@Override
@@ -101,5 +96,4 @@ public class Neo4jGraphProvider extends DatabaseProvider {
 	public String getId(Edge edge) {
 		return edge.id().toString();
 	}
-
 }

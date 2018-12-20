@@ -3,7 +3,6 @@ package io.opensaber.registry.dao;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.sink.DatabaseProvider;
@@ -51,8 +50,6 @@ public class TPGraphMain {
     private ISchemaConfigurator schemaConfigurator;
 
     private List<String> privatePropertyList;
-
-    public static enum DBTYPE {NEO4J, POSTGRES}
 
     private Logger logger = LoggerFactory.getLogger(TPGraphMain.class);
 
@@ -247,6 +244,8 @@ public class TPGraphMain {
                 entityId = writeNodeEntity(graph, rootNode);
                 databaseProvider.commitTransaction(graph, tx);
             }
+        } catch (Exception e) {
+            logger.error("Can't close graph",e);
         }
         return entityId;
     }
@@ -279,4 +278,18 @@ public class TPGraphMain {
         }
         return result;
     }
+
+
+    /** This method update the vertex with inputJsonNode
+     * @param rootVertex
+     * @param inputJsonNode
+     */
+    public void updateVertex(Vertex rootVertex, JsonNode inputJsonNode) {
+        inputJsonNode.fields().forEachRemaining(record -> {
+            if(record.getValue().isValueNode()){
+                rootVertex.property(record.getKey(),record.getValue().asText());
+            }
+        });
+    }
+
 }
