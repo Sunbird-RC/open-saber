@@ -1,6 +1,7 @@
 package io.opensaber.registry.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.opensaber.pojos.APIMessage;
@@ -80,12 +81,16 @@ public class RegistryController {
 	private DatabaseProviderWrapper databaseProviderWrapper;
 	@Autowired
 	private DBConnectionInfoMgr dbConnectionInfoMgr;
+	@Autowired
+	private ObjectMapper objectMapper;
 
 	private Gson gson = new Gson();
 	private Type mapType = new TypeToken<Map<String, Object>>() {
 	}.getType();
 	@Value("${audit.enabled}")
 	private boolean auditEnabled;
+	@Value("${database.uuidPropertyName}")
+	public String uuidPropertyName;
 	@Autowired
 	private OpenSaberInstrumentation watch;
 	private List<String> keyToPurge = new java.util.ArrayList<>();
@@ -345,9 +350,9 @@ public class RegistryController {
 
 
 		String dataObject = apiMessage.getRequest().getRequestMapAsString();
-		JSONParser parser = new JSONParser();
-		JSONObject json = (JSONObject) parser.parse(dataObject);
-		String osIdVal = json.get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
+		String entityType = apiMessage.getRequest().getEntityType();
+		Map<String, Object> reqMap = (Map<String, Object>) apiMessage.getRequest().getRequestMap().get(entityType);
+		String osIdVal = reqMap.get(uuidPropertyName).toString();
 		String shardId = entityCache.getShard(osIdVal);
 		logger.info("Read Api: shard id: "+shardId+" for record id: "+osIdVal);
 		shardManager.activateShard(shardId);

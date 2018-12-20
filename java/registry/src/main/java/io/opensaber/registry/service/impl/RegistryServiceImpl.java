@@ -26,6 +26,7 @@ import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SignatureService;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.DatabaseProviderWrapper;
+import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.util.GraphDBFactory;
 import io.opensaber.registry.dao.TPGraphMain;
 import io.opensaber.registry.util.ReadConfigurator;
@@ -108,6 +109,9 @@ public class RegistryServiceImpl implements RegistryService {
 
     @Value("${registry.context.base}")
     private String registryContext;
+
+    @Autowired
+    private Shard shard;
 
     @Autowired
     TPGraphMain tpGraphMain;
@@ -535,9 +539,9 @@ public class RegistryServiceImpl implements RegistryService {
 
         JsonNode rootNode = objectMapper.readTree(jsonString);
         rootNode = encryptionHelper.getEncryptedJson(rootNode);
-        String idProp = rootNode.elements().next().get("id").asText();
+        String idProp = rootNode.elements().next().get(uuidPropertyName).asText();
         JsonNode childElementNode = rootNode.elements().next();
-        DatabaseProvider databaseProvider = databaseProviderWrapper.getDatabaseProvider();
+        DatabaseProvider databaseProvider = shard.getDatabaseProvider();
         Graph graph = databaseProvider.getGraphStore();
         ReadConfigurator readConfigurator = new ReadConfigurator();
         readConfigurator.setIncludeSignatures(false);
@@ -551,7 +555,7 @@ public class RegistryServiceImpl implements RegistryService {
                 //merge with entitynode
                 entityNode =  merge(entityNode,rootNode);
                 //TO-DO validation is failing
-                boolean isValidate = iValidate.validate(entityNode.toString(),"Teacher");
+                boolean isValidate = iValidate.validate("Teacher",entityNode.toString());
                 tpGraphMain.updateVertex(rootVertex,childElementNode);
                 tx.commit();
             }
@@ -561,7 +565,7 @@ public class RegistryServiceImpl implements RegistryService {
             ObjectNode entityNode = (ObjectNode) vr.read(rootVertex.id().toString());
             entityNode =  merge(entityNode,rootNode);
             //TO-DO validation is failing
-            boolean isValidate = iValidate.validate(entityNode.toString(),"Teacher");
+            boolean isValidate = iValidate.validate("Teacher",entityNode.toString());
             tpGraphMain.updateVertex(rootVertex,childElementNode);
         }
     }
