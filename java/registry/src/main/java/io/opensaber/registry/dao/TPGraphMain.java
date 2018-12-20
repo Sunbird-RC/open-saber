@@ -7,6 +7,7 @@ import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.DatabaseProviderWrapper;
+import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.util.*;
 
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -57,7 +59,19 @@ public class TPGraphMain {
     }
 
     private Vertex createVertex(Graph graph, String label) {
-        return graph.addVertex(label);
+        Vertex vertex = graph.addVertex(label);
+
+        vertex.property(TypePropertyHelper.getTypeName(), label);
+        try {
+            UUID uuid = UUID.fromString(vertex.id().toString());
+        } catch (IllegalArgumentException e) {
+            // Must be not a neo4j store. Create an explicit osid property.
+            // Note this will be OS unique record, but the database provider might choose to use only
+            // id field.
+            vertex.property(uuidPropertyName, databaseProviderWrapper.getDatabaseProvider().generateId(vertex));
+        }
+
+        return vertex;
     }
 
     /**
@@ -93,7 +107,6 @@ public class TPGraphMain {
     private Vertex processNode(Graph graph, String label, JsonNode jsonObject) {
         Vertex vertex = createVertex(graph, label);
 
-        vertex.property(TypePropertyHelper.getTypeName(), label);
         jsonObject.fields().forEachRemaining(entry -> {
             JsonNode entryValue = entry.getValue();
             logger.debug("Processing {} -> {}", entry.getKey(), entry.getValue());
@@ -105,7 +118,8 @@ public class TPGraphMain {
                 // Recursive calls
                 Vertex v = processNode(graph, entry.getKey(), entryValue);
                 addEdge(entry.getKey(), vertex, v);
-                vertex.property(RefLabelHelper.getLabel(entry.getKey(), uuidPropertyName), v.id());
+                //String idToSet = databaseProviderWrapper.getDatabaseProvider().generateId(v);
+                vertex.property(RefLabelHelper.getLabel(entry.getKey(), uuidPropertyName), v.id().toString());
                 logger.debug("Added edge between {} and {}", vertex.label(), v.label());
             } else if (entryValue.isArray()) {
                 writeArrayNode(graph, vertex, entry.getKey(), (ArrayNode) entry.getValue());
@@ -140,8 +154,7 @@ public class TPGraphMain {
         GraphTraversalSource gtRootTraversal = graph.traversal().clone();
         Iterator<Vertex> iterVertex = gtRootTraversal.V().hasLabel(lblPredicate);
         if (!iterVertex.hasNext()) {
-            parentVertex = graph.addVertex(parentLabel);
-            parentVertex.property(uuidPropertyName, parentVertex.id().toString());
+            parentVertex = createVertex(graph, parentLabel);
             logger.info("Parent label {} created {}", parentLabel, parentVertex.id().toString());
         } else {
             parentVertex = iterVertex.next();
@@ -184,7 +197,8 @@ public class TPGraphMain {
                 resultVertex = processNode(graph, entry.getKey(), entry.getValue());
                 // The parentVertex and the entity are connected. The parentVertex doesn't have
                 // identifiers set on itself, whereas the entity just created has reference to parent.
-                resultVertex.property(RefLabelHelper.getLabel(parentGroupName, uuidPropertyName), parentVertex.id());
+                //String idToSet = databaseProviderWrapper.getDatabaseProvider().generateId(parentVertex);
+                resultVertex.property(RefLabelHelper.getLabel(parentGroupName, uuidPropertyName), parentVertex.id().toString());
 
                 addEdge(entry.getKey(), resultVertex, parentVertex);
             }
@@ -202,9 +216,7 @@ public class TPGraphMain {
         GraphTraversal<Vertex, Vertex> graphTraversal = graph.traversal().V().hasLabel(predicateStr);
         while (graphTraversal.hasNext()){
             Vertex v = graphTraversal.next();
-            if (v != null) {
-                uuids.add(v.id().toString());
-            }
+            uuids.add(v.id().toString());
         }
         return uuids;
     }
@@ -219,7 +231,8 @@ public class TPGraphMain {
     public String addEntity(String shardId, JsonNode rootNode) throws Exception {
         String entityId = "";
         DatabaseProvider databaseProvider = databaseProviderWrapper.getDatabaseProvider();
-        try (Graph graph = databaseProvider.getGraphStore()) {
+        try (OSGraph osGraph = databaseProvider.getOSGraph()) {
+            Graph graph = osGraph.getGraphStore();
             try (Transaction tx = databaseProvider.startTransaction(graph)) {
                 entityId = writeNodeEntity(graph, rootNode);
                 databaseProvider.commitTransaction(graph, tx);
@@ -244,7 +257,8 @@ public class TPGraphMain {
 
         JsonNode result = JsonNodeFactory.instance.objectNode();
         DatabaseProvider databaseProvider = databaseProviderWrapper.getDatabaseProvider();
-        try (Graph graph = databaseProvider.getGraphStore()) {
+        try (OSGraph osGraph = databaseProvider.getOSGraph()) {
+            Graph graph = osGraph.getGraphStore();
             try (Transaction tx = databaseProvider.startTransaction(graph)) {
                 VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
                 result = vr.read(uuid);

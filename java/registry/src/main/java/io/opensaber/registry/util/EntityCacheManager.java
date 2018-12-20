@@ -5,7 +5,7 @@ import io.opensaber.registry.model.DBConnectionInfo;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.sink.DBProviderFactory;
 import io.opensaber.registry.sink.DatabaseProvider;
-import java.util.ArrayList;
+import io.opensaber.registry.sink.OSGraph;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,10 +43,18 @@ public class EntityCacheManager {
 	public void loadShardUUIDS() {
 		dbConnectionInfoList.forEach(dbConnectionInfo -> {
 			DatabaseProvider dbProvider = dbProviderFactory.getInstance(dbConnectionInfo);
-			Graph graph = dbProvider.getGraphStore();
-			List<String> uuids = new ArrayList<>();
-			uuids.addAll(tpGraphMain.getUUIDs(graph, defintionNames));
-			shardUUIDSMap.put(dbConnectionInfo.getShardId(), uuids);
+			try {
+				try (OSGraph osGraph = dbProvider.getOSGraph()) {
+					Graph graph = osGraph.getGraphStore();
+
+					List<String> uuids = tpGraphMain.getUUIDs(graph, defintionNames);
+					if (!uuids.isEmpty()) {
+						shardUUIDSMap.put(dbConnectionInfo.getShardId(), uuids);
+					}
+				}
+			} catch (Exception e) {
+				logger.debug("Can't load shard uuids. No harm in silent failures");
+			}
 		});
 
 		logger.info("shard's UUIDS map size: " + shardUUIDSMap.size());
