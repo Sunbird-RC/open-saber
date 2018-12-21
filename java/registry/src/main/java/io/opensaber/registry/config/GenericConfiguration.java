@@ -22,7 +22,6 @@ import io.opensaber.registry.middleware.impl.RDFConverter;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
-import io.opensaber.registry.schema.config.SchemaLoader;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.schema.configurator.JsonSchemaConfigurator;
 import io.opensaber.registry.schema.configurator.SchemaType;
