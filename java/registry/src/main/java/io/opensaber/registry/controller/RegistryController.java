@@ -8,7 +8,6 @@ import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.pojos.Response;
 import io.opensaber.pojos.ResponseParams;
-import io.opensaber.registry.dao.TPGraphMain;
 import io.opensaber.registry.exception.AuditFailedException;
 import io.opensaber.registry.exception.CustomException;
 import io.opensaber.registry.exception.EntityCreationException;
@@ -22,7 +21,6 @@ import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.service.RegistryAuditService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
-import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.DatabaseProviderWrapper;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.sink.shard.ShardManager;
@@ -40,9 +38,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.jena.rdf.model.Model;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -136,35 +131,6 @@ public class RegistryController {
 		} catch (Exception e) {
 			logger.error("Exception in controller while searching entities !", e);
 			response.setResult(result);
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg(e.getMessage());
-		}
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	@ResponseBody
-	@RequestMapping(value = "/update2", method = RequestMethod.POST)
-	public ResponseEntity<Response> update() {
-		Model rdf = (Model) apiMessage.getLocalMap(Constants.RDF_OBJECT);
-		ResponseParams responseParams = new ResponseParams();
-		Response response = new Response(Response.API_ID.UPDATE, "OK", responseParams);
-
-		try {
-			watch.start("RegistryController.update");
-			registryService.updateEntity(rdf);
-			responseParams.setErrmsg("");
-			responseParams.setStatus(Response.Status.SUCCESSFUL);
-			watch.stop("RegistryController.update");
-			logger.debug("RegistryController: entity updated !");
-		} catch (RecordNotFoundException | EntityCreationException e) {
-			logger.error(
-					"RegistryController: RecordNotFoundException|EntityCreationException while updating entity (without id)!",
-					e);
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg(e.getMessage());
-
-		} catch (Exception e) {
-			logger.error("RegistryController: Exception while updating entity (without id)!", e);
 			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 			responseParams.setErrmsg(e.getMessage());
 		}

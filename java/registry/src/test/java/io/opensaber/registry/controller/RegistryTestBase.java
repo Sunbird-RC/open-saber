@@ -179,7 +179,7 @@ public class RegistryTestBase {
 	/*protected Vertex parentVertex(DatabaseProvider databaseProvider) {
 		Graph g = databaseProvider.getGraphStore();
 		// TODO: Apply default grouping - to be removed.
-		Vertex parentV = new TPGraphMain().createParentVertex(g, "Teacher_GROUP");
+		Vertex parentV = new RegistryDaoImpl().createParentVertex(g, "Teacher_GROUP");
 		try {
 			g.close();
 		} catch (Exception e) {

@@ -196,18 +196,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public SchemaLoader shexSchemaLoader() throws CustomException, IOException {
-		String validationConfigFileForCreate = environment.getProperty(Constants.SHEX_CREATE_PROPERTY_NAME);
-		String validationConfigFileForUpdate = environment.getProperty(Constants.SHEX_UPDATE_PROPERTY_NAME);
-		if (validationConfigFileForCreate == null || validationConfigFileForUpdate == null) {
-			throw new CustomException(Constants.VALIDATION_CONFIGURATION_MISSING);
-		}
-
-		SchemaLoader schemaLoader = new SchemaLoader(validationConfigFileForCreate, validationConfigFileForUpdate);
-		return schemaLoader;
-	}
-
-	@Bean
 	public IValidate validationServiceImpl() throws IOException, CustomException {
 		IValidate validator = null;
 		//depends on input type,we need to implement validation
