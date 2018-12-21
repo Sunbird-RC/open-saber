@@ -1,17 +1,47 @@
 package io.opensaber.registry.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import io.opensaber.pojos.APIMessage;
+import io.opensaber.pojos.HealthCheckResponse;
+import io.opensaber.pojos.OpenSaberInstrumentation;
+import io.opensaber.pojos.Response;
+import io.opensaber.pojos.ResponseParams;
+import io.opensaber.registry.dao.TPGraphMain;
+import io.opensaber.registry.exception.AuditFailedException;
+import io.opensaber.registry.exception.CustomException;
+import io.opensaber.registry.exception.EntityCreationException;
+import io.opensaber.registry.exception.RecordNotFoundException;
+import io.opensaber.registry.exception.TypeNotProvidedException;
+import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.Constants.Direction;
+import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
+import io.opensaber.registry.middleware.util.JSONUtil;
+import io.opensaber.registry.model.DBConnectionInfoMgr;
+import io.opensaber.registry.service.RegistryAuditService;
+import io.opensaber.registry.service.RegistryService;
+import io.opensaber.registry.service.SearchService;
+import io.opensaber.registry.sink.DatabaseProvider;
+import io.opensaber.registry.sink.DatabaseProviderWrapper;
+import io.opensaber.registry.sink.shard.Shard;
+import io.opensaber.registry.sink.shard.ShardManager;
+import io.opensaber.registry.transform.Configuration;
+import io.opensaber.registry.transform.ConfigurationHelper;
+import io.opensaber.registry.transform.Data;
+import io.opensaber.registry.transform.ITransformer;
+import io.opensaber.registry.transform.TransformationException;
+import io.opensaber.registry.transform.Transformer;
+import io.opensaber.registry.util.EntityCache;
+import io.opensaber.registry.util.ReadConfigurator;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
-import io.opensaber.registry.service.EncryptionService;
-import io.opensaber.registry.sink.DatabaseProvider;
-import io.opensaber.registry.util.TPGraphMain;
 import org.apache.jena.rdf.model.Model;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -23,21 +53,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import io.opensaber.pojos.*;
-import io.opensaber.registry.exception.*;
-import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.middleware.util.Constants.Direction;
-import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
-import io.opensaber.registry.middleware.util.JSONUtil;
-import io.opensaber.registry.service.RegistryAuditService;
-import io.opensaber.registry.service.RegistryService;
-import io.opensaber.registry.service.SearchService;
-import io.opensaber.registry.transform.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class RegistryController {
@@ -58,11 +80,10 @@ public class RegistryController {
 	@Autowired
 	private APIMessage apiMessage;
 	@Autowired
-	private DatabaseProvider databaseProvider;
+	private DatabaseProviderWrapper databaseProviderWrapper;
 	@Autowired
-	private ISchemaConfigurator schemaConfigurator;
-	@Autowired
-	private EncryptionService encryptionService;
+	private DBConnectionInfoMgr dbConnectionInfoMgr;
+
 	private Gson gson = new Gson();
 	private Type mapType = new TypeToken<Map<String, Object>>() {
 	}.getType();
@@ -71,94 +92,16 @@ public class RegistryController {
 	@Autowired
 	private OpenSaberInstrumentation watch;
 	private List<String> keyToPurge = new java.util.ArrayList<>();
+
 	@Autowired
-	private Vertex parentVertex;
-
-	@RequestMapping(value = "/add2", method = RequestMethod.POST)
-	public ResponseEntity<Response> add(@RequestParam(value = "id", required = false) String id,
-			@RequestParam(value = "prop", required = false) String property) {
-
-		Model rdf = (Model) apiMessage.getLocalMap(Constants.CONTROLLER_INPUT);
-		ResponseParams responseParams = new ResponseParams();
-		Response response = new Response(Response.API_ID.CREATE, "OK", responseParams);
-		Map<String, Object> result = new HashMap<>();
-
-		try {
-			watch.start("RegistryController.addToExistingEntity");
-			String dataObject = apiMessage.getLocalMap(Constants.LD_OBJECT).toString();
-			String label = registryService.addEntity(rdf, dataObject, id, property);
-			result.put("entity", label);
-			response.setResult(result);
-			responseParams.setStatus(Response.Status.SUCCESSFUL);
-			watch.stop("RegistryController.addToExistingEntity");
-			logger.debug("RegistryController : Entity with label {} added !", label);
-		} catch (DuplicateRecordException | EntityCreationException e) {
-			logger.error("DuplicateRecordException|EntityCreationException in controller while adding entity !", e);
-			response.setResult(result);
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg(e.getMessage());
-		} catch (Exception e) {
-			logger.error("Exception in controller while adding entity !", e);
-			response.setResult(result);
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg(e.getMessage());
-		}
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
+	private ShardManager shardManager;
+	@Autowired
+	private EntityCache entityCache;
 
 	/**
-	 * 
-	 * Note: Only one mime type is supported at a time. Picks up the first mime
-	 * type from the header.
-	 * 
-	 * @return
-	 */
-	@RequestMapping(value = "/read2", method = RequestMethod.POST)
-	public ResponseEntity<Response> readEntity(@RequestHeader HttpHeaders header) {
-
-		ResponseParams responseParams = new ResponseParams();
-		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
-		String dataObject = apiMessage.getRequest().getRequestMapAsString();
-		JSONParser parser = new JSONParser();
-		try {
-			JSONObject json = (JSONObject) parser.parse(dataObject);
-			String entityId = registryContext + json.get("id").toString();
-			boolean includeSign = Boolean.parseBoolean(json.getOrDefault("includeSignatures", false).toString());
-
-			watch.start("RegistryController.readEntity");
-			String content = registryService.getEntityFramedById(entityId, includeSign);
-			logger.info("RegistryController: Framed content " + content);
-
-			Configuration config = configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
-					Direction.OUT);
-			Data<Object> data = new Data<Object>(content);
-			ITransformer<Object> responseTransformer = transformer.getInstance(config);
-			responseTransformer.setPurgeData(getKeysToPurge());
-			Data<Object> responseContent = responseTransformer.transform(data);
-			response.setResult(responseContent.getData());
-			responseParams.setStatus(Response.Status.SUCCESSFUL);
-			watch.stop("RegistryController.readEntity");
-			logger.debug("RegistryController: entity for {} read !", entityId);
-		} catch (ParseException | RecordNotFoundException | UnsupportedOperationException | TransformationException e) {
-			logger.error("RegistryController: Exception while reading entity !", e);
-			response.setResult(null);
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg(e.getMessage());
-		} catch (Exception e) {
-			logger.error("RegistryController: Exception while reading entity!", e);
-			response.setResult(null);
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg("Ding! You encountered an error!");
-		}
-
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	/**
-	 *
 	 * Note: Only one mime type is supported at a time. Pick up the first mime
 	 * type from the header.
-	 * 
+	 *
 	 * @return
 	 */
 	@RequestMapping(value = "/search", method = RequestMethod.POST)
@@ -200,7 +143,7 @@ public class RegistryController {
 	}
 
 	@ResponseBody
-	@RequestMapping(value = "/update", method = RequestMethod.POST)
+	@RequestMapping(value = "/update2", method = RequestMethod.POST)
 	public ResponseEntity<Response> update() {
 		Model rdf = (Model) apiMessage.getLocalMap(Constants.RDF_OBJECT);
 		ResponseParams responseParams = new ResponseParams();
@@ -317,28 +260,39 @@ public class RegistryController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-
 	@RequestMapping(value = "/add", method = RequestMethod.POST)
 	public ResponseEntity<Response> addTP2Graph(@RequestParam(value = "id", required = false) String id,
-										@RequestParam(value = "prop", required = false) String property) {
+			@RequestParam(value = "prop", required = false) String property) {
 
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.CREATE, "OK", responseParams);
 		Map<String, Object> result = new HashMap<>();
 		String jsonString = apiMessage.getRequest().getRequestMapAsString();
-		List<String> privateProperties = schemaConfigurator.getAllPrivateProperties();
-		//String jsonString = "{\"Teacher\":{\"signatures\":{\"@type\":\"sc:GraphSignature2012\",\"signatureFor\":\"http://localhost:8080/serialNum\",\"creator\":\"https://example.com/i/pat/keys/5\",\"created\":\"2017-09-23T20:21:34Z\",\"nonce\":\"2bbgh3dgjg2302d-d2b3gi423d42\",\"signatureValue\":\"eyiOiJKJ0eXA...OEjgFWFXk\"},\"serialNum\":6,\"teacherCode\":\"12234\",\"nationalIdentifier\":\"1234567890123456\",\"teacherName\":\"FromRajeshLaptop\",\"gender\":\"GenderTypeCode-MALE\",\"birthDate\":\"1990-12-06\",\"socialCategory\":\"SocialCategoryTypeCode-GENERAL\",\"highestAcademicQualification\":\"AcademicQualificationTypeCode-PHD\",\"highestTeacherQualification\":\"TeacherQualificationTypeCode-MED\",\"yearOfJoiningService\":\"2014\",\"teachingRole\":{\"@type\":\"TeachingRole\",\"teacherType\":\"TeacherTypeCode-HEAD\",\"appointmentType\":\"TeacherAppointmentTypeCode-REGULAR\",\"classesTaught\":\"ClassTypeCode-SECONDARYANDHIGHERSECONDARY\",\"appointedForSubjects\":\"SubjectCode-ENGLISH\",\"mainSubjectsTaught\":\"SubjectCode-SOCIALSTUDIES\",\"appointmentYear\":\"2015\"},\"inServiceTeacherTrainingFromBRC\":{\"@type\":\"InServiceTeacherTrainingFromBlockResourceCentre\",\"daysOfInServiceTeacherTraining\":\"10\"},\"inServiceTeacherTrainingFromCRC\":{\"@type\":\"InServiceTeacherTrainingFromClusterResourceCentre\",\"daysOfInServiceTeacherTraining\":\"2\"},\"inServiceTeacherTrainingFromDIET\":{\"@type\":\"InServiceTeacherTrainingFromDIET\",\"daysOfInServiceTeacherTraining\":\"5.5\"},\"inServiceTeacherTrainingFromOthers\":{\"@type\":\"InServiceTeacherTrainingFromOthers\",\"daysOfInServiceTeacherTraining\":\"3.5\"},\"nonTeachingAssignmentsForAcademicCalendar\":{\"@type\":\"NonTeachingAssignmentsForAcademicCalendar\",\"daysOfNonTeachingAssignments\":\"6\"},\"basicProficiencyLevel\":{\"@type\":\"BasicProficiencyLevel\",\"proficiencySubject\":\"SubjectCode-MATH\",\"proficiencyAcademicQualification\":\"AcademicQualificationTypeCode-PHD\"},\"disabilityType\":\"DisabilityCode-NA\",\"trainedForChildrenSpecialNeeds\":\"YesNoCode-YES\",\"trainedinUseOfComputer\":\"YesNoCode-YES\"}}}";
-		TPGraphMain tpGraph = new TPGraphMain(databaseProvider, parentVertex, privateProperties, encryptionService);
+		String entityType = apiMessage.getRequest().getEntityType();
 
 		try {
+			Map requestMap = ((HashMap<String, Object>) apiMessage.getRequest().getRequestMap().get(entityType));
+			logger.info(
+					"Add api: entity type " + requestMap + " and shard propery: " + shardManager.getShardProperty());
+
+			logger.info("request: " + requestMap.get(shardManager.getShardProperty()));
+			Object attribute = requestMap.getOrDefault(shardManager.getShardProperty(), null);
+			logger.info("attribute " + attribute);
+
+			Shard shard = shardManager.getShard(attribute);
+
 			watch.start("RegistryController.addToExistingEntity");
-			JsonNode rootNode = tpGraph.createEncryptedJson(jsonString);
-			tpGraph.createTPGraph(rootNode);
-			result.put("entity", "");
+			String resultId = registryService.addEntity("shard1", jsonString);
+			// adds cache for new shard and record map
+			entityCache.addEntity(shard.getShardId(), resultId);
+			Map resultMap = new HashMap();
+			resultMap.put(dbConnectionInfoMgr.getUuidPropertyName(), resultId);
+
+			result.put("entity", resultMap);
 			response.setResult(result);
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
 			watch.stop("RegistryController.addToExistingEntity");
-			logger.debug("RegistryController : Entity with label {} added !", "");
+			logger.debug("RegistryController : Entity {} added !", resultId);
 		} catch (Exception e) {
 			logger.error("Exception in controller while adding entity !", e);
 			response.setResult(result);
@@ -349,20 +303,82 @@ public class RegistryController {
 	}
 
 	@RequestMapping(value = "/read", method = RequestMethod.POST)
-	public ResponseEntity<Response> readGraph2Json(@RequestHeader HttpHeaders header) throws ParseException,
-			IOException, Exception {
+	public ResponseEntity<Response> greadGraph2Json(@RequestHeader HttpHeaders header) throws Exception {
 		String dataObject = apiMessage.getRequest().getRequestMapAsString();
 		JSONParser parser = new JSONParser();
 		JSONObject json = (JSONObject) parser.parse(dataObject);
-		String osIdVal =  json.get("id").toString();
+		String osIdVal = json.get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
 		ResponseParams responseParams = new ResponseParams();
-		List<String> privateProperties = schemaConfigurator.getAllPrivateProperties();
-		TPGraphMain tpGraph = new TPGraphMain(databaseProvider, parentVertex, privateProperties, encryptionService);
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
-		response.setResult(tpGraph.readGraph2Json(osIdVal));
+
+		String shardId = null;
+		try {
+			shardId = entityCache.getShard(osIdVal);
+		} catch (Exception e1) {
+			logger.error("Read Api Exception occoured ", e1);
+		}
+		shardManager.activateShard(shardId);
+		logger.info("Read Api: shard id: " + shardId + " for record id: " + osIdVal);
+
+		ReadConfigurator configurator = new ReadConfigurator();
+		boolean includeSignatures = (boolean) apiMessage.getRequest().getRequestMap().getOrDefault("includeSignatures",
+				false);
+		configurator.setIncludeSignatures(includeSignatures);
+		try {
+			JsonNode resultNode = registryService.getEntity(osIdVal, configurator);
+			// Transformation based on the mediaType
+			Data<Object> data = new Data<>(resultNode);
+			Configuration config = configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
+					Direction.OUT);
+			logger.info("config : " + config);
+			ITransformer<Object> responseTransformer = transformer.getInstance(config);
+			Data<Object> resultContent = responseTransformer.transform(data);
+			logger.info("JSON LD: " + resultContent.getData());
+			response.setResult(resultContent.getData());
+
+		} catch (Exception e) {
+			logger.error("Read Api Exception occoured ", e);
+			responseParams.setErr(e.getMessage());
+			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+		}
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+
+    @ResponseBody
+    @RequestMapping(value = "/update", method = RequestMethod.POST)
+    public ResponseEntity<Response> updateTP2Graph() throws ParseException, IOException, CustomException {
+        ResponseParams responseParams = new ResponseParams();
+        Response response = new Response(Response.API_ID.UPDATE, "OK", responseParams);
+
+		String dataObject = apiMessage.getRequest().getRequestMapAsString();
+		JSONParser parser = new JSONParser();
+		JSONObject json = (JSONObject) parser.parse(dataObject);
+		String osIdVal = json.get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
+
+		String shardId = null;
+		try {
+			shardId = entityCache.getShard(osIdVal);
+		} catch (Exception e1) {
+			logger.error("Read Api Exception occoured ", e1);
+		}
+		shardManager.activateShard(shardId);
+		logger.info("Read Api: shard id: " + shardId + " for record id: " + osIdVal);
+		
+        try {
+            watch.start("RegistryController.update");
+            registryService.updateEntity(dataObject);
+            responseParams.setErrmsg("");
+            responseParams.setStatus(Response.Status.SUCCESSFUL);
+            watch.stop("RegistryController.update");
+            logger.debug("RegistryController: entity updated !");
+        } catch (Exception e) {
+            logger.error("RegistryController: Exception while updating entity (without id)!", e);
+            responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+            responseParams.setErrmsg(e.getMessage());
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
 	/*
 	 * To set the keys(like @type to be trim of a json

@@ -1,41 +1,30 @@
 package io.opensaber.registry.sink;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
-import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
+import io.opensaber.registry.model.DBConnectionInfo;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
-import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.env.Environment;
 import org.umlg.sqlg.structure.SqlgGraph;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 public class SqlgProvider extends DatabaseProvider {
 
 	private Logger logger = LoggerFactory.getLogger(SqlgProvider.class);
-	private Graph graph;
+	private SqlgGraph graph;
+	private OSGraph customGraph;
 
-	public SqlgProvider(Environment environment) {
-		String jdbcUrl = environment.getProperty("database.jdbc.url");
-		String jdbcUsername = environment.getProperty("database.jdbc.username");
-		String jdbcPassword = environment.getProperty("database.jdbc.password");
+	public SqlgProvider(DBConnectionInfo connectionInfo, String uuidPropertyName) {
 		Configuration config = new BaseConfiguration();
-		config.setProperty("jdbc.url", jdbcUrl);
-		config.setProperty("jdbc.username", jdbcUsername);
-		config.setProperty("jdbc.password", jdbcPassword);
+		config.setProperty("jdbc.url", connectionInfo.getUri());
+		config.setProperty("jdbc.username", connectionInfo.getUsername());
+		config.setProperty("jdbc.password", connectionInfo.getPassword());
+		setUuidPropertyName(uuidPropertyName);
 		graph = SqlgGraph.open(config);
-	}
-
-	@Override
-	public Graph getGraphStore() {
-		return graph;
-	}
-
-	@Override
-	public Neo4JGraph getNeo4JGraph() {
-		return null;
+		customGraph = new OSGraph(graph, false);
 	}
 
 	@PostConstruct
@@ -51,5 +40,15 @@ public class SqlgProvider extends DatabaseProvider {
 		logger.info("Gracefully shutting down SQLG DB instance ...");
 		logger.info("**************************************************************************");
 		graph.close();
+	}
+
+	@Override
+	public OSGraph getOSGraph() {
+		return customGraph;
+	}
+
+	@Override
+	public String getId(Vertex vertex) {
+		return (String) vertex.property(getUuidPropertyName()).value();
 	}
 }

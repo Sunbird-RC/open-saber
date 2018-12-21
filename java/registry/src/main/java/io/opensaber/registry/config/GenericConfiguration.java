@@ -2,38 +2,9 @@ package io.opensaber.registry.config;
 
 import static io.opensaber.registry.schema.configurator.SchemaType.JSON;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
-import io.opensaber.registry.util.TPGraphMain;
-import org.apache.commons.validator.routines.UrlValidator;
-import org.apache.http.client.HttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
-import org.springframework.core.env.Environment;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.servlet.HandlerExceptionResolver;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.resource.PathResourceResolver;
-
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.pojos.Response;
 import io.opensaber.registry.authorization.AuthorizationFilter;
@@ -55,8 +26,11 @@ import io.opensaber.registry.schema.config.SchemaLoader;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.schema.configurator.JsonSchemaConfigurator;
 import io.opensaber.registry.schema.configurator.SchemaType;
-import io.opensaber.registry.sink.DBShard;
-import io.opensaber.registry.sink.DatabaseProvider;
+import io.opensaber.registry.sink.DBProviderFactory;
+import io.opensaber.registry.sink.shard.DefaultShardAdvisor;
+import io.opensaber.registry.sink.shard.IShardAdvisor;
+import io.opensaber.registry.sink.shard.SerialNumberShardAdvisor;
+import io.opensaber.registry.sink.shard.ShardAdvisor;
 import io.opensaber.registry.transform.ConfigurationHelper;
 import io.opensaber.registry.transform.Json2LdTransformer;
 import io.opensaber.registry.transform.Ld2JsonTransformer;
@@ -66,13 +40,36 @@ import io.opensaber.registry.transform.Transformer;
 import io.opensaber.validators.IValidate;
 import io.opensaber.validators.ValidationFilter;
 import io.opensaber.validators.json.jsonschema.JsonValidationServiceImpl;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import org.apache.commons.validator.routines.UrlValidator;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.core.env.Environment;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.HandlerExceptionResolver;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.resource.PathResourceResolver;
 
 
 @Configuration
 public class GenericConfiguration implements WebMvcConfigurer {
 
 	private static Logger logger = LoggerFactory.getLogger(GenericConfiguration.class);
-
+	
 	@Autowired
 	private Environment environment;
 
@@ -274,21 +271,28 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		requestFactory.setReadTimeout(readTimeout);
 		return new RestTemplate(requestFactory);
 	}
-	@Bean 
-	public DBShard dbshard(){
-		return new DBShard();
+	@Bean
+	public DBProviderFactory dbProviderFactory(){
+		return new DBProviderFactory();
 	}
-	
-	@Bean 
+
+	@Bean
 	public DBConnectionInfoMgr dBConnectionInfoMgr(){
 		return new DBConnectionInfoMgr();
 	}
-	
+
 	@Bean
-	public DatabaseProvider databaseProvider() {
-		return dbshard().getInstance("shard1");
+	public IShardAdvisor shardAdvisor() throws IOException{
+		ShardAdvisor shardAdvisor = new ShardAdvisor();
+		DBConnectionInfoMgr dbConnectionInfoMgr = dBConnectionInfoMgr();
+		String shardProperty = environment.getProperty("database.shardProperty");
+		if (shardProperty.compareToIgnoreCase(Constants.NONE_STR) == 0) {
+			shardAdvisor.registerAdvisor(shardProperty, new DefaultShardAdvisor(dbConnectionInfoMgr));
+		} else {
+			shardAdvisor.registerAdvisor(shardProperty, new SerialNumberShardAdvisor(dbConnectionInfoMgr));
+		}
+		return shardAdvisor.getShardAdvisor(dbConnectionInfoMgr.getShardProperty());
 	}
-	
 
 	@Bean
 	public UrlValidator urlValidator() {
@@ -339,7 +343,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		if (validationEnabled) {
 			try {
 				registry.addInterceptor(validationInterceptor())
-						.addPathPatterns("/add", "/update", "/search").order(orderIdx++);
+						.addPathPatterns("/add", "/search").order(orderIdx++);
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (CustomException e) {
@@ -358,21 +362,9 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		}
 
 	}
-
+	
 	@Bean
 	public HandlerExceptionResolver customExceptionHandler() {
 		return new CustomExceptionHandler(gson());
-	}
-
-	@Bean
-	public Vertex parentVertex() {
-		Graph g = databaseProvider().getGraphStore();
-		Vertex parentV = TPGraphMain.createParentVertex(g);
-		try {
-			g.close();
-		} catch (Exception e) {
-			logger.info(e.getMessage());
-		}
-		return parentV;
 	}
 }
