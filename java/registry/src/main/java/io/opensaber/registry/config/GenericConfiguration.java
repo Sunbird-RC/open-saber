@@ -18,7 +18,6 @@ import io.opensaber.registry.interceptor.AuthorizationInterceptor;
 import io.opensaber.registry.interceptor.RequestIdValidationInterceptor;
 import io.opensaber.registry.interceptor.ValidationInterceptor;
 import io.opensaber.registry.middleware.Middleware;
-import io.opensaber.registry.middleware.impl.RDFConverter;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
@@ -113,11 +112,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Bean
 	public Gson gson() {
 		return new Gson();
-	}
-
-	@Bean
-	public Middleware rdfConverter() {
-		return new RDFConverter();
 	}
 
 	@Bean

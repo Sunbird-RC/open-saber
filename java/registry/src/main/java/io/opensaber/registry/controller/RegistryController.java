@@ -169,36 +169,9 @@ public class RegistryController {
 	public ResponseEntity<Response> fetchAudit(@PathVariable("id") String id) {
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.AUDIT, "OK", responseParams);
+		// if (auditEnabled) {
 
-		if (auditEnabled) {
-			String entityId = registryContext + id;
-
-			try {
-				watch.start("RegistryController.fetchAudit");
-				org.eclipse.rdf4j.model.Model auditModel = registryAuditService.getAuditNode(entityId);
-				logger.debug("Audit Record model :" + auditModel);
-				String jenaJSON = registryAuditService.frameAuditEntity(auditModel);
-				response.setResult(gson.fromJson(jenaJSON, mapType));
-				responseParams.setStatus(Response.Status.SUCCESSFUL);
-				watch.stop("RegistryController.fetchAudit");
-				logger.debug("Controller: audit records fetched !");
-			} catch (RecordNotFoundException e) {
-				logger.error("Controller: RecordNotFoundException while fetching audit !", e);
-				response.setResult(null);
-				responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-				responseParams.setErrmsg(e.getMessage());
-			} catch (Exception e) {
-				logger.error("Controller: Exception while fetching audit !", e);
-				response.setResult(null);
-				responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-				responseParams.setErrmsg("Meh ! You encountered an error!");
-			}
-		} else {
-			logger.info("Controller: Audit is disabled");
-			response.setResult(null);
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg(Constants.AUDIT_IS_DISABLED);
-		}
+		response.setResult("To be implemented soon...");
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
