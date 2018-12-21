@@ -38,15 +38,7 @@ import io.opensaber.registry.controller.RegistryController;
 import io.opensaber.registry.controller.RegistryTestBase;
 import io.opensaber.registry.dao.IRegistryDao;
 import io.opensaber.registry.dao.RegistryDaoImpl;
-import io.opensaber.registry.exception.AuditFailedException;
-import io.opensaber.registry.exception.DuplicateRecordException;
-import io.opensaber.registry.exception.EncryptionException;
-import io.opensaber.registry.exception.EntityCreationException;
-import io.opensaber.registry.exception.MultipleEntityException;
-import io.opensaber.registry.exception.RecordNotFoundException;
-import io.opensaber.registry.middleware.MiddlewareHaltException;
 import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.middleware.util.RDFUtil;
 import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.sink.DBProviderFactory;
 import io.opensaber.registry.sink.DatabaseProvider;
@@ -70,8 +62,7 @@ public class RegistryServiceImplTest extends RegistryTestBase {
 	private String registryContextBase;
 	@Autowired
 	private RegistryServiceImpl registryService;
-	
-	private DatabaseProvider databaseProvider;
+
 	@Mock
 	private RestTemplate mockRestTemplate;
 	@Mock
@@ -83,9 +74,7 @@ public class RegistryServiceImplTest extends RegistryTestBase {
 	private IRegistryDao registryDao;
 	@InjectMocks
 	private RegistryServiceImpl registryServiceForHealth;
-	@Autowired
-	private DBProviderFactory dbProviderFactory;
-	
+
 
 	public void setup() {
 		if (!isInitialized) {
@@ -100,20 +89,7 @@ public class RegistryServiceImplTest extends RegistryTestBase {
 
 	@Before
 	public void initialize() throws IOException {
-	    databaseProvider = dbProviderFactory.getInstance(null);
-	    mockDatabaseProvider = Mockito.mock(DatabaseProvider.class);
 	    setup();
-		MockitoAnnotations.initMocks(this);
-		TestHelper.clearData(databaseProvider);
-		databaseProvider.getGraphStore().addVertex(Constants.GRAPH_GLOBAL_CONFIG).property(Constants.PERSISTENT_GRAPH,
-				true);
-		AuthInfo authInfo = new AuthInfo();
-		authInfo.setAud("aud");
-		authInfo.setName("name");
-		authInfo.setSub("sub");
-		AuthorizationToken authorizationToken = new AuthorizationToken(authInfo,
-				Collections.singletonList(new SimpleGrantedAuthority("blah")));
-		SecurityContextHolder.getContext().setAuthentication(authorizationToken);
 	}
 
 	@Test

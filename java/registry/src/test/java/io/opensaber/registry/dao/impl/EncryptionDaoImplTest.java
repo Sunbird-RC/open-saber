@@ -97,35 +97,14 @@ public class EncryptionDaoImplTest extends RegistryTestBase {
 	@Autowired
 	@InjectMocks
 	private RegistryDaoImpl registryDaoImpl;
-	@Autowired
-	private DatabaseProvider databaseProvider;
+
 	@Value("${encryption.enabled}")
 	private boolean encryptionEnabled;
-	@Autowired
-	private DBProviderFactory dbProviderFactory;
 
 	@Before
 	public void initializeGraph() throws IOException {
-	    databaseProvider = dbProviderFactory.getInstance(null);
 	    auditRecordReader = new AuditRecordReader(databaseProvider);
 		Assume.assumeTrue(encryptionEnabled);
-		graph = TinkerGraph.open();
-		MockitoAnnotations.initMocks(this);
-		TestHelper.clearData(databaseProvider);
-		databaseProvider.getGraphStore().addVertex(Constants.GRAPH_GLOBAL_CONFIG).property(Constants.PERSISTENT_GRAPH,
-				true);
-		AuthInfo authInfo = new AuthInfo();
-		authInfo.setAud("aud");
-		authInfo.setName("name");
-		authInfo.setSub("sub");
-		AuthorizationToken authorizationToken = new AuthorizationToken(authInfo,
-				Collections.singletonList(new SimpleGrantedAuthority("blah")));
-		SecurityContextHolder.getContext().setAuthentication(authorizationToken);
-	}
-
-	public String updateGraphFromRdf(Model rdfModel) {
-
-		return updateGraphFromRdf(rdfModel, graph);
 	}
 
 	public void closeDB() throws Exception {

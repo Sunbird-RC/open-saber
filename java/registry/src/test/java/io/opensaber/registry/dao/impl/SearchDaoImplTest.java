@@ -53,28 +53,10 @@ public class SearchDaoImplTest extends RegistryTestBase {
 	private IRegistryDao registryDao;
 	@Autowired
 	private SearchDao searchDao;
-	private DatabaseProvider databaseProvider;
-	@Autowired
-	private DBProviderFactory dbProviderFactory;
-
 
 	@Before
 	public void initializeGraph() throws IOException {
-	    databaseProvider = dbProviderFactory.getInstance(null);
-	    searchDao.setDatabaseProvider(databaseProvider);
-
-		graph = TinkerGraph.open();
-		MockitoAnnotations.initMocks(this);
-		TestHelper.clearData(databaseProvider);
-		databaseProvider.getGraphStore().addVertex(Constants.GRAPH_GLOBAL_CONFIG).property(Constants.PERSISTENT_GRAPH,
-				true);
-		AuthInfo authInfo = new AuthInfo();
-		authInfo.setAud("aud");
-		authInfo.setName("name");
-		authInfo.setSub("sub");
-		AuthorizationToken authorizationToken = new AuthorizationToken(authInfo,
-				Collections.singletonList(new SimpleGrantedAuthority("blah")));
-		SecurityContextHolder.getContext().setAuthentication(authorizationToken);
+	    graph = TinkerGraph.open();
 	}
 
 	@Test

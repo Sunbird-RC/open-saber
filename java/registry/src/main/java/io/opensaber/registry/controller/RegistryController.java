@@ -107,33 +107,37 @@ public class RegistryController {
 		Response response = new Response(Response.API_ID.SEARCH, "OK", responseParams);
 		Map<String, Object> result = new HashMap<>();
 
-		try {
-			watch.start("RegistryController.searchEntity");
-			String jenaJson = searchService.searchFramed(rdf);
-			Data<Object> data = new Data<>(jenaJson);
-			Configuration config = configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
-					Direction.OUT);
+		response.setResult("API to be supported soon");
+		responseParams.setStatus(Response.Status.SUCCESSFUL);
 
-			ITransformer<Object> responseTransformer = transformer.getInstance(config);
-			responseTransformer.setPurgeData(getKeysToPurge());
-			Data<Object> resultContent = responseTransformer.transform(data);
-			response.setResult(resultContent.getData());
-			responseParams.setStatus(Response.Status.SUCCESSFUL);
-			watch.stop("RegistryController.searchEntity");
-		} catch (AuditFailedException | RecordNotFoundException | TypeNotProvidedException
-				| TransformationException e) {
-			logger.error(
-					"AuditFailedException | RecordNotFoundException | TypeNotProvidedException in controller while adding entity !",
-					e);
-			response.setResult(result);
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg(e.getMessage());
-		} catch (Exception e) {
-			logger.error("Exception in controller while searching entities !", e);
-			response.setResult(result);
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg(e.getMessage());
-		}
+//		try {
+//			watch.start("RegistryController.searchEntity");
+//			String jenaJson = searchService.searchFramed(rdf);
+//			Data<Object> data = new Data<>(jenaJson);
+//			Configuration config = configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
+//					Direction.OUT);
+//
+//			ITransformer<Object> responseTransformer = transformer.getInstance(config);
+//			responseTransformer.setPurgeData(getKeysToPurge());
+//			Data<Object> resultContent = responseTransformer.transform(data);
+//			response.setResult(resultContent.getData());
+//			response.setResult("API to be supported soon");
+//			responseParams.setStatus(Response.Status.SUCCESSFUL);
+//			watch.stop("RegistryController.searchEntity");
+//		} catch (AuditFailedException | RecordNotFoundException | TypeNotProvidedException
+//				| TransformationException e) {
+//			logger.error(
+//					"AuditFailedException | RecordNotFoundException | TypeNotProvidedException in controller while adding entity !",
+//					e);
+//			response.setResult(result);
+//			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+//			responseParams.setErrmsg(e.getMessage());
+//		} catch (Exception e) {
+//			logger.error("Exception in controller while searching entities !", e);
+//			response.setResult(result);
+//			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+//			responseParams.setErrmsg(e.getMessage());
+//		}
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

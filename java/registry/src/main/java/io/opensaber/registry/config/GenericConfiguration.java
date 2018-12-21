@@ -34,7 +34,6 @@ import io.opensaber.registry.transform.ConfigurationHelper;
 import io.opensaber.registry.transform.Json2LdTransformer;
 import io.opensaber.registry.transform.Ld2JsonTransformer;
 import io.opensaber.registry.transform.Ld2LdTransformer;
-import io.opensaber.registry.transform.Ld2RdfTransformer;
 import io.opensaber.registry.transform.Transformer;
 import io.opensaber.validators.IValidate;
 import io.opensaber.validators.ValidationFilter;
@@ -164,11 +163,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	public Transformer transformer(){
 		return new Transformer();
 	}
-	
-	@Bean
-	public Ld2RdfTransformer ld2RdfTransformer(){
-		return new Ld2RdfTransformer();
-	}
+
 	@Bean
 	public ConfigurationHelper configurationHelper(){
 		return new ConfigurationHelper();

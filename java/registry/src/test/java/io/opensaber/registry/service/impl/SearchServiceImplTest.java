@@ -38,7 +38,6 @@ import io.opensaber.registry.exception.EncryptionException;
 import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.exception.TypeNotProvidedException;
 import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.middleware.util.RDFUtil;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
 import io.opensaber.registry.sink.DBProviderFactory;
@@ -60,50 +59,10 @@ public class SearchServiceImplTest extends RegistryTestBase {
 	private SearchService searchService;
 	@Autowired
 	private RegistryService registryService;
-	private DatabaseProvider databaseProvider;
-	@Autowired
-	private DBProviderFactory dbProviderFactory;
 
 	@Before
 	public void initialize() throws IOException {
-		databaseProvider = dbProviderFactory.getInstance(null);
-		searchService.setDatabaseProvider(databaseProvider);
-		MockitoAnnotations.initMocks(this);
-		TestHelper.clearData(databaseProvider);
-		databaseProvider.getGraphStore().addVertex(Constants.GRAPH_GLOBAL_CONFIG).property(Constants.PERSISTENT_GRAPH,
-				true);
-		AuthInfo authInfo = new AuthInfo();
-		authInfo.setAud("aud");
-		authInfo.setName("name");
-		authInfo.setSub("sub");
-		AuthorizationToken authorizationToken = new AuthorizationToken(authInfo,
-				Collections.singletonList(new SimpleGrantedAuthority("blah")));
-		SecurityContextHolder.getContext().setAuthentication(authorizationToken);
-	}
 
-	@Test
-	public void test_search_no_response()
-			throws AuditFailedException, EncryptionException, RecordNotFoundException, TypeNotProvidedException {
-		Model rdf = getNewValidRdf(BASE_SEARCH_JSONLD);
-		List<Resource> subjectList = RDFUtil.getRootLabels(rdf);
-		Property property = ResourceFactory.createProperty(CONTEXT_NAMESPACE + "schoolName");
-		rdf.add(subjectList.get(0), property, "Bluebells");
-		org.eclipse.rdf4j.model.Model responseModel = searchService.search(rdf);
-		assertTrue(responseModel.isEmpty());
 	}
-
-	@Test
-	public void test_search_with_no_type_provided()
-			throws AuditFailedException, EncryptionException, RecordNotFoundException, TypeNotProvidedException {
-		expectedEx.expect(TypeNotProvidedException.class);
-		expectedEx.expectMessage(Constants.ENTITY_TYPE_NOT_PROVIDED);
-		Model rdf = getNewValidRdf(BASE_SEARCH_JSONLD);
-		List<Resource> subjectList = RDFUtil.getRootLabels(rdf);
-		Property property = ResourceFactory.createProperty(CONTEXT_NAMESPACE + "schoolName");
-		rdf.add(subjectList.get(0), property, "Bluebells");
-		rdf.removeAll(null, RDF.type, ResourceFactory.createResource(CONTEXT_NAMESPACE + "School"));
-		searchService.search(rdf);
-	}
-
 
 }
