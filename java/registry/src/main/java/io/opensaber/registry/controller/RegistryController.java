@@ -326,10 +326,10 @@ public class RegistryController {
 		try {
 			shardId = entityCache.getShard(osIdVal);
 		} catch (Exception e1) {
-			logger.error("Read Api Exception occoured ", e1);
+			logger.error("Update Api Exception occoured ", e1);
 		}
 		shardManager.activateShard(shardId);
-		logger.info("Read Api: shard id: " + shardId + " for record id: " + osIdVal);
+		logger.info("Update Api: shard id: " + shardId + " for record id: " + osIdVal);
 		
         try {
             watch.start("RegistryController.update");
