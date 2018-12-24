@@ -36,6 +36,7 @@ import io.opensaber.validators.IValidate;
 import io.opensaber.validators.ValidationFilter;
 import io.opensaber.validators.json.jsonschema.JsonValidationServiceImpl;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -59,12 +60,11 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.PathResourceResolver;
 
-
 @Configuration
 public class GenericConfiguration implements WebMvcConfigurer {
 
 	private static Logger logger = LoggerFactory.getLogger(GenericConfiguration.class);
-	
+
 	@Autowired
 	private Environment environment;
 
@@ -85,7 +85,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Value("${registry.context.base}")
 	private String registryContextBase;
-	
+
 	@Value("${frame.file}")
 	private String frameFile;
 
@@ -116,19 +116,21 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	public FrameEntity frameEntity() {
 		return new FrameEntityImpl();
 	}
-	
-	@Bean 
-	public FrameContext frameContext(){
+
+	@Bean
+	public FrameContext frameContext() {
 		return new FrameContext(frameFile, registryContextBase);
 	}
 
 	/**
 	 * Gets the type of validation configured in the application.yml
+	 * 
 	 * @return
-	 * @throws IllegalArgumentException when value is not in known SchemaType enum
+	 * @throws IllegalArgumentException
+	 *             when value is not in known SchemaType enum
 	 */
 	@Bean
-	public SchemaType getValidationType() throws IllegalArgumentException{
+	public SchemaType getValidationType() throws IllegalArgumentException {
 		String validationMechanism = validationType.toUpperCase();
 		SchemaType st = SchemaType.valueOf(validationMechanism);
 
@@ -142,22 +144,22 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public Ld2JsonTransformer ld2JsonTransformer(){
+	public Ld2JsonTransformer ld2JsonTransformer() {
 		return new Ld2JsonTransformer();
 	}
-	
-	@Bean 
-	public Ld2LdTransformer ld2LdTransformer(){
+
+	@Bean
+	public Ld2LdTransformer ld2LdTransformer() {
 		return new Ld2LdTransformer();
 	}
-	
+
 	@Bean
-	public Transformer transformer(){
+	public Transformer transformer() {
 		return new Transformer();
 	}
 
 	@Bean
-	public ConfigurationHelper configurationHelper(){
+	public ConfigurationHelper configurationHelper() {
 		return new ConfigurationHelper();
 	}
 
@@ -184,7 +186,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Bean
 	public IValidate validationServiceImpl() throws IOException, CustomException {
 		IValidate validator = null;
-		//depends on input type,we need to implement validation
+		// depends on input type,we need to implement validation
 		if (getValidationType() == JSON) {
 			validator = new JsonValidationServiceImpl();
 		} else {
@@ -245,20 +247,24 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		requestFactory.setReadTimeout(readTimeout);
 		return new RestTemplate(requestFactory);
 	}
+
 	@Bean
-	public DBProviderFactory dbProviderFactory(){
+	public DBProviderFactory dbProviderFactory() {
 		return new DBProviderFactory();
 	}
 
 	@Bean
-	public DBConnectionInfoMgr dBConnectionInfoMgr(){
+	public DBConnectionInfoMgr dBConnectionInfoMgr() {
 		return new DBConnectionInfoMgr();
 	}
 
 	@Bean
-	public IShardAdvisor shardAdvisor() throws IOException{		
-		ShardAdvisor shardAdvisor = new ShardAdvisor(dBConnectionInfoMgr());
-		return shardAdvisor.getShardAdvisor();
+	public IShardAdvisor shardAdvisor()
+			throws IOException, ClassNotFoundException, NoSuchMethodException, SecurityException,
+			InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		ShardAdvisor shardAdvisor = new ShardAdvisor();
+		shardAdvisor.registerShardAdvisor(dBConnectionInfoMgr().getShardAdvisorClassName(), dBConnectionInfoMgr());
+		return shardAdvisor.getShardAdvisor(dBConnectionInfoMgr().getShardAdvisorClassName());
 	}
 
 	@Bean
@@ -285,8 +291,8 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	/**
-	 * This method attaches the required interceptors. The flags that control the
-	 * attachment are read from application configuration.
+	 * This method attaches the required interceptors. The flags that control
+	 * the attachment are read from application configuration.
 	 * 
 	 * @param registry
 	 */
@@ -297,8 +303,8 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 		// Verifying our API identifiers and populating the APIMessage bean
 		// Do not remove this.
-		registry.addInterceptor(requestIdValidationInterceptor())
-					.addPathPatterns(new ArrayList(requestMap.keySet())).order(orderIdx++);
+		registry.addInterceptor(requestIdValidationInterceptor()).addPathPatterns(new ArrayList(requestMap.keySet()))
+				.order(orderIdx++);
 
 		// Authenticate and authorization check
 		if (authenticationEnabled) {
@@ -309,8 +315,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		// Validate the input against the defined schema
 		if (validationEnabled) {
 			try {
-				registry.addInterceptor(validationInterceptor())
-						.addPathPatterns("/add", "/search").order(orderIdx++);
+				registry.addInterceptor(validationInterceptor()).addPathPatterns("/add", "/search").order(orderIdx++);
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (CustomException e) {
@@ -329,7 +334,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		}
 
 	}
-	
+
 	@Bean
 	public HandlerExceptionResolver customExceptionHandler() {
 		return new CustomExceptionHandler(gson());

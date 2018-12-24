@@ -2,6 +2,7 @@ package io.opensaber.registry.sink.shard;
 
 import io.opensaber.registry.model.DBConnectionInfo;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -13,6 +14,7 @@ public class DefaultShardAdvisor implements IShardAdvisor {
 
 	private DBConnectionInfoMgr dBConnectionInfoMgr;
 
+	@Autowired
 	public DefaultShardAdvisor(DBConnectionInfoMgr dBConnectionInfoMgr) {
 		this.dBConnectionInfoMgr = dBConnectionInfoMgr;
 	}

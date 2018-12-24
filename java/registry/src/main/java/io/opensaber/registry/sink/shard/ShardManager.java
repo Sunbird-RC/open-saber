@@ -47,10 +47,6 @@ public class ShardManager {
 	public String getShardProperty() {
 		return dbConnectionInfoMgr.getShardProperty();
 	}
-	public String getUUIDPropertyName(){
-		return dbConnectionInfoMgr.getUuidPropertyName();
-	}
-
 	/**
 	 * activates a shard (Default or others) and returns it.
 	 * @param attributeValue

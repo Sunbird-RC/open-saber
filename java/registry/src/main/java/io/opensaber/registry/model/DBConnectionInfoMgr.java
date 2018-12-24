@@ -38,7 +38,7 @@ public class DBConnectionInfoMgr {
      * Instructs which advisor to pick up across each connectionInfo
      * Only one advisor allowed
      */
-    private String shardAdvisor;
+    private String shardAdvisorClassName;
 
     public DBConnectionInfoMgr() {
 
@@ -90,11 +90,11 @@ public class DBConnectionInfoMgr {
         this.connectionInfo = connectionInfo;
     }
 
-	public String getShardAdvisor() {
-		return shardAdvisor;
+	public String getShardAdvisorClassName() {
+		return shardAdvisorClassName;
 	}
 
-	public void setShardAdvisor(String shardAdvisor) {
-		this.shardAdvisor = shardAdvisor;
+	public void setShardAdvisorClassName(String shardAdvisorClassName) {
+		this.shardAdvisorClassName = shardAdvisorClassName;
 	}
 }

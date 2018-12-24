@@ -7,34 +7,25 @@ import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ShardAdvisor {
 	private static Logger logger = LoggerFactory.getLogger(ShardAdvisor.class);
-	private DBConnectionInfoMgr dbConnectionInfoMgr;
 	private Map<String, IShardAdvisor> advisors = new HashMap<String, IShardAdvisor>();
+	@Autowired
+	private DefaultShardAdvisor defaultShardAdvisor;
 
-
-	public ShardAdvisor(DBConnectionInfoMgr dbConnectionInfoMgr) {
-		this.dbConnectionInfoMgr = dbConnectionInfoMgr;
-		try {
-			registerShardAdvisor();
-		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
-				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-			e.printStackTrace();
-			logger.error("While registering shard advisor with name {}, exception occured: {}",
-					dbConnectionInfoMgr.getShardAdvisor(), e);
-		}
-	}
-
-	private void registerShardAdvisor() throws ClassNotFoundException, NoSuchMethodException, SecurityException,
-			InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		String advisorClassName = dbConnectionInfoMgr.getShardAdvisor();
-		Class<?> clazz = Class.forName("io.opensaber.registry.sink.shard." + advisorClassName);
+	public void registerShardAdvisor(String advisorClassName, DBConnectionInfoMgr dbConnectionInfoMgr)
+			throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException,
+			IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		Class<?> clazz = Class.forName(advisorClassName);
 		IShardAdvisor advisor = (IShardAdvisor) clazz.getConstructor(DBConnectionInfoMgr.class)
 				.newInstance(dbConnectionInfoMgr);
-		logger.info("Registered shard advisor class: "+advisorClassName);
+		logger.info("Registered shard advisor class: " + advisorClassName);
 		advisors.put(advisorClassName, advisor);
-		
+
 	}
 
 	/**
@@ -44,9 +35,8 @@ public class ShardAdvisor {
 	 * @throws IOException
 	 */
 
-	public IShardAdvisor getShardAdvisor() {
-		IShardAdvisor advisory = advisors.getOrDefault(dbConnectionInfoMgr.getShardAdvisor(),
-				new DefaultShardAdvisor(dbConnectionInfoMgr));
+	public IShardAdvisor getShardAdvisor(String advisorClassName) {
+		IShardAdvisor advisory = advisors.getOrDefault(advisorClassName, defaultShardAdvisor);
 		return advisory;
 	}
 
