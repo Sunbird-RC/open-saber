@@ -52,6 +52,7 @@ database:
   # This property is instruction to use the shard advisor.
   # Values could be DefaultShardAdvisor, SerialNumberShardAdvisor
   # If this property not provided, advisor is set to DefaultShardAdvisor
+  # This classes must be within the registry module  
   shardAdvisor: SerialNumberShardAdvisor
 
   connectionInfo:
