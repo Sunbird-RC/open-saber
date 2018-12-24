@@ -62,10 +62,9 @@ public class RegistryUtilsController {
 		try {
 			watch.start("RegistryUtilsController.generateSignature");
 			Map<String, Object> requestBodyMap = apiMessage.getRequest().getRequestMap();
-			if (requestBodyMap.containsKey(Constants.REQUEST_ATTRIBUTE)
-					&& requestBodyMap.containsKey(Constants.ATTRIBUTE_NAME)) {
+			if (null !=requestBodyMap && (requestBodyMap.containsKey(Constants.SIGN_ENTITY) || requestBodyMap.containsKey(Constants.SIGN_VALUE))){
 				Object result = signatureService
-						.sign(gson.fromJson(requestBodyMap.get(Constants.ATTRIBUTE_NAME).toString(), mapType));
+						.sign(gson.fromJson(requestBodyMap.toString(), mapType));
 				response.setResult(result);
 				responseParams.setErrmsg("");
 				responseParams.setStatus(Response.Status.SUCCESSFUL);
