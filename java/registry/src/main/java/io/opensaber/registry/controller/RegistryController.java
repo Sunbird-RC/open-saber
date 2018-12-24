@@ -8,27 +8,21 @@ import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.pojos.Response;
 import io.opensaber.pojos.ResponseParams;
-import io.opensaber.registry.exception.AuditFailedException;
 import io.opensaber.registry.exception.CustomException;
-import io.opensaber.registry.exception.EntityCreationException;
 import io.opensaber.registry.exception.RecordNotFoundException;
-import io.opensaber.registry.exception.TypeNotProvidedException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.Direction;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
 import io.opensaber.registry.middleware.util.JSONUtil;
-import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.service.RegistryAuditService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
-import io.opensaber.registry.sink.DatabaseProviderWrapper;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.sink.shard.ShardManager;
 import io.opensaber.registry.transform.Configuration;
 import io.opensaber.registry.transform.ConfigurationHelper;
 import io.opensaber.registry.transform.Data;
 import io.opensaber.registry.transform.ITransformer;
-import io.opensaber.registry.transform.TransformationException;
 import io.opensaber.registry.transform.Transformer;
 import io.opensaber.registry.util.EntityCache;
 import io.opensaber.registry.util.ReadConfigurator;
@@ -74,10 +68,6 @@ public class RegistryController {
 	private String registryContext;
 	@Autowired
 	private APIMessage apiMessage;
-	@Autowired
-	private DatabaseProviderWrapper databaseProviderWrapper;
-	@Autowired
-	private DBConnectionInfoMgr dbConnectionInfoMgr;
 
 	private Gson gson = new Gson();
 	private Type mapType = new TypeToken<Map<String, Object>>() {
@@ -229,7 +219,7 @@ public class RegistryController {
 			// adds cache for new shard and record map
 			entityCache.addEntity(shard.getShardId(), resultId);
 			Map resultMap = new HashMap();
-			resultMap.put(dbConnectionInfoMgr.getUuidPropertyName(), resultId);
+			resultMap.put(shardManager.getUUIDPropertyName(), resultId);
 
 			result.put("entity", resultMap);
 			response.setResult(result);
@@ -250,7 +240,7 @@ public class RegistryController {
 		String dataObject = apiMessage.getRequest().getRequestMapAsString();
 		JSONParser parser = new JSONParser();
 		JSONObject json = (JSONObject) parser.parse(dataObject);
-		String osIdVal = json.get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
+		String osIdVal = json.get(shardManager.getUUIDPropertyName()).toString();
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
@@ -297,7 +287,7 @@ public class RegistryController {
 		String dataObject = apiMessage.getRequest().getRequestMapAsString();
 		JSONParser parser = new JSONParser();
 		JSONObject json = (JSONObject) parser.parse(dataObject);
-		String osIdVal = json.get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
+		String osIdVal = json.get(shardManager.getUUIDPropertyName()).toString();
 
 		String shardId = null;
 		try {

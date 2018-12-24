@@ -25,9 +25,7 @@ import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.schema.configurator.JsonSchemaConfigurator;
 import io.opensaber.registry.schema.configurator.SchemaType;
 import io.opensaber.registry.sink.DBProviderFactory;
-import io.opensaber.registry.sink.shard.DefaultShardAdvisor;
 import io.opensaber.registry.sink.shard.IShardAdvisor;
-import io.opensaber.registry.sink.shard.SerialNumberShardAdvisor;
 import io.opensaber.registry.sink.shard.ShardAdvisor;
 import io.opensaber.registry.transform.ConfigurationHelper;
 import io.opensaber.registry.transform.Json2LdTransformer;
@@ -258,16 +256,9 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public IShardAdvisor shardAdvisor() throws IOException{
-		ShardAdvisor shardAdvisor = new ShardAdvisor();
-		DBConnectionInfoMgr dbConnectionInfoMgr = dBConnectionInfoMgr();
-		String shardProperty = environment.getProperty("database.shardProperty");
-		if (shardProperty.compareToIgnoreCase(Constants.NONE_STR) == 0) {
-			shardAdvisor.registerAdvisor(shardProperty, new DefaultShardAdvisor(dbConnectionInfoMgr));
-		} else {
-			shardAdvisor.registerAdvisor(shardProperty, new SerialNumberShardAdvisor(dbConnectionInfoMgr));
-		}
-		return shardAdvisor.getShardAdvisor(dbConnectionInfoMgr.getShardProperty());
+	public IShardAdvisor shardAdvisor() throws IOException{		
+		ShardAdvisor shardAdvisor = new ShardAdvisor(dBConnectionInfoMgr());
+		return shardAdvisor.getShardAdvisor();
 	}
 
 	@Bean

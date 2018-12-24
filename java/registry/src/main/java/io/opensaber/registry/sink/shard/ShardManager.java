@@ -28,6 +28,7 @@ public class ShardManager {
 	@Autowired
 	private Shard shard;
 
+
 	/**
 	 * intiatiate a DBShard and ensure activating a databaseProvider. used for
 	 * add end point.
@@ -45,6 +46,9 @@ public class ShardManager {
 
 	public String getShardProperty() {
 		return dbConnectionInfoMgr.getShardProperty();
+	}
+	public String getUUIDPropertyName(){
+		return dbConnectionInfoMgr.getUuidPropertyName();
 	}
 
 	/**
