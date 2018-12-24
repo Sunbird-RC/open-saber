@@ -11,6 +11,7 @@ import io.opensaber.converters.JenaRDF4J;
 import io.opensaber.pojos.ComponentHealthInfo;
 import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.registry.dao.RegistryDao;
+import io.opensaber.registry.dao.TPGraphMain;
 import io.opensaber.registry.dao.VertexReader;
 import io.opensaber.registry.exception.*;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
@@ -27,8 +28,8 @@ import io.opensaber.registry.service.SignatureService;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.DatabaseProviderWrapper;
 import io.opensaber.registry.sink.shard.Shard;
+import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.util.GraphDBFactory;
-import io.opensaber.registry.dao.TPGraphMain;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.utils.converters.RDF2Graph;
 import io.opensaber.validators.IValidate;
@@ -45,7 +46,9 @@ import org.apache.jena.riot.WriterDatasetRIOT;
 import org.apache.jena.riot.system.PrefixMap;
 import org.apache.jena.riot.system.RiotLib;
 import org.apache.jena.sparql.core.DatasetGraph;
-import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -556,7 +559,7 @@ public class RegistryServiceImpl implements RegistryService {
                 entityNode =  merge(entityNode,rootNode);
                 //TO-DO validation is failing
                 boolean isValidate = iValidate.validate("Teacher",entityNode.toString());
-                tpGraphMain.updateVertex(rootVertex,childElementNode);
+                tpGraphMain.updateVertex(graph,rootVertex,childElementNode);
                 tx.commit();
             }
         } else {
@@ -566,7 +569,7 @@ public class RegistryServiceImpl implements RegistryService {
             entityNode =  merge(entityNode,rootNode);
             //TO-DO validation is failing
             boolean isValidate = iValidate.validate("Teacher",entityNode.toString());
-            tpGraphMain.updateVertex(rootVertex,childElementNode);
+            tpGraphMain.updateVertex(graph,rootVertex,childElementNode);
         }
     }
 
@@ -591,17 +594,33 @@ public class RegistryServiceImpl implements RegistryService {
     private void mergeDestinationWithSourceNode(ObjectNode propKeyValue, ObjectNode entityNode, String entityKey) {
         ObjectNode subEntity = (ObjectNode) entityNode.get(entityKey);
         propKeyValue.fields().forEachRemaining(prop -> {
-            if(prop.getValue().isValueNode()){
+            if(prop.getValue().isValueNode() && !uuidPropertyName.equalsIgnoreCase(prop.getKey())){
                 subEntity.set(prop.getKey(),prop.getValue());
             } else if(prop.getValue().isObject()){
                 if(subEntity.get(prop.getKey()).size() == 0) {
                     subEntity.set(prop.getKey(),prop.getValue());
                 } else if (subEntity.get(prop.getKey()).isObject()) {
-                    ArrayNode arrnode = JsonNodeFactory.instance.arrayNode();
+                    //removing keys with name osid and type
+                    //removeOsidAndType((ObjectNode) subEntity.get(prop.getKey()));
+                    //constructNewNodeToParent
+                    subEntity.set(prop.getKey(),prop.getValue());
+                    /*ArrayNode arrnode = JsonNodeFactory.instance.arrayNode();
                     arrnode.add(subEntity.get(prop.getKey()));
                     arrnode.add(prop.getValue());
-                    subEntity.set(prop.getKey(),arrnode);
+                    subEntity.set(prop.getKey(),arrnode);*/
                 }
+            }
+        });
+    }
+
+    //to-do testing needs to be done
+    private void removeOsidAndType(ObjectNode objectNode) {
+        objectNode.fields().forEachRemaining(element -> {
+            JsonNode elementNode  = element.getValue();
+            if(elementNode.isValueNode() && element.getKey().equals(uuidPropertyName)){
+                objectNode.remove(element.getKey());
+            } else if(elementNode.isObject()){
+                removeOsidAndType((ObjectNode) elementNode);
             }
         });
     }

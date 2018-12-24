@@ -3,32 +3,29 @@ package io.opensaber.registry.dao;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.OpenSaberInstrumentation;
-import io.opensaber.registry.middleware.MiddlewareHaltException;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.sink.DatabaseProvider;
+import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.util.EntityParenter;
 import io.opensaber.registry.util.ParentLabelGenerator;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.RefLabelHelper;
 import io.opensaber.registry.util.TypePropertyHelper;
-import io.opensaber.validators.IValidate;
+
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,8 +49,6 @@ public class TPGraphMain {
 
     private List<String> privatePropertyList;
 
-    public static enum DBTYPE {NEO4J, POSTGRES}
-
     private Logger logger = LoggerFactory.getLogger(TPGraphMain.class);
 
     private OpenSaberInstrumentation watch = new OpenSaberInstrumentation(true);
@@ -67,7 +62,19 @@ public class TPGraphMain {
     }
 
     private Vertex createVertex(Graph graph, String label) {
-        return graph.addVertex(label);
+        Vertex vertex = graph.addVertex(label);
+
+        vertex.property(TypePropertyHelper.getTypeName(), label);
+        try {
+            UUID uuid = UUID.fromString(vertex.id().toString());
+        } catch (IllegalArgumentException e) {
+            // Must be not a neo4j store. Create an explicit osid property.
+            // Note this will be OS unique record, but the database provider might choose to use only
+            // id field.
+            vertex.property(uuidPropertyName, shard.getDatabaseProvider().generateId(vertex));
+        }
+
+        return vertex;
     }
 
     /**
@@ -103,7 +110,6 @@ public class TPGraphMain {
     private Vertex processNode(Graph graph, String label, JsonNode jsonObject) {
         Vertex vertex = createVertex(graph, label);
 
-        vertex.property(TypePropertyHelper.getTypeName(), label);
         jsonObject.fields().forEachRemaining(entry -> {
             JsonNode entryValue = entry.getValue();
             logger.debug("Processing {} -> {}", entry.getKey(), entry.getValue());
@@ -115,7 +121,8 @@ public class TPGraphMain {
                 // Recursive calls
                 Vertex v = processNode(graph, entry.getKey(), entryValue);
                 addEdge(entry.getKey(), vertex, v);
-                vertex.property(RefLabelHelper.getLabel(entry.getKey(), uuidPropertyName), v.id());
+                //String idToSet = databaseProviderWrapper.getDatabaseProvider().generateId(v);
+                vertex.property(RefLabelHelper.getLabel(entry.getKey(), uuidPropertyName), v.id().toString());
                 logger.debug("Added edge between {} and {}", vertex.label(), v.label());
             } else if (entryValue.isArray()) {
                 writeArrayNode(graph, vertex, entry.getKey(), (ArrayNode) entry.getValue());
@@ -150,8 +157,7 @@ public class TPGraphMain {
         GraphTraversalSource gtRootTraversal = graph.traversal().clone();
         Iterator<Vertex> iterVertex = gtRootTraversal.V().hasLabel(lblPredicate);
         if (!iterVertex.hasNext()) {
-            parentVertex = graph.addVertex(parentLabel);
-            parentVertex.property(uuidPropertyName, parentVertex.id().toString());
+            parentVertex = createVertex(graph, parentLabel);
             logger.info("Parent label {} created {}", parentLabel, parentVertex.id().toString());
         } else {
             parentVertex = iterVertex.next();
@@ -194,7 +200,8 @@ public class TPGraphMain {
                 resultVertex = processNode(graph, entry.getKey(), entry.getValue());
                 // The parentVertex and the entity are connected. The parentVertex doesn't have
                 // identifiers set on itself, whereas the entity just created has reference to parent.
-                resultVertex.property(RefLabelHelper.getLabel(parentGroupName, uuidPropertyName), parentVertex.id());
+                //String idToSet = databaseProviderWrapper.getDatabaseProvider().generateId(parentVertex);
+                resultVertex.property(RefLabelHelper.getLabel(parentGroupName, uuidPropertyName), parentVertex.id().toString());
 
                 addEdge(entry.getKey(), resultVertex, parentVertex);
             }
@@ -214,7 +221,7 @@ public class TPGraphMain {
 		while (graphTraversal.hasNext()) {
 			Vertex v = graphTraversal.next();
 			uuids.add(v.id().toString());
-			logger.info("vertex info- label :" + v.label() + " id: " + v.id());
+			logger.debug("vertex info- label :" + v.label() + " id: " + v.id());
 		}
 		return uuids;
 	}
@@ -229,7 +236,8 @@ public class TPGraphMain {
     public String addEntity(String shardId, JsonNode rootNode) throws Exception {
         String entityId = "";
         DatabaseProvider databaseProvider = shard.getDatabaseProvider();
-        try (Graph graph = databaseProvider.getGraphStore()) {
+        try (OSGraph osGraph = databaseProvider.getOSGraph()) {
+            Graph graph = osGraph.getGraphStore();
             try (Transaction tx = databaseProvider.startTransaction(graph)) {
                 entityId = writeNodeEntity(graph, rootNode);
                 databaseProvider.commitTransaction(graph, tx);
@@ -256,7 +264,8 @@ public class TPGraphMain {
 
         JsonNode result = JsonNodeFactory.instance.objectNode();
         DatabaseProvider databaseProvider = shard.getDatabaseProvider();
-        try (Graph graph = databaseProvider.getGraphStore()) {
+        try (OSGraph osGraph = databaseProvider.getOSGraph()) {
+            Graph graph = osGraph.getGraphStore();
             try (Transaction tx = databaseProvider.startTransaction(graph)) {
                 VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
                 result = vr.read(uuid);
@@ -268,49 +277,45 @@ public class TPGraphMain {
         return result;
     }
 
-    /** Updates a record to the database
-     * @param inputJsonNode
-     */
-    /*public ObjectNode updateEntity(JsonNode inputJsonNode) {
-        Iterator<Vertex> vertexIterator = null;
-        Vertex rootVertex = null;
-        ObjectNode entityObjectNode = null;
-        try {
-            DatabaseProvider databaseProvider = databaseProviderWrapper.getDatabaseProvider();
-            Graph graph = databaseProvider.getGraphStore();
-            boolean isTransactionEnabled = databaseProvider.supportsTransaction(graph);
-            String idProp = inputJsonNode.elements().next().get("id").asText();
-            JsonNode node = inputJsonNode.elements().next();
-            watch.start("Add Transaction");
-            if(isTransactionEnabled){
-                try (Transaction tx = graph.tx()) {
-                    vertexIterator = graph.vertices(idProp);
-                    rootVertex = vertexIterator.hasNext() ? vertexIterator.next(): null;
-                    entityObjectNode =  mergeAndUpdateGraph(rootVertex,inputJsonNode);
-                    tx.commit();
-                }
-            } else {
-                vertexIterator = graph.vertices(new Long(idProp));
-                rootVertex = vertexIterator.hasNext() ? vertexIterator.next(): null;
-                entityObjectNode =  mergeAndUpdateGraph(rootVertex, inputJsonNode);
-            }
-            watch.stop("Add Transaction");
-        } catch (Exception e) {
-            logger.error("Exception occurred during updating entity",e);
-        }
-        return entityObjectNode;
-    }*/
-
-
     /** This method update the vertex with inputJsonNode
+     * @param graph
      * @param rootVertex
      * @param inputJsonNode
      */
-    public void updateVertex(Vertex rootVertex, JsonNode inputJsonNode) {
+    public void updateVertex(Graph graph, Vertex rootVertex, JsonNode inputJsonNode) {
         inputJsonNode.fields().forEachRemaining(record -> {
-            if(record.getValue().isValueNode()){
-                rootVertex.property(record.getKey(),record.getValue().asText());
+            JsonNode elementNode = record.getValue();
+            if(elementNode.isValueNode()){
+               // rootVertex.property(record.getKey(),record.getValue().asText());
+            } else if(elementNode.isObject()){
+                deleteExistingVerticesIfPresent(graph,rootVertex,elementNode,record.getKey());
+                //Add new vertex
+                Vertex newChildVertex = createVertex(graph,record.getKey());
+                elementNode.fields().forEachRemaining(subElementNode -> {
+                    JsonNode value = subElementNode.getValue();
+                    if(value.isObject()){
+
+                    } else {
+                            if(value.isValueNode() && !value.equals("@type")){
+                            newChildVertex.property(subElementNode.getKey(),value.asText());
+                        }
+                    }
+                });
+                //newChildVertex.property(RefLabelHelper.getLabel(uuidPropertyName, newChildVertex.id().toString()));
+                rootVertex.property(RefLabelHelper.getLabel(record.getKey(), uuidPropertyName), newChildVertex.id().toString());
+                addEdge(record.getKey(),rootVertex,newChildVertex);
             }
+        });
+    }
+
+    private void deleteExistingVerticesIfPresent(Graph graph, Vertex rootVertex, JsonNode childNode, String label) {
+        VertexProperty vp = rootVertex.property(label+"_"+uuidPropertyName);
+        Object vertexOsid = (String) vp.value();
+        Iterator<Vertex> vertices = graph.vertices(vertexOsid);
+        //deleting existing vertices
+        vertices.forEachRemaining(deleteVertex -> {
+            deleteVertex.edges(Direction.IN,label).next().remove();
+            deleteVertex.remove();
         });
     }
 

@@ -10,7 +10,11 @@ import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.pojos.Response;
 import io.opensaber.pojos.ResponseParams;
 import io.opensaber.registry.dao.TPGraphMain;
-import io.opensaber.registry.exception.*;
+import io.opensaber.registry.exception.AuditFailedException;
+import io.opensaber.registry.exception.CustomException;
+import io.opensaber.registry.exception.EntityCreationException;
+import io.opensaber.registry.exception.RecordNotFoundException;
+import io.opensaber.registry.exception.TypeNotProvidedException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.Direction;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
@@ -274,11 +278,13 @@ public class RegistryController {
 
 		try {
 			Map requestMap = ((HashMap<String, Object>) apiMessage.getRequest().getRequestMap().get(entityType));
-			logger.info("Add api: entity type " + requestMap + " and shard propery: " + shardManager.getShardProperty());
-			
-			logger.info("request: "+requestMap.get(shardManager.getShardProperty()));
+			logger.info(
+					"Add api: entity type " + requestMap + " and shard propery: " + shardManager.getShardProperty());
+
+			logger.info("request: " + requestMap.get(shardManager.getShardProperty()));
 			Object attribute = requestMap.getOrDefault(shardManager.getShardProperty(), null);
-			logger.info("attribute "+ attribute );
+			logger.info("attribute " + attribute);
+
 			Shard shard = shardManager.getShard(attribute);
 
 			watch.start("RegistryController.addToExistingEntity");
@@ -292,7 +298,7 @@ public class RegistryController {
 			response.setResult(result);
 			responseParams.setStatus(Response.Status.SUCCESSFUL);
 			watch.stop("RegistryController.addToExistingEntity");
-			logger.debug("RegistryController : Entity with label {} added !", "");
+			logger.debug("RegistryController : Entity {} added !", resultId);
 		} catch (Exception e) {
 			logger.error("Exception in controller while adding entity !", e);
 			response.setResult(result);
@@ -311,9 +317,14 @@ public class RegistryController {
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
-		String shardId = entityCache.getShard(osIdVal);
-		logger.info("Read Api: shard id: "+shardId+" for record id: "+osIdVal);
+		String shardId = null;
+		try {
+			shardId = entityCache.getShard(osIdVal);
+		} catch (Exception e1) {
+			logger.error("Read Api Exception occoured ", e1);
+		}
 		shardManager.activateShard(shardId);
+		logger.info("Read Api: shard id: " + shardId + " for record id: " + osIdVal);
 
 		ReadConfigurator configurator = new ReadConfigurator();
 		boolean includeSignatures = (boolean) apiMessage.getRequest().getRequestMap().getOrDefault("includeSignatures",
@@ -353,8 +364,13 @@ public class RegistryController {
 		String entityType = apiMessage.getRequest().getEntityType();
 		Map<String, Object> reqMap = (Map<String, Object>) apiMessage.getRequest().getRequestMap().get(entityType);
 		String osIdVal = reqMap.get(uuidPropertyName).toString();
-		String shardId = entityCache.getShard(osIdVal);
-		logger.info("Read Api: shard id: "+shardId+" for record id: "+osIdVal);
+		String shardId = null;
+		try {
+			shardId = entityCache.getShard(osIdVal);
+		} catch (Exception e1) {
+			logger.error("Update Api Exception occoured ", e1);
+		}
+		logger.info("Update Api: shard id: "+shardId+" for record id: "+osIdVal);
 		shardManager.activateShard(shardId);
         try {
             //databaseProviderWrapper.setDatabaseProvider(shardManager.getDefaultShard());
@@ -379,24 +395,6 @@ public class RegistryController {
 		keyToPurge.add(JsonldConstants.TYPE);
 		return keyToPurge;
 
-	}
-
-	private Vertex parentVertex() {
-		Vertex parentV = null;
-		try {
-			DatabaseProvider databaseProvider = databaseProviderWrapper.getDatabaseProvider();
-			Graph g = databaseProvider.getGraphStore();
-
-			// TODO: Apply default grouping - to be removed.
-			Transaction tx = databaseProvider.startTransaction(g);
-			parentV = new TPGraphMain().ensureParentVertex(g, "Teacher_GROUP");
-			databaseProvider.commitTransaction(g, tx);
-
-		} catch (Exception e) {
-			logger.info(e.getMessage());
-		}
-
-		return parentV;
 	}
 
 }
