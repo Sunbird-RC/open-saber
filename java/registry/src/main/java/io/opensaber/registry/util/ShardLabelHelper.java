@@ -2,6 +2,7 @@ package io.opensaber.registry.util;
 
 public class ShardLabelHelper {
 	private final static String SEPARATOR = "-";
+	private final static String REGEX_UUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
 	/**
 	 * Forms label with shard info
 	 * @param shardLabel
@@ -26,7 +27,11 @@ public class ShardLabelHelper {
      * @return
      */
     public static boolean isShardLabel(String label) {
-        return label.contains(SEPARATOR);
+    	String uuid = label.substring(label.indexOf(SEPARATOR)+1, label.length());
+    	if (uuid.matches(REGEX_UUID)) {
+    		return true;
+    	}    	   	
+    	return false;
     }
 
 }

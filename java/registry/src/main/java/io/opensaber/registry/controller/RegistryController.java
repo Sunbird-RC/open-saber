@@ -103,34 +103,39 @@ public class RegistryController {
 		response.setResult("API to be supported soon");
 		responseParams.setStatus(Response.Status.SUCCESSFUL);
 
-//		try {
-//			watch.start("RegistryController.searchEntity");
-//			String jenaJson = searchService.searchFramed(rdf);
-//			Data<Object> data = new Data<>(jenaJson);
-//			Configuration config = configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
-//					Direction.OUT);
-//
-//			ITransformer<Object> responseTransformer = transformer.getInstance(config);
-//			responseTransformer.setPurgeData(getKeysToPurge());
-//			Data<Object> resultContent = responseTransformer.transform(data);
-//			response.setResult(resultContent.getData());
-//			response.setResult("API to be supported soon");
-//			responseParams.setStatus(Response.Status.SUCCESSFUL);
-//			watch.stop("RegistryController.searchEntity");
-//		} catch (AuditFailedException | RecordNotFoundException | TypeNotProvidedException
-//				| TransformationException e) {
-//			logger.error(
-//					"AuditFailedException | RecordNotFoundException | TypeNotProvidedException in controller while adding entity !",
-//					e);
-//			response.setResult(result);
-//			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-//			responseParams.setErrmsg(e.getMessage());
-//		} catch (Exception e) {
-//			logger.error("Exception in controller while searching entities !", e);
-//			response.setResult(result);
-//			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-//			responseParams.setErrmsg(e.getMessage());
-//		}
+		// try {
+		// watch.start("RegistryController.searchEntity");
+		// String jenaJson = searchService.searchFramed(rdf);
+		// Data<Object> data = new Data<>(jenaJson);
+		// Configuration config =
+		// configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
+		// Direction.OUT);
+		//
+		// ITransformer<Object> responseTransformer =
+		// transformer.getInstance(config);
+		// responseTransformer.setPurgeData(getKeysToPurge());
+		// Data<Object> resultContent = responseTransformer.transform(data);
+		// response.setResult(resultContent.getData());
+		// response.setResult("API to be supported soon");
+		// responseParams.setStatus(Response.Status.SUCCESSFUL);
+		// watch.stop("RegistryController.searchEntity");
+		// } catch (AuditFailedException | RecordNotFoundException |
+		// TypeNotProvidedException
+		// | TransformationException e) {
+		// logger.error(
+		// "AuditFailedException | RecordNotFoundException |
+		// TypeNotProvidedException in controller while adding entity !",
+		// e);
+		// response.setResult(result);
+		// responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+		// responseParams.setErrmsg(e.getMessage());
+		// } catch (Exception e) {
+		// logger.error("Exception in controller while searching entities !",
+		// e);
+		// response.setResult(result);
+		// responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+		// responseParams.setErrmsg(e.getMessage());
+		// }
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
@@ -221,9 +226,9 @@ public class RegistryController {
 			String resultId = registryService.addEntity("shard1", jsonString);
 
 			Map resultMap = new HashMap();
-			//form label.
-			String label = ShardLabelHelper.getLabel(shard.getShardId(), dbConnectionInfoMgr.getUuidPropertyName());
-			resultMap.put(label, resultId);
+			// form label.
+			String label = ShardLabelHelper.getLabel(shard.getShardId(), resultId);
+			resultMap.put(dbConnectionInfoMgr.getUuidPropertyName(), label);
 
 			result.put("entity", resultMap);
 			response.setResult(result);
@@ -250,10 +255,14 @@ public class RegistryController {
 
 		String shardName = null;
 
-		if(ShardLabelHelper.isShardLabel(label))
+		if (ShardLabelHelper.isShardLabel(label)) {
 			shardName = ShardLabelHelper.getShardName(label);
-		else
-			shardName = "default";
+
+		} else {
+			logger.error("Record identifier {} is not valid ", label);
+			throw new IllegalArgumentException("Record identifier is not valid");
+
+		}
 		shardManager.activateShard(shardName);
 		logger.info("Read Api: shard id: " + shardName + " for record id: " + label);
 
@@ -282,11 +291,11 @@ public class RegistryController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-    @ResponseBody
-    @RequestMapping(value = "/update", method = RequestMethod.POST)
-    public ResponseEntity<Response> updateTP2Graph() throws ParseException, IOException, CustomException {
-        ResponseParams responseParams = new ResponseParams();
-        Response response = new Response(Response.API_ID.UPDATE, "OK", responseParams);
+	@ResponseBody
+	@RequestMapping(value = "/update", method = RequestMethod.POST)
+	public ResponseEntity<Response> updateTP2Graph() throws ParseException, IOException, CustomException {
+		ResponseParams responseParams = new ResponseParams();
+		Response response = new Response(Response.API_ID.UPDATE, "OK", responseParams);
 
 		String dataObject = apiMessage.getRequest().getRequestMapAsString();
 		JSONParser parser = new JSONParser();
@@ -294,26 +303,30 @@ public class RegistryController {
 		String label = json.get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
 
 		String shardName = null;
-		if(ShardLabelHelper.isShardLabel(label))
+		if (ShardLabelHelper.isShardLabel(label)) {
 			shardName = ShardLabelHelper.getShardName(label);
-		else
-			shardName = "default";
+
+		} else {
+			logger.error("Record identifier {} is not valid ", label);
+			throw new IllegalArgumentException("Record identifier is not valid");
+
+		}
 		shardManager.activateShard(shardName);
 		logger.info("Update Api: shard id: " + shardName + " for record id: " + label);
-		
-        try {
-            watch.start("RegistryController.update");
-            registryService.updateEntity(dataObject);
-            responseParams.setErrmsg("");
-            responseParams.setStatus(Response.Status.SUCCESSFUL);
-            watch.stop("RegistryController.update");
-            logger.debug("RegistryController: entity updated !");
-        } catch (Exception e) {
-            logger.error("RegistryController: Exception while updating entity (without id)!", e);
-            responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-            responseParams.setErrmsg(e.getMessage());
-        }
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+
+		try {
+			watch.start("RegistryController.update");
+			registryService.updateEntity(dataObject);
+			responseParams.setErrmsg("");
+			responseParams.setStatus(Response.Status.SUCCESSFUL);
+			watch.stop("RegistryController.update");
+			logger.debug("RegistryController: entity updated !");
+		} catch (Exception e) {
+			logger.error("RegistryController: Exception while updating entity (without id)!", e);
+			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+			responseParams.setErrmsg(e.getMessage());
+		}
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 
 }
