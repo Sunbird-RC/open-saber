@@ -8,14 +8,10 @@ import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.pojos.Response;
 import io.opensaber.pojos.ResponseParams;
-import io.opensaber.registry.exception.AuditFailedException;
 import io.opensaber.registry.exception.CustomException;
-import io.opensaber.registry.exception.EntityCreationException;
 import io.opensaber.registry.exception.RecordNotFoundException;
-import io.opensaber.registry.exception.TypeNotProvidedException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.Direction;
-import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.service.RegistryAuditService;
@@ -28,10 +24,9 @@ import io.opensaber.registry.transform.Configuration;
 import io.opensaber.registry.transform.ConfigurationHelper;
 import io.opensaber.registry.transform.Data;
 import io.opensaber.registry.transform.ITransformer;
-import io.opensaber.registry.transform.TransformationException;
 import io.opensaber.registry.transform.Transformer;
-import io.opensaber.registry.util.EntityCache;
 import io.opensaber.registry.util.ReadConfigurator;
+import io.opensaber.registry.util.ShardLabelHelper;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -90,8 +85,6 @@ public class RegistryController {
 
 	@Autowired
 	private ShardManager shardManager;
-	@Autowired
-	private EntityCache entityCache;
 
 	/**
 	 * Note: Only one mime type is supported at a time. Pick up the first mime
@@ -226,10 +219,11 @@ public class RegistryController {
 
 			watch.start("RegistryController.addToExistingEntity");
 			String resultId = registryService.addEntity("shard1", jsonString);
-			// adds cache for new shard and record map
-			entityCache.addEntity(shard.getShardId(), resultId);
+
 			Map resultMap = new HashMap();
-			resultMap.put(dbConnectionInfoMgr.getUuidPropertyName(), resultId);
+			//form label.
+			String label = ShardLabelHelper.getLabel(shard.getShardId(), dbConnectionInfoMgr.getUuidPropertyName());
+			resultMap.put(label, resultId);
 
 			result.put("entity", resultMap);
 			response.setResult(result);
@@ -250,25 +244,25 @@ public class RegistryController {
 		String dataObject = apiMessage.getRequest().getRequestMapAsString();
 		JSONParser parser = new JSONParser();
 		JSONObject json = (JSONObject) parser.parse(dataObject);
-		String osIdVal = json.get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
+		String label = json.get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
-		String shardId = null;
-		try {
-			shardId = entityCache.getShard(osIdVal);
-		} catch (Exception e1) {
-			logger.error("Read Api Exception occoured ", e1);
-		}
-		shardManager.activateShard(shardId);
-		logger.info("Read Api: shard id: " + shardId + " for record id: " + osIdVal);
+		String shardName = null;
+
+		if(ShardLabelHelper.isShardLabel(label))
+			shardName = ShardLabelHelper.getShardName(label);
+		else
+			shardName = "default";
+		shardManager.activateShard(shardName);
+		logger.info("Read Api: shard id: " + shardName + " for record id: " + label);
 
 		ReadConfigurator configurator = new ReadConfigurator();
 		boolean includeSignatures = (boolean) apiMessage.getRequest().getRequestMap().getOrDefault("includeSignatures",
 				false);
 		configurator.setIncludeSignatures(includeSignatures);
 		try {
-			JsonNode resultNode = registryService.getEntity(osIdVal, configurator);
+			JsonNode resultNode = registryService.getEntity(label, configurator);
 			// Transformation based on the mediaType
 			Data<Object> data = new Data<>(resultNode);
 			Configuration config = configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
@@ -297,16 +291,15 @@ public class RegistryController {
 		String dataObject = apiMessage.getRequest().getRequestMapAsString();
 		JSONParser parser = new JSONParser();
 		JSONObject json = (JSONObject) parser.parse(dataObject);
-		String osIdVal = json.get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
+		String label = json.get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
 
-		String shardId = null;
-		try {
-			shardId = entityCache.getShard(osIdVal);
-		} catch (Exception e1) {
-			logger.error("Update Api Exception occoured ", e1);
-		}
-		shardManager.activateShard(shardId);
-		logger.info("Update Api: shard id: " + shardId + " for record id: " + osIdVal);
+		String shardName = null;
+		if(ShardLabelHelper.isShardLabel(label))
+			shardName = ShardLabelHelper.getShardName(label);
+		else
+			shardName = "default";
+		shardManager.activateShard(shardName);
+		logger.info("Update Api: shard id: " + shardName + " for record id: " + label);
 		
         try {
             watch.start("RegistryController.update");
@@ -322,14 +315,5 @@ public class RegistryController {
         }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
-	/*
-	 * To set the keys(like @type to be trim of a json
-	 */
-	private List<String> getKeysToPurge() {
-		keyToPurge.add(JsonldConstants.TYPE);
-		return keyToPurge;
-
-	}
 
 }
