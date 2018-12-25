@@ -30,8 +30,9 @@ public class ShardLabelHelper {
     	String uuid = label.substring(label.indexOf(SEPARATOR)+1, label.length());
     	if (uuid.matches(REGEX_UUID)) {
     		return true;
-    	}    	   	
-    	return false;
+    	} else{
+        	return false;
+    	}
     }
 
 }
