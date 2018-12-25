@@ -20,8 +20,8 @@ public class ShardAdvisor {
 	public void registerShardAdvisor(String advisorClassName, DBConnectionInfoMgr dbConnectionInfoMgr)
 			throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException,
 			IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		Class<?> clazz = Class.forName(advisorClassName);
-		IShardAdvisor advisor = (IShardAdvisor) clazz.getConstructor(DBConnectionInfoMgr.class)
+		Class<?> advisorClass = Class.forName(advisorClassName);
+		IShardAdvisor advisor = (IShardAdvisor) advisorClass.getConstructor(DBConnectionInfoMgr.class)
 				.newInstance(dbConnectionInfoMgr);
 		logger.info("Registered shard advisor class: " + advisorClassName);
 		advisors.put(advisorClassName, advisor);
@@ -34,7 +34,6 @@ public class ShardAdvisor {
 	 * @return
 	 * @throws IOException
 	 */
-
 	public IShardAdvisor getShardAdvisor(String advisorClassName) {
 		IShardAdvisor advisory = advisors.getOrDefault(advisorClassName, defaultShardAdvisor);
 		return advisory;

@@ -263,8 +263,9 @@ public class GenericConfiguration implements WebMvcConfigurer {
 			throws IOException, ClassNotFoundException, NoSuchMethodException, SecurityException,
 			InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		ShardAdvisor shardAdvisor = new ShardAdvisor();
-		shardAdvisor.registerShardAdvisor(dBConnectionInfoMgr().getShardAdvisorClassName(), dBConnectionInfoMgr());
-		return shardAdvisor.getShardAdvisor(dBConnectionInfoMgr().getShardAdvisorClassName());
+		DBConnectionInfoMgr connectionMngr = dBConnectionInfoMgr();
+		shardAdvisor.registerShardAdvisor(connectionMngr.getShardAdvisorClassName(), connectionMngr);
+		return shardAdvisor.getShardAdvisor(connectionMngr.getShardAdvisorClassName());
 	}
 
 	@Bean
