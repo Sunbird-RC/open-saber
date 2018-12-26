@@ -33,8 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.jena.rdf.model.Model;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -243,10 +241,7 @@ public class RegistryController {
 
 	@RequestMapping(value = "/read", method = RequestMethod.POST)
 	public ResponseEntity<Response> greadGraph2Json(@RequestHeader HttpHeaders header) throws Exception {
-		String dataObject = apiMessage.getRequest().getRequestMapAsString();
-		JSONParser parser = new JSONParser();
-		JSONObject json = (JSONObject) parser.parse(dataObject);
-		String label = json.get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
+		String label = apiMessage.getRequest().getRequestMap().get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
@@ -294,10 +289,8 @@ public class RegistryController {
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.UPDATE, "OK", responseParams);
 
+		String label = apiMessage.getRequest().getRequestMap().get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
 		String dataObject = apiMessage.getRequest().getRequestMapAsString();
-		JSONParser parser = new JSONParser();
-		JSONObject json = (JSONObject) parser.parse(dataObject);
-		String label = json.get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
 
 		String shardName = null;
 		if (ShardLabelHelper.isShardLabel(label)) {
