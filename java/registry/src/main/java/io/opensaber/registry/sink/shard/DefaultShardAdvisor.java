@@ -8,16 +8,14 @@ import org.springframework.stereotype.Component;
 /**
  * This is the default shard advisor.
  * The first entry in the application config is chosen as the only default.
+ * Must be extended for providing custom shard advisor.
  */
 @Component
 public class DefaultShardAdvisor implements IShardAdvisor {
 
-	private DBConnectionInfoMgr dBConnectionInfoMgr;
-
 	@Autowired
-	public DefaultShardAdvisor(DBConnectionInfoMgr dBConnectionInfoMgr) {
-		this.dBConnectionInfoMgr = dBConnectionInfoMgr;
-	}
+	public DBConnectionInfoMgr dBConnectionInfoMgr;
+
 
 	/**
 	 * Gets the default shard
@@ -26,4 +24,5 @@ public class DefaultShardAdvisor implements IShardAdvisor {
 	public DBConnectionInfo getShard(Object attributeValue) {
 		return dBConnectionInfoMgr.getConnectionInfo().get(0);
 	}
+
 }

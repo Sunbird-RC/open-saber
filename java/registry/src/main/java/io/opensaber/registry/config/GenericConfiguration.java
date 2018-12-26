@@ -258,9 +258,9 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public IShardAdvisor shardAdvisor() {
-		ShardAdvisor shardAdvisor = new ShardAdvisor(dBConnectionInfoMgr());
-		return shardAdvisor.getInstance();
+	public IShardAdvisor shardAdvisor() {		
+		ShardAdvisor shardAdvisor = new ShardAdvisor();
+		return shardAdvisor.getInstance(dBConnectionInfoMgr().getShardAdvisorClassName());
 	}
 
 	@Bean

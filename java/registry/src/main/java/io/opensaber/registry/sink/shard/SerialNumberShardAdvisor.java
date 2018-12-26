@@ -1,8 +1,6 @@
 package io.opensaber.registry.sink.shard;
 
 import io.opensaber.registry.model.DBConnectionInfo;
-import io.opensaber.registry.model.DBConnectionInfoMgr;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -10,13 +8,7 @@ import org.springframework.stereotype.Component;
  * This advisor chooses shards based on the serial number even/odd'ness.
  */
 @Component
-public class SerialNumberShardAdvisor implements IShardAdvisor {
-	private DBConnectionInfoMgr dBConnectionInfoMgr;
-
-	@Autowired
-	public SerialNumberShardAdvisor(DBConnectionInfoMgr dBConnectionInfoMgr) {
-		this.dBConnectionInfoMgr = dBConnectionInfoMgr;
-	}
+public class SerialNumberShardAdvisor extends DefaultShardAdvisor {
 
 	/**
 	 * Based on serialNum, choosing the shard.
