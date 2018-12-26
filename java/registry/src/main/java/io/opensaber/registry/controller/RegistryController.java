@@ -26,6 +26,7 @@ import io.opensaber.registry.transform.Data;
 import io.opensaber.registry.transform.ITransformer;
 import io.opensaber.registry.transform.Transformer;
 import io.opensaber.registry.util.ReadConfigurator;
+import io.opensaber.registry.util.RecordIdentifier;
 import io.opensaber.registry.util.ShardLabelHelper;
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -221,8 +222,9 @@ public class RegistryController {
 			watch.start("RegistryController.addToExistingEntity");
 			String resultId = registryService.addEntity("shard1", jsonString);
 			
+			RecordIdentifier recordId = new RecordIdentifier(shard.getShardId(), resultId);
 			Map resultMap = new HashMap();
-			String label = ShardLabelHelper.getLabel(shard.getShardId(), resultId);
+			String label = ShardLabelHelper.getLabel(recordId);
 			resultMap.put(dbConnectionInfoMgr.getUuidPropertyName(), label);
 
 			result.put("entity", resultMap);
@@ -245,25 +247,16 @@ public class RegistryController {
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
-		String shardName = null;
-		String recordId = null;
-		if (ShardLabelHelper.isShardLabel(label)) {
-			shardName = ShardLabelHelper.getShardName(label);
-			recordId = ShardLabelHelper.getRecordIdentifier(label);
-		} else {
-			logger.error("Record identifier {} is not valid ", label);
-			throw new IllegalArgumentException("Record identifier is not valid");
-
-		}
-		shardManager.activateShard(shardName);
-		logger.info("Read Api: shard id: " + shardName + " for record id: " + label);
+		RecordIdentifier recordId = ShardLabelHelper.getRecordIdentifier(label);		
+		shardManager.activateShard(recordId.getShardLevel());
+		logger.info("Read Api: shard id: " + recordId.getShardLevel() + " for label: " + label);
 
 		ReadConfigurator configurator = new ReadConfigurator();
 		boolean includeSignatures = (boolean) apiMessage.getRequest().getRequestMap().getOrDefault("includeSignatures",
 				false);
 		configurator.setIncludeSignatures(includeSignatures);
 		try {
-			JsonNode resultNode = registryService.getEntity(recordId, configurator);
+			JsonNode resultNode = registryService.getEntity(recordId.getUuid(), configurator);
 			// Transformation based on the mediaType
 			Data<Object> data = new Data<>(resultNode);
 			Configuration config = configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
@@ -292,17 +285,9 @@ public class RegistryController {
 		String label = apiMessage.getRequest().getRequestMap().get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
 		String dataObject = apiMessage.getRequest().getRequestMapAsString();
 
-		String shardName = null;
-		if (ShardLabelHelper.isShardLabel(label)) {
-			shardName = ShardLabelHelper.getShardName(label);
-
-		} else {
-			logger.error("Record identifier {} is not valid ", label);
-			throw new IllegalArgumentException("Record identifier is not valid");
-
-		}
-		shardManager.activateShard(shardName);
-		logger.info("Update Api: shard id: " + shardName + " for record id: " + label);
+		RecordIdentifier recordId = ShardLabelHelper.getRecordIdentifier(label);		
+		shardManager.activateShard(recordId.getShardLevel());
+		logger.info("Update Api: shard id: " + recordId.getShardLevel() + " for uuid: " + recordId.getUuid());
 
 		try {
 			watch.start("RegistryController.update");
