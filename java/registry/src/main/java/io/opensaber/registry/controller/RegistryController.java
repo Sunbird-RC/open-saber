@@ -9,7 +9,6 @@ import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.pojos.Response;
 import io.opensaber.pojos.ResponseParams;
-import io.opensaber.registry.dao.TPGraphMain;
 import io.opensaber.registry.exception.AuditFailedException;
 import io.opensaber.registry.exception.CustomException;
 import io.opensaber.registry.exception.EntityCreationException;
@@ -23,7 +22,6 @@ import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.service.RegistryAuditService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
-import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.DatabaseProviderWrapper;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.sink.shard.ShardManager;
@@ -42,9 +40,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.jena.rdf.model.Model;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -118,62 +113,37 @@ public class RegistryController {
 		Response response = new Response(Response.API_ID.SEARCH, "OK", responseParams);
 		Map<String, Object> result = new HashMap<>();
 
-		try {
-			watch.start("RegistryController.searchEntity");
-			String jenaJson = searchService.searchFramed(rdf);
-			Data<Object> data = new Data<>(jenaJson);
-			Configuration config = configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
-					Direction.OUT);
+		response.setResult("API to be supported soon");
+		responseParams.setStatus(Response.Status.SUCCESSFUL);
 
-			ITransformer<Object> responseTransformer = transformer.getInstance(config);
-			responseTransformer.setPurgeData(getKeysToPurge());
-			Data<Object> resultContent = responseTransformer.transform(data);
-			response.setResult(resultContent.getData());
-			responseParams.setStatus(Response.Status.SUCCESSFUL);
-			watch.stop("RegistryController.searchEntity");
-		} catch (AuditFailedException | RecordNotFoundException | TypeNotProvidedException
-				| TransformationException e) {
-			logger.error(
-					"AuditFailedException | RecordNotFoundException | TypeNotProvidedException in controller while adding entity !",
-					e);
-			response.setResult(result);
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg(e.getMessage());
-		} catch (Exception e) {
-			logger.error("Exception in controller while searching entities !", e);
-			response.setResult(result);
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg(e.getMessage());
-		}
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	@ResponseBody
-	@RequestMapping(value = "/update2", method = RequestMethod.POST)
-	public ResponseEntity<Response> update() {
-		Model rdf = (Model) apiMessage.getLocalMap(Constants.RDF_OBJECT);
-		ResponseParams responseParams = new ResponseParams();
-		Response response = new Response(Response.API_ID.UPDATE, "OK", responseParams);
-
-		try {
-			watch.start("RegistryController.update");
-			registryService.updateEntity(rdf);
-			responseParams.setErrmsg("");
-			responseParams.setStatus(Response.Status.SUCCESSFUL);
-			watch.stop("RegistryController.update");
-			logger.debug("RegistryController: entity updated !");
-		} catch (RecordNotFoundException | EntityCreationException e) {
-			logger.error(
-					"RegistryController: RecordNotFoundException|EntityCreationException while updating entity (without id)!",
-					e);
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg(e.getMessage());
-
-		} catch (Exception e) {
-			logger.error("RegistryController: Exception while updating entity (without id)!", e);
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg(e.getMessage());
-		}
+//		try {
+//			watch.start("RegistryController.searchEntity");
+//			String jenaJson = searchService.searchFramed(rdf);
+//			Data<Object> data = new Data<>(jenaJson);
+//			Configuration config = configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
+//					Direction.OUT);
+//
+//			ITransformer<Object> responseTransformer = transformer.getInstance(config);
+//			responseTransformer.setPurgeData(getKeysToPurge());
+//			Data<Object> resultContent = responseTransformer.transform(data);
+//			response.setResult(resultContent.getData());
+//			response.setResult("API to be supported soon");
+//			responseParams.setStatus(Response.Status.SUCCESSFUL);
+//			watch.stop("RegistryController.searchEntity");
+//		} catch (AuditFailedException | RecordNotFoundException | TypeNotProvidedException
+//				| TransformationException e) {
+//			logger.error(
+//					"AuditFailedException | RecordNotFoundException | TypeNotProvidedException in controller while adding entity !",
+//					e);
+//			response.setResult(result);
+//			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+//			responseParams.setErrmsg(e.getMessage());
+//		} catch (Exception e) {
+//			logger.error("Exception in controller while searching entities !", e);
+//			response.setResult(result);
+//			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+//			responseParams.setErrmsg(e.getMessage());
+//		}
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
@@ -205,36 +175,9 @@ public class RegistryController {
 	public ResponseEntity<Response> fetchAudit(@PathVariable("id") String id) {
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.AUDIT, "OK", responseParams);
+		// if (auditEnabled) {
 
-		if (auditEnabled) {
-			String entityId = registryContext + id;
-
-			try {
-				watch.start("RegistryController.fetchAudit");
-				org.eclipse.rdf4j.model.Model auditModel = registryAuditService.getAuditNode(entityId);
-				logger.debug("Audit Record model :" + auditModel);
-				String jenaJSON = registryAuditService.frameAuditEntity(auditModel);
-				response.setResult(gson.fromJson(jenaJSON, mapType));
-				responseParams.setStatus(Response.Status.SUCCESSFUL);
-				watch.stop("RegistryController.fetchAudit");
-				logger.debug("Controller: audit records fetched !");
-			} catch (RecordNotFoundException e) {
-				logger.error("Controller: RecordNotFoundException while fetching audit !", e);
-				response.setResult(null);
-				responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-				responseParams.setErrmsg(e.getMessage());
-			} catch (Exception e) {
-				logger.error("Controller: Exception while fetching audit !", e);
-				response.setResult(null);
-				responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-				responseParams.setErrmsg("Meh ! You encountered an error!");
-			}
-		} else {
-			logger.info("Controller: Audit is disabled");
-			response.setResult(null);
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg(Constants.AUDIT_IS_DISABLED);
-		}
+		response.setResult("To be implemented soon...");
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
@@ -370,10 +313,11 @@ public class RegistryController {
 		} catch (Exception e1) {
 			logger.error("Update Api Exception occoured ", e1);
 		}
-		logger.info("Update Api: shard id: "+shardId+" for record id: "+osIdVal);
+
 		shardManager.activateShard(shardId);
+		logger.info("Update Api: shard id: " + shardId + " for record id: " + osIdVal);
+		
         try {
-            //databaseProviderWrapper.setDatabaseProvider(shardManager.getDefaultShard());
             watch.start("RegistryController.update");
             registryService.updateEntity(dataObject);
             responseParams.setErrmsg("");

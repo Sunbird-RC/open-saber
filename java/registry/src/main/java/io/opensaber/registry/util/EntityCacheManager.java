@@ -1,23 +1,22 @@
 package io.opensaber.registry.util;
 
-import io.opensaber.registry.dao.TPGraphMain;
+import io.opensaber.registry.dao.RegistryDaoImpl;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.DBConnectionInfo;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.sink.DBProviderFactory;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.OSGraph;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class EntityCacheManager {
@@ -27,7 +26,7 @@ public class EntityCacheManager {
     @Autowired
     private Environment environment;
     @Autowired
-    private TPGraphMain tpGraphMain;
+    private RegistryDaoImpl tpGraphMain;
     @Autowired
     private DBProviderFactory dbProviderFactory;
     private Set<String> defintionNames;

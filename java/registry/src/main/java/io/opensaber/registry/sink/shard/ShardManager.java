@@ -40,7 +40,6 @@ public class ShardManager {
 	    DatabaseProvider databaseProvider = dbProviderFactory.getInstance(connectionInfo);
 	    shard.setShardId(connectionInfo.getShardId());
 	    shard.setDatabaseProvider(databaseProvider);
-	    searchService.setDatabaseProvider(databaseProvider);
 		logger.info("Activated shard "+connectionInfo.getShardId()+" for attribute value "+attributeValue);
 	}
 
@@ -82,8 +81,8 @@ public class ShardManager {
 	 * @throws CustomException 
 	 */
 	public void activateShard(String shardId) throws CustomException{
-		DBConnectionInfo connectionInfo = dbConnectionInfoMgr.getDBConnectionInfo(shardId);
-		if (connectionInfo != null) {
+		if (shardId != null) {
+			DBConnectionInfo connectionInfo = dbConnectionInfoMgr.getDBConnectionInfo(shardId);
 			DatabaseProvider databaseProvider = dbProviderFactory.getInstance(connectionInfo);
 			shard.setShardId(connectionInfo.getShardId());
 			shard.setDatabaseProvider(databaseProvider);

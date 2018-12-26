@@ -3,6 +3,7 @@ package io.opensaber.registry.dao;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.sink.DatabaseProvider;
@@ -13,7 +14,6 @@ import io.opensaber.registry.util.ParentLabelGenerator;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.RefLabelHelper;
 import io.opensaber.registry.util.TypePropertyHelper;
-
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -34,7 +34,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 @Component("tpGraphMain")
-public class TPGraphMain {
+public class RegistryDaoImpl implements IRegistryDao {
     @Value("${database.uuidPropertyName}")
     public String uuidPropertyName;
 
@@ -49,7 +49,7 @@ public class TPGraphMain {
 
     private List<String> privatePropertyList;
 
-    private Logger logger = LoggerFactory.getLogger(TPGraphMain.class);
+    private Logger logger = LoggerFactory.getLogger(RegistryDaoImpl.class);
 
     private OpenSaberInstrumentation watch = new OpenSaberInstrumentation(true);
 
@@ -233,7 +233,7 @@ public class TPGraphMain {
      * @param rootNode
      * @return
      */
-    public String addEntity(String shardId, JsonNode rootNode) throws Exception {
+    public String addEntity(String shardId, JsonNode rootNode) {
         String entityId = "";
         DatabaseProvider databaseProvider = shard.getDatabaseProvider();
         try (OSGraph osGraph = databaseProvider.getOSGraph()) {
@@ -243,7 +243,7 @@ public class TPGraphMain {
                 databaseProvider.commitTransaction(graph, tx);
             }
         } catch (Exception e) {
-            logger.error("Can't close graph",e);
+            logger.error("Can't close graph", e);
         }
         return entityId;
     }
@@ -277,6 +277,7 @@ public class TPGraphMain {
         return result;
     }
 
+
     /** This method update the vertex with inputJsonNode
      * @param graph
      * @param rootVertex
@@ -285,32 +286,59 @@ public class TPGraphMain {
     public void updateVertex(Graph graph, Vertex rootVertex, JsonNode inputJsonNode) {
         inputJsonNode.fields().forEachRemaining(record -> {
             JsonNode elementNode = record.getValue();
-            if(elementNode.isValueNode()){
-               // rootVertex.property(record.getKey(),record.getValue().asText());
-            } else if(elementNode.isObject()){
-                deleteExistingVerticesIfPresent(graph,rootVertex,elementNode,record.getKey());
-                //Add new vertex
-                Vertex newChildVertex = createVertex(graph,record.getKey());
-                elementNode.fields().forEachRemaining(subElementNode -> {
-                    JsonNode value = subElementNode.getValue();
-                    if(value.isObject()){
-
-                    } else {
-                            if(value.isValueNode() && !value.equals("@type")){
-                            newChildVertex.property(subElementNode.getKey(),value.asText());
-                        }
+            if (elementNode.isValueNode()) {
+                 rootVertex.property(record.getKey(),record.getValue().asText());
+            } else if (elementNode.isObject()) {
+                parseJsonObjectAndUpdate(elementNode,graph,rootVertex,record.getKey());
+            } else if(elementNode.isArray()){
+                elementNode.forEach(arrayElementNode -> {
+                    if(arrayElementNode.isObject()){
+                        parseJsonObjectAndUpdate(arrayElementNode,graph,rootVertex,record.getKey());
                     }
+
                 });
-                //newChildVertex.property(RefLabelHelper.getLabel(uuidPropertyName, newChildVertex.id().toString()));
-                rootVertex.property(RefLabelHelper.getLabel(record.getKey(), uuidPropertyName), newChildVertex.id().toString());
-                addEdge(record.getKey(),rootVertex,newChildVertex);
+
             }
         });
     }
 
-    private void deleteExistingVerticesIfPresent(Graph graph, Vertex rootVertex, JsonNode childNode, String label) {
+    private void parseJsonObjectAndUpdate(JsonNode elementNode, Graph graph, Vertex rootVertex, String parentNodeLabel) {
+        if(null == elementNode.get(uuidPropertyName)){
+            deleteExistingVerticesIfPresent(graph, rootVertex, (ObjectNode)elementNode, parentNodeLabel);
+            //Add new vertex
+            Vertex newChildVertex = createVertex(graph, parentNodeLabel);
+            elementNode.fields().forEachRemaining(subElementNode -> {
+                JsonNode value = subElementNode.getValue();
+                if (value.isObject()) {
+
+                } else {
+                    if (value.isValueNode() && !value.equals("@type")) {
+                        newChildVertex.property(subElementNode.getKey(), value.asText());
+                    }
+                }
+            });
+            //newChildVertex.property(RefLabelHelper.getLabel(uuidPropertyName, newChildVertex.id().toString()));
+            rootVertex.property(RefLabelHelper.getLabel(parentNodeLabel, uuidPropertyName), newChildVertex.id().toString());
+            addEdge(parentNodeLabel, rootVertex, newChildVertex);
+        } else {
+            Vertex updateVertex = graph.vertices(elementNode.get(uuidPropertyName).asText()).next();
+            elementNode.fields().forEachRemaining(subElementNode -> {
+                JsonNode value = subElementNode.getValue();
+                if (value.isObject()) {
+
+                } else {
+                    String keyType = subElementNode.getKey();
+                    if (value.isValueNode() && !keyType.equals("@type") && !keyType.equals(uuidPropertyName)) {
+                        updateVertex.property(keyType, value.asText());
+                    }
+                }
+            });
+        }
+    }
+
+    private void deleteExistingVerticesIfPresent(Graph graph, Vertex rootVertex, ObjectNode childNode, String label) {
         VertexProperty vp = rootVertex.property(label+"_"+uuidPropertyName);
-        Object vertexOsid = (String) vp.value();
+        String vertexOsid = (String) vp.value();
         Iterator<Vertex> vertices = graph.vertices(vertexOsid);
         //deleting existing vertices
         vertices.forEachRemaining(deleteVertex -> {
@@ -318,5 +346,4 @@ public class TPGraphMain {
             deleteVertex.remove();
         });
     }
-
 }

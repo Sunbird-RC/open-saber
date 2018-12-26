@@ -40,7 +40,7 @@
       "properties": {
         "signatures": {
           "$id": "#/properties/signatures",
-          "type": "array",
+          "type": ["array","object"],
           "items": {
             "$ref": "Signature.json#/definitions/Signature"
           },
@@ -68,7 +68,7 @@
         },
         "gender": {
           "$id": "#/properties/gender",
-          "$ref": "Common.json#/definitions/Gender"
+          "$ref": "Common.json#/definitions/TeacherGender"
         },
         "birthDate": {
           "$id": "#/properties/birthDate",
