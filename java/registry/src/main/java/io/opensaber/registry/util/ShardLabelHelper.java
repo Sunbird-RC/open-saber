@@ -33,8 +33,12 @@ public class ShardLabelHelper {
 	 * @return
 	 */
 	public static boolean isShardLabel(String label) {
-		String uuid = label.substring(label.indexOf(SEPARATOR) + 1, label.length());
+		String uuid = getRecordIdentifier(label);
 		return uuid.matches(REGEX_UUID);
+	}
+	
+	public static String getRecordIdentifier(String label){
+		return label.substring(label.indexOf(SEPARATOR) + 1, label.length());
 	}
 
 }

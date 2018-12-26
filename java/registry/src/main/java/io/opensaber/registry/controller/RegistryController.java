@@ -212,21 +212,18 @@ public class RegistryController {
 		String entityType = apiMessage.getRequest().getEntityType();
 
 		try {
+			
 			Map requestMap = ((HashMap<String, Object>) apiMessage.getRequest().getRequestMap().get(entityType));
-			logger.info(
-					"Add api: entity type " + requestMap + " and shard propery: " + shardManager.getShardProperty());
-
+			logger.info("Add api: entity type " + requestMap + " and shard propery: " + shardManager.getShardProperty());
 			logger.info("request: " + requestMap.get(shardManager.getShardProperty()));
 			Object attribute = requestMap.getOrDefault(shardManager.getShardProperty(), null);
 			logger.info("attribute " + attribute);
-
 			Shard shard = shardManager.getShard(attribute);
-
+			
 			watch.start("RegistryController.addToExistingEntity");
 			String resultId = registryService.addEntity("shard1", jsonString);
-
+			
 			Map resultMap = new HashMap();
-			// form label.
 			String label = ShardLabelHelper.getLabel(shard.getShardId(), resultId);
 			resultMap.put(dbConnectionInfoMgr.getUuidPropertyName(), label);
 
@@ -254,10 +251,10 @@ public class RegistryController {
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
 		String shardName = null;
-
+		String recordId = null;
 		if (ShardLabelHelper.isShardLabel(label)) {
 			shardName = ShardLabelHelper.getShardName(label);
-
+			recordId = ShardLabelHelper.getRecordIdentifier(label);
 		} else {
 			logger.error("Record identifier {} is not valid ", label);
 			throw new IllegalArgumentException("Record identifier is not valid");
@@ -271,7 +268,7 @@ public class RegistryController {
 				false);
 		configurator.setIncludeSignatures(includeSignatures);
 		try {
-			JsonNode resultNode = registryService.getEntity(label, configurator);
+			JsonNode resultNode = registryService.getEntity(recordId, configurator);
 			// Transformation based on the mediaType
 			Data<Object> data = new Data<>(resultNode);
 			Configuration config = configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
