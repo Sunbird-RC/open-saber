@@ -36,7 +36,6 @@ import io.opensaber.validators.IValidate;
 import io.opensaber.validators.ValidationFilter;
 import io.opensaber.validators.json.jsonschema.JsonValidationServiceImpl;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -259,13 +258,9 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public IShardAdvisor shardAdvisor()
-			throws IOException, ClassNotFoundException, NoSuchMethodException, SecurityException,
-			InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		ShardAdvisor shardAdvisor = new ShardAdvisor();
-		DBConnectionInfoMgr connectionMngr = dBConnectionInfoMgr();
-		shardAdvisor.registerShardAdvisor(connectionMngr.getShardAdvisorClassName(), connectionMngr);
-		return shardAdvisor.getShardAdvisor(connectionMngr.getShardAdvisorClassName());
+	public IShardAdvisor shardAdvisor() {
+		ShardAdvisor shardAdvisor = new ShardAdvisor(dBConnectionInfoMgr());
+		return shardAdvisor.getInstance();
 	}
 
 	@Bean
