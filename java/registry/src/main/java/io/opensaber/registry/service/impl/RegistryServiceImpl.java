@@ -87,6 +87,9 @@ public class RegistryServiceImpl implements RegistryService {
     @Value("${registry.context.base}")
     private String registryContext;
 
+    @Value("${registry.filter.keys}")
+    private String filterKeys;
+
     @Autowired
     private Shard shard;
 
@@ -196,7 +199,7 @@ public class RegistryServiceImpl implements RegistryService {
                 ObjectNode entityNode = null;
                 vertexIterator = graph.vertices(idProp);
                 inputNodeVertex = vertexIterator.hasNext() ? vertexIterator.next(): null;
-                if("Teacher".equalsIgnoreCase(inputNodeVertex.label())){
+                if(registryRootEntityType.equalsIgnoreCase(inputNodeVertex.label())){
                     entityNode = (ObjectNode) vr.read(inputNodeVertex.id().toString());
                 } else {
                     Vertex rootVertex = inputNodeVertex.vertices(Direction.IN,inputNodeVertex.label()).next();
@@ -250,20 +253,17 @@ public class RegistryServiceImpl implements RegistryService {
                 if(subEntity.get(propKey).size() == 0) {
                     subEntity.set(propKey,propValue);
                 } else if(subEntity.get(propKey).isObject()) {
-                    List<String> filterKeys = new ArrayList<String>();
-                    //filterKeys.add("osid");
-                    filterKeys.add("@type");
+                    List<String> filterKeys = Arrays.asList(this.filterKeys.split(","));
                     //removing keys with name osid and type
-                    removeOsidAndType((ObjectNode) subEntity.get(propKey),filterKeys);
+                    removefilteredKeys((ObjectNode) subEntity.get(propKey),filterKeys);
                     //constructNewNodeToParent
                     subEntity.set(propKey,propValue);
                 }
             } else if(subEntity.get(propKey).isArray()){
-                List<String> filterKeys = new ArrayList<String>();
-                //filterKeys.add("osid");
-                filterKeys.add("@type");
+                List<String> filterKeys = Arrays.asList(this.filterKeys.split(","));
                 propValue.forEach(arrayElement -> {
-                    removeOsidAndType((ObjectNode) arrayElement,filterKeys);
+                    //removing keys with name @type
+                    removefilteredKeys((ObjectNode) arrayElement,filterKeys);
                 });
                 //constructNewNodeToParent
                 subEntity.set(propKey,propValue);
@@ -271,21 +271,30 @@ public class RegistryServiceImpl implements RegistryService {
         });
     }
 
+    /** removes the filtered keys from the json node
+     * @param objectNode
+     * @param filterKeys
+     */
     //to-do testing needs to be done
-    private void removeOsidAndType(ObjectNode objectNode, List<String> filterKeys) {
+    private void removefilteredKeys(ObjectNode objectNode, List<String> filterKeys) {
         objectNode.remove(filterKeys);
         objectNode.fields().forEachRemaining(element -> {
             JsonNode elementNode  = element.getValue();
              if(elementNode.isObject()){
-                removeOsidAndType((ObjectNode) elementNode, filterKeys);
+                removefilteredKeys((ObjectNode) elementNode, filterKeys);
             }
         });
     }
 
+    /** Gives required JsonNode from the Parent object based on the key
+     * @param entityNode
+     * @param entityKey
+     * @return
+     */
     private ObjectNode getSubEntityFromRootNode(ObjectNode entityNode, String entityKey){
         ObjectNode subEntity = (ObjectNode) entityNode.get(entityKey);
         if(null == subEntity){
-            subEntity = (ObjectNode) entityNode.get("Teacher").get(entityKey);
+            subEntity = (ObjectNode) entityNode.get(registryRootEntityType).get(entityKey);
         }
         return subEntity;
     }

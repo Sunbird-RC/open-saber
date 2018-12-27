@@ -9,11 +9,8 @@ import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.pojos.Response;
 import io.opensaber.pojos.ResponseParams;
-import io.opensaber.registry.exception.AuditFailedException;
 import io.opensaber.registry.exception.CustomException;
-import io.opensaber.registry.exception.EntityCreationException;
 import io.opensaber.registry.exception.RecordNotFoundException;
-import io.opensaber.registry.exception.TypeNotProvidedException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.Direction;
 import io.opensaber.registry.middleware.util.Constants.JsonldConstants;
@@ -22,14 +19,13 @@ import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.service.RegistryAuditService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
-import io.opensaber.registry.sink.DatabaseProviderWrapper;
+
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.sink.shard.ShardManager;
 import io.opensaber.registry.transform.Configuration;
 import io.opensaber.registry.transform.ConfigurationHelper;
 import io.opensaber.registry.transform.Data;
 import io.opensaber.registry.transform.ITransformer;
-import io.opensaber.registry.transform.TransformationException;
 import io.opensaber.registry.transform.Transformer;
 import io.opensaber.registry.util.EntityCache;
 import io.opensaber.registry.util.ReadConfigurator;
@@ -76,8 +72,6 @@ public class RegistryController {
 	private String registryContext;
 	@Autowired
 	private APIMessage apiMessage;
-	@Autowired
-	private DatabaseProviderWrapper databaseProviderWrapper;
 	@Autowired
 	private DBConnectionInfoMgr dbConnectionInfoMgr;
 	@Autowired
@@ -307,13 +301,13 @@ public class RegistryController {
 		String entityType = apiMessage.getRequest().getEntityType();
 		Map<String, Object> reqMap = (Map<String, Object>) apiMessage.getRequest().getRequestMap().get(entityType);
 		String osIdVal = reqMap.get(uuidPropertyName).toString();
+
 		String shardId = null;
 		try {
 			shardId = entityCache.getShard(osIdVal);
 		} catch (Exception e1) {
 			logger.error("Update Api Exception occoured ", e1);
 		}
-
 		shardManager.activateShard(shardId);
 		logger.info("Update Api: shard id: " + shardId + " for record id: " + osIdVal);
 		
