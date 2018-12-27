@@ -17,7 +17,6 @@ import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.service.RegistryAuditService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
-import io.opensaber.registry.sink.DatabaseProviderWrapper;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.sink.shard.ShardManager;
 import io.opensaber.registry.transform.Configuration;
@@ -67,8 +66,6 @@ public class RegistryController {
 	private String registryContext;
 	@Autowired
 	private APIMessage apiMessage;
-	@Autowired
-	private DatabaseProviderWrapper databaseProviderWrapper;
 	@Autowired
 	private DBConnectionInfoMgr dbConnectionInfoMgr;
 
