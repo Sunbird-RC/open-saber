@@ -10,6 +10,7 @@ import java.util.Collections;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.opensaber.registry.sink.shard.ShardManager;
 import io.opensaber.registry.util.ReadConfigurator;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
@@ -62,6 +63,8 @@ public class RegistryServiceImplTest extends RegistryTestBase {
 	private String registryContextBase;
 	@Autowired
 	private RegistryServiceImpl registryService;
+	@Autowired
+	private ShardManager shardManager;
 
 	@Mock
 	private RestTemplate mockRestTemplate;
@@ -128,12 +131,7 @@ public class RegistryServiceImplTest extends RegistryTestBase {
 	public void test_update_parent_entity_after_creating() throws Exception {
 
 		String validJsonString = getValidJsonString(VALID_TEST_INPUT_JSON);
-		//Vertex parentVertex = parentVertex(databaseProvider);
-		//RegistryDaoImpl tpGraph = new RegistryDaoImpl(databaseProvider, String.valueOf(parentVertex.id()));
-		/*String resultId = registryService.createTP2Graph(validJsonString, parentVertex, tpGraph);
-        String updatedInput = getValidStringForUpdate(resultId);
-        registryService.updateEntity(updatedInput, tpGraph);
-        JsonNode readJson = tpGraph.readGraph2Json(databaseProvider.getGraphStore(),resultId);*/
+		shardManager.activateShard("");
 		ReadConfigurator configurator = new ReadConfigurator();
         String resultId = registryService.addEntity("",validJsonString);
         String updatedInput = getValidStringForUpdate(resultId);

@@ -3,8 +3,8 @@ package io.opensaber.registry.dao;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.OpenSaberInstrumentation;
+import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.OSGraph;
@@ -15,12 +15,7 @@ import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.RefLabelHelper;
 import io.opensaber.registry.util.TypePropertyHelper;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -278,72 +273,109 @@ public class RegistryDaoImpl implements IRegistryDao {
     }
 
 
-    /** This method update the vertex with inputJsonNode
+    /** This method update the inputJsonNode related vertices in the database
      * @param graph
      * @param rootVertex
      * @param inputJsonNode
      */
     public void updateVertex(Graph graph, Vertex rootVertex, JsonNode inputJsonNode) {
-        inputJsonNode.fields().forEachRemaining(record -> {
-            JsonNode elementNode = record.getValue();
-            if (elementNode.isValueNode()) {
-                 rootVertex.property(record.getKey(),record.getValue().asText());
-            } else if (elementNode.isObject()) {
-                parseJsonObjectAndUpdate(elementNode,graph,rootVertex,record.getKey());
-            } else if(elementNode.isArray()){
-                elementNode.forEach(arrayElementNode -> {
+        inputJsonNode.fields().forEachRemaining(subEntityField -> {
+            String fieldKey = subEntityField.getKey();
+            JsonNode subEntityNode = subEntityField.getValue();
+            if (subEntityNode.isValueNode()) {
+                 rootVertex.property(fieldKey,subEntityField.getValue().asText());
+            } else if (subEntityNode.isObject()) {
+                parseJsonObjectAndUpdate(subEntityNode,graph,rootVertex,fieldKey,false);
+            } else if(subEntityNode.isArray()){
+                List<String> osidList = new ArrayList<String>();
+                subEntityNode.forEach(arrayElementNode -> {
                     if(arrayElementNode.isObject()){
-                        parseJsonObjectAndUpdate(arrayElementNode,graph,rootVertex,record.getKey());
+                      String updatedOsid = parseJsonObjectAndUpdate(arrayElementNode,graph,rootVertex,fieldKey, true);
+                      osidList.add(updatedOsid);
                     }
-
                 });
-
+                deleteUnNecessaryExistingVertices(graph,rootVertex,fieldKey,osidList);
+                String updatedOisdValue = String.join(",",osidList);
+                rootVertex.property(RefLabelHelper.getLabel(fieldKey, uuidPropertyName),updatedOisdValue);
             }
         });
     }
 
-    private void parseJsonObjectAndUpdate(JsonNode elementNode, Graph graph, Vertex rootVertex, String parentNodeLabel) {
+
+    /** Parse the json data to vertex properties, creates new vertex if the node is new else updates the existing vertex
+     * @param elementNode
+     * @param graph
+     * @param rootVertex
+     * @param parentNodeLabel
+     * @param isArrayElement
+     * @return
+     */
+    private String parseJsonObjectAndUpdate(JsonNode elementNode, Graph graph, Vertex rootVertex, String parentNodeLabel, boolean isArrayElement) {
         if(null == elementNode.get(uuidPropertyName)){
-            deleteExistingVerticesIfPresent(graph, rootVertex, (ObjectNode)elementNode, parentNodeLabel);
+            if(!isArrayElement){
+                deleteUnNecessaryExistingVertices(graph, rootVertex, parentNodeLabel, null);
+            }
             //Add new vertex
             Vertex newChildVertex = createVertex(graph, parentNodeLabel);
-            elementNode.fields().forEachRemaining(subElementNode -> {
-                JsonNode value = subElementNode.getValue();
-                if (value.isObject()) {
-
-                } else {
-                    if (value.isValueNode() && !value.equals("@type")) {
-                        newChildVertex.property(subElementNode.getKey(), value.asText());
-                    }
-                }
-            });
-            //newChildVertex.property(RefLabelHelper.getLabel(uuidPropertyName, newChildVertex.id().toString()));
-            rootVertex.property(RefLabelHelper.getLabel(parentNodeLabel, uuidPropertyName), newChildVertex.id().toString());
+            addOrUpdateProperties(elementNode,newChildVertex);
+            if(isArrayElement && rootVertex.property(RefLabelHelper.getLabel(parentNodeLabel, uuidPropertyName)).isPresent()){
+                String existingValue = (String)rootVertex.property(RefLabelHelper.getLabel(parentNodeLabel, uuidPropertyName)).value();
+                rootVertex.property(RefLabelHelper.getLabel(parentNodeLabel, uuidPropertyName),existingValue+","+newChildVertex.id().toString());
+            } else {
+                rootVertex.property(RefLabelHelper.getLabel(parentNodeLabel, uuidPropertyName), newChildVertex.id().toString());
+            }
             addEdge(parentNodeLabel, rootVertex, newChildVertex);
+            return newChildVertex.id().toString();
         } else {
             Vertex updateVertex = graph.vertices(elementNode.get(uuidPropertyName).asText()).next();
-            elementNode.fields().forEachRemaining(subElementNode -> {
-                JsonNode value = subElementNode.getValue();
-                if (value.isObject()) {
-
-                } else {
-                    String keyType = subElementNode.getKey();
-                    if (value.isValueNode() && !keyType.equals("@type") && !keyType.equals(uuidPropertyName)) {
-                        updateVertex.property(keyType, value.asText());
-                    }
-                }
-            });
+            addOrUpdateProperties(elementNode,updateVertex);
+            return updateVertex.id().toString();
         }
     }
 
-    private void deleteExistingVerticesIfPresent(Graph graph, Vertex rootVertex, ObjectNode childNode, String label) {
+    /** updates the vertex properties with given json node elements
+     * @param elementNode
+     * @param vertex
+     */
+    private void addOrUpdateProperties(JsonNode elementNode, Vertex vertex){
+        elementNode.fields().forEachRemaining(subElementNode -> {
+            JsonNode value = subElementNode.getValue();
+            if (value.isObject()) {
+
+            } else {
+                String keyType = subElementNode.getKey();
+                if (value.isValueNode() && !keyType.equals("@type") && !keyType.equals(uuidPropertyName)) {
+                    vertex.property(keyType, value.asText());
+                }
+            }
+        });
+    }
+
+    /**This method is called while updating the entity. If any non-necessary vertex is there, it will be removed from the database
+     * TO-DO need to do soft delete
+     * @param graph
+     * @param rootVertex
+     * @param label
+     * @param osidList
+     */
+    private void deleteUnNecessaryExistingVertices(Graph graph, Vertex rootVertex, String label, List<String> osidList) {
+        String[] osidArray = null;
         VertexProperty vp = rootVertex.property(label+"_"+uuidPropertyName);
-        String vertexOsid = (String) vp.value();
-        Iterator<Vertex> vertices = graph.vertices(vertexOsid);
+        String osidPropValue = (String) vp.value();
+        if(osidPropValue.contains(",")){
+            osidArray = osidPropValue.split(",");
+        } else {
+            osidArray = new String[]{osidPropValue};
+        }
+        Iterator<Vertex> vertices = graph.vertices(osidArray);
         //deleting existing vertices
         vertices.forEachRemaining(deleteVertex -> {
-            deleteVertex.edges(Direction.IN,label).next().remove();
-            deleteVertex.remove();
+            if(osidList == null || (osidList != null && !osidList.contains(deleteVertex.id()))){
+                deleteVertex.edges(Direction.IN,label).next().remove();
+                deleteVertex.remove();
+                /*addEdge(label,deleteVertex,rootVertex);
+                deleteVertex.property(Constants.STATUS_KEYWORD,Constants.STATUS_INACTIVE);*/
+            }
         });
     }
 }
