@@ -27,7 +27,6 @@ import io.opensaber.registry.transform.ITransformer;
 import io.opensaber.registry.transform.Transformer;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.RecordIdentifier;
-import io.opensaber.registry.util.ShardLabelHelper;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -224,7 +223,7 @@ public class RegistryController {
 			
 			RecordIdentifier recordId = new RecordIdentifier(shard.getShardId(), resultId);
 			Map resultMap = new HashMap();
-			String label = ShardLabelHelper.getLabel(recordId);
+			String label = recordId.toString();
 			resultMap.put(dbConnectionInfoMgr.getUuidPropertyName(), label);
 
 			result.put("entity", resultMap);
@@ -247,9 +246,9 @@ public class RegistryController {
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
-		RecordIdentifier recordId = ShardLabelHelper.getRecordIdentifier(label);		
-		shardManager.activateShard(recordId.getShardLevel());
-		logger.info("Read Api: shard id: " + recordId.getShardLevel() + " for label: " + label);
+		RecordIdentifier recordId = RecordIdentifier.parse(label);		
+		shardManager.activateShard(recordId.getShardLabel());
+		logger.info("Read Api: shard id: " + recordId.getShardLabel() + " for label: " + label);
 
 		ReadConfigurator configurator = new ReadConfigurator();
 		boolean includeSignatures = (boolean) apiMessage.getRequest().getRequestMap().getOrDefault("includeSignatures",
@@ -285,9 +284,9 @@ public class RegistryController {
 		String label = apiMessage.getRequest().getRequestMap().get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
 		String dataObject = apiMessage.getRequest().getRequestMapAsString();
 
-		RecordIdentifier recordId = ShardLabelHelper.getRecordIdentifier(label);		
-		shardManager.activateShard(recordId.getShardLevel());
-		logger.info("Update Api: shard id: " + recordId.getShardLevel() + " for uuid: " + recordId.getUuid());
+		RecordIdentifier recordId = RecordIdentifier.parse(label);		
+		shardManager.activateShard(recordId.getShardLabel());
+		logger.info("Update Api: shard id: " + recordId.getShardLabel() + " for uuid: " + recordId.getUuid());
 
 		try {
 			watch.start("RegistryController.update");
