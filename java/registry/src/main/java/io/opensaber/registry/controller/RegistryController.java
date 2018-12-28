@@ -218,7 +218,7 @@ public class RegistryController {
 			watch.start("RegistryController.addToExistingEntity");
 			String resultId = registryService.addEntity("shard1", jsonString);
 			
-			RecordIdentifier recordId = new RecordIdentifier(shard.getShardId(), resultId);
+			RecordIdentifier recordId = new RecordIdentifier(shard.getShardLabel(), resultId);
 			Map resultMap = new HashMap();
 			String label = recordId.toString();
 			resultMap.put(dbConnectionInfoMgr.getUuidPropertyName(), label);
@@ -243,8 +243,9 @@ public class RegistryController {
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
-		RecordIdentifier recordId = RecordIdentifier.parse(label);		
-		shardManager.activateShard(recordId.getShardLabel());
+		RecordIdentifier recordId = RecordIdentifier.parse(label);
+		String shardId = dbConnectionInfoMgr.getShardId(recordId.getShardLabel());
+		shardManager.activateShard(shardId);
 		logger.info("Read Api: shard id: " + recordId.getShardLabel() + " for label: " + label);
 
 		ReadConfigurator configurator = new ReadConfigurator();
@@ -281,8 +282,9 @@ public class RegistryController {
 		String label = apiMessage.getRequest().getRequestMap().get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
 		String dataObject = apiMessage.getRequest().getRequestMapAsString();
 
-		RecordIdentifier recordId = RecordIdentifier.parse(label);		
-		shardManager.activateShard(recordId.getShardLabel());
+		RecordIdentifier recordId = RecordIdentifier.parse(label);
+		String shardId = dbConnectionInfoMgr.getShardId(recordId.getShardLabel());
+		shardManager.activateShard(shardId);
 		logger.info("Update Api: shard id: " + recordId.getShardLabel() + " for uuid: " + recordId.getUuid());
 
 		try {

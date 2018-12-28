@@ -22,10 +22,10 @@ public class SerialNumberShardAdvisor extends DefaultShardAdvisor {
 			Integer serNo = (Integer) serialNumber;
 			switch (serNo % 2) {
 			case 0:
-				connectionInfo = dBConnectionInfoMgr.getDBConnectionInfo("shard1");
+				connectionInfo = dBConnectionInfoMgr.getConnectionInfo().get(0);
 				break;
 			case 1:
-				connectionInfo = dBConnectionInfoMgr.getDBConnectionInfo("shard2");
+				connectionInfo = dBConnectionInfoMgr.getConnectionInfo().get(1);
 				break;
 			default:
 				break;

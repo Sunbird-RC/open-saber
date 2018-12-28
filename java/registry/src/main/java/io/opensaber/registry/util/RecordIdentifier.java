@@ -3,7 +3,7 @@ package io.opensaber.registry.util;
 public class RecordIdentifier {
 
 	private final static String SEPARATOR = "-";
-	private final static String REGEX_UUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+	private final static String REGEX_RECORDID = "[0-9a-z]*-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
 
 	private String shardLabel;
 	private String uuid;
@@ -22,18 +22,19 @@ public class RecordIdentifier {
 	}
 
 	/**
-	 * Returns spring representation of RecordIdentifier Format of
-	 * representation is: shard "-" uuid
+	 * Returns spring representation of RecordIdentifier. Example: shard
+	 * SEPARATOR uuid
 	 */
 	@Override
 	public String toString() {
-		String label = "";
-		if (this.getShardLabel() != null && this.getUuid() != null) {
-			label = this.getShardLabel() + SEPARATOR + this.getUuid();
-		} else if (this.getUuid() != null && isUUIDValid(this.getUuid())) {
-			label = this.getUuid();
+		String result;
+		if (this.getShardLabel() != null && !this.getShardLabel().isEmpty()) {
+			result = this.getShardLabel() + SEPARATOR + this.getUuid();
+		} else {
+			result = this.getUuid();
 		}
-		return label;
+		return result;
+
 	}
 
 	/**
@@ -42,22 +43,33 @@ public class RecordIdentifier {
 	 * @param label
 	 * @return
 	 */
-	public static RecordIdentifier parse(String label) {
-		RecordIdentifier recordId = null;
-		String uuid = label.substring(label.indexOf(SEPARATOR) + 1, label.length());
-
-		if (isUUIDValid(label)) {
-			recordId = new RecordIdentifier(null, label);
-		} else if (isUUIDValid(uuid)) {
-			String shardLabel = label.substring(0, label.indexOf(SEPARATOR));
-			recordId = new RecordIdentifier(shardLabel, uuid);
-		}
-
-		return recordId;
+	public static RecordIdentifier parse(String input) {
+		return new RecordIdentifier(getLabel(input), getUUID(input));
 	}
 
-	private static boolean isUUIDValid(String uuid) {
-		return uuid.matches(REGEX_UUID);
+	/**
+	 * Return a value only when input form is shard SEPARATOR uuid
+	 * 
+	 * @param input
+	 * @return
+	 */
+	public static String getLabel(String input) {
+		String shardLabel = null;
+		if (isValid(input))
+			shardLabel = input.substring(0, input.indexOf(SEPARATOR));
+		return shardLabel;
+	}
+
+	public static String getUUID(String input) {
+		String uuid = input;
+		if (isValid(input)) {
+			uuid = input.substring(input.indexOf(SEPARATOR) + 1, input.length());
+		}
+		return uuid;
+	}
+
+	private static boolean isValid(String uuid) {
+		return uuid.matches(REGEX_RECORDID);
 	}
 
 }

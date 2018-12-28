@@ -56,8 +56,9 @@ database:
 
   connectionInfo:
     -
-      # shardId must be a unique identifier to each connection.
+      # shardId, shardlabel must be a unique identifier to each connection.
       shardId: shard1
+      shardLabel: 1      
 
       # The format of the URI can be learnt from the following links -
       #     * 1. Graph database (Neo4J)
@@ -74,6 +75,7 @@ database:
       # Any other shard information follows...
     #-
       #shardId: shard2
+      #shardLabel: 2
       #uri: ${connectionInfo_uri:bolt://localhost:7688}
       #username: ${connectionInfo_username:neo4j}
       #password: ${connectionInfo_password:}
