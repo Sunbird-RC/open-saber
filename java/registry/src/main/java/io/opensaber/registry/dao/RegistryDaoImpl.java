@@ -256,7 +256,7 @@ public class RegistryDaoImpl implements IRegistryDao {
      * @param readConfigurator
      * @return
      */
-    public JsonNode getEntity(String shardId, String uuid, ReadConfigurator readConfigurator) {
+    public JsonNode getEntity(String uuid, ReadConfigurator readConfigurator) {
         if (null == privatePropertyList) {
             privatePropertyList = new ArrayList<>();
             setPrivatePropertyList(schemaConfigurator.getAllPrivateProperties());

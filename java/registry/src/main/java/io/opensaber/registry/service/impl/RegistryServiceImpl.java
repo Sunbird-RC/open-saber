@@ -168,7 +168,7 @@ public class RegistryServiceImpl implements RegistryService {
     }
 
     public JsonNode getEntity(String id, ReadConfigurator configurator) {
-        JsonNode result = tpGraphMain.getEntity("", id, configurator);
+        JsonNode result = tpGraphMain.getEntity(id, configurator);
         return result;
     }
 
