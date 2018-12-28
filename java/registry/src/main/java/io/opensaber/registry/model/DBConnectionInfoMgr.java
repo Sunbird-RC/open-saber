@@ -42,12 +42,12 @@ public class DBConnectionInfoMgr {
 	@PostConstruct
 	public void init() {
 		for (DBConnectionInfo connInfo : connectionInfo) {
-			boolean shardIdIsUnique = shardLabelIdMap.containsValue(connInfo.getShardId());
+			boolean shardIdExists = shardLabelIdMap.containsValue(connInfo.getShardId());
 			String shardId = shardLabelIdMap.putIfAbsent(connInfo.getShardLabel(), connInfo.getShardId());
 			if (shardId!=null) {
 				throw new RuntimeException("Exception: Configured shards must have unique label. Offending label = " + connInfo.getShardLabel());
 			}
-			if (shardIdIsUnique) {
+			if (shardIdExists) {
 				throw new RuntimeException("Exception: Configured shards must have unique id. Offending id = " + connInfo.getShardId());
 			}
 		}
