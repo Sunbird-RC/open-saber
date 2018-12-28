@@ -21,8 +21,8 @@ import io.opensaber.registry.service.EncryptionService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SignatureService;
 import io.opensaber.registry.sink.DatabaseProvider;
-import io.opensaber.registry.sink.DatabaseProviderWrapper;
 import io.opensaber.registry.sink.OSGraph;
+import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.validators.IValidate;
 import java.util.ArrayList;
@@ -42,7 +42,6 @@ public class RegistryServiceImpl implements RegistryService {
 
     private static final String ID_REGEX = "\"@id\"\\s*:\\s*\"_:[a-z][0-9]+\",";
     private static Logger logger = LoggerFactory.getLogger(RegistryServiceImpl.class);
-    private DatabaseProvider databaseProvider;
 
     @Autowired
     EncryptionService encryptionService;
@@ -90,10 +89,10 @@ public class RegistryServiceImpl implements RegistryService {
 
     @Autowired
     RegistryDaoImpl tpGraphMain;
-
-    @Autowired
-    DatabaseProviderWrapper databaseProviderWrapper;
     
+    @Autowired 
+    private Shard shard;
+
     @Autowired
     DBConnectionInfoMgr dbConnectionInfoMgr;
 
@@ -103,7 +102,7 @@ public class RegistryServiceImpl implements RegistryService {
     public HealthCheckResponse health() throws Exception {
         HealthCheckResponse healthCheck;
         // TODO
-        boolean databaseServiceup = databaseProvider.isDatabaseServiceUp();
+        boolean databaseServiceup = shard.getDatabaseProvider().isDatabaseServiceUp();
         boolean overallHealthStatus = databaseServiceup;
         List<ComponentHealthInfo> checks = new ArrayList<>();
 
@@ -183,7 +182,7 @@ public class RegistryServiceImpl implements RegistryService {
         rootNode = encryptionHelper.getEncryptedJson(rootNode);
         String idProp = rootNode.elements().next().get(uuidPropertyName).asText();
         JsonNode childElementNode = rootNode.elements().next();
-        DatabaseProvider databaseProvider = databaseProviderWrapper.getDatabaseProvider();
+        DatabaseProvider databaseProvider = shard.getDatabaseProvider();
         ReadConfigurator readConfigurator = new ReadConfigurator();
         readConfigurator.setIncludeSignatures(false);
 
