@@ -73,7 +73,7 @@ public class ShardManager {
 	/**
 	 * activate a shard given a shardId from entity cache 
 	 * use this for read operation
-	 * @param shardLabel
+	 * @param shardId
 	 * @return
 	 * @throws CustomException 
 	 */

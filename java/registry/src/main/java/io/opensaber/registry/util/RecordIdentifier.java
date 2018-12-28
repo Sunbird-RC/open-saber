@@ -53,14 +53,14 @@ public class RecordIdentifier {
 	 * @param input
 	 * @return
 	 */
-	public static String getLabel(String input) {
+	private static String getLabel(String input) {
 		String shardLabel = null;
 		if (isValid(input))
 			shardLabel = input.substring(0, input.indexOf(SEPARATOR));
 		return shardLabel;
 	}
 
-	public static String getUUID(String input) {
+	private static String getUUID(String input) {
 		String uuid = input;
 		if (isValid(input)) {
 			uuid = input.substring(input.indexOf(SEPARATOR) + 1, input.length());

@@ -58,6 +58,9 @@ database:
     -
       # shardId, shardlabel must be a unique identifier to each connection.
       shardId: shard1
+      
+      # shardLabel is used as prefix for a uuid. Could be any alpha numeric string
+      # Example: 1-60f76147-0acd-4dff-b75a-2d811787d04d
       shardLabel: 1      
 
       # The format of the URI can be learnt from the following links -

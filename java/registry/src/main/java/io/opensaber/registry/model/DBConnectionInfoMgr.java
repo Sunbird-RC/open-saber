@@ -8,10 +8,6 @@ import javax.annotation.PostConstruct;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
-/**
- * @author Pritha Chattopadhyay Auto populates/binds the field values from yaml
- *         properties.
- */
 @Component("dbConnectionInfoMgr")
 @ConfigurationProperties(prefix = "database")
 public class DBConnectionInfoMgr {
@@ -46,16 +42,13 @@ public class DBConnectionInfoMgr {
 	@PostConstruct
 	public void init() {
 		for (DBConnectionInfo connInfo : connectionInfo) {
-			// Check for unique shard id and unique shard labels
 			boolean shardIdIsUnique = shardLabelIdMap.containsValue(connInfo.getShardId());
-			//boolean shardLblIsUnique = shardLabelIdMap.containsKey(connInfo.getShardLabel());
-			
 			String shardId = shardLabelIdMap.putIfAbsent(connInfo.getShardLabel(), connInfo.getShardId());
 			if (shardId!=null) {
-				throw new RuntimeException("Exception: Configured shards must have unique ids. Offending id = " + connInfo.getShardLabel());
+				throw new RuntimeException("Exception: Configured shards must have unique label. Offending label = " + connInfo.getShardLabel());
 			}
 			if (shardIdIsUnique) {
-				throw new RuntimeException("Exception: Configured shards must have unique label. Offending label = " + connInfo.getShardId());
+				throw new RuntimeException("Exception: Configured shards must have unique id. Offending id = " + connInfo.getShardId());
 			}
 		}
 	}
