@@ -40,7 +40,7 @@
       "properties": {
         "signatures": {
           "$id": "#/properties/signatures",
-          "type": ["array","object"],
+          "type": "array",
           "items": {
             "$ref": "Signature.json#/definitions/Signature"
           },

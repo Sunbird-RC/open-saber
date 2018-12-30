@@ -14,8 +14,12 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.registry.authorization.AuthorizationToken;
 import io.opensaber.registry.authorization.pojos.AuthInfo;
+import io.opensaber.registry.exception.CustomException;
+import io.opensaber.registry.model.DBConnectionInfo;
 import io.opensaber.registry.sink.DBProviderFactory;
 import io.opensaber.registry.sink.DatabaseProvider;
+import io.opensaber.registry.sink.shard.IShardAdvisor;
+import io.opensaber.registry.sink.shard.ShardManager;
 import io.opensaber.registry.tests.utility.TestHelper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.jena.rdf.model.*;
@@ -45,9 +49,16 @@ public class RegistryTestBase {
 	public DatabaseProvider databaseProvider;
 	@Autowired
 	public DBProviderFactory dbProviderFactory;
+	@Autowired
+	private IShardAdvisor shardAdvisor;
+	@Autowired
+	private ShardManager shardManager;
 
 
 	public RegistryTestBase() {
+		/*/shardManager.activateShard(null);
+		databaseProvider = shard.getDatabaseProvider();
+		DBConnectionInfo connectionInfo = shardAdvisor.getShard(attributeValue);*/
 		databaseProvider = dbProviderFactory.getInstance(null);
 		MockitoAnnotations.initMocks(this);
 		TestHelper.clearData(databaseProvider);

@@ -13,6 +13,7 @@ import io.opensaber.registry.dao.VertexReader;
 import io.opensaber.registry.exception.AuditFailedException;
 import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.service.EncryptionHelper;
@@ -21,6 +22,7 @@ import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SignatureService;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.DatabaseProviderWrapper;
+import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.validators.IValidate;
@@ -40,6 +42,7 @@ import java.util.*;
 public class RegistryServiceImpl implements RegistryService {
 
     private static final String ID_REGEX = "\"@id\"\\s*:\\s*\"_:[a-z][0-9]+\",";
+    private static String FILTER_KEYS = "@type";
     private static Logger logger = LoggerFactory.getLogger(RegistryServiceImpl.class);
     private DatabaseProvider databaseProvider;
 
@@ -86,9 +89,6 @@ public class RegistryServiceImpl implements RegistryService {
 
     @Value("${registry.context.base}")
     private String registryContext;
-
-    @Value("${registry.filter.keys}")
-    private String filterKeys;
 
     @Autowired
     private Shard shard;
@@ -189,39 +189,44 @@ public class RegistryServiceImpl implements RegistryService {
         String idProp = rootNode.elements().next().get(uuidPropertyName).asText();
         JsonNode childElementNode = rootNode.elements().next();
         DatabaseProvider databaseProvider = shard.getDatabaseProvider();
-        Graph graph = databaseProvider.getGraphStore();
+
         ReadConfigurator readConfigurator = new ReadConfigurator();
         readConfigurator.setIncludeSignatures(false);
-        VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
-        boolean isTransactionEnabled = databaseProvider.supportsTransaction(graph);
-        if(isTransactionEnabled){
-            try (Transaction tx = graph.tx()) {
-                ObjectNode entityNode = null;
-                vertexIterator = graph.vertices(idProp);
-                inputNodeVertex = vertexIterator.hasNext() ? vertexIterator.next(): null;
-                if(registryRootEntityType.equalsIgnoreCase(inputNodeVertex.label())){
-                    entityNode = (ObjectNode) vr.read(inputNodeVertex.id().toString());
-                } else {
-                    Vertex rootVertex = inputNodeVertex.vertices(Direction.IN,inputNodeVertex.label()).next();
-                    entityNode = (ObjectNode) vr.read(rootVertex.id().toString());
-                }
+        try(OSGraph osGraph = databaseProvider.getOSGraph()){
+            Graph graph = osGraph.getGraphStore();
+            try (Transaction tx = databaseProvider.startTransaction(graph)) {
+                VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
+                if(null != tx){
 
-                //merge with entitynode
-                entityNode =  merge(entityNode,rootNode);
-                //TO-DO validation is failing
-                //boolean isValidate = iValidate.validate("Teacher",entityNode.toString());
-                tpGraphMain.updateVertex(graph,inputNodeVertex,childElementNode);
-                tx.commit();
+                    ObjectNode entityNode = null;
+                    vertexIterator = graph.vertices(idProp);
+                    inputNodeVertex = vertexIterator.hasNext() ? vertexIterator.next(): null;
+                    if(registryRootEntityType.equalsIgnoreCase(inputNodeVertex.label())){
+                        entityNode = (ObjectNode) vr.read(inputNodeVertex.id().toString());
+                    } else {
+                        Vertex rootVertex = inputNodeVertex.vertices(Direction.IN,inputNodeVertex.label()).next();
+                        entityNode = (ObjectNode) vr.read(rootVertex.id().toString());
+                    }
+
+                    //merge with entitynode
+                    entityNode =  merge(entityNode,rootNode);
+                    //TO-DO validation is failing
+                    //boolean isValidate = iValidate.validate("Teacher",entityNode.toString());
+                    tpGraphMain.updateVertex(inputNodeVertex,childElementNode);
+                    tx.readWrite();
+                    tx.commit();
+                } else {
+                    vertexIterator = graph.vertices(new Long(idProp));
+                    inputNodeVertex = vertexIterator.hasNext() ? vertexIterator.next(): null;
+                    ObjectNode entityNode = (ObjectNode) vr.read(inputNodeVertex.id().toString());
+                    entityNode =  merge(entityNode,rootNode);
+                    //TO-DO validation is failing
+                    // boolean isValidate = iValidate.validate("Teacher",entityNode.toString());
+                    tpGraphMain.updateVertex(inputNodeVertex,childElementNode);
+                }
             }
-        } else {
-            vertexIterator = graph.vertices(new Long(idProp));
-            inputNodeVertex = vertexIterator.hasNext() ? vertexIterator.next(): null;
-            ObjectNode entityNode = (ObjectNode) vr.read(inputNodeVertex.id().toString());
-            entityNode =  merge(entityNode,rootNode);
-            //TO-DO validation is failing
-           // boolean isValidate = iValidate.validate("Teacher",entityNode.toString());
-            tpGraphMain.updateVertex(graph,inputNodeVertex,childElementNode);
         }
+
     }
 
     /** Merging input json node to DB entity node, this method in turn calls mergeDestinationWithSourceNode method for deep copy of properties and objects
@@ -238,12 +243,12 @@ public class RegistryServiceImpl implements RegistryService {
     }
 
     /**
-     * @param propKeyValue
-     * @param entityNode
-     * @param entityKey
+     * @param propKeyValue - user given entity node
+     * @param entityNode - read from the database
+     * @param entityKey - user given entity key (wrapper node supplied by the user)
      */
     private void mergeDestinationWithSourceNode(ObjectNode propKeyValue, ObjectNode entityNode, String entityKey) {
-        ObjectNode subEntity = getSubEntityFromRootNode(entityNode,entityKey);
+        ObjectNode subEntity = (ObjectNode) entityNode.findValue(entityKey);
         propKeyValue.fields().forEachRemaining(prop -> {
             String propKey = prop.getKey();
             JsonNode propValue = prop.getValue();
@@ -253,35 +258,20 @@ public class RegistryServiceImpl implements RegistryService {
                 if(subEntity.get(propKey).size() == 0) {
                     subEntity.set(propKey,propValue);
                 } else if(subEntity.get(propKey).isObject()) {
-                    List<String> filterKeys = Arrays.asList(this.filterKeys.split(","));
+                    List<String> filterKeys = Arrays.asList(FILTER_KEYS.split(","));
                     //removing keys with name osid and type
-                    removefilteredKeys((ObjectNode) subEntity.get(propKey),filterKeys);
+                    JSONUtil.removeNodes((ObjectNode) subEntity.get(propKey),filterKeys);
                     //constructNewNodeToParent
                     subEntity.set(propKey,propValue);
                 }
             } else if(subEntity.get(propKey).isArray()){
-                List<String> filterKeys = Arrays.asList(this.filterKeys.split(","));
+                List<String> filterKeys = Arrays.asList(FILTER_KEYS.split(","));
                 propValue.forEach(arrayElement -> {
                     //removing keys with name @type
-                    removefilteredKeys((ObjectNode) arrayElement,filterKeys);
+                    JSONUtil.removeNodes((ObjectNode) arrayElement,filterKeys);
                 });
                 //constructNewNodeToParent
                 subEntity.set(propKey,propValue);
-            }
-        });
-    }
-
-    /** removes the filtered keys from the json node
-     * @param objectNode
-     * @param filterKeys
-     */
-    //to-do testing needs to be done
-    private void removefilteredKeys(ObjectNode objectNode, List<String> filterKeys) {
-        objectNode.remove(filterKeys);
-        objectNode.fields().forEachRemaining(element -> {
-            JsonNode elementNode  = element.getValue();
-             if(elementNode.isObject()){
-                removefilteredKeys((ObjectNode) elementNode, filterKeys);
             }
         });
     }

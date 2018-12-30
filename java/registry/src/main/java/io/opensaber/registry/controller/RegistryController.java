@@ -299,9 +299,8 @@ public class RegistryController {
 
 		String dataObject = apiMessage.getRequest().getRequestMapAsString();
 		String entityType = apiMessage.getRequest().getEntityType();
-		Map<String, Object> reqMap = (Map<String, Object>) apiMessage.getRequest().getRequestMap().get(entityType);
-		String osIdVal = reqMap.get(uuidPropertyName).toString();
-
+		JsonNode reqJsonNode = apiMessage.getRequest().getRequestMapNode();
+		String osIdVal = reqJsonNode.get(entityType).get(uuidPropertyName).asText();
 		String shardId = null;
 		try {
 			shardId = entityCache.getShard(osIdVal);

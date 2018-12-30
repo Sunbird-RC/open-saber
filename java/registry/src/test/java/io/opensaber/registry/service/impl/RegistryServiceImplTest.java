@@ -126,7 +126,7 @@ public class RegistryServiceImplTest extends RegistryTestBase {
 		});
 	}
 
-    @Ignore
+    //@Ignore
 	@Test
 	public void test_update_parent_entity_after_creating() throws Exception {
 

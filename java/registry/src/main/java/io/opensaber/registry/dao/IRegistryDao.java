@@ -17,6 +17,6 @@ public interface IRegistryDao {
 	List<String> getUUIDs(Graph graph, Set<String> labels);
 	String addEntity(String shardId, JsonNode rootNode);
 	JsonNode getEntity(String shardId, String uuid, ReadConfigurator readConfigurator);
-	void updateVertex(Graph graph, Vertex rootVertex, JsonNode inputJsonNode);
+	void updateVertex(Vertex rootVertex, JsonNode inputJsonNode);
 
 }
