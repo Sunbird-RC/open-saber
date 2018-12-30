@@ -5,35 +5,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-import java.util.Collections;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opensaber.registry.sink.shard.ShardManager;
-import io.opensaber.registry.util.ReadConfigurator;
-import org.junit.*;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.RestTemplate;
-
 import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.registry.app.OpenSaberApplication;
-import io.opensaber.registry.authorization.AuthorizationToken;
-import io.opensaber.registry.authorization.pojos.AuthInfo;
 import io.opensaber.registry.config.GenericConfiguration;
 import io.opensaber.registry.controller.RegistryController;
 import io.opensaber.registry.controller.RegistryTestBase;
@@ -41,9 +17,27 @@ import io.opensaber.registry.dao.IRegistryDao;
 import io.opensaber.registry.dao.RegistryDaoImpl;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.AuditRecord;
-import io.opensaber.registry.sink.DBProviderFactory;
 import io.opensaber.registry.sink.DatabaseProvider;
-import io.opensaber.registry.tests.utility.TestHelper;
+import io.opensaber.registry.util.ReadConfigurator;
+import java.io.IOException;
+import org.junit.Before;
+import org.junit.FixMethodOrder;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.RestTemplate;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { OpenSaberApplication.class, RegistryController.class, GenericConfiguration.class,
@@ -126,14 +120,14 @@ public class RegistryServiceImplTest extends RegistryTestBase {
 		});
 	}
 
-    //@Ignore
+    @Ignore
 	@Test
 	public void test_update_parent_entity_after_creating() throws Exception {
 
 		String validJsonString = getValidJsonString(VALID_TEST_INPUT_JSON);
 		shardManager.activateShard("");
 		ReadConfigurator configurator = new ReadConfigurator();
-        String resultId = registryService.addEntity("",validJsonString);
+        String resultId = registryService.addEntity(validJsonString);
         String updatedInput = getValidStringForUpdate(resultId);
         registryService.updateEntity(updatedInput);
         JsonNode readJson = registryService.getEntity(resultId,configurator);

@@ -12,7 +12,7 @@ public interface RegistryService {
 
 	 boolean deleteEntityById(String id) throws AuditFailedException, RecordNotFoundException;
 
-	 String addEntity(String shardId, String jsonString) throws Exception;
+	 String addEntity(String jsonString) throws Exception;
 
      JsonNode getEntity(String id, ReadConfigurator configurator);
 
