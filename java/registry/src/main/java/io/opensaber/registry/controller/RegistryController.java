@@ -74,8 +74,6 @@ public class RegistryController {
 	private APIMessage apiMessage;
 	@Autowired
 	private DBConnectionInfoMgr dbConnectionInfoMgr;
-	@Autowired
-	private ObjectMapper objectMapper;
 
 	private Gson gson = new Gson();
 	private Type mapType = new TypeToken<Map<String, Object>>() {

@@ -14,8 +14,6 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.registry.authorization.AuthorizationToken;
 import io.opensaber.registry.authorization.pojos.AuthInfo;
-import io.opensaber.registry.exception.CustomException;
-import io.opensaber.registry.model.DBConnectionInfo;
 import io.opensaber.registry.sink.DBProviderFactory;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.shard.IShardAdvisor;
@@ -49,10 +47,6 @@ public class RegistryTestBase {
 	public DatabaseProvider databaseProvider;
 	@Autowired
 	public DBProviderFactory dbProviderFactory;
-	@Autowired
-	private IShardAdvisor shardAdvisor;
-	@Autowired
-	private ShardManager shardManager;
 
 
 	public RegistryTestBase() {
