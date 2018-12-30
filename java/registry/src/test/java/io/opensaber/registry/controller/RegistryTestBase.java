@@ -16,8 +16,6 @@ import io.opensaber.registry.authorization.AuthorizationToken;
 import io.opensaber.registry.authorization.pojos.AuthInfo;
 import io.opensaber.registry.sink.DBProviderFactory;
 import io.opensaber.registry.sink.DatabaseProvider;
-import io.opensaber.registry.sink.shard.IShardAdvisor;
-import io.opensaber.registry.sink.shard.ShardManager;
 import io.opensaber.registry.tests.utility.TestHelper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.jena.rdf.model.*;
