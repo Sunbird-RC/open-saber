@@ -273,17 +273,4 @@ public class RegistryServiceImpl implements RegistryService {
         });
     }
 
-    /** Gives required JsonNode from the Parent object based on the key
-     * @param entityNode
-     * @param entityKey
-     * @return
-     */
-    private ObjectNode getSubEntityFromRootNode(ObjectNode entityNode, String entityKey){
-        ObjectNode subEntity = (ObjectNode) entityNode.get(entityKey);
-        if(null == subEntity){
-            subEntity = (ObjectNode) entityNode.get(registryRootEntityType).get(entityKey);
-        }
-        return subEntity;
-    }
-
 }
