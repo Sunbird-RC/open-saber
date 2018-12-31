@@ -8,7 +8,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +15,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 
 @Component
 public class SearchDaoImpl implements SearchDao {
@@ -48,9 +46,9 @@ public class SearchDaoImpl implements SearchDao {
 				}
 			}
 
-			P resultPredicate =
-			predicates.forEach( p -> resultPredicate.and(p));
-			GraphTraversal<Vertex, Vertex> resultGraphTraversal = dbGraphTraversalSource.V(resultPredicate)
+//			P resultPredicate =
+//			predicates.forEach( p -> resultPredicate.and(p));
+			GraphTraversal<Vertex, Vertex> resultGraphTraversal = dbGraphTraversalSource.V()
 					.hasLabel(searchQuery.getRootLabel());
 
 			getGraphByTraversal(resultGraphTraversal, graphMap);

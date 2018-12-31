@@ -1,9 +1,11 @@
 package io.opensaber.registry.dao;
 
 import io.opensaber.pojos.SearchQuery;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Map;
+
+import org.apache.tinkerpop.gremlin.structure.Graph;
+
 
 public interface SearchDao {
 

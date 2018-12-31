@@ -42,9 +42,15 @@ public class ShardManager {
 	 */
 	private void activateDbShard(Object attributeValue) throws CustomException {
 		DBConnectionInfo connectionInfo = shardAdvisor.getShard(attributeValue);
-	    DatabaseProvider databaseProvider = dbProviderFactory.getInstance(connectionInfo);
-	    shard.setShardId(connectionInfo.getShardId());
-	    shard.setDatabaseProvider(databaseProvider);
+
+		if (shardIdObjMap.containsKey(connectionInfo.getShardId())) {
+			shard = shardIdObjMap.get(connectionInfo.getShardId());
+		} else {
+			DatabaseProvider databaseProvider = dbProviderFactory.getInstance(connectionInfo);
+			shard.setShardId(connectionInfo.getShardId());
+			shard.setDatabaseProvider(databaseProvider);
+			shardIdObjMap.put(connectionInfo.getShardId(), shard);
+		}
 		logger.info("Activated shard "+connectionInfo.getShardId()+" for attribute value "+attributeValue);
 	}
 
