@@ -17,6 +17,7 @@ import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.service.RegistryAuditService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
+
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.sink.shard.ShardManager;
 import io.opensaber.registry.transform.Configuration;
@@ -74,6 +75,8 @@ public class RegistryController {
 	}.getType();
 	@Value("${audit.enabled}")
 	private boolean auditEnabled;
+	@Value("${database.uuidPropertyName}")
+	public String uuidPropertyName;
 	@Autowired
 	private OpenSaberInstrumentation watch;
 	private List<String> keyToPurge = new java.util.ArrayList<>();
@@ -217,7 +220,6 @@ public class RegistryController {
 			
 			watch.start("RegistryController.addToExistingEntity");
 			String resultId = registryService.addEntity("shard1", jsonString);
-			
 			RecordIdentifier recordId = new RecordIdentifier(shard.getShardLabel(), resultId);
 			Map resultMap = new HashMap();
 			String label = recordId.toString();
@@ -273,33 +275,42 @@ public class RegistryController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@ResponseBody
-	@RequestMapping(value = "/update", method = RequestMethod.POST)
-	public ResponseEntity<Response> updateTP2Graph() throws ParseException, IOException, CustomException {
-		ResponseParams responseParams = new ResponseParams();
-		Response response = new Response(Response.API_ID.UPDATE, "OK", responseParams);
+  @ResponseBody
+  @RequestMapping(value = "/update", method = RequestMethod.POST)
+  public ResponseEntity<Response> updateTP2Graph() throws ParseException, IOException, CustomException {
+    ResponseParams responseParams = new ResponseParams();
+    Response response = new Response(Response.API_ID.UPDATE, "OK", responseParams);
+    Map<String, Object> result = new HashMap<>();
 
-		String label = apiMessage.getRequest().getRequestMap().get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
-		String dataObject = apiMessage.getRequest().getRequestMapAsString();
+    String dataObject = apiMessage.getRequest().getRequestMapAsString();
+    String entityType = apiMessage.getRequest().getEntityType();
+    JsonNode reqJsonNode = apiMessage.getRequest().getRequestMapNode();
+    String osIdVal = reqJsonNode.get(entityType).get(uuidPropertyName).asText();
+    String shardId = null;
+    try {
+        String label = apiMessage.getRequest().getRequestMap().get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
+        String dataObject = apiMessage.getRequest().getRequestMapAsString();
 
-		RecordIdentifier recordId = RecordIdentifier.parse(label);
-		String shardId = dbConnectionInfoMgr.getShardId(recordId.getShardLabel());
-		shardManager.activateShard(shardId);
-		logger.info("Update Api: shard id: " + recordId.getShardLabel() + " for uuid: " + recordId.getUuid());
+        RecordIdentifier recordId = RecordIdentifier.parse(label);
+        shardId = dbConnectionInfoMgr.getShardId(recordId.getShardLabel());
+    } catch (Exception e1) {
+        logger.error("Update Api Exception occoured ", e1);
+    }
+    shardManager.activateShard(shardId);
+    logger.info("Update Api: shard id: " + recordId.getShardLabel() + " for uuid: " + recordId.getUuid());
 
-		try {
-			watch.start("RegistryController.update");
-			registryService.updateEntity(dataObject);
-			responseParams.setErrmsg("");
-			responseParams.setStatus(Response.Status.SUCCESSFUL);
-			watch.stop("RegistryController.update");
-			logger.debug("RegistryController: entity updated !");
-		} catch (Exception e) {
-			logger.error("RegistryController: Exception while updating entity (without id)!", e);
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg(e.getMessage());
-		}
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
+    try {
+        watch.start("RegistryController.update");
+        registryService.updateEntity(dataObject);
+        responseParams.setErrmsg("");
+        responseParams.setStatus(Response.Status.SUCCESSFUL);
+        watch.stop("RegistryController.update");
+        logger.debug("RegistryController: entity updated !");
+    } catch (Exception e) {
+        logger.error("RegistryController: Exception while updating entity (without id)!", e);
+        responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+        responseParams.setErrmsg(e.getMessage());
+    }
+    return new ResponseEntity<>(response, HttpStatus.OK);
+  }
 }
