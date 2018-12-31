@@ -44,7 +44,6 @@ import org.springframework.stereotype.Component;
 public class RegistryServiceImpl implements RegistryService {
 
     private static final String ID_REGEX = "\"@id\"\\s*:\\s*\"_:[a-z][0-9]+\",";
-    private static String FILTER_KEYS = "@type";
     private static Logger logger = LoggerFactory.getLogger(RegistryServiceImpl.class);
 
     @Autowired
@@ -255,14 +254,15 @@ public class RegistryServiceImpl implements RegistryService {
                 if(subEntity.get(propKey).size() == 0) {
                     subEntity.set(propKey,propValue);
                 } else if(subEntity.get(propKey).isObject()) {
-                    List<String> filterKeys = Arrays.asList(FILTER_KEYS.split(","));
+                    //As of now filtering only @type
+                    List<String> filterKeys = Arrays.asList(Constants.JsonldConstants.TYPE);
                     //removing keys with name osid and type
                     JSONUtil.removeNodes((ObjectNode) subEntity.get(propKey),filterKeys);
                     //constructNewNodeToParent
                     subEntity.set(propKey,propValue);
                 }
             } else if(subEntity.get(propKey).isArray()){
-                List<String> filterKeys = Arrays.asList(FILTER_KEYS.split(","));
+                List<String> filterKeys = Arrays.asList(Constants.JsonldConstants.TYPE);
                 propValue.forEach(arrayElement -> {
                     //removing keys with name @type
                     JSONUtil.removeNodes((ObjectNode) arrayElement,filterKeys);

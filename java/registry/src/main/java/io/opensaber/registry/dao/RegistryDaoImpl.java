@@ -226,8 +226,6 @@ public class RegistryDaoImpl implements IRegistryDao {
 
     /**
      * Entry point to the dao layer to write a JsonNode entity.
-     *
-     * @param shardId
      * @param rootNode
      * @return
      */
@@ -248,8 +246,6 @@ public class RegistryDaoImpl implements IRegistryDao {
 
     /**
      * Retrieves a record from the database
-     *
-     * @param shardId
      * @param uuid    entity identifier to retrieve
      * @param readConfigurator
      * @return
