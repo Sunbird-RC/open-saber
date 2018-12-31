@@ -65,7 +65,6 @@ public class RegistryController {
     public String uuidPropertyName;
     @Autowired
     private OpenSaberInstrumentation watch;
-    private List<String> keyToPurge = new java.util.ArrayList<>();
 
     @Autowired
     private ShardManager shardManager;
@@ -271,7 +270,6 @@ public class RegistryController {
         String dataObject = apiMessage.getRequest().getRequestMapAsString();
         String entityType = apiMessage.getRequest().getEntityType();
         JsonNode reqJsonNode = apiMessage.getRequest().getRequestMapNode();
-        String osIdVal = reqJsonNode.get(entityType).get(uuidPropertyName).asText();
         String label = apiMessage.getRequest().getRequestMap().get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
 
         RecordIdentifier recordId = RecordIdentifier.parse(label);
