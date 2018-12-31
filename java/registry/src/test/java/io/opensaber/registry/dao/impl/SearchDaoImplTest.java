@@ -61,8 +61,8 @@ public class SearchDaoImplTest extends RegistryTestBase {
 
 	@Test
 	public void test_search_no_response() throws AuditFailedException, EncryptionException, RecordNotFoundException {
-		SearchQuery searchQuery = new SearchQuery();
-		Map<String, Graph> responseGraph = searchDao.search(searchQuery);
+		SearchQuery searchQuery = new SearchQuery("");
+		Map<String, Graph> responseGraph = searchDao.search(graph, searchQuery);
 		assertTrue(responseGraph.isEmpty());
 	}
 
@@ -74,15 +74,12 @@ public class SearchDaoImplTest extends RegistryTestBase {
 		}
 		filterList.add(filter);
 		searchQuery.setFilters(filterList);
-		searchQuery.setType(type);
-		searchQuery.setTypeIRI(RDF.type.toString());
+		searchQuery.setRootLabel(type);
 		return searchQuery;
 	}
 
-	private Filter getFilter(String property, String value) {
-		Filter filter = new Filter();
-		filter.setProperty(property);
-		filter.setValue(value);
+	private Filter getFilterEqual(String property, String value) {
+		Filter filter = new Filter(property, "=", value);
 		return filter;
 	}
 }

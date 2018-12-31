@@ -7,6 +7,9 @@ import io.opensaber.registry.service.SearchService;
 import io.opensaber.registry.sink.DBProviderFactory;
 import io.opensaber.registry.sink.DatabaseProvider;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +27,7 @@ public class ShardManager {
 	private IShardAdvisor shardAdvisor;
 	@Autowired
 	private SearchService searchService;
+	private Map<String, Shard> shardIdObjMap = new HashMap<>();
 
 	@Autowired
 	private Shard shard;
@@ -91,6 +95,18 @@ public class ShardManager {
 			activateDbShard(null);
 
 		}
+	}
+
+	public Shard getShardInstance(String shardId) {
+		Shard thisShard = new Shard();
+		if (shardId != null) {
+			DBConnectionInfo connectionInfo = dbConnectionInfoMgr.getDBConnectionInfo(shardId);
+			DatabaseProvider databaseProvider = dbProviderFactory.getInstance(connectionInfo);
+			thisShard.setShardId(connectionInfo.getShardId());
+			thisShard.setDatabaseProvider(databaseProvider);
+		}
+
+		return thisShard;
 	}
 
 }

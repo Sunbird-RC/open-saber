@@ -3,6 +3,7 @@ package io.opensaber.registry.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.circe.Json;
 import io.opensaber.pojos.APIMessage;
 import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.pojos.OpenSaberInstrumentation;
@@ -95,7 +96,6 @@ public class RegistryController {
 	@RequestMapping(value = "/search", method = RequestMethod.POST)
 	public ResponseEntity<Response> searchEntity(@RequestHeader HttpHeaders header) {
 
-		Model rdf = (Model) apiMessage.getLocalMap(Constants.RDF_OBJECT);
 		ResponseParams responseParams = new ResponseParams();
 		Response response = new Response(Response.API_ID.SEARCH, "OK", responseParams);
 		Map<String, Object> result = new HashMap<>();
@@ -103,34 +103,28 @@ public class RegistryController {
 		response.setResult("API to be supported soon");
 		responseParams.setStatus(Response.Status.SUCCESSFUL);
 
-//		try {
-//			watch.start("RegistryController.searchEntity");
-//			String jenaJson = searchService.searchFramed(rdf);
-//			Data<Object> data = new Data<>(jenaJson);
-//			Configuration config = configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
-//					Direction.OUT);
-//
-//			ITransformer<Object> responseTransformer = transformer.getInstance(config);
-//			responseTransformer.setPurgeData(getKeysToPurge());
-//			Data<Object> resultContent = responseTransformer.transform(data);
-//			response.setResult(resultContent.getData());
-//			response.setResult("API to be supported soon");
-//			responseParams.setStatus(Response.Status.SUCCESSFUL);
-//			watch.stop("RegistryController.searchEntity");
-//		} catch (AuditFailedException | RecordNotFoundException | TypeNotProvidedException
-//				| TransformationException e) {
-//			logger.error(
-//					"AuditFailedException | RecordNotFoundException | TypeNotProvidedException in controller while adding entity !",
-//					e);
-//			response.setResult(result);
-//			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-//			responseParams.setErrmsg(e.getMessage());
-//		} catch (Exception e) {
-//			logger.error("Exception in controller while searching entities !", e);
-//			response.setResult(result);
-//			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-//			responseParams.setErrmsg(e.getMessage());
-//		}
+		try {
+			watch.start("RegistryController.searchEntity");
+			JsonNode inputNode = apiMessage.getRequest().getRequestMapNode();
+			JsonNode searchResult = searchService.search(inputNode);
+
+			Data<Object> data = new Data<>(searchResult.toString());
+			Configuration config = configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
+					Direction.OUT);
+
+			ITransformer<Object> responseTransformer = transformer.getInstance(config);
+			responseTransformer.setPurgeData(getKeysToPurge());
+			Data<Object> resultContent = responseTransformer.transform(data);
+			response.setResult(resultContent.getData());
+			response.setResult("API to be supported soon");
+			responseParams.setStatus(Response.Status.SUCCESSFUL);
+			watch.stop("RegistryController.searchEntity");
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			response.setResult(result);
+			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+			responseParams.setErrmsg(e.getMessage());
+		}
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 

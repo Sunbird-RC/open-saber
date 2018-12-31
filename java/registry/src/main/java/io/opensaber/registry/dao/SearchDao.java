@@ -1,16 +1,12 @@
 package io.opensaber.registry.dao;
 
 import io.opensaber.pojos.SearchQuery;
-import io.opensaber.registry.exception.AuditFailedException;
-import io.opensaber.registry.exception.EncryptionException;
-import io.opensaber.registry.exception.RecordNotFoundException;
-import java.util.Map;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+
+import java.util.Map;
 
 public interface SearchDao {
 
-	public Map<String, Graph> search(SearchQuery searchQuery)
-			throws AuditFailedException, EncryptionException, RecordNotFoundException;
-	
+    Map<String, Graph> search(Graph graphFromStore, SearchQuery searchQuery);
 
 }

@@ -24,6 +24,5 @@ public class AppStartupRunner implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
     	logger.info("On Boot starts loading: parent vertex and shard records");
     	entityParenter.ensureKnownParenters();
-    	entityCacheManager.loadShardUUIDS();
     }
 }
