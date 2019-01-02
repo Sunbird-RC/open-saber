@@ -13,11 +13,11 @@ public class ShardValidator implements ConstraintValidator<ValidConnectionInfo, 
 
 		if (value instanceof DBConnectionInfo) {
 			DBConnectionInfo info = (DBConnectionInfo) value;
-			if (info.getShardId() != null && info.getShardLabel() != null && info.getUri() != null) {
-				return true;
+			if (info.getShardId().isEmpty() || info.getShardLabel().isEmpty() || info.getUri().isEmpty()) {
+				return false;
 			}
 		}
-		return false;
+		return true;
 	}
 
 }
