@@ -27,9 +27,7 @@ public class ShardManager {
 	private IShardAdvisor shardAdvisor;
 	@Autowired
 	private SearchService searchService;
-	private Map<String, Shard> shardIdObjMap = new HashMap<>();
 
-	@Autowired
 	private Shard shard;
 
 
@@ -42,15 +40,10 @@ public class ShardManager {
 	 */
 	private void activateDbShard(Object attributeValue) throws CustomException {
 		DBConnectionInfo connectionInfo = shardAdvisor.getShard(attributeValue);
-
-		if (shardIdObjMap.containsKey(connectionInfo.getShardId())) {
-			shard = shardIdObjMap.get(connectionInfo.getShardId());
-		} else {
-			DatabaseProvider databaseProvider = dbProviderFactory.getInstance(connectionInfo);
-			shard.setShardId(connectionInfo.getShardId());
-			shard.setDatabaseProvider(databaseProvider);
-			shardIdObjMap.put(connectionInfo.getShardId(), shard);
-		}
+	    DatabaseProvider databaseProvider = dbProviderFactory.getInstance(connectionInfo);
+	    shard.setShardId(connectionInfo.getShardId());
+	    shard.setShardLabel(connectionInfo.getShardLabel());
+	    shard.setDatabaseProvider(databaseProvider);
 		logger.info("Activated shard "+connectionInfo.getShardId()+" for attribute value "+attributeValue);
 	}
 
@@ -94,7 +87,8 @@ public class ShardManager {
 		if (shardId != null) {
 			DBConnectionInfo connectionInfo = dbConnectionInfoMgr.getDBConnectionInfo(shardId);
 			DatabaseProvider databaseProvider = dbProviderFactory.getInstance(connectionInfo);
-			shard.setShardId(connectionInfo.getShardId());
+			shard.setShardId(shardId);
+			shard.setShardLabel(connectionInfo.getShardLabel());
 			shard.setDatabaseProvider(databaseProvider);
 		} else {
 			logger.info("Default shard is activated");
