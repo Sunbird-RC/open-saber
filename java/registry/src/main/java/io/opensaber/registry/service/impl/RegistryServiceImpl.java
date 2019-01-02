@@ -169,10 +169,13 @@ public class RegistryServiceImpl implements RegistryService {
     public void updateEntity(String jsonString) throws Exception {
         Iterator<Vertex> vertexIterator = null;
         Vertex inputNodeVertex = null;
+        Vertex rootVertex = null;
         List<String> privatePropertyList = schemaConfigurator.getAllPrivateProperties();
 
         JsonNode rootNode = objectMapper.readTree(jsonString);
-        rootNode = encryptionHelper.getEncryptedJson(rootNode);
+        if (encryptionEnabled) {
+            rootNode = encryptionHelper.getEncryptedJson(rootNode);
+        }
         String idProp = rootNode.elements().next().get(uuidPropertyName).asText();
         JsonNode childElementNode = rootNode.elements().next();
         DatabaseProvider databaseProvider = shard.getDatabaseProvider();
@@ -188,9 +191,10 @@ public class RegistryServiceImpl implements RegistryService {
                     vertexIterator = graph.vertices(idProp);
                     inputNodeVertex = vertexIterator.hasNext() ? vertexIterator.next(): null;
                     if(registryRootEntityType.equalsIgnoreCase(inputNodeVertex.label())){
+                        rootVertex = inputNodeVertex;
                         entityNode = (ObjectNode) vr.read(inputNodeVertex.id().toString());
                     } else {
-                        Vertex rootVertex = inputNodeVertex.vertices(Direction.IN,inputNodeVertex.label()).next();
+                        rootVertex = inputNodeVertex.vertices(Direction.IN,inputNodeVertex.label()).next();
                         entityNode = (ObjectNode) vr.read(rootVertex.id().toString());
                     }
 
@@ -199,6 +203,21 @@ public class RegistryServiceImpl implements RegistryService {
                     //TO-DO validation is failing
                     //boolean isValidate = iValidate.validate("Teacher",entityNode.toString());
                     tpGraphMain.updateVertex(inputNodeVertex,childElementNode);
+                    //sign the entitynode
+                    if (signatureEnabled) {
+                        signatureHelper.getSignedJson(entityNode);
+                        JsonNode signNode = entityNode.get(registryRootEntityType).get("signatures");
+                        if (signNode.isArray()) {
+                            signNode = getEntitySignNode(signNode);
+                        }
+                        Iterator<Vertex> vertices = rootVertex.vertices(Direction.OUT, "signatures");
+                        while (null != vertices && vertices.hasNext()) {
+                            Vertex signVertex = vertices.next();
+                            if (signVertex.property("signatureFor").value().equals("Teacher")) {
+                                tpGraphMain.updateVertex(signVertex, signNode);
+                            }
+                        }
+                    }
                     tx.readWrite();
                     tx.commit();
                 } else {
@@ -206,13 +225,46 @@ public class RegistryServiceImpl implements RegistryService {
                     inputNodeVertex = vertexIterator.hasNext() ? vertexIterator.next(): null;
                     ObjectNode entityNode = (ObjectNode) vr.read(inputNodeVertex.id().toString());
                     entityNode =  merge(entityNode,rootNode);
+                    //removeEntitySignNode();
                     //TO-DO validation is failing
                     // boolean isValidate = iValidate.validate("Teacher",entityNode.toString());
                     tpGraphMain.updateVertex(inputNodeVertex,childElementNode);
+                    //sign the entitynode
+                    if (signatureEnabled) {
+                        signatureHelper.getSignedJson(entityNode);
+                        JsonNode signNode = entityNode.get(registryRootEntityType).get("signatures");
+                        if (signNode.isArray()) {
+                            signNode = getEntitySignNode(signNode);
+                        }
+                        Iterator<Vertex> vertices = rootVertex.vertices(Direction.OUT, "signatures");
+                        while (null != vertices && vertices.hasNext()) {
+                            Vertex signVertex = vertices.next();
+                            if (signVertex.property("signatureFor").value().equals("Teacher")) {
+                                tpGraphMain.updateVertex(signVertex, signNode);
+                            }
+                        }
+                    }
                 }
             }
         }
 
+    }
+
+    /** filters entity sign node from the signatures json array
+     * @param signatures
+     * @return
+     */
+    private JsonNode getEntitySignNode(JsonNode signatures) {
+        JsonNode entitySignNode = null;
+        Iterator<JsonNode> signItr = signatures.elements();
+        while(signItr.hasNext()){
+            JsonNode signNode = signItr.next();
+            if(signNode.get("signatureFor").asText().equals(registryRootEntityType) && null == signNode.get("osid")){
+                entitySignNode = signNode;
+                break;
+            }
+        }
+        return entitySignNode;
     }
 
     /** Merging input json node to DB entity node, this method in turn calls mergeDestinationWithSourceNode method for deep copy of properties and objects
