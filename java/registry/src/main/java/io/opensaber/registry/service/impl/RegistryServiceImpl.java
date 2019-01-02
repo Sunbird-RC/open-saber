@@ -1,7 +1,10 @@
 package io.opensaber.registry.service.impl;
 
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import com.google.gson.Gson;
@@ -16,20 +19,16 @@ import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
-import io.opensaber.registry.service.EncryptionHelper;
-import io.opensaber.registry.service.EncryptionService;
-import io.opensaber.registry.service.RegistryService;
-import io.opensaber.registry.service.SignatureService;
+import io.opensaber.registry.service.*;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.validators.IValidate;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+
+import java.util.*;
+
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -58,6 +57,8 @@ public class RegistryServiceImpl implements RegistryService {
     private ISchemaConfigurator schemaConfigurator;
     @Autowired
     private EncryptionHelper encryptionHelper;
+    @Autowired
+    private SignatureHelper signatureHelper;
     @Autowired
     private ObjectMapper objectMapper;
     @Value("${encryption.enabled}")
@@ -149,18 +150,7 @@ public class RegistryServiceImpl implements RegistryService {
         }
 
         if (signatureEnabled) {
-            /*Map signReq = new HashMap<String, Object>();
-            InputStream is = this.getClass().getClassLoader().getResourceAsStream(frameFile);
-            String fileString = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
-            Map<String, Object> reqMap = JSONUtil.frameJsonAndRemoveIds(ID_REGEX, dataObject, gson,
-                    fileString);
-            signReq.put("entity", reqMap);
-            Map<String, Object> entitySignMap = (Map<String, Object>) signatureService.sign(signReq);
-            entitySignMap.put("createdDate", rs.getCreatedTimestamp());
-            entitySignMap.put("keyUrl", signatureKeyURl);
-            signedRdfModel = RDFUtil.getUpdatedSignedModel(rdfModel, registryContext, signatureDomain,
-                    entitySignMap, ModelFactory.createDefaultModel());
-            rootLabel = addEntity(signedRdfModel, subject, property);*/
+            signatureHelper.getSignedJson(rootNode);
         }
 
         if (persistenceEnabled) {
