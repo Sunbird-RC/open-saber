@@ -6,7 +6,7 @@ import javax.validation.ConstraintValidatorContext;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ShardValidator implements ConstraintValidator<ValidConnectionInfo, Object> {
+public class ConnectionInfoValidator implements ConstraintValidator<ValidConnectionInfo, Object> {
 
 	@Override
 	public boolean isValid(Object value, ConstraintValidatorContext context) {

@@ -16,10 +16,10 @@ import javax.validation.Payload;
 @Documented
 @Target({ METHOD, FIELD, CONSTRUCTOR, PARAMETER, TYPE_USE })
 @Retention(RUNTIME)
-@Constraint(validatedBy = { ShardValidator.class })
+@Constraint(validatedBy = { ConnectionInfoValidator.class })
 public @interface ValidConnectionInfo {
 
-	String message() default "{ConnectionInfo property does not contain value for sharfId or shardLabel or uri}";
+	String message() default "{ConnectionInfo property does not contain value for shardId or shardLabel or uri}";
 
 	Class<?>[] groups() default {};
 
