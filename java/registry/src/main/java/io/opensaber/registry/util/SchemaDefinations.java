@@ -13,7 +13,7 @@ public class SchemaDefinations {
 	private Map<String, SchemaDefination> schemaDefinationMap = new HashMap<>();
 
 	public SchemaDefinations() {
-		//TODO: load files if implicit to application
+		// TODO: load files if implicit to application
 	}
 
 	public SchemaDefinations(DefinitionNodes definationNodes) {
@@ -26,7 +26,7 @@ public class SchemaDefinations {
 
 	public List<SchemaDefination> getAllSchemaDefinations() {
 		List<SchemaDefination> schemaDefinations = new ArrayList<>();
-		for(Entry<String, SchemaDefination> entry : schemaDefinationMap.entrySet()){
+		for (Entry<String, SchemaDefination> entry : schemaDefinationMap.entrySet()) {
 			schemaDefinations.add(entry.getValue());
 		}
 		return schemaDefinations;

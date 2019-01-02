@@ -18,8 +18,7 @@ public class DefinitionNodes {
 	public void setDefinationNodes(List<DefinationNode> definationNodes) {
 		this.definationNodes = definationNodes;
 	}
-	
-	
+
 	// TODO: to add all the other key of json request.
 
 }
