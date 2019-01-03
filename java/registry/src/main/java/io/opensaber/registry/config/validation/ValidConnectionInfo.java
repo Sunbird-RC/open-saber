@@ -19,7 +19,7 @@ import javax.validation.Payload;
 @Constraint(validatedBy = { ConnectionInfoValidator.class })
 public @interface ValidConnectionInfo {
 
-	String message() default "{ConnectionInfo property does not contain value for shardId or shardLabel or uri}";
+	String message() default "{Invalid database properties}";
 
 	Class<?>[] groups() default {};
 

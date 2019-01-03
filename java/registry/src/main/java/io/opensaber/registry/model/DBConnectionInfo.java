@@ -1,7 +1,5 @@
 package io.opensaber.registry.model;
 
-import io.opensaber.registry.config.validation.ValidConnectionInfo;
-@ValidConnectionInfo
 public class DBConnectionInfo {
 
 	private String shardId;
