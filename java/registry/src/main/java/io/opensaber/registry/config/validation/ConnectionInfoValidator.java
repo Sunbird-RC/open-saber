@@ -1,4 +1,4 @@
-package io.opensaber.registry.sink.shard;
+package io.opensaber.registry.config.validation;
 
 import io.opensaber.registry.model.DBConnectionInfo;
 import javax.validation.ConstraintValidator;

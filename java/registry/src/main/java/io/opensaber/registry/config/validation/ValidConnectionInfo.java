@@ -1,4 +1,4 @@
-package io.opensaber.registry.sink.shard;
+package io.opensaber.registry.config.validation;
 
 import static java.lang.annotation.ElementType.CONSTRUCTOR;
 import static java.lang.annotation.ElementType.FIELD;
