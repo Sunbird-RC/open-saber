@@ -150,7 +150,7 @@ public class RegistryServiceImpl implements RegistryService {
         }
 
         if (signatureEnabled) {
-            signatureHelper.getSignedJson(rootNode);
+            signatureHelper.signJson(rootNode);
         }
 
         if (persistenceEnabled) {
@@ -205,15 +205,15 @@ public class RegistryServiceImpl implements RegistryService {
                     tpGraphMain.updateVertex(inputNodeVertex,childElementNode);
                     //sign the entitynode
                     if (signatureEnabled) {
-                        signatureHelper.getSignedJson(entityNode);
-                        JsonNode signNode = entityNode.get(registryRootEntityType).get("signatures");
+                        signatureHelper.signJson(entityNode);
+                        JsonNode signNode = entityNode.get(registryRootEntityType).get(Constants.SIGNATURES);
                         if (signNode.isArray()) {
                             signNode = getEntitySignNode(signNode);
                         }
-                        Iterator<Vertex> vertices = rootVertex.vertices(Direction.OUT, "signatures");
+                        Iterator<Vertex> vertices = rootVertex.vertices(Direction.OUT,Constants.SIGNATURES);
                         while (null != vertices && vertices.hasNext()) {
                             Vertex signVertex = vertices.next();
-                            if (signVertex.property("signatureFor").value().equals("Teacher")) {
+                            if (signVertex.property(Constants.SIGNATURE_FOR).value().equals(registryRootEntityType)) {
                                 tpGraphMain.updateVertex(signVertex, signNode);
                             }
                         }
@@ -225,21 +225,20 @@ public class RegistryServiceImpl implements RegistryService {
                     inputNodeVertex = vertexIterator.hasNext() ? vertexIterator.next(): null;
                     ObjectNode entityNode = (ObjectNode) vr.read(inputNodeVertex.id().toString());
                     entityNode =  merge(entityNode,rootNode);
-                    //removeEntitySignNode();
                     //TO-DO validation is failing
                     // boolean isValidate = iValidate.validate("Teacher",entityNode.toString());
                     tpGraphMain.updateVertex(inputNodeVertex,childElementNode);
                     //sign the entitynode
                     if (signatureEnabled) {
-                        signatureHelper.getSignedJson(entityNode);
-                        JsonNode signNode = entityNode.get(registryRootEntityType).get("signatures");
+                        signatureHelper.signJson(entityNode);
+                        JsonNode signNode = entityNode.get(registryRootEntityType).get(Constants.SIGNATURES);
                         if (signNode.isArray()) {
                             signNode = getEntitySignNode(signNode);
                         }
-                        Iterator<Vertex> vertices = rootVertex.vertices(Direction.OUT, "signatures");
+                        Iterator<Vertex> vertices = rootVertex.vertices(Direction.OUT,Constants.SIGNATURES);
                         while (null != vertices && vertices.hasNext()) {
                             Vertex signVertex = vertices.next();
-                            if (signVertex.property("signatureFor").value().equals("Teacher")) {
+                            if (signVertex.property(Constants.SIGNATURE_FOR).value().equals(registryRootEntityType)) {
                                 tpGraphMain.updateVertex(signVertex, signNode);
                             }
                         }
@@ -259,7 +258,7 @@ public class RegistryServiceImpl implements RegistryService {
         Iterator<JsonNode> signItr = signatures.elements();
         while(signItr.hasNext()){
             JsonNode signNode = signItr.next();
-            if(signNode.get("signatureFor").asText().equals(registryRootEntityType) && null == signNode.get("osid")){
+            if(signNode.get(Constants.SIGNATURE_FOR).asText().equals(registryRootEntityType) && null == signNode.get("osid")){
                 entitySignNode = signNode;
                 break;
             }

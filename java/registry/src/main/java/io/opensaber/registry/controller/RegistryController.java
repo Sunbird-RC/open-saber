@@ -267,7 +267,7 @@ public class RegistryController {
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.UPDATE, "OK", responseParams);
 
-		String dataObject = apiMessage.getRequest().getRequestMapAsString();
+		String jsonString = apiMessage.getRequest().getRequestMapAsString();
 		String entityType = apiMessage.getRequest().getEntityType();
 		JsonNode reqJsonNode = apiMessage.getRequest().getRequestMapNode();
 		String osIdVal = reqJsonNode.get(entityType).get(dbConnectionInfoMgr.getUuidPropertyName()).asText();
@@ -278,7 +278,7 @@ public class RegistryController {
 
         try {
             watch.start("RegistryController.update");
-            registryService.updateEntity(dataObject);
+            registryService.updateEntity(jsonString);
             responseParams.setErrmsg("");
             responseParams.setStatus(Response.Status.SUCCESSFUL);
             watch.stop("RegistryController.update");
