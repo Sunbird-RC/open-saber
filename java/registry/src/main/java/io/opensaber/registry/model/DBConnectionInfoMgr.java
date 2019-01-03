@@ -2,7 +2,9 @@ package io.opensaber.registry.model;
 
 import io.opensaber.registry.config.validation.ValidConnectionInfo;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
@@ -38,6 +40,7 @@ public class DBConnectionInfoMgr {
 	 * advisor allowed
 	 */
 	private String shardAdvisorClassName;
+	private Map<String, String> shardLabelIdMap = new HashMap<>();
 
 	public List<DBConnectionInfo> getConnectionInfo() {
 		return connectionInfo;
@@ -92,5 +95,8 @@ public class DBConnectionInfoMgr {
 	public void setShardAdvisorClassName(String shardAdvisorClassName) {
 		this.shardAdvisorClassName = shardAdvisorClassName;
 	}
-	
+
+	public String getShardId(String shardLabel) {
+		return shardLabelIdMap.getOrDefault(shardLabel, null);
+	}
 }
