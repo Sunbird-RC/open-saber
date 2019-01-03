@@ -1,59 +1,61 @@
 package io.opensaber.registry.dao;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.TextNode;
 import io.opensaber.pojos.Filter;
-import io.opensaber.pojos.FilterOperators;
 import io.opensaber.pojos.SearchQuery;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.util.ReadConfigurator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Component
 public class SearchDaoImpl implements SearchDao {
 
-	public Map<String, Graph> search(Graph graphFromStore, SearchQuery searchQuery) {
+	@Autowired
+	IRegistryDao registryDao;
+
+	public JsonNode search(Graph graphFromStore, SearchQuery searchQuery) {
 
 		GraphTraversalSource dbGraphTraversalSource = graphFromStore.traversal().clone();
 		List<Filter> filterList = searchQuery.getFilters();
-		Map<String, Graph> graphMap = new HashMap<String, Graph>();
+		GraphTraversal<Vertex, Vertex> resultGraphTraversal = dbGraphTraversalSource.clone().V().hasLabel(searchQuery.getRootLabel());
 
 		List<P> predicates = new ArrayList<>();
 		// Ensure the root label is correct
 		if (filterList != null) {
 			for (Filter filter : filterList) {
 				String property = filter.getProperty();
-				Object value = filter.getValue();
-				FilterOperators operator = filter.getOperator();
+				String genericValue = filter.getValue();
+				String operator = filter.getOperator();
+				String path = filter.getPath();
 
-				List valueList = getValueList(value);
+				//List valueList = getValueList(value);
 
-				switch(operator) {
-					case eq:
-					default:
-						if (valueList.size() > 0) {
-							//dbGraphTraversalSource.V().h
-
-						}
-						break;
+				// Defaulting to "equals" operation
+				if (operator == null) {
+					resultGraphTraversal = resultGraphTraversal.has(property,
+							P.eq(genericValue));
+				}
+				if (path != null) {
+					if (resultGraphTraversal.asAdmin().clone().hasNext()) {
+						resultGraphTraversal = resultGraphTraversal.asAdmin().clone().inE(path).outV();
+					}
 				}
 			}
-
-//			P resultPredicate =
-//			predicates.forEach( p -> resultPredicate.and(p));
-			GraphTraversal<Vertex, Vertex> resultGraphTraversal = dbGraphTraversalSource.V()
-					.hasLabel(searchQuery.getRootLabel());
-
-			getGraphByTraversal(resultGraphTraversal, graphMap);
 		}
-		return graphMap;
+
+		return getResult(graphFromStore, resultGraphTraversal);
 	}
 
 	private void updateValueList(Object value, List valueList) {
@@ -72,17 +74,22 @@ public class SearchDaoImpl implements SearchDao {
 		return valueList;
 	}
 
-	private void getGraphByTraversal(GraphTraversal resultTraversal, Map<String, Graph> graphMap) {
+	private JsonNode getResult (Graph graph, GraphTraversal resultTraversal) {
+		ArrayNode result = JsonNodeFactory.instance.arrayNode();
 		if (resultTraversal != null) {
 			while (resultTraversal.hasNext()) {
 				Vertex v = (Vertex) resultTraversal.next();
 				if ((!v.property(Constants.STATUS_KEYWORD).isPresent() ||
 					Constants.STATUS_ACTIVE.equals(v.value(Constants.STATUS_KEYWORD)))) {
-					graphMap.put(v.label(), null);
-					//graphMap.put(v.label(), registryDao.getEntityByVertex(v));
+
+					ReadConfigurator configurator = new ReadConfigurator();
+					configurator.setIncludeSignatures(false);
+
+					JsonNode answer = registryDao.getEntity(graph, v, configurator);
+					result.add(answer);
 				}
 			}
-			System.out.println("done with while loop");
 		}
+		return result;
 	}
 }

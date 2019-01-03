@@ -8,12 +8,12 @@ public class Filter {
 	private String property;
 
 	// The operator
-	private FilterOperators operator;
+	private String operator;
 
 	// The value that needs to be searched
-	private Object value;
+	private String value;
 
-	public Filter(String property, String operator, Object value) {
+	public Filter(String property, String operator, String value) {
 		this.property = property;
 		//this.operator = operator;
 		this.value = value;
@@ -27,7 +27,7 @@ public class Filter {
 		return operator;
 	}*/
 
-	public Object getValue() {
+	public String getValue() {
 		return value;
 	}
 
@@ -39,5 +39,5 @@ public class Filter {
 		this.path = path;
 	}
 
-	public FilterOperators getOperator() { return this.operator; }
+	public String getOperator() { return this.operator;}
 }

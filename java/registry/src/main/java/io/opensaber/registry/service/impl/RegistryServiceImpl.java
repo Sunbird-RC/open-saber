@@ -135,7 +135,7 @@ public class RegistryServiceImpl implements RegistryService {
     }
 
     @Override
-    public boolean deleteEntityById(String id) throws AuditFailedException, RecordNotFoundException {
+    public boolean deleteEntityById(String id) {
         return false;
     }
 
@@ -164,15 +164,30 @@ public class RegistryServiceImpl implements RegistryService {
         }
 
         if (persistenceEnabled) {
-            entityId = tpGraphMain.addEntity(rootNode);
+            try (OSGraph osGraph = shard.getDatabaseProvider().getOSGraph()) {
+                try (Graph graph = osGraph.getGraphStore()) {
+                    try (Transaction tx = shard.getDatabaseProvider().startTransaction(graph)) {
+                        entityId = tpGraphMain.addEntity(graph, rootNode);
+                        shard.getDatabaseProvider().commitTransaction(graph, tx);
+                    }
+                }
+            }
         }
 
         return entityId;
     }
 
-    public JsonNode getEntity(String id, ReadConfigurator configurator) {
-        JsonNode result = tpGraphMain.getEntity(id, configurator);
-        return result;
+    @Override
+    public JsonNode getEntity(String id, ReadConfigurator configurator) throws Exception {
+        try (OSGraph osGraph = shard.getDatabaseProvider().getOSGraph()) {
+            try (Graph graph = osGraph.getGraphStore()) {
+                try (Transaction tx = shard.getDatabaseProvider().startTransaction(graph)) {
+                    JsonNode result = tpGraphMain.getEntity(graph, id, configurator);
+                    shard.getDatabaseProvider().commitTransaction(graph, tx);
+                    return result;
+                }
+            }
+        }
     }
 
     @Override
@@ -192,7 +207,7 @@ public class RegistryServiceImpl implements RegistryService {
             Graph graph = osGraph.getGraphStore();
             try (Transaction tx = databaseProvider.startTransaction(graph)) {
                 VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
-                if(null != tx){
+                if(null != tx) {
 
                     ObjectNode entityNode = null;
                     vertexIterator = graph.vertices(idProp);
@@ -208,17 +223,17 @@ public class RegistryServiceImpl implements RegistryService {
                     entityNode =  merge(entityNode,rootNode);
                     //TO-DO validation is failing
                     //boolean isValidate = iValidate.validate("Teacher",entityNode.toString());
-                    tpGraphMain.updateVertex(inputNodeVertex,childElementNode);
-                    tx.readWrite();
-                    tx.commit();
+                    tpGraphMain.updateVertex(graph, inputNodeVertex,childElementNode);
+                    databaseProvider.commitTransaction(graph, tx);
                 } else {
+                    // TinkerGraph section for test cases
                     vertexIterator = graph.vertices(new Long(idProp));
                     inputNodeVertex = vertexIterator.hasNext() ? vertexIterator.next(): null;
                     ObjectNode entityNode = (ObjectNode) vr.read(inputNodeVertex.id().toString());
                     entityNode =  merge(entityNode,rootNode);
                     //TO-DO validation is failing
                     // boolean isValidate = iValidate.validate("Teacher",entityNode.toString());
-                    tpGraphMain.updateVertex(inputNodeVertex,childElementNode);
+                    tpGraphMain.updateVertex(graph, inputNodeVertex,childElementNode);
                 }
             }
         }

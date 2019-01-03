@@ -1,14 +1,13 @@
 package io.opensaber.registry.dao;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.opensaber.pojos.SearchQuery;
-
-import java.util.Map;
 
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 
 public interface SearchDao {
 
-    Map<String, Graph> search(Graph graphFromStore, SearchQuery searchQuery);
+    JsonNode search(Graph graphFromStore, SearchQuery searchQuery);
 
 }

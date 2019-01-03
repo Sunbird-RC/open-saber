@@ -44,7 +44,7 @@ public class VertexReader {
      * @param currVertex
      * @return
      */
-    private ObjectNode constructObject(Vertex currVertex) {
+    public ObjectNode constructObject(Vertex currVertex) {
 
         ObjectNode contentNode = JsonNodeFactory.instance.objectNode();
         Iterator<VertexProperty<Object>> properties = currVertex.properties();
@@ -196,32 +196,33 @@ public class VertexReader {
      * @return
      * @throws Exception
      */
-    public JsonNode read(String osid) throws Exception {
+    public JsonNode read(String osid) {
         Iterator<Vertex> itrV = graph.vertices(osid);
-        if (!itrV.hasNext()) {
-            throw new Exception("Invalid id");
-        }
-        Vertex rootVertex = itrV.next();
-
-        int currLevel = 0;
-        ObjectNode rootNode = constructObject(rootVertex);
-        entityType = rootNode.get(TypePropertyHelper.getTypeName()).textValue();
-
-        // Set the type for the root node, so as to wrap.
-        uuidNodeMap.put(rootNode.get(uuidPropertyName).textValue(), rootNode);
-
-        if (configurator.getDepth() > 0) {
-            loadOtherVertices(rootVertex, currLevel);
-        }
-
         ObjectNode entityNode = JsonNodeFactory.instance.objectNode();
-        entityNode.set(entityType, rootNode);
 
-        // For the entity Node, now go and replace the array values with actual objects.
-        // The properties could exist anywhere. Refer to the local arrMap.
-        expandChildObject(entityNode);
+        if (itrV.hasNext()) {
 
+            Vertex rootVertex = itrV.next();
+
+            int currLevel = 0;
+            ObjectNode rootNode = constructObject(rootVertex);
+            entityType = rootNode.get(TypePropertyHelper.getTypeName()).textValue();
+
+            // Set the type for the root node, so as to wrap.
+            uuidNodeMap.put(rootNode.get(uuidPropertyName).textValue(), rootNode);
+
+            if (configurator.getDepth() > 0) {
+                loadOtherVertices(rootVertex, currLevel);
+            }
+
+            entityNode.set(entityType, rootNode);
+
+            // For the entity Node, now go and replace the array values with actual objects.
+            // The properties could exist anywhere. Refer to the local arrMap.
+            expandChildObject(entityNode);
+        } else {
+            logger.info("Invalid id passed to read");
+        }
         return entityNode;
     }
-
 }

@@ -2,24 +2,13 @@ package io.opensaber.registry.dao;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.sink.shard.Shard;
-import io.opensaber.registry.util.EntityParenter;
-import io.opensaber.registry.util.ParentLabelGenerator;
-import io.opensaber.registry.util.ReadConfigurator;
-import io.opensaber.registry.util.RefLabelHelper;
-import io.opensaber.registry.util.TypePropertyHelper;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import io.opensaber.registry.util.*;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -31,6 +20,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.util.*;
+
 @Component("tpGraphMain")
 public class RegistryDaoImpl implements IRegistryDao {
     @Value("${database.uuidPropertyName}")
@@ -40,10 +31,10 @@ public class RegistryDaoImpl implements IRegistryDao {
     EntityParenter entityParenter;
 
     @Autowired
-    private Shard shard;
+    private ISchemaConfigurator schemaConfigurator;
 
     @Autowired
-    private ISchemaConfigurator schemaConfigurator;
+    private Shard shard;
 
     private List<String> privatePropertyList;
 
@@ -172,7 +163,7 @@ public class RegistryDaoImpl implements IRegistryDao {
      * @param node
      * @return
      */
-    public String getParentName(JsonNode node) {
+    private String getParentName(JsonNode node) {
         return node.fieldNames().next();
     }
 
@@ -226,56 +217,42 @@ public class RegistryDaoImpl implements IRegistryDao {
 
     /**
      * Entry point to the dao layer to write a JsonNode entity.
-<<<<<<< HEAD
-     *
-=======
->>>>>>> release-2.0.0
      * @param rootNode
      * @return
      */
-    public String addEntity(JsonNode rootNode) {
-        String entityId = "";
-        DatabaseProvider databaseProvider = shard.getDatabaseProvider();
-        try (OSGraph osGraph = databaseProvider.getOSGraph()) {
-            Graph graph = osGraph.getGraphStore();
-            try (Transaction tx = databaseProvider.startTransaction(graph)) {
-                entityId = writeNodeEntity(graph, rootNode);
-                databaseProvider.commitTransaction(graph, tx);
-            }
-        } catch (Exception e) {
-            logger.error("Can't close graph", e);
-        }
+    public String addEntity(Graph graph, JsonNode rootNode) {
+        String entityId = writeNodeEntity(graph, rootNode);
         return entityId;
     }
 
     /**
      * Retrieves a record from the database
-<<<<<<< HEAD
-     *
-=======
->>>>>>> release-2.0.0
      * @param uuid    entity identifier to retrieve
      * @param readConfigurator
      * @return
      */
-    public JsonNode getEntity(String uuid, ReadConfigurator readConfigurator) {
+    public JsonNode getEntity(Graph graph, String uuid, ReadConfigurator readConfigurator) {
         if (null == privatePropertyList) {
             privatePropertyList = new ArrayList<>();
             setPrivatePropertyList(schemaConfigurator.getAllPrivateProperties());
         }
 
-        JsonNode result = JsonNodeFactory.instance.objectNode();
-        DatabaseProvider databaseProvider = shard.getDatabaseProvider();
-        try (OSGraph osGraph = databaseProvider.getOSGraph()) {
-            Graph graph = osGraph.getGraphStore();
-            try (Transaction tx = databaseProvider.startTransaction(graph)) {
-                VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
-                result = vr.read(uuid);
-                databaseProvider.commitTransaction(graph, tx);
-            }
-        } catch (Exception e) {
-            logger.error("Exception occurred during read entity ", e);
+        VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
+        JsonNode result = vr.read(uuid);
+
+        return result;
+    }
+
+
+    public JsonNode getEntity(Graph graph, Vertex vertex, ReadConfigurator readConfigurator) {
+        if (null == privatePropertyList) {
+            privatePropertyList = new ArrayList<>();
+            setPrivatePropertyList(schemaConfigurator.getAllPrivateProperties());
         }
+
+        VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
+        JsonNode result = vr.constructObject(vertex);
+
         return result;
     }
 
@@ -284,36 +261,28 @@ public class RegistryDaoImpl implements IRegistryDao {
      * @param rootVertex
      * @param inputJsonNode
      */
-    public void updateVertex( Vertex rootVertex, JsonNode inputJsonNode) {
-        DatabaseProvider databaseProvider = shard.getDatabaseProvider();
-        try(OSGraph osGraph = databaseProvider.getOSGraph()){
-            Graph graph = osGraph.getGraphStore();
-            try (Transaction tx = databaseProvider.startTransaction(graph)) {
-                inputJsonNode.fields().forEachRemaining(subEntityField -> {
-                    String fieldKey = subEntityField.getKey();
-                    JsonNode subEntityNode = subEntityField.getValue();
-                    if (subEntityNode.isValueNode()) {
-                        rootVertex.property(fieldKey,subEntityField.getValue().asText());
-                    } else if (subEntityNode.isObject()) {
-                        parseJsonObject(subEntityNode,graph,rootVertex,fieldKey,false);
-                    } else if(subEntityNode.isArray()){
-                        List<String> osidList = new ArrayList<String>();
-                        subEntityNode.forEach(arrayElementNode -> {
-                            if(arrayElementNode.isObject()){
-                                String updatedOsid = parseJsonObject(arrayElementNode,graph,rootVertex,fieldKey, true);
-                                osidList.add(updatedOsid);
-                            }
-                        });
-                        deleteVertices(graph,rootVertex,fieldKey,osidList);
-                        String updatedOisdValue = String.join(",",osidList);
-                        rootVertex.property(RefLabelHelper.getLabel(fieldKey, uuidPropertyName),updatedOisdValue);
+    public void updateVertex(Graph graph, Vertex rootVertex, JsonNode inputJsonNode) {
+        inputJsonNode.fields().forEachRemaining(subEntityField -> {
+            String fieldKey = subEntityField.getKey();
+            JsonNode subEntityNode = subEntityField.getValue();
+            if (subEntityNode.isValueNode()) {
+                rootVertex.property(fieldKey, subEntityField.getValue().asText());
+            } else if (subEntityNode.isObject()) {
+                parseJsonObject(subEntityNode, graph, rootVertex, fieldKey, false);
+            } else if (subEntityNode.isArray()) {
+                List<String> osidList = new ArrayList<String>();
+                subEntityNode.forEach(arrayElementNode -> {
+                    if (arrayElementNode.isObject()) {
+                        String updatedOsid = parseJsonObject(arrayElementNode, graph, rootVertex, fieldKey, true);
+                        osidList.add(updatedOsid);
                     }
                 });
-                databaseProvider.commitTransaction(graph, tx);
+                deleteVertices(graph, rootVertex, fieldKey, osidList);
+                String updatedOisdValue = String.join(",", osidList);
+                rootVertex.property(RefLabelHelper.getLabel(fieldKey, uuidPropertyName), updatedOisdValue);
             }
-        } catch (Exception e) {
-            logger.error("Exception occurred during update entity ", e);
-        }
+        });
+
     }
 
 

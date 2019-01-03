@@ -27,7 +27,7 @@ public class ShardManager {
 	private IShardAdvisor shardAdvisor;
 	@Autowired
 	private SearchService searchService;
-
+	@Autowired
 	private Shard shard;
 
 
@@ -38,7 +38,7 @@ public class ShardManager {
 	 * @param attributeValue
 	 * @throws IOException
 	 */
-	private void activateDbShard(Object attributeValue) throws CustomException {
+	private void activateDbShard(Object attributeValue) {
 		DBConnectionInfo connectionInfo = shardAdvisor.getShard(attributeValue);
 	    DatabaseProvider databaseProvider = dbProviderFactory.getInstance(connectionInfo);
 	    shard.setShardId(connectionInfo.getShardId());
@@ -56,7 +56,7 @@ public class ShardManager {
 	 * @return
 	 * @throws CustomException
 	 */
-	public Shard getShard(Object attributeValue) throws CustomException {
+	public Shard getShard(Object attributeValue) {
 
 		if(attributeValue != null){
 			activateDbShard(attributeValue);
@@ -71,7 +71,7 @@ public class ShardManager {
 	 * @return
 	 * @throws CustomException
 	 */
-	public Shard getDefaultShard() throws CustomException {
+	public Shard getDefaultShard() {
 		activateDbShard(null);
 		return shard;
 	}
@@ -83,7 +83,7 @@ public class ShardManager {
 	 * @return
 	 * @throws CustomException 
 	 */
-	public void activateShard(String shardId) throws CustomException{
+	public void activateShard(String shardId) {
 		if (shardId != null) {
 			DBConnectionInfo connectionInfo = dbConnectionInfoMgr.getDBConnectionInfo(shardId);
 			DatabaseProvider databaseProvider = dbProviderFactory.getInstance(connectionInfo);

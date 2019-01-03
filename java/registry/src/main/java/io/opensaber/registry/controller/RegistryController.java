@@ -1,13 +1,10 @@
 package io.opensaber.registry.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.opensaber.pojos.APIMessage;
-import io.opensaber.pojos.HealthCheckResponse;
-import io.opensaber.pojos.OpenSaberInstrumentation;
-import io.opensaber.pojos.Response;
-import io.opensaber.pojos.ResponseParams;
+import io.opensaber.pojos.*;
 import io.opensaber.registry.exception.CustomException;
 import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
@@ -81,47 +78,43 @@ public class RegistryController {
     @RequestMapping(value = "/search", method = RequestMethod.POST)
     public ResponseEntity<Response> searchEntity(@RequestHeader HttpHeaders header) {
 
-        Model rdf = (Model) apiMessage.getLocalMap(Constants.RDF_OBJECT);
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.SEARCH, "OK", responseParams);
-        Map<String, Object> result = new HashMap<>();
+        JsonNode payload = apiMessage.getRequest().getRequestMapNode();
 
         response.setResult("API to be supported soon");
         responseParams.setStatus(Response.Status.SUCCESSFUL);
 
-        // try {
-        // watch.start("RegistryController.searchEntity");
-        // String jenaJson = searchService.searchFramed(rdf);
-        // Data<Object> data = new Data<>(jenaJson);
-        // Configuration config =
-        // configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
-        // Direction.OUT);
-        //
-        // ITransformer<Object> responseTransformer =
-        // transformer.getInstance(config);
-        // responseTransformer.setPurgeData(getKeysToPurge());
-        // Data<Object> resultContent = responseTransformer.transform(data);
-        // response.setResult(resultContent.getData());
-        // response.setResult("API to be supported soon");
-        // responseParams.setStatus(Response.Status.SUCCESSFUL);
-        // watch.stop("RegistryController.searchEntity");
-        // } catch (AuditFailedException | RecordNotFoundException |
-        // TypeNotProvidedException
-        // | TransformationException e) {
-        // logger.error(
-        // "AuditFailedException | RecordNotFoundException |
-        // TypeNotProvidedException in controller while adding entity !",
-        // e);
-        // response.setResult(result);
-        // responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-        // responseParams.setErrmsg(e.getMessage());
-        // } catch (Exception e) {
-        // logger.error("Exception in controller while searching entities !",
-        // e);
-        // response.setResult(result);
-        // responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-        // responseParams.setErrmsg(e.getMessage());
-        // }
+        try {
+            shardManager.activateShard(null);
+
+            watch.start("RegistryController.searchEntity");
+            JsonNode result = searchService.search(payload);
+//            Data<Object> data = new Data<>(result);
+//            Configuration config =
+//                    configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
+//                            Direction.OUT);
+//
+//            ITransformer<Object> responseTransformer =
+//                    transformer.getInstance(config);
+//
+//            Data<Object> resultContent = responseTransformer.transform(data);
+//            response.setResult(resultContent.getData());
+            response.setResult(result);
+            responseParams.setStatus(Response.Status.SUCCESSFUL);
+            watch.stop("RegistryController.searchEntity");
+//        } catch (TransformationException e) {
+//            logger.error("search failure", e);
+//            response.setResult("");
+//            responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+//            responseParams.setErrmsg(e.getMessage());
+        } catch (Exception e) {
+            logger.error("Exception in controller while searching entities !",
+                    e);
+            response.setResult("");
+            responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+            responseParams.setErrmsg(e.getMessage());
+        }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -170,11 +163,6 @@ public class RegistryController {
             responseParams.setStatus(Response.Status.SUCCESSFUL);
         } catch (UnsupportedOperationException e) {
             logger.error("Controller: UnsupportedOperationException while deleting entity !", e);
-            response.setResult(null);
-            responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-            responseParams.setErrmsg(e.getMessage());
-        } catch (RecordNotFoundException e) {
-            logger.error("Controller: RecordNotFoundException while deleting entity !", e);
             response.setResult(null);
             responseParams.setStatus(Response.Status.UNSUCCESSFUL);
             responseParams.setErrmsg(e.getMessage());

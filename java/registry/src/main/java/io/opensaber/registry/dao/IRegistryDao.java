@@ -9,13 +9,12 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 public interface IRegistryDao {
 
-	void setPrivatePropertyList(List<String> privatePropertyList);
 	Vertex ensureParentVertex(Graph graph, String parentLabel);
-	String getParentName(JsonNode node);
 	String writeNodeEntity(Graph graph, JsonNode node);
 	List<String> getUUIDs(Graph graph, Set<String> labels);
-	String addEntity(JsonNode rootNode);
-	JsonNode getEntity(String uuid, ReadConfigurator readConfigurator);
-	void updateVertex(Vertex rootVertex, JsonNode inputJsonNode);
+	String addEntity(Graph graph, JsonNode rootNode);
+	JsonNode getEntity(Graph graph, String uuid, ReadConfigurator readConfigurator);
+	JsonNode getEntity(Graph graph, Vertex vertex, ReadConfigurator readConfigurator);
+	void updateVertex(Graph graph, Vertex rootVertex, JsonNode inputJsonNode);
 
 }
