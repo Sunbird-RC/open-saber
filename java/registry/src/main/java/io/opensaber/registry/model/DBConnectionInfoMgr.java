@@ -3,7 +3,6 @@ package io.opensaber.registry.model;
 import io.opensaber.registry.config.validation.ValidConnectionInfo;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.constraints.Size;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
@@ -33,7 +32,6 @@ public class DBConnectionInfoMgr {
 	/**
 	 * Each DBConnectionInfo is a shard connection information.
 	 */
-	@Size(min = 1)
 	private List<DBConnectionInfo> connectionInfo = new ArrayList<>();
 	/**
 	 * Instructs which advisor to pick up across each connectionInfo Only one
