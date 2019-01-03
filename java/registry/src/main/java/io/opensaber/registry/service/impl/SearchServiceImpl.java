@@ -72,6 +72,9 @@ public class SearchServiceImpl implements SearchService {
 
 		// Now, search across all shards and return the results.
 		for (DBConnectionInfo dbConnection : dbConnectionInfoMgr.getConnectionInfo()) {
+
+			// TODO: Note this is presently linked to shard and is therefore preventing
+			// parallel search.
 			shardManager.activateShard(dbConnection.getShardId());
 
 			try (OSGraph osGraph = shard.getDatabaseProvider().getOSGraph()) {

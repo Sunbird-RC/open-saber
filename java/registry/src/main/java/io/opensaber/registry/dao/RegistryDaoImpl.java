@@ -2,11 +2,11 @@ package io.opensaber.registry.dao;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
-import io.opensaber.registry.sink.DatabaseProvider;
-import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.util.*;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -240,6 +240,10 @@ public class RegistryDaoImpl implements IRegistryDao {
         VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
         JsonNode result = vr.read(uuid);
 
+        // Replace osid with shard details
+        String prefix = shard.getShardLabel() + RecordIdentifier.getSeparator();
+        JSONUtil.addPrefix((ObjectNode) result, prefix, new ArrayList<String>(Arrays.asList(uuidPropertyName)));
+
         return result;
     }
 
@@ -252,6 +256,10 @@ public class RegistryDaoImpl implements IRegistryDao {
 
         VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
         JsonNode result = vr.constructObject(vertex);
+
+        // Replace osid with shard details
+        String prefix = shard.getShardLabel() + RecordIdentifier.getSeparator();
+        JSONUtil.addPrefix((ObjectNode) result, prefix, new ArrayList<String>(Arrays.asList(uuidPropertyName)));
 
         return result;
     }
