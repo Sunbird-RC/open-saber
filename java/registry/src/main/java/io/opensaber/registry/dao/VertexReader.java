@@ -4,9 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.RefLabelHelper;
 import io.opensaber.registry.util.TypePropertyHelper;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -17,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Given a vertex from the graph, constructs a json out it
@@ -73,10 +77,10 @@ public class VertexReader {
                 } else {
                     logger.debug("{} is a simple value", prop.key());
                     boolean canAdd = true;
-                    if (TypePropertyHelper.isTypeProperty(prop.key())) {
-                        canAdd &= configurator.isIncludeTypeAttributes();
-                    } else if (privatePropertyList.contains(prop.key())) {
+                    if (privatePropertyList.contains(prop.key())) {
                         canAdd &= configurator.isIncludeEncryptedProp();
+                    } else if (prop.key().equals(Constants.PARENT_KEYWORD)) {
+                        canAdd = false;
                     }
 
                     if (canAdd) {
@@ -102,12 +106,22 @@ public class VertexReader {
     ArrayNode loadSignatures(Vertex currVertex) {
         ArrayNode signatures = null;
         if (configurator.isIncludeSignatures()) {
-            signatures = JsonNodeFactory.instance.arrayNode();
-            Iterator<Vertex> signatureVertices = currVertex.vertices(Direction.IN, "Signatures");
-            while (signatureVertices.hasNext()) {
-                Vertex oneSignature = signatureVertices.next();
-                ObjectNode signatureNode = constructObject(oneSignature);
-                signatures.add(signatureNode);
+            try {
+                Iterator<Vertex> signatureArrayIter = currVertex.vertices(Direction.IN, Constants.SIGNATURES_STR);
+                Vertex signatureArrayV = signatureArrayIter.next();
+                Iterator<Vertex> signatureVertices = signatureArrayV.vertices(Direction.OUT);
+
+                signatures = JsonNodeFactory.instance.arrayNode();
+                while (signatureVertices.hasNext()) {
+                    Vertex oneSignature = signatureVertices.next();
+                    if (!oneSignature.label().equals(entityType)) {
+                        ObjectNode signatureNode = constructObject(oneSignature);
+                        signatures.add(signatureNode);
+                        logger.debug("Added signature node for " + signatureNode.get(Constants.SIGNATURE_FOR));
+                    }
+                }
+            } catch (NoSuchElementException e) {
+                logger.debug("There are no signatures found for " + currVertex.label());
             }
         }
         return signatures;
@@ -130,18 +144,22 @@ public class VertexReader {
      */
     private void loadOtherVertices(Vertex vertex, int currLevel) {
         Iterator<Vertex> otherVertices = vertex.vertices(Direction.OUT);
+        int tempCurrLevel = currLevel;
         while (otherVertices.hasNext()) {
             Vertex currVertex = otherVertices.next();
-            ObjectNode node = constructObject(currVertex);
-            uuidNodeMap.put(node.get(uuidPropertyName).textValue(), node);
+            if (!currVertex.label().equals(entityType)) {
+                ObjectNode node = constructObject(currVertex);
+                uuidNodeMap.put(node.get(uuidPropertyName).textValue(), node);
 
-            if (configurator.isIncludeSignatures()) {
                 ArrayNode signatureNode = loadSignatures(currVertex);
-                node.set("Signatures", signatureNode);
-            }
+                if (signatureNode != null) {
+                    node.set(Constants.SIGNATURES_STR, signatureNode);
+                }
 
-            if (canLoadVertex(++currLevel, configurator.getDepth())) {
-                loadOtherVertices(currVertex, currLevel);
+                if (canLoadVertex(++tempCurrLevel, configurator.getDepth())) {
+                    loadOtherVertices(currVertex, tempCurrLevel);
+                    tempCurrLevel = currLevel; // After loading reset for other vertices.
+                }
             }
         }
     }
@@ -210,8 +228,18 @@ public class VertexReader {
         // Set the type for the root node, so as to wrap.
         uuidNodeMap.put(rootNode.get(uuidPropertyName).textValue(), rootNode);
 
+        ArrayNode signatureNode = loadSignatures(rootVertex);
+        if (signatureNode != null) {
+            rootNode.set(Constants.SIGNATURES_STR, signatureNode);
+        }
+
         if (configurator.getDepth() > 0) {
             loadOtherVertices(rootVertex, currLevel);
+        }
+
+        // After reading the type, now trim the @type property
+        if (configurator.isIncludeTypeAttributes()) {
+            JSONUtil.removeNode(rootNode, Constants.TYPE_STR_JSON_LD);
         }
 
         ObjectNode entityNode = JsonNodeFactory.instance.objectNode();
