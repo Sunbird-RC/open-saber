@@ -44,25 +44,40 @@ public class SearchServiceImpl implements SearchService {
 	private Shard shard;
 
 	private SearchQuery getSearchQuery(JsonNode inputQueryNode) {
-		List<Filter> filterList = new ArrayList<>();
 		String rootLabel = inputQueryNode.fieldNames().next();
 
 		SearchQuery searchQuery = new SearchQuery(rootLabel);
+		List<Filter> filterList = new ArrayList<>();
 		if (rootLabel != null && !rootLabel.isEmpty()) {
-			// The root label is set.
-			searchQuery.setRootLabel(rootLabel);
-
-			Iterator<Map.Entry<String, JsonNode>> searchFields = inputQueryNode.get(rootLabel).fields();
-			// Iterate and get the fields.
-			while (searchFields.hasNext()) {
-				Map.Entry<String, JsonNode> entry = searchFields.next();
-				Filter filter = new Filter(entry.getKey(), "=", entry.getValue().asText());
-				filterList.add(filter);
-			}
-			searchQuery.setFilters(filterList);
+			addToFilterList(null, inputQueryNode.get(rootLabel), filterList);
 		}
 
+		searchQuery.setFilters(filterList);
 		return searchQuery;
+	}
+
+	/**
+	 * For a given path filter, iterate through the fields given and set the filterList
+	 * @param path
+	 * @param inputQueryNode
+	 * @return
+	 */
+	private void addToFilterList(String path, JsonNode inputQueryNode, List<Filter> filterList) {
+		Iterator<Map.Entry<String, JsonNode>> searchFields = inputQueryNode.fields();
+		// Iterate and get the fields.
+		while (searchFields.hasNext()) {
+			Map.Entry<String, JsonNode> entry = searchFields.next();
+			JsonNode entryVal = entry.getValue();
+			if (entryVal.isObject()) {
+				addToFilterList(entry.getKey(), entryVal, filterList);
+			} else if (entryVal.isValueNode()){
+				Filter filter = new Filter(path);
+				filter.setProperty(entry.getKey());
+				filter.setOperator("=");
+				filter.setValue(entryVal.asText());
+				filterList.add(filter);
+			}
+		}
 	}
 
 	@Override

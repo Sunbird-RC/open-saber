@@ -13,11 +13,17 @@ public class Filter {
 	// The value that needs to be searched
 	private String value;
 
+	public Filter(String path) {
+		this.path = path;
+	}
+
 	public Filter(String property, String operator, String value) {
 		this.property = property;
 		//this.operator = operator;
 		this.value = value;
 	}
+
+	public void setProperty(String property) { this.property = property; }
 
 	public String getProperty() {
 		return property;
@@ -31,6 +37,8 @@ public class Filter {
 		return value;
 	}
 
+	public void setValue(String value) { this.value = value; }
+
 	public String getPath() {
 		return path;
 	}
@@ -40,4 +48,6 @@ public class Filter {
 	}
 
 	public String getOperator() { return this.operator;}
+
+	public void setOperator(String operator) { this.operator = operator; }
 }
