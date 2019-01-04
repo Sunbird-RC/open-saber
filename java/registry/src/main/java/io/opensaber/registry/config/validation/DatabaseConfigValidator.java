@@ -13,7 +13,7 @@ public class DatabaseConfigValidator implements ConstraintValidator<ValidDatabas
 	@Override
 	public boolean isValid(DBConnectionInfoMgr mgr, ConstraintValidatorContext context) {
 
-		boolean isValid = false;
+		boolean isValidFlag = false;
 		String message = null;
 		if (mgr.getProvider().isEmpty() || mgr.getUuidPropertyName().isEmpty()) {
 			message = "database.provider or database.uuidPropertyName is empty";
@@ -39,9 +39,9 @@ public class DatabaseConfigValidator implements ConstraintValidator<ValidDatabas
 		if (message != null)
 			setMessage(context, message);
 		else
-			isValid = true;
+			isValidFlag = true;
 
-		return isValid;
+		return isValidFlag;
 	}
 
 	private void setMessage(ConstraintValidatorContext context, String message) {

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.PostConstruct;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
@@ -41,6 +42,13 @@ public class DBConnectionInfoMgr {
 	 */
 	private String shardAdvisorClassName;
 	private Map<String, String> shardLabelIdMap = new HashMap<>();
+
+	@PostConstruct
+	public void init() {
+		for (DBConnectionInfo connInfo : connectionInfo) {
+			shardLabelIdMap.putIfAbsent(connInfo.getShardLabel(), connInfo.getShardId());
+		}
+	}
 
 	public List<DBConnectionInfo> getConnectionInfo() {
 		return connectionInfo;
