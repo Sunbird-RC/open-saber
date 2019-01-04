@@ -16,8 +16,8 @@ import javax.validation.Payload;
 @Documented
 @Target({ METHOD, FIELD, CONSTRUCTOR, PARAMETER, TYPE_USE })
 @Retention(RUNTIME)
-@Constraint(validatedBy = { ConnectionInfoValidator.class })
-public @interface ValidConnectionInfo {
+@Constraint(validatedBy = { DatabaseConfigValidator.class })
+public @interface ValidDatabaseConfig {
 
 	String message() default "{Invalid database properties}";
 

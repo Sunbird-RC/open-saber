@@ -18,9 +18,7 @@ public class DBConnectionInfoMgrTest {
 
 	private final static String NOT_EMPTY = "not empty value";
 	private final static String EMPTY = "";
-	private final String[] NON_UNIQUE_SHARD_VALUES = { "shardval", "shardval" };
-	// private final String[] NON_UNIQUE_SHARD_VALUES =
-	// {"shardval1","shardval2"};
+	private final String[] DUPLICATE_SHARD_VALUES = { "shardval", "shardval" };
 
 	private Validator validator;
 
@@ -66,13 +64,29 @@ public class DBConnectionInfoMgrTest {
 		Set<ConstraintViolation<DBConnectionInfoMgr>> violations = validator.validate(mgr);
 		assertEquals(1, violations.size());
 	}
+	
+	@Test
+	public void testEmptyShardLabel() {
+		List<DBConnectionInfo> connectionInfos = new ArrayList<>();
+		DBConnectionInfo ci = new DBConnectionInfo();
+		ci.setShardId(NOT_EMPTY);
+		ci.setShardLabel(EMPTY);
+		ci.setUri(NOT_EMPTY);
+		connectionInfos.add(ci);
+		DBConnectionInfoMgr mgr = new DBConnectionInfoMgr();
+		mgr.setProvider(NOT_EMPTY);
+		mgr.setUuidPropertyName(NOT_EMPTY);
+		mgr.setConnectionInfo(connectionInfos);
+		Set<ConstraintViolation<DBConnectionInfoMgr>> violations = validator.validate(mgr);
+		assertEquals(1, violations.size());
+	}
 
 	@Test
 	public void testDuplicateShardValue() {
-		List<DBConnectionInfo> connectionInfosWithNonUniqueShardLabelValues = getDBConnectionInfoList(
-				NON_UNIQUE_SHARD_VALUES);
+		List<DBConnectionInfo> connectionInfosWithDuplicateShardLabelValues = getDBConnectionInfoList(
+				DUPLICATE_SHARD_VALUES);
 		DBConnectionInfoMgr mgr = new DBConnectionInfoMgr();
-		mgr.setConnectionInfo(connectionInfosWithNonUniqueShardLabelValues);
+		mgr.setConnectionInfo(connectionInfosWithDuplicateShardLabelValues);
 		mgr.setProvider(NOT_EMPTY);
 		mgr.setUuidPropertyName(NOT_EMPTY);
 		Set<ConstraintViolation<DBConnectionInfoMgr>> violations = validator.validate(mgr);

@@ -1,6 +1,6 @@
 package io.opensaber.registry.model;
 
-import io.opensaber.registry.config.validation.ValidConnectionInfo;
+import io.opensaber.registry.config.validation.ValidDatabaseConfig;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +12,7 @@ import org.springframework.validation.annotation.Validated;
 @Component("dbConnectionInfoMgr")
 @ConfigurationProperties(prefix = "database")
 @Validated
-@ValidConnectionInfo
+@ValidDatabaseConfig
 public class DBConnectionInfoMgr {
 
 	/**
