@@ -1,12 +1,9 @@
 package io.opensaber.registry.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.opensaber.pojos.*;
-import io.opensaber.registry.exception.CustomException;
-import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.Direction;
 import io.opensaber.registry.middleware.util.JSONUtil;
@@ -19,8 +16,11 @@ import io.opensaber.registry.sink.shard.ShardManager;
 import io.opensaber.registry.transform.*;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.RecordIdentifier;
-import org.apache.jena.rdf.model.Model;
-import org.json.simple.parser.ParseException;
+
+import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,11 +29,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 public class RegistryController {
@@ -216,26 +211,29 @@ public class RegistryController {
     }
 
     @RequestMapping(value = "/read", method = RequestMethod.POST)
-    public ResponseEntity<Response> greadGraph2Json(@RequestHeader HttpHeaders header) throws Exception {
-        String label = apiMessage.getRequest().getRequestMap().get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
+    public ResponseEntity<Response> greadGraph2Json(@RequestHeader HttpHeaders header) {
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
+        String label = apiMessage.getRequest().getRequestMap().get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
         RecordIdentifier recordId = RecordIdentifier.parse(label);
         String shardId = dbConnectionInfoMgr.getShardId(recordId.getShardLabel());
         shardManager.activateShard(shardId);
         logger.info("Read Api: shard id: " + recordId.getShardLabel() + " for label: " + label);
 
+        String acceptType = header.getAccept().iterator().next().toString();
+
         ReadConfigurator configurator = new ReadConfigurator();
         boolean includeSignatures = (boolean) apiMessage.getRequest().getRequestMap().getOrDefault("includeSignatures",
                 false);
         configurator.setIncludeSignatures(includeSignatures);
+        configurator.setIncludeTypeAttributes(acceptType.equals(Constants.LD_JSON_MEDIA_TYPE));
+
         try {
             JsonNode resultNode = registryService.getEntity(recordId.getUuid(), configurator);
             // Transformation based on the mediaType
             Data<Object> data = new Data<>(resultNode);
-            Configuration config = configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
-                    Direction.OUT);
+            Configuration config = configurationHelper.getConfiguration(acceptType, Direction.OUT);
             logger.info("config : " + config);
             ITransformer<Object> responseTransformer = transformer.getInstance(config);
             Data<Object> resultContent = responseTransformer.transform(data);
@@ -243,7 +241,7 @@ public class RegistryController {
             response.setResult(resultContent.getData());
 
         } catch (Exception e) {
-            logger.error("Read Api Exception occoured ", e);
+            logger.error("Read Api Exception occurred ", e);
             responseParams.setErr(e.getMessage());
             responseParams.setStatus(Response.Status.UNSUCCESSFUL);
         }
@@ -253,25 +251,22 @@ public class RegistryController {
 
     @ResponseBody
     @RequestMapping(value = "/update", method = RequestMethod.POST)
-    public ResponseEntity<Response> updateTP2Graph() throws ParseException, IOException, CustomException {
+    public ResponseEntity<Response> updateTP2Graph() {
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.UPDATE, "OK", responseParams);
-        Map<String, Object> result = new HashMap<>();
 
-        String dataObject = apiMessage.getRequest().getRequestMapAsString();
-        String entityType = apiMessage.getRequest().getEntityType();
-        JsonNode reqJsonNode = apiMessage.getRequest().getRequestMapNode();
-        String label = apiMessage.getRequest().getRequestMap().get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
-
-        RecordIdentifier recordId = RecordIdentifier.parse(label);
-        String shardId = dbConnectionInfoMgr.getShardId(recordId.getShardLabel());
-
+		String jsonString = apiMessage.getRequest().getRequestMapAsString();
+		String entityType = apiMessage.getRequest().getEntityType();
+		JsonNode reqJsonNode = apiMessage.getRequest().getRequestMapNode();
+		String osIdVal = reqJsonNode.get(entityType).get(dbConnectionInfoMgr.getUuidPropertyName()).asText();
+		RecordIdentifier recordId = RecordIdentifier.parse(osIdVal);
+		String shardId = dbConnectionInfoMgr.getShardId(recordId.getShardLabel());
         shardManager.activateShard(shardId);
         logger.info("Update Api: shard id: " + recordId.getShardLabel() + " for uuid: " + recordId.getUuid());
 
         try {
             watch.start("RegistryController.update");
-            registryService.updateEntity(dataObject);
+            registryService.updateEntity(jsonString);
             responseParams.setErrmsg("");
             responseParams.setStatus(Response.Status.SUCCESSFUL);
             watch.stop("RegistryController.update");

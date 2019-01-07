@@ -49,7 +49,7 @@ public class SearchDaoImpl implements SearchDao {
 				}
 				if (path != null) {
 					if (resultGraphTraversal.asAdmin().clone().hasNext()) {
-						resultGraphTraversal = resultGraphTraversal.asAdmin().clone().inE(path).outV();
+						resultGraphTraversal = resultGraphTraversal.asAdmin().clone().outE(path).outV();
 					}
 				}
 			}
@@ -84,8 +84,14 @@ public class SearchDaoImpl implements SearchDao {
 
 					ReadConfigurator configurator = new ReadConfigurator();
 					configurator.setIncludeSignatures(false);
+					configurator.setIncludeTypeAttributes(false);
 
-					JsonNode answer = registryDao.getEntity(graph, v, configurator);
+					JsonNode answer = null;
+					try {
+						answer = registryDao.getEntity(graph, v, configurator);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 					result.add(answer);
 				}
 			}
