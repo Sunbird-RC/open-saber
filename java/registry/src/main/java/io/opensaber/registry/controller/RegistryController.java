@@ -85,24 +85,12 @@ public class RegistryController {
 
             watch.start("RegistryController.searchEntity");
             JsonNode result = searchService.search(payload);
-//            Data<Object> data = new Data<>(result);
-//            Configuration config =
-//                    configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
-//                            Direction.OUT);
-//
-//            ITransformer<Object> responseTransformer =
-//                    transformer.getInstance(config);
-//
-//            Data<Object> resultContent = responseTransformer.transform(data);
-//            response.setResult(resultContent.getData());
+
+            // Search is tricky to support LD. Needs a revisit here.
+
             response.setResult(result);
             responseParams.setStatus(Response.Status.SUCCESSFUL);
             watch.stop("RegistryController.searchEntity");
-//        } catch (TransformationException e) {
-//            logger.error("search failure", e);
-//            response.setResult("");
-//            responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-//            responseParams.setErrmsg(e.getMessage());
         } catch (Exception e) {
             logger.error("Exception in controller while searching entities !",
                     e);
