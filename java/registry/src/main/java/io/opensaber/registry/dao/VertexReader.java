@@ -9,7 +9,6 @@ import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.RefLabelHelper;
 import io.opensaber.registry.util.TypePropertyHelper;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -17,10 +16,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * Given a vertex from the graph, constructs a json out it
@@ -45,6 +41,7 @@ public class VertexReader {
     /**
      * For the given vertex, constructs the json ObjectNode.
      * If the given vertex, contains an array, a mere reference is put up without any expansion.
+     *
      * @param currVertex
      * @return
      */
@@ -79,7 +76,7 @@ public class VertexReader {
                     boolean canAdd = true;
                     if (privatePropertyList.contains(prop.key())) {
                         canAdd &= configurator.isIncludeEncryptedProp();
-                    } else if (prop.key().equals(Constants.PARENT_KEYWORD)) {
+                    } else if (prop.key().equals(Constants.ROOT_KEYWORD)) {
                         canAdd = false;
                     }
 
@@ -100,6 +97,7 @@ public class VertexReader {
 
     /**
      * Loads the signature vertices
+     *
      * @param currVertex
      * @return
      */
@@ -129,6 +127,7 @@ public class VertexReader {
 
     /**
      * Determines whether the depth setting allows to fetch this additional vertices
+     *
      * @param currLevel
      * @param maxLevel
      * @return
@@ -139,21 +138,39 @@ public class VertexReader {
 
     /**
      * Loads the OUT edge vertices of the given vertex
+     *
      * @param vertex
      * @param currLevel
      */
     private void loadOtherVertices(Vertex vertex, int currLevel) {
+        // NOTE: We can load selective vertices, but we don't know the labels here.
+        // So in the process, we will have loaded signature nodes as well here
         Iterator<Vertex> otherVertices = vertex.vertices(Direction.OUT);
+
         int tempCurrLevel = currLevel;
         while (otherVertices.hasNext()) {
             Vertex currVertex = otherVertices.next();
-            if (!currVertex.label().equals(entityType)) {
+            VertexProperty internalTypeProp = currVertex.property(Constants.INTERNAL_TYPE_KEYWORD);
+            String internalType = internalTypeProp.isPresent() ? internalTypeProp.value().toString() : "";
+
+            // Do not work on the signatures again here.
+            if (!currVertex.label().equals(entityType) &&
+                            !internalType.equals(Constants.SIGNATURES_STR)) {
+                logger.debug("Reading vertex label {} and internal type {}", currVertex.label(), internalType);
+
                 ObjectNode node = constructObject(currVertex);
                 uuidNodeMap.put(node.get(uuidPropertyName).textValue(), node);
 
+                // Load any signatures within child entity
                 ArrayNode signatureNode = loadSignatures(currVertex);
                 if (signatureNode != null) {
                     node.set(Constants.SIGNATURES_STR, signatureNode);
+                }
+
+                if (currVertex.property(Constants.TYPE_STR_JSON_LD).value().equals(Constants.ARRAY_NODE_KEYWORD)) {
+                    // Not incrementing levels here, because it is we who inserted a blank array_node
+                    // for data modelling.
+                    loadOtherVertices(currVertex, tempCurrLevel);
                 }
 
                 if (canLoadVertex(++tempCurrLevel, configurator.getDepth())) {
@@ -164,53 +181,78 @@ public class VertexReader {
         }
     }
 
+    private void printUuidNodeMap() {
+        uuidNodeMap.keySet().forEach(entry -> {
+            logger.debug(entry.toString() + " -> " + uuidNodeMap.get(entry).get(Constants.TYPE_STR_JSON_LD));
+        });
+    }
+
     /**
      * After loading all the associated objects, this function sets the object content in
      * the right paths
+     *
      * @param entityNode
      */
-    private void expandChildObject(ObjectNode entityNode) {
-        entityNode.fields().forEachRemaining(entry -> {
-            if (entry.getValue().toString().compareToIgnoreCase(entityType) == 0) {
-                // Same as parent, don't expand
-                // do nothing
-                return;
-            } else if (entry.getKey().compareToIgnoreCase(uuidPropertyName) == 0){
+    private ArrayNode expandChildObject(ObjectNode entityNode) {
+        ArrayNode resultArr = JsonNodeFactory.instance.arrayNode();
+
+        List<String> fieldNames = new ArrayList<String>();
+        entityNode.fieldNames().forEachRemaining(fieldName -> {
+            fieldNames.add(fieldName);
+        });
+
+        for (String field : fieldNames) {
+            JsonNode entry = entityNode.get(field);
+
+            logger.debug("Working on field {}", field );
+
+            if (field.equals(uuidPropertyName)) {
                 // has a uuid that may have been populated
                 // This could be a textual value or an array
-                if (uuidNodeMap.containsKey(entry.getValue().textValue())) {
-                    entityNode.setAll(uuidNodeMap.get(entry.getValue().textValue()));
+                JsonNode entryValNode = entry;
+                String uuidVal = entryValNode.asText();
+                JsonNode temp = uuidNodeMap.getOrDefault(uuidVal, null);
+                boolean isArray = (temp != null && temp.get(Constants.TYPE_STR_JSON_LD).asText().equals(Constants.ARRAY_NODE_KEYWORD));
+
+                if (temp == null) {
+                    // No node loaded for this.
+                    // No action required.
+                } else if (!isArray) {
+                    logger.debug("Field {} Not an array type", field);
+                    entityNode.setAll(uuidNodeMap.get(uuidVal));
                 } else {
-                    logger.debug("Key {} not found", entry.getValue());
-                }
-            } else if (entry.getValue().isObject()) {
-                logger.debug("Key {} is an object. Expanding further.", entry.getKey());
-                expandChildObject((ObjectNode) entry.getValue());
-            } else if (entry.getValue().isArray()) {
-                logger.debug("Key {} is an array.", entry.getKey());
-                ArrayNode ar = (ArrayNode) entry.getValue();
-                ArrayNode expanded = JsonNodeFactory.instance.arrayNode();
-                for (JsonNode node : ar) {
-                    if (!node.get(uuidPropertyName).isNull() &&
-                            uuidNodeMap.containsKey(node.get(uuidPropertyName).textValue())) {
-                            ObjectNode ovalue = uuidNodeMap.get(node.get(uuidPropertyName).textValue());
-                            expanded.add(ovalue);
-                    } else {
-                        logger.info("Not found in map, maybe too deep");
+                    // Now first query the uuidNodeMap for the list of items
+                    JsonNode blankNode = temp;
+
+                    Iterator<Map.Entry<String, JsonNode>> entryIterator = blankNode.fields();
+                    while (entryIterator.hasNext()) {
+                        Map.Entry<String, JsonNode> item = entryIterator.next();
+                        JsonNode ar = item.getValue();
+                        for (JsonNode node : ar) {
+                            ObjectNode ovalue = uuidNodeMap.getOrDefault(node.get(uuidPropertyName).asText(), null);
+                            if (ovalue != null) {
+                                resultArr.add(ovalue);
+                            } else {
+                                logger.info("Field {} Array items not found in map", field);
+                            }
+                        }
                     }
                 }
-
-                if (expanded.size() != 0) {
-                    entry.setValue(expanded);
+            } else if (entry.isObject()) {
+                logger.debug("Field {} is an object. Expanding further.", entry);
+                ArrayNode expandChildObject = expandChildObject((ObjectNode) entry);
+                if (expandChildObject != null && expandChildObject.size() > 0) {
+                    entityNode.set(field, expandChildObject);
                 }
             }
-        });
+        }
+        return resultArr;
     }
 
     /**
      * Hits the database to read contents
      *
-     * @param osid         the id to be read
+     * @param osid the id to be read
      * @return
      * @throws Exception
      */
@@ -231,23 +273,29 @@ public class VertexReader {
         ArrayNode signatureNode = loadSignatures(rootVertex);
         if (signatureNode != null) {
             rootNode.set(Constants.SIGNATURES_STR, signatureNode);
+        } else {
+            rootNode.remove(Constants.SIGNATURES_STR);
         }
 
         if (configurator.getDepth() > 0) {
             loadOtherVertices(rootVertex, currLevel);
         }
 
-        // After reading the type, now trim the @type property
-        if (configurator.isIncludeTypeAttributes()) {
-            JSONUtil.removeNode(rootNode, Constants.TYPE_STR_JSON_LD);
-        }
+        printUuidNodeMap();
+
+        logger.info("Finished loading information. Start creating the response");
 
         ObjectNode entityNode = JsonNodeFactory.instance.objectNode();
-        entityNode.set(entityType, rootNode);
-
         // For the entity Node, now go and replace the array values with actual objects.
         // The properties could exist anywhere. Refer to the local arrMap.
-        expandChildObject(entityNode);
+        expandChildObject(rootNode);
+
+        entityNode.set(entityType, rootNode);
+
+        // After reading the entire type, now trim the @type property
+        if (!configurator.isIncludeTypeAttributes()) {
+            JSONUtil.removeNode(entityNode, Constants.TYPE_STR_JSON_LD);
+        }
 
         return entityNode;
     }

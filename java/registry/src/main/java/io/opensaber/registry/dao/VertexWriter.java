@@ -65,18 +65,25 @@ public class VertexWriter {
         Vertex blankNode = vertex;
         String label = entryKey;
         if (isArrayItemObject) {
-            label = RefLabelHelper.getLabel(entryKey, uuidPropertyName);
+            label = RefLabelHelper.getArrayLabel(entryKey, uuidPropertyName);
+
+            // Create a label with array_node_keyword
             blankNode = createVertex(graph, Constants.ARRAY_NODE_KEYWORD);
 
-            addEdge(entryKey, vertex, blankNode);
-            vertex.property(label, blankNode.id());
-            blankNode.property(Constants.PARENT_KEYWORD, parentOSid);
+            if (isSignature) {
+                addEdge(entryKey, blankNode, vertex);
+            } else {
+                addEdge(entryKey, vertex, blankNode);
+            }
+            vertex.property(label, blankNode.id().toString());
+            blankNode.property(Constants.INTERNAL_TYPE_KEYWORD, entryKey);
+            blankNode.property(Constants.ROOT_KEYWORD, parentOSid);
         }
 
         for(JsonNode jsonNode : arrayNode) {
             if (jsonNode.isObject()) {
                 Vertex createdV = processNode(graph, entryKey, jsonNode);
-                createdV.property(Constants.PARENT_KEYWORD, parentOSid);
+                createdV.property(Constants.ROOT_KEYWORD, parentOSid);
                 uidList.add(createdV.id().toString());
                 if (isSignature) {
                     addEdge(jsonNode.get(Constants.SIGNATURE_FOR).textValue(), blankNode, createdV);
@@ -89,6 +96,7 @@ public class VertexWriter {
         }
 
         // Set up references on a blank node.
+        label = RefLabelHelper.getLabel(entryKey, uuidPropertyName);
         blankNode.property(label, StringUtils.arrayToCommaDelimitedString(uidList.toArray()));
     }
 
@@ -111,7 +119,7 @@ public class VertexWriter {
                 addEdge(entry.getKey(), vertex, v);
                 //String idToSet = databaseProviderWrapper.getDatabaseProvider().generateId(v);
                 vertex.property(RefLabelHelper.getLabel(entry.getKey(), uuidPropertyName), v.id().toString());
-                v.property(Constants.PARENT_KEYWORD, parentOSid);
+                v.property(Constants.ROOT_KEYWORD, parentOSid);
 
                 logger.debug("Added edge between {} and {}", vertex.label(), v.label());
             } else if (entryValue.isArray()) {
@@ -157,10 +165,6 @@ public class VertexWriter {
      * @return
      */
     public String writeNodeEntity(Graph graph, JsonNode node) {
-        String parentName = getParentName(node);
-        String parentGroupName = ParentLabelGenerator.getLabel(parentName);
-        Vertex parentVertex = entityParenter.getKnownParentVertex(parentName, shard.getShardId());
-
         Vertex resultVertex = null;
         Iterator<Map.Entry<String, JsonNode>> entryIterator = node.fields();
         while (entryIterator.hasNext()) {
@@ -169,12 +173,6 @@ public class VertexWriter {
             // It is expected that node is wrapped under a root, which is the parent name/definition
             if (entry.getValue().isObject()) {
                 resultVertex = processNode(graph, entry.getKey(), entry.getValue());
-                // The parentVertex and the entity are connected. The parentVertex doesn't have
-                // identifiers set on itself, whereas the entity just created has reference to parent.
-                //String idToSet = databaseProviderWrapper.getDatabaseProvider().generateId(parentVertex);
-                resultVertex.property(RefLabelHelper.getLabel(parentGroupName, uuidPropertyName), parentVertex.id().toString());
-
-                addEdge(entry.getKey(), resultVertex, parentVertex);
             }
         }
 

@@ -10,7 +10,7 @@ public class Constants {
 	public static final String TOKEN_OBJECT = "x-authenticated-user-token";
 	public static final String LD_JSON_MEDIA_TYPE = "application/ld+json";
 
-	public static final String PARENT_KEYWORD = "parent";
+
 	public static final String OPENSABER_REGISTRY_API_NAME = "opensaber-registry-api";
 	public static final String SUNBIRD_ENCRYPTION_SERVICE_NAME = "sunbird.encryption.service";
 	public static final String SUNBIRD_SIGNATURE_SERVICE_NAME = "sunbird.signature.service";
@@ -25,6 +25,8 @@ public class Constants {
 	public static final String AUDIT_KEYWORD = "_audit";
 	public static final String ARRAY_NODE_KEYWORD = "_array_node";
 	public static final String ARRAY_ITEM = "_item";
+	public static final String INTERNAL_TYPE_KEYWORD = "_intType";
+	public static final String ROOT_KEYWORD = "_osroot";
 
 	// JSON LD specific
 	public static final String CONTEXT_KEYWORD = "@context";
