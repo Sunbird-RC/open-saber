@@ -150,14 +150,7 @@ public class RegistryServiceImpl implements RegistryService {
                     if (!(vertex.property(Constants.STATUS_KEYWORD).isPresent() && vertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE))) {
                         tpGraphMain.deleteEntity(vertex);
                         tx.commit();
-                        try{
-                            //to do check root vertex contains parent label, else update
-                            ReadConfigurator configurator = new ReadConfigurator();
-                            configurator.setIncludeSignatures(false);
-                            JsonNode jsonNode = tpGraphMain.getEntity(graph,vertex.id().toString(),configurator);
-                        } catch(RecordNotFoundException e){
-                            logger.error("entity deleted cannot be read");
-                        }
+                        //To do for child entity, need to read and update signature
                     } else {
                         //throw exception node already deleted
                         throw new RecordNotFoundException("Cannot perform the operation");

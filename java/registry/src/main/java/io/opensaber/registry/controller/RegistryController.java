@@ -44,8 +44,6 @@ public class RegistryController {
     private RegistryAuditService registryAuditService;
     @Autowired
     private SearchService searchService;
-    @Value("${registry.context.base}")
-    private String registryContext;
     @Autowired
     private APIMessage apiMessage;
     @Autowired
