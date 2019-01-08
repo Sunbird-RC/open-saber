@@ -133,11 +133,12 @@ public class RegistryController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/delete/{entityId}", method = RequestMethod.DELETE)
-    public ResponseEntity<Response> deleteEntity(@PathVariable("entityId") String entityId) {
+    @RequestMapping(value = "/delete", method = RequestMethod.POST)
+    public ResponseEntity<Response> deleteEntity(@RequestHeader HttpHeaders header) {
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.DELETE, "OK", responseParams);
         try {
+            String entityId = apiMessage.getRequest().getRequestMap().get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
             RecordIdentifier recordId = RecordIdentifier.parse(entityId);
             String shardId = dbConnectionInfoMgr.getShardId(recordId.getShardLabel());
             shardManager.activateShard(shardId);
