@@ -114,7 +114,8 @@ public class VertexReader {
                 signatures = JsonNodeFactory.instance.arrayNode();
                 while (signatureVertices.hasNext()) {
                     Vertex oneSignature = signatureVertices.next();
-                    if (!oneSignature.label().equals(entityType)) {
+                    if(oneSignature.property(Constants.SIGNATURE_FOR).isPresent() &&
+                            !oneSignature.property(Constants.SIGNATURE_FOR).value().toString().equalsIgnoreCase(entityType)) {
                         ObjectNode signatureNode = constructObject(oneSignature);
                         signatures.add(signatureNode);
                         logger.debug("Added signature node for " + signatureNode.get(Constants.SIGNATURE_FOR));
