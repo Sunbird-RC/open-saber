@@ -2,31 +2,32 @@ package io.opensaber.registry.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.google.gson.Gson;
 import io.opensaber.pojos.ComponentHealthInfo;
 import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.registry.dao.IRegistryDao;
 import io.opensaber.registry.dao.RegistryDaoImpl;
 import io.opensaber.registry.dao.VertexReader;
-import io.opensaber.registry.exception.AuditFailedException;
 import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
-import io.opensaber.registry.service.EncryptionHelper;
-import io.opensaber.registry.service.EncryptionService;
-import io.opensaber.registry.service.RegistryService;
-import io.opensaber.registry.service.SignatureService;
+import io.opensaber.registry.service.*;
 import io.opensaber.registry.sink.DatabaseProvider;
-import io.opensaber.registry.sink.DatabaseProviderWrapper;
 import io.opensaber.registry.sink.OSGraph;
+import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.validators.IValidate;
-import org.apache.jena.ext.com.google.common.io.ByteStreams;
-import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -36,16 +37,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-
 @Component
 public class RegistryServiceImpl implements RegistryService {
 
     private static final String ID_REGEX = "\"@id\"\\s*:\\s*\"_:[a-z][0-9]+\",";
     private static Logger logger = LoggerFactory.getLogger(RegistryServiceImpl.class);
-    private DatabaseProvider databaseProvider;
 
     @Autowired
     EncryptionService encryptionService;
@@ -59,6 +55,8 @@ public class RegistryServiceImpl implements RegistryService {
     private ISchemaConfigurator schemaConfigurator;
     @Autowired
     private EncryptionHelper encryptionHelper;
+    @Autowired
+    private SignatureHelper signatureHelper;
     @Autowired
     private ObjectMapper objectMapper;
     @Value("${encryption.enabled}")
@@ -91,12 +89,11 @@ public class RegistryServiceImpl implements RegistryService {
     @Value("${registry.context.base}")
     private String registryContext;
 
+    private Shard shard;
+
     @Autowired
     RegistryDaoImpl tpGraphMain;
 
-    @Autowired
-    DatabaseProviderWrapper databaseProviderWrapper;
-    
     @Autowired
     DBConnectionInfoMgr dbConnectionInfoMgr;
 
@@ -106,7 +103,7 @@ public class RegistryServiceImpl implements RegistryService {
     public HealthCheckResponse health() throws Exception {
         HealthCheckResponse healthCheck;
         // TODO
-        boolean databaseServiceup = databaseProvider.isDatabaseServiceUp();
+        boolean databaseServiceup = shard.getDatabaseProvider().isDatabaseServiceUp();
         boolean overallHealthStatus = databaseServiceup;
         List<ComponentHealthInfo> checks = new ArrayList<>();
 
@@ -135,12 +132,36 @@ public class RegistryServiceImpl implements RegistryService {
         return healthCheck;
     }
 
+    /**delete the vertex and changing the status
+     * @param uuid
+     * @throws Exception
+     */
     @Override
-    public boolean deleteEntityById(String id) throws AuditFailedException, RecordNotFoundException {
-        return false;
+
+    public void deleteEntityById(String uuid) throws Exception {
+        DatabaseProvider databaseProvider = shard.getDatabaseProvider();
+        try(OSGraph osGraph = databaseProvider.getOSGraph()){
+            Graph graph = osGraph.getGraphStore();
+            try (Transaction tx = databaseProvider.startTransaction(graph)) {
+                Iterator<Vertex> vertexItr = graph.vertices(uuid);
+                if (vertexItr.hasNext()) {
+                    Vertex vertex = vertexItr.next();
+                    if (!(vertex.property(Constants.STATUS_KEYWORD).isPresent() && vertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE))) {
+                        tpGraphMain.deleteEntity(vertex);
+                        tx.commit();
+                    } else {
+                        //throw exception node already deleted
+                        throw new RecordNotFoundException("Cannot perform the operation");
+                    }
+                } else {
+                    throw new RecordNotFoundException("No such record found");
+                }
+
+            }
+        }
     }
 
-    public String addEntity(String shardId, String jsonString) throws Exception {
+    public String addEntity(String jsonString) throws Exception {
         String entityId = "entityPlaceholderId";
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(jsonString);
@@ -150,62 +171,143 @@ public class RegistryServiceImpl implements RegistryService {
         }
 
         if (signatureEnabled) {
-            /*Map signReq = new HashMap<String, Object>();
-            InputStream is = this.getClass().getClassLoader().getResourceAsStream(frameFile);
-            String fileString = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
-            Map<String, Object> reqMap = JSONUtil.frameJsonAndRemoveIds(ID_REGEX, dataObject, gson,
-                    fileString);
-            signReq.put("entity", reqMap);
-            Map<String, Object> entitySignMap = (Map<String, Object>) signatureService.sign(signReq);
-            entitySignMap.put("createdDate", rs.getCreatedTimestamp());
-            entitySignMap.put("keyUrl", signatureKeyURl);
-            signedRdfModel = RDFUtil.getUpdatedSignedModel(rdfModel, registryContext, signatureDomain,
-                    entitySignMap, ModelFactory.createDefaultModel());
-            rootLabel = addEntity(signedRdfModel, subject, property);*/
+            signatureHelper.signJson(rootNode);
         }
 
         if (persistenceEnabled) {
-            entityId = tpGraphMain.addEntity(shardId, rootNode);
+            try (OSGraph osGraph = shard.getDatabaseProvider().getOSGraph()) {
+                try (Graph graph = osGraph.getGraphStore()) {
+                    try (Transaction tx = shard.getDatabaseProvider().startTransaction(graph)) {
+                        entityId = tpGraphMain.addEntity(graph, rootNode);
+                        shard.getDatabaseProvider().commitTransaction(graph, tx);
+                    }
+                }
+            }
         }
 
         return entityId;
     }
 
-    public JsonNode getEntity(String id, ReadConfigurator configurator) {
-        JsonNode result = tpGraphMain.getEntity("", id, configurator);
-        return result;
-    }
-
     @Override
-    public void updateEntity(String jsonString) throws Exception {
-        Iterator<Vertex> vertexIterator;
-        Vertex rootVertex;
-        List<String> privatePropertyList = schemaConfigurator.getAllPrivateProperties();
-
-        JsonNode rootNode = objectMapper.readTree(jsonString);
-        rootNode = encryptionHelper.getEncryptedJson(rootNode);
-        String idProp = rootNode.elements().next().get(uuidPropertyName).asText();
-        JsonNode childElementNode = rootNode.elements().next();
-        DatabaseProvider databaseProvider = databaseProviderWrapper.getDatabaseProvider();
-        ReadConfigurator readConfigurator = new ReadConfigurator();
-        readConfigurator.setIncludeSignatures(false);
-
-        try (OSGraph osGraph = databaseProvider.getOSGraph()) {
-            Graph graph = osGraph.getGraphStore();
-            try (Transaction tx = databaseProvider.startTransaction(graph)) {
-                VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
-                vertexIterator = graph.vertices(idProp);
-                rootVertex = vertexIterator.hasNext() ? vertexIterator.next() : null;
-                ObjectNode entityNode = (ObjectNode) vr.read(rootVertex.id().toString());
-                entityNode = merge(entityNode, rootNode);
-                // TODO Fix validation fails here
-                boolean isValidate = iValidate.validate(entityNode.toString(), "Teacher");
-                tpGraphMain.updateVertex(rootVertex, childElementNode);
+    public JsonNode getEntity(String id, ReadConfigurator configurator) throws Exception {
+        try (OSGraph osGraph = shard.getDatabaseProvider().getOSGraph()) {
+            try (Graph graph = osGraph.getGraphStore()) {
+                try (Transaction tx = shard.getDatabaseProvider().startTransaction(graph)) {
+                    JsonNode result = tpGraphMain.getEntity(graph, id, configurator);
+                    shard.getDatabaseProvider().commitTransaction(graph, tx);
+                    return result;
+                }
             }
         }
     }
 
+    @Override
+    public void updateEntity(String jsonString) throws Exception {
+        Iterator<Vertex> vertexIterator = null;
+        Vertex inputNodeVertex = null;
+        Vertex rootVertex = null;
+        List<String> privatePropertyList = schemaConfigurator.getAllPrivateProperties();
 
+        JsonNode rootNode = objectMapper.readTree(jsonString);
+        if (encryptionEnabled) {
+            rootNode = encryptionHelper.getEncryptedJson(rootNode);
+        }
+        String idProp = rootNode.elements().next().get(uuidPropertyName).asText();
+        JsonNode childElementNode = rootNode.elements().next();
+        DatabaseProvider databaseProvider = shard.getDatabaseProvider();
+        ReadConfigurator readConfigurator = new ReadConfigurator();
+        readConfigurator.setIncludeSignatures(false);
+        try(OSGraph osGraph = databaseProvider.getOSGraph()){
+            Graph graph = osGraph.getGraphStore();
+            try (Transaction tx = databaseProvider.startTransaction(graph)) {
+                VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
+                if(null != tx) {
+
+                    ObjectNode entityNode = null;
+                    vertexIterator = graph.vertices(idProp);
+                    inputNodeVertex = vertexIterator.hasNext() ? vertexIterator.next(): null;
+                    if ((inputNodeVertex.property(Constants.STATUS_KEYWORD).isPresent() &&
+                            inputNodeVertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE))) {
+                        throw new RecordNotFoundException("Cannot perform the operation");
+                    }
+                    if(registryRootEntityType.equalsIgnoreCase(inputNodeVertex.label())){
+                        rootVertex = inputNodeVertex;
+                        entityNode = (ObjectNode) vr.read(inputNodeVertex.id().toString());
+                    } else {
+                        rootVertex = inputNodeVertex.vertices(Direction.IN,inputNodeVertex.label()).next();
+                        entityNode = (ObjectNode) vr.read(rootVertex.id().toString());
+                    }
+
+                    //merge with entitynode
+                    entityNode =  merge(entityNode,rootNode);
+                    //TO-DO validation is failing
+                    //boolean isValidate = iValidate.validate("Teacher",entityNode.toString());
+                    tpGraphMain.updateVertex(graph, inputNodeVertex,childElementNode);
+                    databaseProvider.commitTransaction(graph, tx);
+                    //sign the entitynode
+                    if (signatureEnabled) {
+                        signatureHelper.signJson(entityNode);
+                        JsonNode signNode = entityNode.get(registryRootEntityType).get(Constants.SIGNATURES_STR);
+                        if (signNode.isArray()) {
+                            signNode = getEntitySignNode(signNode);
+                        }
+                        Iterator<Vertex> vertices = rootVertex.vertices(Direction.OUT,Constants.SIGNATURES_STR);
+                        while (null != vertices && vertices.hasNext()) {
+                            Vertex signVertex = vertices.next();
+                            if (signVertex.property(Constants.SIGNATURE_FOR).value().equals(registryRootEntityType)) {
+                                tpGraphMain.updateVertex(graph, signVertex, signNode);
+                            }
+                        }
+                    }
+                    tx.readWrite();
+                    tx.commit();
+                } else {
+                    // TinkerGraph section for test cases
+                    vertexIterator = graph.vertices(new Long(idProp));
+                    inputNodeVertex = vertexIterator.hasNext() ? vertexIterator.next(): null;
+                    ObjectNode entityNode = (ObjectNode) vr.read(inputNodeVertex.id().toString());
+                    entityNode =  merge(entityNode,rootNode);
+                    //TO-DO validation is failing
+                    // boolean isValidate = iValidate.validate("Teacher",entityNode.toString());
+                    tpGraphMain.updateVertex(graph, inputNodeVertex,childElementNode);
+
+                    //sign the entitynode
+                    if (signatureEnabled) {
+                        signatureHelper.signJson(entityNode);
+                        JsonNode signNode = entityNode.get(registryRootEntityType).get(Constants.SIGNATURES_STR);
+                        if (signNode.isArray()) {
+                            signNode = getEntitySignNode(signNode);
+                        }
+                        Iterator<Vertex> vertices = rootVertex.vertices(Direction.OUT,Constants.SIGNATURES_STR);
+                        while (null != vertices && vertices.hasNext()) {
+                            Vertex signVertex = vertices.next();
+                            if (signVertex.property(Constants.SIGNATURE_FOR).value().equals(registryRootEntityType)) {
+                                tpGraphMain.updateVertex(graph, signVertex, signNode);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    /** filters entity sign node from the signatures json array
+     * @param signatures
+     * @return
+     */
+    private JsonNode getEntitySignNode(JsonNode signatures) {
+        JsonNode entitySignNode = null;
+        Iterator<JsonNode> signItr = signatures.elements();
+        while(signItr.hasNext()){
+            JsonNode signNode = signItr.next();
+            if(signNode.get(Constants.SIGNATURE_FOR).asText().equals(registryRootEntityType) && null == signNode.get("osid")){
+                entitySignNode = signNode;
+                break;
+            }
+        }
+        return entitySignNode;
+    }
 
     /** Merging input json node to DB entity node, this method in turn calls mergeDestinationWithSourceNode method for deep copy of properties and objects
      * @param entityNode
@@ -221,24 +323,36 @@ public class RegistryServiceImpl implements RegistryService {
     }
 
     /**
-     * @param propKeyValue
-     * @param entityNode
-     * @param entityKey
+     * @param propKeyValue - user given entity node
+     * @param entityNode - read from the database
+     * @param entityKey - user given entity key (wrapper node supplied by the user)
      */
     private void mergeDestinationWithSourceNode(ObjectNode propKeyValue, ObjectNode entityNode, String entityKey) {
-        ObjectNode subEntity = (ObjectNode) entityNode.get(entityKey);
+        ObjectNode subEntity = (ObjectNode) entityNode.findValue(entityKey);
         propKeyValue.fields().forEachRemaining(prop -> {
-            if(prop.getValue().isValueNode()){
-                subEntity.set(prop.getKey(),prop.getValue());
-            } else if(prop.getValue().isObject()){
-                if(subEntity.get(prop.getKey()).size() == 0) {
-                    subEntity.set(prop.getKey(),prop.getValue());
-                } else if (subEntity.get(prop.getKey()).isObject()) {
-                    ArrayNode arrnode = JsonNodeFactory.instance.arrayNode();
-                    arrnode.add(subEntity.get(prop.getKey()));
-                    arrnode.add(prop.getValue());
-                    subEntity.set(prop.getKey(),arrnode);
+            String propKey = prop.getKey();
+            JsonNode propValue = prop.getValue();
+            if(propValue.isValueNode() && !uuidPropertyName.equalsIgnoreCase(propKey)){
+                subEntity.set(propKey,propValue);
+            } else if(propValue.isObject()){
+                if(subEntity.get(propKey).size() == 0) {
+                    subEntity.set(propKey,propValue);
+                } else if(subEntity.get(propKey).isObject()) {
+                    //As of now filtering only @type
+                    List<String> filterKeys = Arrays.asList(Constants.JsonldConstants.TYPE);
+                    //removing keys with name osid and type
+                    JSONUtil.removeNodes((ObjectNode) subEntity.get(propKey),filterKeys);
+                    //constructNewNodeToParent
+                    subEntity.set(propKey,propValue);
                 }
+            } else if(subEntity.get(propKey).isArray()){
+                List<String> filterKeys = Arrays.asList(Constants.JsonldConstants.TYPE);
+                propValue.forEach(arrayElement -> {
+                    //removing keys with name @type
+                    JSONUtil.removeNodes((ObjectNode) arrayElement,filterKeys);
+                });
+                //constructNewNodeToParent
+                subEntity.set(propKey,propValue);
             }
         });
     }
