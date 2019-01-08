@@ -20,13 +20,14 @@ public class DefinitionsManager {
 
     @Autowired
     private DefinitionsReader definitionsReader;
+    private SchemaDefinitionMgr schemaDefinationMgr;
 
     // Loads the definitions from the _schemas folder
     public Set<String> getAllKnownDefinitions() {
         Set<String> keys = new HashSet<>();
         try {
-            SchemaDefinationMgr schemaDefinationMgr = new SchemaDefinationMgr(getAllJsonSchemas());
-            for (SchemaDefination schemaDefination : schemaDefinationMgr.getAllSchemaDefinations()) {
+            schemaDefinationMgr = new SchemaDefinitionMgr(getAllJsonSchemas());
+            for (SchemaDefination schemaDefination : schemaDefinationMgr.getAllSchemaDefinitions()) {
                 keys.add(schemaDefination.getTitle());
             }
         } catch (IOException ioe) {
@@ -34,6 +35,10 @@ public class DefinitionsManager {
         }
 
         return keys;
+    }
+    
+    public SchemaDefinitionMgr getSchemaDefinationMgr(){
+        return schemaDefinationMgr;
     }
 
     private List<String> getAllJsonSchemas() throws IOException {
@@ -61,7 +66,7 @@ public class DefinitionsManager {
             return result.toString(StandardCharsets.UTF_8.name());
 
         } catch (IOException e) {
-            logger.error("Cannot load resource " + resource);
+            logger.error("Cannot load resource " + resource.getFilename());
 
         }
         return null;

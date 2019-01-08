@@ -10,14 +10,14 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SchemaDefinationMgr {
-    private static Logger logger = LoggerFactory.getLogger(SchemaDefinationMgr.class);
+public class SchemaDefinitionMgr {
+    private static Logger logger = LoggerFactory.getLogger(SchemaDefinitionMgr.class);
     private Map<String, SchemaDefination> schemaDefinationMap = new HashMap<>();
 
-    public SchemaDefinationMgr(List<String> jsonSchemas) {
+    public SchemaDefinitionMgr(List<String> jsonSchemas) {
         for (int i = 0; i < jsonSchemas.size(); i++) {
             try {
-                addschemaDefination(jsonSchemas.get(i));
+                addSchemaDefinition(jsonSchemas.get(i));
             } catch (JSONException e) {
                 logger.error("Loading defination for " + jsonSchemas);
             }
@@ -25,7 +25,7 @@ public class SchemaDefinationMgr {
 
     }
 
-    private void addschemaDefination(String json) throws JSONException {
+    private void addSchemaDefinition(String json) throws JSONException {
         JSONObject jsonObject = new JSONObject(json);
         SchemaDefination schemaDefination = new SchemaDefination(jsonObject);
         schemaDefinationMap.putIfAbsent(schemaDefination.getTitle(), schemaDefination);
