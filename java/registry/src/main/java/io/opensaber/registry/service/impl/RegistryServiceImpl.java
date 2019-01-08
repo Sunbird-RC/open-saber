@@ -150,7 +150,6 @@ public class RegistryServiceImpl implements RegistryService {
                     if (!(vertex.property(Constants.STATUS_KEYWORD).isPresent() && vertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE))) {
                         tpGraphMain.deleteEntity(vertex);
                         tx.commit();
-                        //To do for child entity, need to read and update signature
                     } else {
                         //throw exception node already deleted
                         throw new RecordNotFoundException("Cannot perform the operation");
@@ -228,6 +227,10 @@ public class RegistryServiceImpl implements RegistryService {
                     ObjectNode entityNode = null;
                     vertexIterator = graph.vertices(idProp);
                     inputNodeVertex = vertexIterator.hasNext() ? vertexIterator.next(): null;
+                    if ((inputNodeVertex.property(Constants.STATUS_KEYWORD).isPresent() &&
+                            inputNodeVertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE))) {
+                        throw new RecordNotFoundException("Cannot perform the operation");
+                    }
                     if(registryRootEntityType.equalsIgnoreCase(inputNodeVertex.label())){
                         rootVertex = inputNodeVertex;
                         entityNode = (ObjectNode) vr.read(inputNodeVertex.id().toString());
