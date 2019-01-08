@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.opensaber.registry.exception.RecordNotFoundException;
+import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.RefLabelHelper;
 import io.opensaber.registry.util.TypePropertyHelper;
@@ -204,6 +206,9 @@ public class VertexReader {
         Vertex rootVertex = itrV.next();
 
         int currLevel = 0;
+        if(rootVertex.property(Constants.STATUS_KEYWORD).isPresent() && rootVertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE)){
+            throw new RecordNotFoundException("entity status set to deleted");
+        }
         ObjectNode rootNode = constructObject(rootVertex);
         entityType = rootNode.get(TypePropertyHelper.getTypeName()).textValue();
 

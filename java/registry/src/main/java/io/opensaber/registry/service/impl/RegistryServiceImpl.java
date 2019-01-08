@@ -135,9 +135,40 @@ public class RegistryServiceImpl implements RegistryService {
         return healthCheck;
     }
 
+    /**delete the vertex and changing the status
+     * @param uuid
+     * @throws Exception
+     */
     @Override
-    public boolean deleteEntityById(String id) throws AuditFailedException, RecordNotFoundException {
-        return false;
+    public void deleteEntityById(String uuid) throws Exception {
+        DatabaseProvider databaseProvider = shard.getDatabaseProvider();
+        try(OSGraph osGraph = databaseProvider.getOSGraph()){
+            Graph graph = osGraph.getGraphStore();
+            try (Transaction tx = databaseProvider.startTransaction(graph)) {
+                Iterator<Vertex> vertexItr = graph.vertices(uuid);
+                if (vertexItr.hasNext()) {
+                    Vertex vertex = vertexItr.next();
+                    if (!(vertex.property(Constants.STATUS_KEYWORD).isPresent() && vertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE))) {
+                        tpGraphMain.deleteEntity(vertex);
+                        tx.commit();
+                        try{
+                            //to do check root vertex contains parent label, else update
+                            ReadConfigurator configurator = new ReadConfigurator();
+                            configurator.setIncludeSignatures(false);
+                            JsonNode jsonNode = tpGraphMain.getEntity(vertex.id().toString(),configurator);
+                        } catch(RecordNotFoundException e){
+                            logger.error("record deleted cannot be read");
+                        }
+                    } else {
+                        //throw exception node already deleted
+                        throw new RecordNotFoundException("Cannot perform the operation");
+                    }
+                } else {
+                    throw new RecordNotFoundException("No such record found");
+                }
+
+            }
+        }
     }
 
     public String addEntity(String jsonString) throws Exception {
@@ -160,7 +191,7 @@ public class RegistryServiceImpl implements RegistryService {
         return entityId;
     }
 
-    public JsonNode getEntity(String id, ReadConfigurator configurator) {
+    public JsonNode getEntity(String id, ReadConfigurator configurator) throws Exception {
         JsonNode result = tpGraphMain.getEntity(id, configurator);
         return result;
     }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.opensaber.pojos.OpenSaberInstrumentation;
+import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.sink.DatabaseProvider;
@@ -250,7 +251,7 @@ public class RegistryDaoImpl implements IRegistryDao {
      * @param readConfigurator
      * @return
      */
-    public JsonNode getEntity(String uuid, ReadConfigurator readConfigurator) {
+    public JsonNode getEntity(String uuid, ReadConfigurator readConfigurator) throws Exception {
         if (null == privatePropertyList) {
             privatePropertyList = new ArrayList<>();
             setPrivatePropertyList(schemaConfigurator.getAllPrivateProperties());
@@ -265,6 +266,8 @@ public class RegistryDaoImpl implements IRegistryDao {
                 result = vr.read(uuid);
                 databaseProvider.commitTransaction(graph, tx);
             }
+        } catch (RecordNotFoundException e){
+            throw new RecordNotFoundException("Cannot perform the operation");
         } catch (Exception e) {
             logger.error("Exception occurred during read entity ", e);
         }
@@ -387,5 +390,9 @@ public class RegistryDaoImpl implements IRegistryDao {
 
             }
         });
+    }
+
+    public void deleteEntity(Vertex vertex){
+        vertex.property(Constants.STATUS_KEYWORD, Constants.STATUS_INACTIVE);
     }
 }
