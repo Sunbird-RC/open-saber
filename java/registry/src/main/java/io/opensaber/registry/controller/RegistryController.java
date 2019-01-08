@@ -141,7 +141,7 @@ public class RegistryController {
             RecordIdentifier recordId = RecordIdentifier.parse(entityId);
             String shardId = dbConnectionInfoMgr.getShardId(recordId.getShardLabel());
             shardManager.activateShard(shardId);
-            registryService.deleteEntityById(entityId);
+            registryService.deleteEntityById(recordId.getUuid());
             responseParams.setErrmsg("");
             responseParams.setStatus(Response.Status.SUCCESSFUL);
         } catch (UnsupportedOperationException e) {
