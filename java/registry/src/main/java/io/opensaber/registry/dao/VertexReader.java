@@ -83,7 +83,17 @@ public class VertexReader {
                     }
 
                     if (canAdd) {
-                        contentNode.put(prop.key(), prop.value().toString());
+                        String propValue = prop.value().toString();
+                        if(propValue.contains(",")){
+                            ArrayNode stringArray = JsonNodeFactory.instance.arrayNode();
+                            String[] valArray = propValue.split(",");
+                            for(String val :valArray){
+                                stringArray.add(val);
+                            }
+                            contentNode.set(prop.key(),stringArray);
+                        } else {
+                            contentNode.put(prop.key(), propValue);
+                        }
                     }
                 }
             } else {
