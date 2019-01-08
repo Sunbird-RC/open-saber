@@ -89,6 +89,7 @@ public class RegistryServiceImpl implements RegistryService {
     @Value("${registry.context.base}")
     private String registryContext;
 
+    @Autowired
     private Shard shard;
 
     @Autowired
