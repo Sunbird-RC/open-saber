@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.opensaber.pojos.*;
-import io.opensaber.registry.exception.CustomException;
-import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.Constants.Direction;
 import io.opensaber.registry.middleware.util.JSONUtil;
@@ -19,13 +17,10 @@ import io.opensaber.registry.transform.*;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.RecordIdentifier;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.jena.rdf.model.Model;
-import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +29,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 
 @RestController
 public class RegistryController {
@@ -79,47 +73,31 @@ public class RegistryController {
     @RequestMapping(value = "/search", method = RequestMethod.POST)
     public ResponseEntity<Response> searchEntity(@RequestHeader HttpHeaders header) {
 
-        Model rdf = (Model) apiMessage.getLocalMap(Constants.RDF_OBJECT);
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.SEARCH, "OK", responseParams);
-        Map<String, Object> result = new HashMap<>();
+        JsonNode payload = apiMessage.getRequest().getRequestMapNode();
 
         response.setResult("API to be supported soon");
         responseParams.setStatus(Response.Status.SUCCESSFUL);
 
-        // try {
-        // watch.start("RegistryController.searchEntity");
-        // String jenaJson = searchService.searchFramed(rdf);
-        // Data<Object> data = new Data<>(jenaJson);
-        // Configuration config =
-        // configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
-        // Direction.OUT);
-        //
-        // ITransformer<Object> responseTransformer =
-        // transformer.getInstance(config);
-        // responseTransformer.setPurgeData(getKeysToPurge());
-        // Data<Object> resultContent = responseTransformer.transform(data);
-        // response.setResult(resultContent.getData());
-        // response.setResult("API to be supported soon");
-        // responseParams.setStatus(Response.Status.SUCCESSFUL);
-        // watch.stop("RegistryController.searchEntity");
-        // } catch (AuditFailedException | RecordNotFoundException |
-        // TypeNotProvidedException
-        // | TransformationException e) {
-        // logger.error(
-        // "AuditFailedException | RecordNotFoundException |
-        // TypeNotProvidedException in controller while adding entity !",
-        // e);
-        // response.setResult(result);
-        // responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-        // responseParams.setErrmsg(e.getMessage());
-        // } catch (Exception e) {
-        // logger.error("Exception in controller while searching entities !",
-        // e);
-        // response.setResult(result);
-        // responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-        // responseParams.setErrmsg(e.getMessage());
-        // }
+        try {
+            shardManager.activateShard(null);
+
+            watch.start("RegistryController.searchEntity");
+            JsonNode result = searchService.search(payload);
+
+            // Search is tricky to support LD. Needs a revisit here.
+
+            response.setResult(result);
+            responseParams.setStatus(Response.Status.SUCCESSFUL);
+            watch.stop("RegistryController.searchEntity");
+        } catch (Exception e) {
+            logger.error("Exception in controller while searching entities !",
+                    e);
+            response.setResult("");
+            responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+            responseParams.setErrmsg(e.getMessage());
+        }
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -173,11 +151,6 @@ public class RegistryController {
             response.setResult(null);
             responseParams.setStatus(Response.Status.UNSUCCESSFUL);
             responseParams.setErrmsg(e.getMessage());
-        } catch (RecordNotFoundException e) {
-            logger.error("Controller: RecordNotFoundException while deleting entity !", e);
-            response.setResult(null);
-            responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-            responseParams.setErrmsg(e.getMessage());
         } catch (Exception e) {
             logger.error("Controller: Exception while deleting entity !", e);
             response.setResult(null);
@@ -228,26 +201,29 @@ public class RegistryController {
     }
 
     @RequestMapping(value = "/read", method = RequestMethod.POST)
-    public ResponseEntity<Response> greadGraph2Json(@RequestHeader HttpHeaders header) throws Exception {
-        String label = apiMessage.getRequest().getRequestMap().get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
+    public ResponseEntity<Response> greadGraph2Json(@RequestHeader HttpHeaders header) {
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
+        String label = apiMessage.getRequest().getRequestMap().get(dbConnectionInfoMgr.getUuidPropertyName()).toString();
         RecordIdentifier recordId = RecordIdentifier.parse(label);
         String shardId = dbConnectionInfoMgr.getShardId(recordId.getShardLabel());
         shardManager.activateShard(shardId);
         logger.info("Read Api: shard id: " + recordId.getShardLabel() + " for label: " + label);
 
+        String acceptType = header.getAccept().iterator().next().toString();
+
         ReadConfigurator configurator = new ReadConfigurator();
         boolean includeSignatures = (boolean) apiMessage.getRequest().getRequestMap().getOrDefault("includeSignatures",
                 false);
         configurator.setIncludeSignatures(includeSignatures);
+        configurator.setIncludeTypeAttributes(acceptType.equals(Constants.LD_JSON_MEDIA_TYPE));
+
         try {
             JsonNode resultNode = registryService.getEntity(recordId.getUuid(), configurator);
             // Transformation based on the mediaType
             Data<Object> data = new Data<>(resultNode);
-            Configuration config = configurationHelper.getConfiguration(header.getAccept().iterator().next().toString(),
-                    Direction.OUT);
+            Configuration config = configurationHelper.getConfiguration(acceptType, Direction.OUT);
             logger.info("config : " + config);
             ITransformer<Object> responseTransformer = transformer.getInstance(config);
             Data<Object> resultContent = responseTransformer.transform(data);
@@ -255,7 +231,7 @@ public class RegistryController {
             response.setResult(resultContent.getData());
 
         } catch (Exception e) {
-            logger.error("Read Api Exception occoured ", e);
+            logger.error("Read Api Exception occurred ", e);
             responseParams.setErr(e.getMessage());
             responseParams.setStatus(Response.Status.UNSUCCESSFUL);
         }
@@ -265,7 +241,7 @@ public class RegistryController {
 
     @ResponseBody
     @RequestMapping(value = "/update", method = RequestMethod.POST)
-    public ResponseEntity<Response> updateTP2Graph() throws ParseException, IOException, CustomException {
+    public ResponseEntity<Response> updateTP2Graph() {
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.UPDATE, "OK", responseParams);
 
