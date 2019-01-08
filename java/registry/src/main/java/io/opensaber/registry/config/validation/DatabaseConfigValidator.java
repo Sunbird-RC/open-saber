@@ -15,26 +15,29 @@ public class DatabaseConfigValidator implements ConstraintValidator<ValidDatabas
 
         boolean isValidFlag = false;
         String message = null;
+        
         if (mgr.getProvider().isEmpty() || mgr.getUuidPropertyName().isEmpty()) {
             message = "database.provider or database.uuidPropertyName is empty";
         }
         if (mgr.getConnectionInfo().size() < 1) {
             message = "At least one connectionInfo must be specified";
         }
+        
+        boolean nShardsExist = mgr.getConnectionInfo().size() > 1;
         for (DBConnectionInfo info : mgr.getConnectionInfo()) {
             if (info.getShardId().isEmpty() || info.getUri().isEmpty()) {
                 message = "database.connectionInfo.shardId or database.connectionInfo.uri is empty";
                 break;
             }
-            if (mgr.getConnectionInfo().size() > 1 && info.getShardLabel().isEmpty()) {
+            if (nShardsExist && info.getShardLabel().isEmpty()) {
                 message = "database.connectionInfo.shardLabel is empty";
                 break;
             }
-            if (mgr.getConnectionInfo().size() > 1 && !isUniqueShardId(mgr.getConnectionInfo(), info.getShardId())) {
+            if (nShardsExist && !isUniqueShardId(mgr.getConnectionInfo(), info.getShardId())) {
                 message = "database.connectionInfo.shardId must be unique";
                 break;
             }
-            if (mgr.getConnectionInfo().size() > 1
+            if (nShardsExist
                     && !isUniqueShardLabel(mgr.getConnectionInfo(), info.getShardLabel())) {
                 message = "database.connectionInfo.shardLabel must be unique";
                 break;

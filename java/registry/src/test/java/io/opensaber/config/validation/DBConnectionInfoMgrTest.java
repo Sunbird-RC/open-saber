@@ -19,6 +19,8 @@ public class DBConnectionInfoMgrTest {
 	private final static String NOT_EMPTY = "not empty value";
 	private final static String EMPTY = "";
 	private final String[] DUPLICATE_SHARD_VALUES = { "shardval", "shardval" };
+	private final String[] UNQUE_VALUES_WITH_EMPTY_VALUE = { "shardval1", "" };
+
 
 	private Validator validator;
 
@@ -68,11 +70,16 @@ public class DBConnectionInfoMgrTest {
 	@Test
 	public void testEmptyShardLabel() {
 		List<DBConnectionInfo> connectionInfos = new ArrayList<>();
-		DBConnectionInfo ci = new DBConnectionInfo();
-		ci.setShardId(NOT_EMPTY);
-		ci.setShardLabel(EMPTY);
-		ci.setUri(NOT_EMPTY);
-		connectionInfos.add(ci);
+		DBConnectionInfo ci0 = new DBConnectionInfo();
+		ci0.setShardId(NOT_EMPTY);
+		ci0.setShardLabel(NOT_EMPTY);
+		ci0.setUri(NOT_EMPTY);
+		connectionInfos.add(ci0);
+		DBConnectionInfo ci1 = new DBConnectionInfo();
+        ci1.setShardId(NOT_EMPTY);
+        ci1.setShardLabel(EMPTY);
+        ci1.setUri(NOT_EMPTY);
+        connectionInfos.add(ci1);
 		DBConnectionInfoMgr mgr = new DBConnectionInfoMgr();
 		mgr.setProvider(NOT_EMPTY);
 		mgr.setUuidPropertyName(NOT_EMPTY);
