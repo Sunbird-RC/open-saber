@@ -6,6 +6,12 @@
       "$ref": "#/definitions/Teacher"
     }
   },
+  "title":"teacher",
+  "_osconfig": {
+         "comment": "This section contains the OpenSABER specific configuration information",
+         "privateFields": ["nationalIdentifier", "teacherCode", "birthDate"],
+         "signedFields": ["serialNum"]
+  },
   "required": [
     "Teacher"
   ],
