@@ -1,24 +1,52 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <repositories>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>bintray-labra-maven</id>
+            <name>bintray</name>
+            <url>https://dl.bintray.com/labra/maven</url>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>bintray-labra-maven</id>
+            <name>bintray-plugins</name>
+            <url>https://dl.bintray.com/labra/maven</url>
+        </pluginRepository>
+    </pluginRepositories>
     <parent>
         <groupId>io.opensaber</groupId>
-        <artifactId>registry-middleware</artifactId>
+        <artifactId>opensaber</artifactId>
         <version>2.0.0</version>
     </parent>
 
-    <groupId>io.opensaber.middleware</groupId>
-    <artifactId>validation</artifactId>
+    <artifactId>schema-configuration</artifactId>
     <version>2.0.0</version>
-    <name>Validation</name>
-    <description>Middleware to validate inputs</description>
+    <name>Schema configuration</name>
+    <description>Configurations for fields</description>
 
-    <properties>
-        <jacoco.version>0.8.1</jacoco.version>
-        <junit.version>4.12</junit.version>
-    </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>es.weso</groupId>
+            <artifactId>shaclex_2.12</artifactId>
+            <version>0.0.66</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
+            <type>pom</type>
+        </dependency>
         <dependency>
             <groupId>io.opensaber</groupId>
             <artifactId>middleware-commons</artifactId>
@@ -75,5 +103,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

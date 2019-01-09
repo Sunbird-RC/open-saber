@@ -9,7 +9,6 @@ import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.registry.dao.IRegistryDao;
 import io.opensaber.registry.dao.RegistryDaoImpl;
 import io.opensaber.registry.dao.VertexReader;
-import io.opensaber.registry.exception.AuditFailedException;
 import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
@@ -17,6 +16,7 @@ import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.service.EncryptionHelper;
 import io.opensaber.registry.service.EncryptionService;
 import io.opensaber.registry.service.RegistryService;
+import io.opensaber.registry.service.SignatureHelper;
 import io.opensaber.registry.service.SignatureService;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.OSGraph;
@@ -39,7 +39,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-
 @Component
 public class RegistryServiceImpl implements RegistryService {
 
@@ -58,6 +57,8 @@ public class RegistryServiceImpl implements RegistryService {
     private DefinitionsManager definitionsManager;
     @Autowired
     private EncryptionHelper encryptionHelper;
+    @Autowired
+    private SignatureHelper signatureHelper;
     @Autowired
     private ObjectMapper objectMapper;
     @Value("${encryption.enabled}")
@@ -83,9 +84,6 @@ public class RegistryServiceImpl implements RegistryService {
 
     @Value("${registry.context.base}")
     private String registryContextBase;
-
-    @Value("${registry.rootEntity.type}")
-    private String registryRootEntityType;
 
     @Value("${registry.context.base}")
     private String registryContext;
@@ -134,9 +132,32 @@ public class RegistryServiceImpl implements RegistryService {
         return healthCheck;
     }
 
+    /**delete the vertex and changing the status
+     * @param uuid
+     * @throws Exception
+     */
     @Override
-    public boolean deleteEntityById(String id) throws AuditFailedException, RecordNotFoundException {
-        return false;
+    public void deleteEntityById(String uuid) throws Exception {
+        DatabaseProvider databaseProvider = shard.getDatabaseProvider();
+        try(OSGraph osGraph = databaseProvider.getOSGraph()){
+            Graph graph = osGraph.getGraphStore();
+            try (Transaction tx = databaseProvider.startTransaction(graph)) {
+                Iterator<Vertex> vertexItr = graph.vertices(uuid);
+                if (vertexItr.hasNext()) {
+                    Vertex vertex = vertexItr.next();
+                    if (!(vertex.property(Constants.STATUS_KEYWORD).isPresent() && vertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE))) {
+                        tpGraphMain.deleteEntity(vertex);
+                        tx.commit();
+                    } else {
+                        //throw exception node already deleted
+                        throw new RecordNotFoundException("Cannot perform the operation");
+                    }
+                } else {
+                    throw new RecordNotFoundException("No such record found");
+                }
+
+            }
+        }
     }
 
     public String addEntity(String jsonString) throws Exception {
@@ -149,81 +170,152 @@ public class RegistryServiceImpl implements RegistryService {
         }
 
         if (signatureEnabled) {
-            /*Map signReq = new HashMap<String, Object>();
-            InputStream is = this.getClass().getClassLoader().getResourceAsStream(frameFile);
-            String fileString = new String(ByteStreams.toByteArray(is), StandardCharsets.UTF_8);
-            Map<String, Object> reqMap = JSONUtil.frameJsonAndRemoveIds(ID_REGEX, dataObject, gson,
-                    fileString);
-            signReq.put("entity", reqMap);
-            Map<String, Object> entitySignMap = (Map<String, Object>) signatureService.sign(signReq);
-            entitySignMap.put("createdDate", rs.getCreatedTimestamp());
-            entitySignMap.put("keyUrl", signatureKeyURl);
-            signedRdfModel = RDFUtil.getUpdatedSignedModel(rdfModel, registryContext, signatureDomain,
-                    entitySignMap, ModelFactory.createDefaultModel());
-            rootLabel = addEntity(signedRdfModel, subject, property);*/
+            signatureHelper.signJson(rootNode);
         }
 
         if (persistenceEnabled) {
-            entityId = tpGraphMain.addEntity(rootNode);
+            try (OSGraph osGraph = shard.getDatabaseProvider().getOSGraph()) {
+                try (Graph graph = osGraph.getGraphStore()) {
+                    try (Transaction tx = shard.getDatabaseProvider().startTransaction(graph)) {
+                        entityId = tpGraphMain.addEntity(graph, rootNode);
+                        shard.getDatabaseProvider().commitTransaction(graph, tx);
+                    }
+                }
+            }
         }
 
         return entityId;
     }
 
-    public JsonNode getEntity(String id, ReadConfigurator configurator) {
-        JsonNode result = tpGraphMain.getEntity(id, configurator);
-        return result;
+    @Override
+    public JsonNode getEntity(String id, ReadConfigurator configurator) throws Exception {
+        try (OSGraph osGraph = shard.getDatabaseProvider().getOSGraph()) {
+            try (Graph graph = osGraph.getGraphStore()) {
+                try (Transaction tx = shard.getDatabaseProvider().startTransaction(graph)) {
+                    JsonNode result = tpGraphMain.getEntity(graph, id, configurator);
+                    shard.getDatabaseProvider().commitTransaction(graph, tx);
+                    return result;
+                }
+            }
+        }
     }
 
     @Override
-    public void updateEntity(String jsonString) throws Exception {
+    public void updateEntity(String id, String jsonString) throws Exception {
         Iterator<Vertex> vertexIterator = null;
         Vertex inputNodeVertex = null;
         SchemaDefinition schemaDefination = definitionsManager.getSchemaDefination("teacher");
         List<String> privatePropertyList = schemaDefination.getPrivateFields();
 
+        Vertex rootVertex = null;
+
         JsonNode rootNode = objectMapper.readTree(jsonString);
-        rootNode = encryptionHelper.getEncryptedJson(rootNode);
-        String idProp = rootNode.elements().next().get(uuidPropertyName).asText();
+        if (encryptionEnabled) {
+            rootNode = encryptionHelper.getEncryptedJson(rootNode);
+        }
         JsonNode childElementNode = rootNode.elements().next();
         DatabaseProvider databaseProvider = shard.getDatabaseProvider();
         ReadConfigurator readConfigurator = new ReadConfigurator();
-        readConfigurator.setIncludeSignatures(false);
+        if(signatureEnabled){
+            readConfigurator.setIncludeSignatures(true);
+        } else {
+            readConfigurator.setIncludeSignatures(false);
+        }
         try(OSGraph osGraph = databaseProvider.getOSGraph()){
             Graph graph = osGraph.getGraphStore();
             try (Transaction tx = databaseProvider.startTransaction(graph)) {
                 VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
-                if(null != tx){
+                String entityNodeType;
 
+                if(null != tx) {
                     ObjectNode entityNode = null;
-                    vertexIterator = graph.vertices(idProp);
-                    inputNodeVertex = vertexIterator.hasNext() ? vertexIterator.next(): null;
-                    if(registryRootEntityType.equalsIgnoreCase(inputNodeVertex.label())){
-                        entityNode = (ObjectNode) vr.read(inputNodeVertex.id().toString());
-                    } else {
-                        Vertex rootVertex = inputNodeVertex.vertices(Direction.IN,inputNodeVertex.label()).next();
-                        entityNode = (ObjectNode) vr.read(rootVertex.id().toString());
+                    vertexIterator = graph.vertices(id);
+                    inputNodeVertex = vertexIterator.hasNext() ? vertexIterator.next() : null;
+                    if ((inputNodeVertex.property(Constants.STATUS_KEYWORD).isPresent() &&
+                            inputNodeVertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE))) {
+                        throw new RecordNotFoundException("Cannot perform the operation");
                     }
+                    if(inputNodeVertex.property(Constants.ROOT_KEYWORD).isPresent()){
+                        rootVertex = graph.vertices(inputNodeVertex.property(Constants.ROOT_KEYWORD).value()).next();
+                    } else {
+                        rootVertex = inputNodeVertex;
+                    }
+
+                    entityNode = (ObjectNode) vr.read(rootVertex.id().toString());
 
                     //merge with entitynode
                     entityNode =  merge(entityNode,rootNode);
+                    entityNodeType = entityNode.fields().next().getKey();
                     //TO-DO validation is failing
                     //boolean isValidate = iValidate.validate("Teacher",entityNode.toString());
-                    tpGraphMain.updateVertex(inputNodeVertex,childElementNode);
-                    tx.readWrite();
-                    tx.commit();
+                    tpGraphMain.updateVertex(graph, inputNodeVertex,childElementNode);
+                    //sign the entitynode
+                    if (signatureEnabled) {
+                        signatureHelper.signJson(entityNode);
+                        JsonNode signNode = entityNode.get(entityNodeType).get(Constants.SIGNATURES_STR);
+                        if (signNode.isArray()) {
+                            signNode = getEntitySignNode(signNode, entityNodeType);
+                        }
+
+                        Iterator<Vertex> vertices = rootVertex.vertices(Direction.IN,Constants.SIGNATURES_STR);
+                        if (null != vertices && vertices.hasNext()) {
+                            Vertex signArrayNode = vertices.next();
+                            Iterator<Vertex> sign =  signArrayNode.vertices(Direction.OUT,entityNodeType);
+                            Vertex signVertex = sign.next();
+                            // Other signatures are not updated, only the entity level signature.
+                            tpGraphMain.updateVertex(graph, signVertex, signNode);
+                        }
+                    }
+                    databaseProvider.commitTransaction(graph, tx);
                 } else {
-                    vertexIterator = graph.vertices(new Long(idProp));
+                    // TinkerGraph section for test cases
+                    vertexIterator = graph.vertices(new Long(id));
                     inputNodeVertex = vertexIterator.hasNext() ? vertexIterator.next(): null;
                     ObjectNode entityNode = (ObjectNode) vr.read(inputNodeVertex.id().toString());
                     entityNode =  merge(entityNode,rootNode);
+                    entityNodeType = entityNode.fields().next().getKey();
+
                     //TO-DO validation is failing
                     // boolean isValidate = iValidate.validate("Teacher",entityNode.toString());
-                    tpGraphMain.updateVertex(inputNodeVertex,childElementNode);
+                    tpGraphMain.updateVertex(graph, inputNodeVertex,childElementNode);
+
+                    //sign the entitynode
+                    if (signatureEnabled) {
+                        signatureHelper.signJson(entityNode);
+                        JsonNode signNode = entityNode.get(entityNodeType).get(Constants.SIGNATURES_STR);
+                        if (signNode.isArray()) {
+                            signNode = getEntitySignNode(signNode, entityNodeType);
+                        }
+                        Iterator<Vertex> vertices = rootVertex.vertices(Direction.IN, Constants.SIGNATURES_STR);
+                        while (null != vertices && vertices.hasNext()) {
+                            Vertex signVertex = vertices.next();
+                            if (signVertex.property(Constants.SIGNATURE_FOR).value().equals(entityNodeType)) {
+                                tpGraphMain.updateVertex(graph, signVertex, signNode);
+                            }
+                        }
+                    }
                 }
             }
         }
 
+    }
+
+    /** filters entity sign node from the signatures json array
+     * @param signatures
+     * @return
+     */
+    private JsonNode getEntitySignNode(JsonNode signatures, String registryRootEntityType) {
+        JsonNode entitySignNode = null;
+        Iterator<JsonNode> signItr = signatures.elements();
+        while(signItr.hasNext()){
+            JsonNode signNode = signItr.next();
+            if(signNode.get(Constants.SIGNATURE_FOR).asText().equals(registryRootEntityType) &&
+                    null == signNode.get(uuidPropertyName)){
+                entitySignNode = signNode;
+                break;
+            }
+        }
+        return entitySignNode;
     }
 
     /** Merging input json node to DB entity node, this method in turn calls mergeDestinationWithSourceNode method for deep copy of properties and objects
