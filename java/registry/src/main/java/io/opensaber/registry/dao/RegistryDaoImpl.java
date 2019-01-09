@@ -5,14 +5,15 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.sink.shard.Shard;
+import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.EntityParenter;
 import io.opensaber.registry.util.ParentLabelGenerator;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.RefLabelHelper;
+import io.opensaber.registry.util.SchemaDefinition;
 import io.opensaber.registry.util.TypePropertyHelper;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -23,7 +24,12 @@ import java.util.UUID;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +49,7 @@ public class RegistryDaoImpl implements IRegistryDao {
     private Shard shard;
 
     @Autowired
-    private ISchemaConfigurator schemaConfigurator;
+    private DefinitionsManager definitionsManager;
 
     private List<String> privatePropertyList;
 
@@ -253,7 +259,8 @@ public class RegistryDaoImpl implements IRegistryDao {
     public JsonNode getEntity(String uuid, ReadConfigurator readConfigurator) {
         if (null == privatePropertyList) {
             privatePropertyList = new ArrayList<>();
-            setPrivatePropertyList(schemaConfigurator.getAllPrivateProperties());
+            SchemaDefinition schemaDefinition = definitionsManager.getSchemaDefination("teacher");
+            setPrivatePropertyList(schemaDefinition.getPrivateFields());
         }
 
         JsonNode result = JsonNodeFactory.instance.objectNode();
