@@ -5,9 +5,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import javax.annotation.PostConstruct;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,39 +25,58 @@ public class DefinitionsManager {
 
     @Autowired
     private DefinitionsReader definitionsReader;
-    private SchemaDefinitionMgr schemaDefinationMgr;
+    private Map<String, SchemaDefination> schemaDefinationMap = new HashMap<>();
 
-    // Loads the definitions from the _schemas folder
-    public Set<String> getAllKnownDefinitions() {
-        Set<String> keys = new HashSet<>();
+    /**
+     * Loads the definitions from the _schemas folder
+     */
+    @PostConstruct
+    public void loadSchemaDefination(){
         try {
-            schemaDefinationMgr = new SchemaDefinitionMgr(getAllJsonSchemas());
-            for (SchemaDefination schemaDefination : schemaDefinationMgr.getAllSchemaDefinitions()) {
-                keys.add(schemaDefination.getTitle());
+            Resource[] resources = definitionsReader.getResources("classpath:public/_schemas/*.json");
+            for (Resource resource : resources) {
+                String jsonContent = getContent(resource);
+                JSONObject jsonObject = new JSONObject(jsonContent);
+                SchemaDefination schemaDefination = new SchemaDefination(jsonObject);
+                schemaDefinationMap.putIfAbsent(schemaDefination.getTitle(), schemaDefination);
             }
-        } catch (IOException ioe) {
+
+        } catch (JSONException |IOException ioe) {
             logger.error("Cannot load json resources. Validation can't work");
         }
-
-        return keys;
     }
-    
-    public SchemaDefinitionMgr getSchemaDefinationMgr(){
-        return schemaDefinationMgr;
+    /**
+     * Returns the title for all schema loaded
+     * @return
+     */
+    public Set<String> getAllKnownDefinitions() {       
+        return schemaDefinationMap.keySet();
     }
-
-    private List<String> getAllJsonSchemas() throws IOException {
-        List<String> jsonSchemas = new ArrayList<>();
-
-        Resource[] resources = definitionsReader.getResources("classpath:public/_schemas/*.json");
-        for (Resource resource : resources) {
-            String jsonContent = getContent(resource);
-            jsonSchemas.add(jsonContent);
+    /**
+     * Returns all schema definitions that are loaded
+     * @return
+     */
+    public List<SchemaDefination> getAllSchemaDefinations() {
+        List<SchemaDefination> schemaDefinations = new ArrayList<>();
+        for (Entry<String, SchemaDefination> entry : schemaDefinationMap.entrySet()) {
+            schemaDefinations.add(entry.getValue());
         }
-
-        return jsonSchemas;
+        return schemaDefinations;
+    }
+    /**
+     * Provide a schemaDefinition by given title which is already loaded 
+     * @param title
+     * @return
+     */
+    public SchemaDefination getSchemaDefination(String title) {
+        return schemaDefinationMap.getOrDefault(title, null);
     }
 
+    /**
+     * Returns a content of resource 
+     * @param resource
+     * @return
+     */
     private String getContent(Resource resource) {
         InputStream in;
         try {
