@@ -12,8 +12,6 @@ import io.opensaber.registry.authorization.KeyCloakServiceImpl;
 import io.opensaber.registry.exception.CustomException;
 import io.opensaber.registry.exception.CustomExceptionHandler;
 import io.opensaber.registry.frame.FrameContext;
-import io.opensaber.registry.frame.FrameEntity;
-import io.opensaber.registry.frame.FrameEntityImpl;
 import io.opensaber.registry.interceptor.AuthorizationInterceptor;
 import io.opensaber.registry.interceptor.RequestIdValidationInterceptor;
 import io.opensaber.registry.interceptor.ValidationInterceptor;
@@ -112,11 +110,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	}
 
 	@Bean
-	public FrameEntity frameEntity() {
-		return new FrameEntityImpl();
-	}
-
-	@Bean
 	public FrameContext frameContext() {
 		return new FrameContext(frameFile, registryContextBase);
 	}
@@ -139,7 +132,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Bean
 	public Json2LdTransformer json2LdTransformer() {
 		String domain = frameContext().getDomain();
-		return new Json2LdTransformer(frameEntity().getContent(), domain);
+		return new Json2LdTransformer(frameContext().getContent(), domain);
 	}
 
 	@Bean
