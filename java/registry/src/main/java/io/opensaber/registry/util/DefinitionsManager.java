@@ -25,20 +25,20 @@ public class DefinitionsManager {
 
     @Autowired
     private DefinitionsReader definitionsReader;
-    private Map<String, Definition> schemaDefinitionMap = new HashMap<>();
+    private Map<String, Definition> definitionMap = new HashMap<>();
 
     /**
      * Loads the definitions from the _schemas folder
      */
     @PostConstruct
-    public void loadSchemaDefination() {
+    public void loadDefination() {
         try {
             Resource[] resources = definitionsReader.getResources("classpath:public/_schemas/*.json");
             for (Resource resource : resources) {
                 String jsonContent = getContent(resource);
                 JSONObject jsonObject = new JSONObject(jsonContent);
-                Definition schemaDefinition = new Definition(jsonObject);
-                schemaDefinitionMap.putIfAbsent(schemaDefinition.getTitle(), schemaDefinition);
+                Definition definition = new Definition(jsonObject);
+                definitionMap.putIfAbsent(definition.getTitle(), definition);
             }
 
         } catch (JSONException | IOException ioe) {
@@ -47,35 +47,35 @@ public class DefinitionsManager {
     }
 
     /**
-     * Returns the title for all schema loaded
+     * Returns the title for all definitions loaded
      * 
      * @return
      */
     public Set<String> getAllKnownDefinitions() {
-        return schemaDefinitionMap.keySet();
+        return definitionMap.keySet();
     }
 
     /**
-     * Returns all schema definitions that are loaded
+     * Returns all definitions that are loaded
      * 
      * @return
      */
-    public List<Definition> getAllSchemaDefinitions() {
-        List<Definition> schemaDefinations = new ArrayList<>();
-        for (Entry<String, Definition> entry : schemaDefinitionMap.entrySet()) {
-            schemaDefinations.add(entry.getValue());
+    public List<Definition> getAllDefinitions() {
+        List<Definition> definitions = new ArrayList<>();
+        for (Entry<String, Definition> entry : definitionMap.entrySet()) {
+            definitions.add(entry.getValue());
         }
-        return schemaDefinations;
+        return definitions;
     }
 
     /**
-     * Provide a schemaDefinition by given title which is already loaded
+     * Provide a definition by given title which is already loaded
      * 
      * @param title
      * @return
      */
-    public Definition getSchemaDefinition(String title) {
-        return schemaDefinitionMap.getOrDefault(title, null);
+    public Definition getDefinition(String title) {
+        return definitionMap.getOrDefault(title, null);
     }
 
     /**

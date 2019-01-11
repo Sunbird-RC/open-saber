@@ -7,10 +7,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
+import io.opensaber.registry.util.Definition;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.RefLabelHelper;
-import io.opensaber.registry.util.Definition;
 import io.opensaber.registry.util.TypePropertyHelper;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,11 +56,11 @@ public class VertexReader {
 
         ObjectNode contentNode = JsonNodeFactory.instance.objectNode();
         String entityType = currVertex.property(TypePropertyHelper.getTypeName()).value().toString();
-        Definition schemaDefinition = definitionsManager.getSchemaDefinition(entityType);
+        Definition definition = definitionsManager.getDefinition(entityType);
         List<String> privatePropertyList = new ArrayList<>();
-        logger.info("Entity: "+entityType+" schemaDefinition:"+schemaDefinition);
-        if(schemaDefinition != null){
-            privatePropertyList = schemaDefinition.getPrivateFields();
+        logger.info("Entity: "+entityType+"& definition:"+definition);
+        if(definition != null){
+            privatePropertyList = definition.getPrivateFields();
         }
 
         Iterator<VertexProperty<Object>> properties = currVertex.properties();

@@ -87,7 +87,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Value("${validation.enabled}")
 	private boolean validationEnabled = true;
 	
-	private final static String JSON ="json";
+    private final static String JSON = "json";
 
 	@Bean
 	public ObjectMapper objectMapper() {
@@ -161,7 +161,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	public IValidate validationServiceImpl() throws IOException, CustomException {
 		IValidate validator = null;
 		// depends on input type,we need to implement validation
-		if (validationType.equalsIgnoreCase(JSON)) {
+        if (validationType.equalsIgnoreCase(JSON)) {
 			validator = new JsonValidationServiceImpl();
 		} else {
 			logger.error("Fatal - not a known validator mentioned in the application configuration.");
