@@ -23,7 +23,7 @@ import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.ReadConfigurator;
-import io.opensaber.registry.util.SchemaDefinition;
+import io.opensaber.registry.util.Definition;
 import io.opensaber.validators.IValidate;
 import java.util.ArrayList;
 import java.util.Arrays;

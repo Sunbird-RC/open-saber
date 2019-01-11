@@ -6,7 +6,7 @@ import java.util.List;
  * Holds _osconfig properties for a schema  
  *
  */
-public class OsConfigProperties {
+public class OSSchemaConfiguration {
     
     private String comment;
     private List<String> privateFields =  new ArrayList<>();

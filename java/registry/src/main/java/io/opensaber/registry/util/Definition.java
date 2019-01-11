@@ -11,8 +11,8 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SchemaDefinition {
-    private static Logger logger = LoggerFactory.getLogger(SchemaDefinition.class);
+public class Definition {
+    private static Logger logger = LoggerFactory.getLogger(Definition.class);
     private final static String TITLE = "title";
     private final static String OSCONFIG = "_osconfig";
 
@@ -21,14 +21,14 @@ public class SchemaDefinition {
     private List<String> privateFields = new ArrayList<>();
     private List<String> signedFields = new ArrayList<>();
 
-    public SchemaDefinition(JSONObject schema) throws IOException {
+    public Definition(JSONObject schema) throws IOException {
         this.schema = schema.toString();
         try {
-            title = schema.getString(TITLE).toLowerCase();
+            title = schema.getString(TITLE);
             ObjectMapper mapper = new ObjectMapper();
 
             JSONObject configJson = schema.getJSONObject(OSCONFIG);
-            OsConfigProperties configProperties = mapper.readValue(configJson.toString(), OsConfigProperties.class);
+            OSSchemaConfiguration configProperties = mapper.readValue(configJson.toString(), OSSchemaConfiguration.class);
 
             privateFields = configProperties.getPrivateFields();
             signedFields = configProperties.getSignedFields();

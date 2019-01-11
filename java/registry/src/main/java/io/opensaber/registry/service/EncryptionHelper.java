@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.opensaber.registry.exception.EncryptionException;
 import io.opensaber.registry.util.DefinitionsManager;
-import io.opensaber.registry.util.SchemaDefinition;
+import io.opensaber.registry.util.Definition;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +21,7 @@ public class EncryptionHelper {
     public JsonNode getEncryptedJson(JsonNode rootNode) throws EncryptionException {
         JsonNode encryptedRoot = rootNode;
         String rootFieldName = rootNode.fieldNames().next();
-        SchemaDefinition schemaDef = definitionsManager.getSchemaDefination(rootFieldName);
+        Definition schemaDef = definitionsManager.getSchemaDefinition(rootFieldName);
         List<String> privatePropertyLst = schemaDef.getPrivateFields();
         if (rootNode.isObject()) {
             Map<String, Object> plainMap = getToBeEncryptedMap(rootNode, privatePropertyLst);

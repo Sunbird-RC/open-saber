@@ -25,7 +25,7 @@ public class DefinitionsManager {
 
     @Autowired
     private DefinitionsReader definitionsReader;
-    private Map<String, SchemaDefinition> schemaDefinationMap = new HashMap<>();
+    private Map<String, Definition> schemaDefinitionMap = new HashMap<>();
 
     /**
      * Loads the definitions from the _schemas folder
@@ -37,8 +37,8 @@ public class DefinitionsManager {
             for (Resource resource : resources) {
                 String jsonContent = getContent(resource);
                 JSONObject jsonObject = new JSONObject(jsonContent);
-                SchemaDefinition schemaDefination = new SchemaDefinition(jsonObject);
-                schemaDefinationMap.putIfAbsent(schemaDefination.getTitle(), schemaDefination);
+                Definition schemaDefinition = new Definition(jsonObject);
+                schemaDefinitionMap.putIfAbsent(schemaDefinition.getTitle(), schemaDefinition);
             }
 
         } catch (JSONException | IOException ioe) {
@@ -52,7 +52,7 @@ public class DefinitionsManager {
      * @return
      */
     public Set<String> getAllKnownDefinitions() {
-        return schemaDefinationMap.keySet();
+        return schemaDefinitionMap.keySet();
     }
 
     /**
@@ -60,9 +60,9 @@ public class DefinitionsManager {
      * 
      * @return
      */
-    public List<SchemaDefinition> getAllSchemaDefinations() {
-        List<SchemaDefinition> schemaDefinations = new ArrayList<>();
-        for (Entry<String, SchemaDefinition> entry : schemaDefinationMap.entrySet()) {
+    public List<Definition> getAllSchemaDefinitions() {
+        List<Definition> schemaDefinations = new ArrayList<>();
+        for (Entry<String, Definition> entry : schemaDefinitionMap.entrySet()) {
             schemaDefinations.add(entry.getValue());
         }
         return schemaDefinations;
@@ -74,8 +74,8 @@ public class DefinitionsManager {
      * @param title
      * @return
      */
-    public SchemaDefinition getSchemaDefination(String title) {
-        return schemaDefinationMap.getOrDefault(title.toLowerCase(), null);
+    public Definition getSchemaDefinition(String title) {
+        return schemaDefinitionMap.getOrDefault(title, null);
     }
 
     /**
