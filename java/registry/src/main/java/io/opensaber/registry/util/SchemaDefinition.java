@@ -18,10 +18,10 @@ public class SchemaDefinition {
 
     private String schema;
     private String title;
-    private List<String> privateProperties = new ArrayList<>();
-    private List<String> signedProperties = new ArrayList<>();
+    private List<String> privateFields = new ArrayList<>();
+    private List<String> signedFields = new ArrayList<>();
 
-    public SchemaDefinition(JSONObject schema) throws JsonParseException, JsonMappingException, IOException {
+    public SchemaDefinition(JSONObject schema) throws IOException {
         this.schema = schema.toString();
         try {
             title = schema.getString(TITLE).toLowerCase();
@@ -30,9 +30,9 @@ public class SchemaDefinition {
             JSONObject configJson = schema.getJSONObject(OSCONFIG);
             OsConfigProperties configProperties = mapper.readValue(configJson.toString(), OsConfigProperties.class);
 
-            privateProperties = configProperties.getPrivateFields();
-            signedProperties = configProperties.getSignedFields();
-        } catch (JSONException e) {
+            privateFields = configProperties.getPrivateFields();
+            signedFields = configProperties.getSignedFields();
+        } catch (JSONException | JsonParseException | JsonMappingException e) {
             logger.error("while parsing schema defination  error: title or _osconfig key not found for " + schema);
         }
     }
@@ -46,11 +46,11 @@ public class SchemaDefinition {
     }
 
     public List<String> getSignedFields() {
-        return signedProperties;
+        return signedFields;
     }
 
     public List<String> getPrivateFields() {
-        return privateProperties;
+        return privateFields;
     }
 
     public boolean isEncrypted(String fieldName) {
@@ -61,7 +61,7 @@ public class SchemaDefinition {
     }
 
     public boolean isPrivate(String fieldName) {
-        return privateProperties.contains(fieldName);
+        return privateFields.contains(fieldName);
     }
 
 }

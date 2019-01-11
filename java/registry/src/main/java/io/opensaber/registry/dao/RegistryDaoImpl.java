@@ -3,6 +3,7 @@ package io.opensaber.registry.dao;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.OpenSaberInstrumentation;
+import io.opensaber.registry.frame.FrameContext;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.sink.shard.Shard;
@@ -41,6 +42,8 @@ public class RegistryDaoImpl implements IRegistryDao {
 
     @Autowired
     private DefinitionsManager definitionsManager;
+    @Autowired
+    private FrameContext frameContext; 
 
     @Autowired
     private Shard shard;
@@ -122,7 +125,7 @@ public class RegistryDaoImpl implements IRegistryDao {
     public JsonNode getEntity(Graph graph, String uuid, ReadConfigurator readConfigurator) throws Exception {
         if (null == privatePropertyList) {
             privatePropertyList = new ArrayList<>();
-            SchemaDefinition schemaDef = definitionsManager.getSchemaDefination("teacher");
+            SchemaDefinition schemaDef = definitionsManager.getSchemaDefination(frameContext.getDomain());
             setPrivatePropertyList(schemaDef.getPrivateFields());
         }
         VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
@@ -141,7 +144,7 @@ public class RegistryDaoImpl implements IRegistryDao {
     public JsonNode getEntity(Graph graph, Vertex vertex, ReadConfigurator readConfigurator) {
         if (null == privatePropertyList) {
             privatePropertyList = new ArrayList<>();
-            SchemaDefinition schemaDef = definitionsManager.getSchemaDefination("teacher");
+            SchemaDefinition schemaDef = definitionsManager.getSchemaDefination(frameContext.getDomain());
             setPrivatePropertyList(schemaDef.getPrivateFields());
         }
         VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
