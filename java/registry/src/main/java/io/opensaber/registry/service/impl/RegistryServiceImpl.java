@@ -207,9 +207,6 @@ public class RegistryServiceImpl implements RegistryService {
         Vertex rootVertex = null;
 
         JsonNode rootNode = objectMapper.readTree(jsonString);
-        String rootFieldName = rootNode.fieldNames().next();
-        SchemaDefinition schemaDef = definitionsManager.getSchemaDefination(rootFieldName);
-        List<String> privatePropertyList = schemaDef.getPrivateFields();
 
         if (encryptionEnabled) {
             rootNode = encryptionHelper.getEncryptedJson(rootNode);
@@ -225,7 +222,7 @@ public class RegistryServiceImpl implements RegistryService {
         try(OSGraph osGraph = databaseProvider.getOSGraph()){
             Graph graph = osGraph.getGraphStore();
             try (Transaction tx = databaseProvider.startTransaction(graph)) {
-                VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
+                VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, definitionsManager);
                 String entityNodeType;
 
                 if(null != tx) {

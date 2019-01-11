@@ -12,7 +12,6 @@ import io.opensaber.registry.util.EntityParenter;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.RecordIdentifier;
 import io.opensaber.registry.util.RefLabelHelper;
-import io.opensaber.registry.util.SchemaDefinition;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -123,12 +122,8 @@ public class RegistryDaoImpl implements IRegistryDao {
      * @return
      */
     public JsonNode getEntity(Graph graph, String uuid, ReadConfigurator readConfigurator) throws Exception {
-        if (null == privatePropertyList) {
-            privatePropertyList = new ArrayList<>();
-            SchemaDefinition schemaDef = definitionsManager.getSchemaDefination(frameContext.getDomain());
-            setPrivatePropertyList(schemaDef.getPrivateFields());
-        }
-        VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
+
+        VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, definitionsManager);
         JsonNode result = vr.read(uuid);
 
         if (!shard.getShardLabel().isEmpty()) {
@@ -142,12 +137,8 @@ public class RegistryDaoImpl implements IRegistryDao {
 
 
     public JsonNode getEntity(Graph graph, Vertex vertex, ReadConfigurator readConfigurator) {
-        if (null == privatePropertyList) {
-            privatePropertyList = new ArrayList<>();
-            SchemaDefinition schemaDef = definitionsManager.getSchemaDefination(frameContext.getDomain());
-            setPrivatePropertyList(schemaDef.getPrivateFields());
-        }
-        VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
+
+        VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, definitionsManager);
         JsonNode result = vr.constructObject(vertex);
 
         if (!shard.getShardLabel().isEmpty()) {
