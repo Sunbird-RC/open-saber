@@ -89,7 +89,6 @@ public class DefinitionsManager {
         try {
             File file = resource.getFile();
             content = new String(Files.readAllBytes(file.toPath()));
-            logger.info(resource.getFilename() + "Content: " + content);
         } catch (IOException e) {
             logger.error("Cannot load resource " + resource.getFilename());
 

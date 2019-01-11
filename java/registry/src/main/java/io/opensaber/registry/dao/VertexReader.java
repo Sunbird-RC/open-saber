@@ -58,9 +58,9 @@ public class VertexReader {
         String entityType = currVertex.property(TypePropertyHelper.getTypeName()).value().toString();
         Definition definition = definitionsManager.getDefinition(entityType);
         List<String> privatePropertyList = new ArrayList<>();
-        logger.info("Entity: "+entityType+"& definition:"+definition);
         if(definition != null){
             privatePropertyList = definition.getPrivateFields();
+            logger.info("while constructing object for a given vertex, entity: " + entityType + " & private fields: "+privatePropertyList);
         }
 
         Iterator<VertexProperty<Object>> properties = currVertex.properties();

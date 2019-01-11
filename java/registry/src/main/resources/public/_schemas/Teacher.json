@@ -9,7 +9,8 @@
   "required": [
     "Teacher"
   ],
-  "title":"teacher",
+  //NOTE: 'title' field value should same as 'required' field value
+  "title":"Teacher",
   "_osconfig": {
          "comment": "This section contains the OpenSABER specific configuration information",
          "privateFields": ["nationalIdentifier", "teacherCode", "birthDate"],
