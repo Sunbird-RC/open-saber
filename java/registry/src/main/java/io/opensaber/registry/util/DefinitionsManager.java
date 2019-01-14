@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 @Component("definitionsManager")
 public class DefinitionsManager {
     private static Logger logger = LoggerFactory.getLogger(DefinitionsManager.class);
+    private final static String TITLE = "title";
 
     @Autowired
     private DefinitionsReader definitionsReader;
@@ -30,23 +31,21 @@ public class DefinitionsManager {
      * Loads the definitions from the _schemas folder
      */
     @PostConstruct
-    public void loadDefinition() {
-        try {
-            final ObjectMapper mapper = new ObjectMapper();
-            Resource[] resources = definitionsReader.getResources("classpath:public/_schemas/*.json");
-            for (Resource resource : resources) {
-                String jsonContent = getContent(resource);
-                JsonNode jsonNode = mapper.readTree(jsonContent);
-                Definition definition = new Definition(jsonNode);
-                logger.info("loading resource:"+resource.getFilename()+" with private field size:"
-                        + definition.getPrivateFields().size() + " & signed fields size:"
-                        + definition.getSignedFields().size());
-                definitionMap.putIfAbsent(definition.getTitle(), definition);
-            }
-            logger.info("loaded resource(s): " + definitionMap.size());
-        } catch (IOException ioe) {
-            logger.error("Cannot load json resources. Validation can't work");
+    public void loadDefinition() throws Exception {
+
+        final ObjectMapper mapper = new ObjectMapper();
+        Resource[] resources = definitionsReader.getResources("classpath:public/_schemas/*.json");
+        for (Resource resource : resources) {
+            String jsonContent = getContent(resource);
+            JsonNode jsonNode = mapper.readTree(jsonContent);
+            Definition definition = new Definition(jsonNode);
+            logger.info("loading resource:" + resource.getFilename() + " with private field size:"
+                    + definition.getConfigProperties().getPrivateFields().size() + " & signed fields size:"
+                    + definition.getConfigProperties().getSignedFields().size());
+            definitionMap.putIfAbsent(definition.getTitle(), definition);
         }
+        logger.info("loaded resource(s): " + definitionMap.size());
+
     }
 
     /**

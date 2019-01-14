@@ -59,7 +59,7 @@ public class VertexReader {
         Definition definition = definitionsManager.getDefinition(entityType);
         List<String> privatePropertyList = new ArrayList<>();
         if(definition != null){
-            privatePropertyList = definition.getPrivateFields();
+            privatePropertyList = definition.getConfigProperties().getPrivateFields();
         }
 
         Iterator<VertexProperty<Object>> properties = currVertex.properties();

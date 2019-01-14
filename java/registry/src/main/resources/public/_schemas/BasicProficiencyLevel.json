@@ -10,8 +10,8 @@
     }
   },
   "title":"basicProficiencyLevel",
-  "_osconfig": {
-         "$comment": "This section contains: privateFields which holds field name(s) to be encrypted & signedFields holds field name(s) that to be used for signature",
+  "_osConfig": {
+         "osComment": "Refer to _osconfig $comment section of Teacher.json",
          "privateFields": [],
          "signedFields": []
   },

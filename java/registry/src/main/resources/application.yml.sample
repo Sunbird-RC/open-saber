@@ -174,11 +174,6 @@ registry:
   rootEntity:
             type: ${registry_rootentity_type:Teacher}
 
-#This refers to the opensaber schema configuration JSON-LD file
-config:
-  schema:
-    file: schema-configuration-school-test.jsonld
-
 database:
   # This property is internal and not to be confused with the schema definition.
   # Clients use this property to perform read/update operation.
@@ -249,7 +244,4 @@ keycloak:
 validation:
   enabled: ${validation_enabled:true}
   type: ${validation_type:json}
-  create:
-    file: good1.shex
-  update:
-    file: good1.shex
+  
