@@ -18,7 +18,7 @@ public class Definition {
     private String content;
     private String title;
 
-    private OSSchemaConfiguration configProperties;
+    private OSSchemaConfiguration osSchemaConfiguration;
 
     /**
      * To parse a jsonNode of given schema type
@@ -35,15 +35,15 @@ public class Definition {
         JsonNode configJson = schema.get(OSCONFIG);
         if (null != configJson) {
             try {
-                configProperties = mapper.treeToValue(configJson, OSSchemaConfiguration.class);
+                osSchemaConfiguration = mapper.treeToValue(configJson, OSSchemaConfiguration.class);
             } catch (JsonProcessingException e) {
                 logger.debug(title + " does not have OS configuration.");
             }
         }
         
         //Default when no config provided
-        if (configProperties == null) {
-            configProperties = new OSSchemaConfiguration();
+        if (osSchemaConfiguration == null) {
+            osSchemaConfiguration = new OSSchemaConfiguration();
         }
     }
 
@@ -65,9 +65,8 @@ public class Definition {
         return content;
     }
 
-    public OSSchemaConfiguration getConfigProperties() {
-
-        return configProperties;
+    public OSSchemaConfiguration getOsSchemaConfiguration() {
+        return osSchemaConfiguration;
     }
 
 }

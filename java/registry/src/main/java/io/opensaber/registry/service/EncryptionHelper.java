@@ -22,7 +22,7 @@ public class EncryptionHelper {
         JsonNode encryptedRoot = rootNode;
         String rootFieldName = rootNode.fieldNames().next();
         Definition definition = definitionsManager.getDefinition(rootFieldName);
-        List<String> privatePropertyLst = definition.getPrivateFields();
+        List<String> privatePropertyLst = definition.getOsSchemaConfiguration().getPrivateFields();
         if (rootNode.isObject()) {
             Map<String, Object> plainMap = getToBeEncryptedMap(rootNode, privatePropertyLst);
             if(null != plainMap){

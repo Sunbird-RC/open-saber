@@ -40,8 +40,8 @@ public class DefinitionsManager {
             JsonNode jsonNode = mapper.readTree(jsonContent);
             Definition definition = new Definition(jsonNode);
             logger.info("loading resource:" + resource.getFilename() + " with private field size:"
-                    + definition.getConfigProperties().getPrivateFields().size() + " & signed fields size:"
-                    + definition.getConfigProperties().getSignedFields().size());
+                    + definition.getOsSchemaConfiguration().getPrivateFields().size() + " & signed fields size:"
+                    + definition.getOsSchemaConfiguration().getSignedFields().size());
             definitionMap.putIfAbsent(definition.getTitle(), definition);
         }
         logger.info("loaded resource(s): " + definitionMap.size());
