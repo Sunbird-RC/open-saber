@@ -15,6 +15,7 @@ import io.opensaber.registry.interceptor.RequestIdValidationInterceptor;
 import io.opensaber.registry.interceptor.ValidationInterceptor;
 import io.opensaber.registry.middleware.Middleware;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.Constants.SchemaType;
 import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.sink.DBProviderFactory;
@@ -87,8 +88,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Value("${validation.enabled}")
 	private boolean validationEnabled = true;
 	
-    private final static String JSON = "json";
-
 	@Bean
 	public ObjectMapper objectMapper() {
 		ObjectMapper objectMapper = new ObjectMapper();
@@ -110,6 +109,21 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	public FrameContext frameContext() {
 		return new FrameContext(frameFile, registryContextBase);
 	}
+	
+    /**
+     * Gets the type of validation configured in the application.yml
+     * 
+     * @return
+     * @throws IllegalArgumentException
+     *             when value is not in known SchemaType enum
+     */
+    @Bean
+    public SchemaType getValidationType() throws IllegalArgumentException {
+        String validationMechanism = validationType.toUpperCase();
+        SchemaType st = SchemaType.valueOf(validationMechanism);
+
+        return st;
+    }
 
 	@Bean
 	public Json2LdTransformer json2LdTransformer() {
@@ -157,18 +171,18 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		return new AuthorizationFilter(new KeyCloakServiceImpl());
 	}
 
-	@Bean
-	public IValidate validationServiceImpl() throws IOException, CustomException {
-		IValidate validator = null;
-		// depends on input type,we need to implement validation
-        if (validationType.equalsIgnoreCase(JSON)) {
-			validator = new JsonValidationServiceImpl();
-		} else {
-			logger.error("Fatal - not a known validator mentioned in the application configuration.");
-		}
-		return validator;
-	}
-
+    @Bean
+    public IValidate validationServiceImpl() throws IOException, CustomException {
+        IValidate validator = null;
+        // depends on input type,we need to implement validation
+        if (getValidationType() == SchemaType.JSON) {
+            validator = new JsonValidationServiceImpl();
+        } else {
+            logger.error("Fatal - not a known validator mentioned in the application configuration.");
+        }
+        return validator;
+    }
+    
 	@Bean
 	@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 	public AuditRecord auditRecord() {
