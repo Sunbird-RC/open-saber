@@ -21,6 +21,7 @@ public class VertexWriter {
     private String uuidPropertyName;
     private Shard shard;
     private String parentOSid;
+    private String parentSignName;
 
     private Logger logger = LoggerFactory.getLogger(VertexWriter.class);
 
@@ -84,7 +85,12 @@ public class VertexWriter {
                 createdV.property(Constants.ROOT_KEYWORD, parentOSid);
                 uidList.add(createdV.id().toString());
                 if (isSignature) {
-                    addEdge(jsonNode.get(Constants.SIGNATURE_FOR).textValue(), blankNode, createdV);
+                    if(parentSignName.equalsIgnoreCase(jsonNode.get(Constants.SIGNATURE_FOR).textValue())){
+                        addEdge(jsonNode.get(Constants.SIGNATURE_FOR).textValue(), createdV, blankNode);
+                    } else {
+                        addEdge(jsonNode.get(Constants.SIGNATURE_FOR).textValue(), blankNode, createdV);
+                    }
+
                 } else {
                     addEdge(entryKey + Constants.ARRAY_ITEM, blankNode, createdV);
                 }
@@ -171,7 +177,7 @@ public class VertexWriter {
         Iterator<Map.Entry<String, JsonNode>> entryIterator = node.fields();
         while (entryIterator.hasNext()) {
             Map.Entry<String, JsonNode> entry = entryIterator.next();
-
+            parentSignName =  entry.getKey();
             // It is expected that node is wrapped under a root, which is the parent name/definition
             if (entry.getValue().isObject()) {
                 resultVertex = processNode(graph, entry.getKey(), entry.getValue());

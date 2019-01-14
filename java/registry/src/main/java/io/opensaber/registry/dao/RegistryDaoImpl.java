@@ -162,16 +162,22 @@ public class RegistryDaoImpl implements IRegistryDao {
             } else if (subEntityNode.isObject()) {
                 parseJsonObject(subEntityNode, graph, rootVertex, fieldKey, false);
             } else if (subEntityNode.isArray()) {
-                List<String> osidList = new ArrayList<String>();
-                subEntityNode.forEach(arrayElementNode -> {
+                Vertex arrayNodeVertex = null;
+                if(fieldKey.equalsIgnoreCase(Constants.SIGNATURES_STR)){
+                    arrayNodeVertex = rootVertex.vertices(Direction.IN,fieldKey).next();
+                } else {
+                    arrayNodeVertex = rootVertex.vertices(Direction.OUT,fieldKey).next();
+                }
+                Set<String> osidSet = new HashSet<String>();
+                for (JsonNode arrayElementNode : subEntityNode) {
                     if (arrayElementNode.isObject()) {
-                        String updatedOsid = parseJsonObject(arrayElementNode, graph, rootVertex, fieldKey, true);
-                        osidList.add(updatedOsid);
+                        String updatedOsid = parseJsonObject(arrayElementNode, graph, arrayNodeVertex, fieldKey, true);
+                        osidSet.add(updatedOsid);
                     }
-                });
-                deleteVertices(graph, rootVertex, fieldKey, osidList);
-                String updatedOisdValue = String.join(",", osidList);
-                rootVertex.property(RefLabelHelper.getLabel(fieldKey, uuidPropertyName), updatedOisdValue);
+                }
+                osidSet = deleteVertices(graph, arrayNodeVertex, fieldKey, osidSet);
+                String updatedOisdValue = String.join(",", osidSet);
+                arrayNodeVertex.property(RefLabelHelper.getLabel(fieldKey, uuidPropertyName), updatedOisdValue);
             }
         });
 
@@ -199,6 +205,7 @@ public class RegistryDaoImpl implements IRegistryDao {
 
             //Add new vertex
             Vertex newChildVertex = vertexWriter.createVertex(graph, parentNodeLabel);
+            newChildVertex.property(Constants.ROOT_KEYWORD,rootVertex.property(Constants.ROOT_KEYWORD).value());
             updateProperties(elementNode, newChildVertex);
             String nodeOsidLabel = RefLabelHelper.getLabel(parentNodeLabel, uuidPropertyName);
             VertexProperty<Object> vertexProperty = rootVertex.property(nodeOsidLabel);
@@ -208,7 +215,11 @@ public class RegistryDaoImpl implements IRegistryDao {
             } else {
                 rootVertex.property(nodeOsidLabel, newChildVertex.id().toString());
             }
-            vertexWriter.addEdge(parentNodeLabel, rootVertex, newChildVertex);
+            if(rootVertex.label().equalsIgnoreCase(Constants.ARRAY_NODE_KEYWORD)){
+                vertexWriter.addEdge(newChildVertex.property(Constants.SIGNATURE_FOR).value().toString(), rootVertex, newChildVertex);
+            } else {
+                vertexWriter.addEdge(parentNodeLabel, rootVertex, newChildVertex);
+            }
             return newChildVertex.id().toString();
         } else {
             String shardOsid = elementNode.get(uuidPropertyName).asText();
@@ -246,7 +257,7 @@ public class RegistryDaoImpl implements IRegistryDao {
      * @param label
      * @param activeOsid
      */
-    private void deleteVertices(Graph graph, Vertex rootVertex, String label, List<String> activeOsid) {
+    private Set<String> deleteVertices(Graph graph, Vertex rootVertex, String label, Set<String> activeOsid) {
         String[] osidArray = null;
         VertexProperty vp = rootVertex.property(label + "_" + uuidPropertyName);
         String osidPropValue = (String) vp.value();
@@ -258,16 +269,30 @@ public class RegistryDaoImpl implements IRegistryDao {
         Iterator<Vertex> vertices = graph.vertices(osidArray);
         //deleting existing vertices
         vertices.forEachRemaining(deleteVertex -> {
-            if (activeOsid == null || (activeOsid != null && !activeOsid.contains(deleteVertex.id()))) {
-                deleteVertex.property(Constants.STATUS_KEYWORD, Constants.STATUS_INACTIVE);
-                Edge edge = deleteVertex.edges(Direction.IN, label).next();
-                edge.remove();
+            if (activeOsid == null || (activeOsid != null && !activeOsid.contains(deleteVertex.id()) && deleteVertex.edges(Direction.IN).hasNext())) {
+                Edge edge = null;
+                if(rootVertex.label().equalsIgnoreCase(Constants.ARRAY_NODE_KEYWORD)){
+                    if(deleteVertex.label().equalsIgnoreCase(Constants.SIGNATURES_STR)){
+                        edge =  deleteVertex.edges(Direction.IN).next();
+                    } else {
+                        edge = deleteVertex.edges(Direction.IN, label+Constants.ARRAY_ITEM).next();
+                    }
+                } else {
+                    edge = deleteVertex.edges(Direction.IN, label).next();
+                }
+                if(edge !=  null){
+                    deleteVertex.property(Constants.STATUS_KEYWORD, Constants.STATUS_INACTIVE);
+                    edge.remove();
+                }
                 //deleteVertex.edges(Direction.IN,label).next().remove();
                 //deleteVertex.remove();
                 //addEdge(label,deleteVertex,rootVertex);
 
+            } else {
+                activeOsid.add(deleteVertex.id().toString());
             }
         });
+        return activeOsid;
     }
 
     public void deleteEntity(Vertex vertex) {

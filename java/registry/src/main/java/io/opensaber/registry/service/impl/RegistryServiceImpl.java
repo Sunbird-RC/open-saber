@@ -256,7 +256,7 @@ public class RegistryServiceImpl implements RegistryService {
                         Iterator<Vertex> vertices = rootVertex.vertices(Direction.IN,Constants.SIGNATURES_STR);
                         if (null != vertices && vertices.hasNext()) {
                             Vertex signArrayNode = vertices.next();
-                            Iterator<Vertex> sign =  signArrayNode.vertices(Direction.OUT,entityNodeType);
+                            Iterator<Vertex> sign =  signArrayNode.vertices(Direction.IN,entityNodeType);
                             Vertex signVertex = sign.next();
                             // Other signatures are not updated, only the entity level signature.
                             tpGraphMain.updateVertex(graph, signVertex, signNode);
