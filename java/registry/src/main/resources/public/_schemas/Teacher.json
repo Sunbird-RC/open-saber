@@ -9,10 +9,9 @@
   "required": [
     "Teacher"
   ],
-  //NOTE: 'title' field value should same as 'required' field value
   "title":"Teacher",
   "_osconfig": {
-         "comment": "This section contains the OpenSABER specific configuration information",
+         "$comment": "This section contains: privateFields which holds field name(s) to be encrypted & signedFields holds field name(s) that to be used for signature",
          "privateFields": ["nationalIdentifier", "teacherCode", "birthDate"],
          "signedFields": ["serialNum"]
   },

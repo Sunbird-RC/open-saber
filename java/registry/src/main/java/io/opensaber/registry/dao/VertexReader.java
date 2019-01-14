@@ -60,7 +60,6 @@ public class VertexReader {
         List<String> privatePropertyList = new ArrayList<>();
         if(definition != null){
             privatePropertyList = definition.getPrivateFields();
-            logger.info("while constructing object for a given vertex, entity: " + entityType + " & private fields: "+privatePropertyList);
         }
 
         Iterator<VertexProperty<Object>> properties = currVertex.properties();

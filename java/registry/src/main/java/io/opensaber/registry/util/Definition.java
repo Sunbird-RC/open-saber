@@ -1,54 +1,74 @@
 package io.opensaber.registry.util;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+/**
+ * Creates Definition for a given JsonNode 
+ * This accepts a schema
+ *
+ */
 public class Definition {
     private static Logger logger = LoggerFactory.getLogger(Definition.class);
     private final static String TITLE = "title";
     private final static String OSCONFIG = "_osconfig";
 
-    private String schema;
+    private String content;
     private String title;
     private List<String> privateFields = new ArrayList<>();
     private List<String> signedFields = new ArrayList<>();
 
-    public Definition(JSONObject schema) throws IOException {
-        this.schema = schema.toString();
+    /**
+     * To parse a jsonNode of given schema type
+     * @param schema
+     */
+    public Definition(JsonNode schema) {
+        content = schema.toString();
         try {
-            title = schema.getString(TITLE);
+            title = schema.get(TITLE).asText();
             ObjectMapper mapper = new ObjectMapper();
 
-            JSONObject configJson = schema.getJSONObject(OSCONFIG);
-            OSSchemaConfiguration configProperties = mapper.readValue(configJson.toString(), OSSchemaConfiguration.class);
+            JsonNode configJson = schema.get(OSCONFIG);
+            OSSchemaConfiguration configProperties = mapper.treeToValue(configJson, OSSchemaConfiguration.class);
 
             privateFields = configProperties.getPrivateFields();
             signedFields = configProperties.getSignedFields();
-        } catch (JSONException | JsonParseException | JsonMappingException e) {
+        } catch (Exception e) {
             logger.error("while parsing schema defination  error: title or _osconfig key not found for " + schema);
         }
     }
 
+    /**
+     * Holds the title for a given schema
+     * @return
+     */
     public String getTitle() {
         return title;
     }
 
+    /**
+     * Holds the String representation of schema 
+     * @return
+     */
     public String getContent() {
-        return schema;
+        return content;
     }
 
+    /**
+     * Holds the field names to be used for signature
+     * @return
+     */
     public List<String> getSignedFields() {
         return signedFields;
     }
 
+    /**
+     * Holds field name to be encrypted
+     * @return
+     */
     public List<String> getPrivateFields() {
         return privateFields;
     }

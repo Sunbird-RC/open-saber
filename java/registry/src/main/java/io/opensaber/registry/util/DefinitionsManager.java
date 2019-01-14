@@ -1,5 +1,7 @@
 package io.opensaber.registry.util;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,14 +12,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.PostConstruct;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
-
 
 @Component("definitionsManager")
 public class DefinitionsManager {
@@ -31,17 +30,21 @@ public class DefinitionsManager {
      * Loads the definitions from the _schemas folder
      */
     @PostConstruct
-    public void loadDefination() {
+    public void loadDefinition() {
         try {
+            final ObjectMapper mapper = new ObjectMapper();
             Resource[] resources = definitionsReader.getResources("classpath:public/_schemas/*.json");
             for (Resource resource : resources) {
                 String jsonContent = getContent(resource);
-                JSONObject jsonObject = new JSONObject(jsonContent);
-                Definition definition = new Definition(jsonObject);
+                JsonNode jsonNode = mapper.readTree(jsonContent);
+                Definition definition = new Definition(jsonNode);
+                logger.info("loading resource:"+resource.getFilename()+" with private field size:"
+                        + definition.getPrivateFields().size() + " & signed fields size:"
+                        + definition.getSignedFields().size());
                 definitionMap.putIfAbsent(definition.getTitle(), definition);
             }
-
-        } catch (JSONException | IOException ioe) {
+            logger.info("loaded resource(s): " + definitionMap.size());
+        } catch (IOException ioe) {
             logger.error("Cannot load json resources. Validation can't work");
         }
     }

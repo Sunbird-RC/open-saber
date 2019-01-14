@@ -1,24 +1,22 @@
 package io.opensaber.registry.util;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.ArrayList;
 import java.util.List;
 /**
  * Holds _osconfig properties for a schema  
  *
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class OSSchemaConfiguration {
-    
-    private String comment;
+    /**
+     * holds field name(s) to be encrypted
+     */
     private List<String> privateFields =  new ArrayList<>();
+    /**
+     * Holds field name(s) to be used for signature
+     */
     private List<String> signedFields =  new ArrayList<>();
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
 
     public List<String> getPrivateFields() {
         return privateFields;
