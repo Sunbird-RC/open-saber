@@ -115,7 +115,7 @@ public class VertexWriter {
 
             if (entryValue.isValueNode()) {
                 // Directly add under the vertex as a property
-                vertex.property(entry.getKey(), entryValue.asText());
+                vertex.property(entry.getKey(), ValueType.getValue(entryValue));
             } else if (entryValue.isObject()) {
                 // Recursive calls
                 Vertex v = processNode(graph, entry.getKey(), entryValue);
