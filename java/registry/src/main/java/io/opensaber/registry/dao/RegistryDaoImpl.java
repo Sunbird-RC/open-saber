@@ -6,22 +6,30 @@ import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
+import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.util.EntityParenter;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.RecordIdentifier;
 import io.opensaber.registry.util.RefLabelHelper;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.*;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import java.util.*;
 
 @Component("tpGraphMain")
 public class RegistryDaoImpl implements IRegistryDao {
@@ -58,14 +66,14 @@ public class RegistryDaoImpl implements IRegistryDao {
      * @param parentLabel
      * @return
      */
-    public Vertex ensureParentVertex(Graph graph, String parentLabel) {
+    public Vertex ensureParentVertex(Graph graph, String parentLabel, DatabaseProvider databaseProvider) {
         Vertex parentVertex = null;
         P<String> lblPredicate = P.eq(parentLabel);
 
         GraphTraversalSource gtRootTraversal = graph.traversal().clone();
         Iterator<Vertex> iterVertex = gtRootTraversal.V().hasLabel(lblPredicate);
         if (!iterVertex.hasNext()) {
-            VertexWriter vertexWriter = new VertexWriter(uuidPropertyName, shard);
+            VertexWriter vertexWriter = new VertexWriter(uuidPropertyName, databaseProvider);
             parentVertex = vertexWriter.createVertex(graph, parentLabel);
             logger.info("Parent label {} created {}", parentLabel, parentVertex.id().toString());
         } else {
@@ -99,7 +107,7 @@ public class RegistryDaoImpl implements IRegistryDao {
      * @return
      */
     public String addEntity(Graph graph, JsonNode rootNode) {
-        VertexWriter vertexWriter = new VertexWriter(uuidPropertyName, shard);
+        VertexWriter vertexWriter = new VertexWriter(uuidPropertyName, shard.getDatabaseProvider());
         String entityId = vertexWriter.writeNodeEntity(graph, rootNode);
         return entityId;
     }
@@ -195,7 +203,7 @@ public class RegistryDaoImpl implements IRegistryDao {
                 deleteVertices(graph, rootVertex, parentNodeLabel, null);
             }
 
-            VertexWriter vertexWriter = new VertexWriter(uuidPropertyName, shard);
+            VertexWriter vertexWriter = new VertexWriter(uuidPropertyName, shard.getDatabaseProvider());
 
             //Add new vertex
             Vertex newChildVertex = vertexWriter.createVertex(graph, parentNodeLabel);

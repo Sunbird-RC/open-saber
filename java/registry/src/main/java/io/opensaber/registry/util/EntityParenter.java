@@ -6,6 +6,11 @@ import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.sink.DBProviderFactory;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.OSGraph;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -13,8 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.*;
 
 @Component("entityParenter")
 public class EntityParenter {
@@ -67,7 +70,7 @@ public class EntityParenter {
                         defintionNames.forEach(defintionName -> {
                             String parentLabel = ParentLabelGenerator.getLabel(defintionName);
                             parentLabels.add(parentLabel);
-                            Vertex v = tpGraphMain.ensureParentVertex(graph, parentLabel);
+                            Vertex v = tpGraphMain.ensureParentVertex(graph, parentLabel, dbProvider);
 
                             ShardParentInfo shardParentInfo = new ShardParentInfo(defintionName, v);
                             shardParentInfo.setUuid(v.id().toString());
