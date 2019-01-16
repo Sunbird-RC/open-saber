@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
-import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.EntityParenter;
@@ -16,10 +15,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -57,48 +52,6 @@ public class RegistryDaoImpl implements IRegistryDao {
 
     public void setPrivatePropertyList(List<String> privatePropertyList) {
         this.privatePropertyList = privatePropertyList;
-    }
-
-    /**
-     * Ensures a parent vertex existence at the exit of this function
-     *
-     * @param graph
-     * @param parentLabel
-     * @param databaseProvider
-     * @return
-     */
-    public Vertex ensureParentVertex(Graph graph, String parentLabel, DatabaseProvider databaseProvider) {
-        Vertex parentVertex = null;
-        P<String> lblPredicate = P.eq(parentLabel);
-
-        GraphTraversalSource gtRootTraversal = graph.traversal().clone();
-        Iterator<Vertex> iterVertex = gtRootTraversal.V().hasLabel(lblPredicate);
-        if (!iterVertex.hasNext()) {
-            VertexWriter vertexWriter = new VertexWriter(uuidPropertyName, databaseProvider);
-            parentVertex = vertexWriter.createVertex(graph, parentLabel);
-            logger.info("Parent label {} created {}", parentLabel, parentVertex.id().toString());
-        } else {
-            parentVertex = iterVertex.next();
-            logger.info("Parent label {} already existing {}", parentLabel, parentVertex.id().toString());
-        }
-
-        return parentVertex;
-    }
-
-    /**
-     * Retrieves all vertex UUID for given all labels.
-     */
-    public List<String> getUUIDs(Graph graph, Set<String> labels) {
-        List<String> uuids = new ArrayList<>();
-        // Temporarily adding all the vertex ids.
-        //TODO: get graph traversal by passed labels
-        GraphTraversal<Vertex, Vertex> graphTraversal = graph.traversal().V();
-        while (graphTraversal.hasNext()) {
-            Vertex v = graphTraversal.next();
-            uuids.add(v.id().toString());
-            logger.debug("vertex info- label :" + v.label() + " id: " + v.id());
-        }
-        return uuids;
     }
 
     /**

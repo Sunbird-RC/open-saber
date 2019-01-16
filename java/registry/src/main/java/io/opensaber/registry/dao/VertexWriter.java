@@ -11,6 +11,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -30,6 +32,30 @@ public class VertexWriter {
         this.databaseProvider = databaseProvider;
     }
 
+    /**
+     * Ensures a parent vertex existence at the exit of this function
+     *
+     * @param graph
+     * @param parentLabel
+     * @return
+     */
+    public Vertex ensureParentVertex(Graph graph, String parentLabel) {
+        Vertex parentVertex = null;
+        P<String> lblPredicate = P.eq(parentLabel);
+
+        GraphTraversalSource gtRootTraversal = graph.traversal().clone();
+        Iterator<Vertex> iterVertex = gtRootTraversal.V().hasLabel(lblPredicate);
+        if (!iterVertex.hasNext()) {
+            parentVertex = createVertex(graph, parentLabel);
+            logger.info("Parent label {} created {}", parentLabel, parentVertex.id().toString());
+        } else {
+            parentVertex = iterVertex.next();
+            logger.info("Parent label {} already existing {}", parentLabel, parentVertex.id().toString());
+        }
+
+        return parentVertex;
+    }
+    
     public Vertex createVertex(Graph graph, String label) {
         Vertex vertex = graph.addVertex(label);
 
