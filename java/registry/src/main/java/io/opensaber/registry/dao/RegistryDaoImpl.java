@@ -3,11 +3,12 @@ package io.opensaber.registry.dao;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.OpenSaberInstrumentation;
+import io.opensaber.registry.frame.FrameContext;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
-import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.shard.Shard;
+import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.EntityParenter;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.RecordIdentifier;
@@ -40,7 +41,9 @@ public class RegistryDaoImpl implements IRegistryDao {
     EntityParenter entityParenter;
 
     @Autowired
-    private ISchemaConfigurator schemaConfigurator;
+    private DefinitionsManager definitionsManager;
+    @Autowired
+    private FrameContext frameContext; 
 
     @Autowired
     private Shard shard;
@@ -120,11 +123,8 @@ public class RegistryDaoImpl implements IRegistryDao {
      * @return
      */
     public JsonNode getEntity(Graph graph, String uuid, ReadConfigurator readConfigurator) throws Exception {
-        if (null == privatePropertyList) {
-            privatePropertyList = new ArrayList<>();
-            setPrivatePropertyList(schemaConfigurator.getAllPrivateProperties());
-        }
-        VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
+
+        VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, definitionsManager);
         JsonNode result = vr.read(uuid);
 
         if (!shard.getShardLabel().isEmpty()) {
@@ -138,11 +138,8 @@ public class RegistryDaoImpl implements IRegistryDao {
 
 
     public JsonNode getEntity(Graph graph, Vertex vertex, ReadConfigurator readConfigurator) {
-        if (null == privatePropertyList) {
-            privatePropertyList = new ArrayList<>();
-            setPrivatePropertyList(schemaConfigurator.getAllPrivateProperties());
-        }
-        VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
+
+        VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, definitionsManager);
         JsonNode result = vr.constructObject(vertex);
 
         if (!shard.getShardLabel().isEmpty()) {
