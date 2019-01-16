@@ -3,7 +3,6 @@ package io.opensaber.registry.dao;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.OpenSaberInstrumentation;
-import io.opensaber.registry.frame.FrameContext;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.sink.DatabaseProvider;
@@ -42,8 +41,6 @@ public class RegistryDaoImpl implements IRegistryDao {
 
     @Autowired
     private DefinitionsManager definitionsManager;
-    @Autowired
-    private FrameContext frameContext; 
 
     @Autowired
     private Shard shard;
@@ -67,6 +64,7 @@ public class RegistryDaoImpl implements IRegistryDao {
      *
      * @param graph
      * @param parentLabel
+     * @param databaseProvider
      * @return
      */
     public Vertex ensureParentVertex(Graph graph, String parentLabel, DatabaseProvider databaseProvider) {
