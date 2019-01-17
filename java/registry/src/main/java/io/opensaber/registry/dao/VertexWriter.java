@@ -47,6 +47,8 @@ public class VertexWriter {
         Iterator<Vertex> iterVertex = gtRootTraversal.V().hasLabel(lblPredicate);
         if (!iterVertex.hasNext()) {
             parentVertex = createVertex(graph, parentLabel);
+            //added a property to track vertices belong to parent are indexed
+            parentVertex.property(Constants.ENABLED_INDEX, "false");
             logger.info("Parent label {} created {}", parentLabel, parentVertex.id().toString());
         } else {
             parentVertex = iterVertex.next();

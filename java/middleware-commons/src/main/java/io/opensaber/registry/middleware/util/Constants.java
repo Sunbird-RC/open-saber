@@ -28,6 +28,9 @@ public class Constants {
 	// JSON LD specific
 	public static final String CONTEXT_KEYWORD = "@context";
 	public static final String TYPE_STR_JSON_LD = "@type";
+	
+	// Parent Vertex Properies
+	public static final String ENABLED_INDEX = "enabledIndex";
 
 
 	// Configuration constants

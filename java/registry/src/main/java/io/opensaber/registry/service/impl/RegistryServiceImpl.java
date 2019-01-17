@@ -23,6 +23,7 @@ import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.util.Definition;
 import io.opensaber.registry.util.DefinitionsManager;
+import io.opensaber.registry.util.EntityParenter;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.validators.IValidate;
 import java.util.ArrayList;
@@ -99,7 +100,10 @@ public class RegistryServiceImpl implements RegistryService {
 
     @Autowired
     private IValidate iValidate;
-
+    
+    @Autowired
+    private EntityParenter entityParenter;
+    
     public HealthCheckResponse health() throws Exception {
         HealthCheckResponse healthCheck;
         // TODO
@@ -182,29 +186,36 @@ public class RegistryServiceImpl implements RegistryService {
                 Transaction tx = dbProvider.startTransaction(graph);
                 entityId = tpGraphMain.addEntity(graph, rootNode);
                 shard.getDatabaseProvider().commitTransaction(graph, tx);
-                dbProvider.commitTransaction(graph, tx);                
-                try {
-                    // get the Vertex from osid
-                    Vertex vertex = getVertex(entityId, graph);
-                    //create index for first time the vertex or table gets persists)
-                    //TODO: check enabled index from parent vertex.. 
-                    ensureIndexForVertex(dbProvider, graph, vertex);
-                } catch (Exception e) {
-                    logger.error("On index creation " + e);
-                }
+                dbProvider.commitTransaction(graph, tx);   
+            
+                // get the Vertex from osid
+                Vertex vertex = getVertex(entityId, graph);
+                //create index for first time the vertex or table gets persists)
+                ensureIndexForVertex(dbProvider, graph, vertex);
             }
         }
 
         return entityId;
     }
     
-    private void ensureIndexForVertex(DatabaseProvider dbProvider, Graph graph, Vertex vertex) throws Exception{
-        Transaction tx = dbProvider.startTransaction(graph);
+    private void ensureIndexForVertex(DatabaseProvider dbProvider, Graph graph, Vertex vertex) {
         String definitionTitle = vertex.label();
-        Definition definition = definitionsManager.getDefinition(definitionTitle);
-        dbProvider.ensureIndex(definitionTitle, definition.getOsSchemaConfiguration().getIndexFields());
-        dbProvider.commitTransaction(graph, tx);
-
+        Vertex parentVertex = entityParenter.getKnownParentVertex(definitionTitle, shard.getShardId());
+        try {
+            //check enabled index from parent vertex.. 
+            if(parentVertex.property(Constants.ENABLED_INDEX).value().toString().equalsIgnoreCase("false")){
+                Definition definition = definitionsManager.getDefinition(definitionTitle);
+                Transaction tx = dbProvider.startTransaction(graph);
+                dbProvider.ensureIndex(definitionTitle, definition.getOsSchemaConfiguration().getIndexFields());
+                parentVertex.property(Constants.ENABLED_INDEX, "true");
+                logger.debug("after creating index propety value "+parentVertex.property(Constants.ENABLED_INDEX).value());
+                dbProvider.commitTransaction(graph, tx);
+            }
+        } catch (Exception e) {
+            parentVertex.property(Constants.ENABLED_INDEX, "false");
+            logger.error("On index creation while add api " + e);
+        }
+        
     }
     
     private Vertex getVertex(String osid, Graph graph) throws Exception{
