@@ -13,13 +13,22 @@ import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
-import io.opensaber.registry.service.*;
+import io.opensaber.registry.service.EncryptionHelper;
+import io.opensaber.registry.service.EncryptionService;
+import io.opensaber.registry.service.RegistryService;
+import io.opensaber.registry.service.SignatureHelper;
+import io.opensaber.registry.service.SignatureService;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.sink.shard.Shard;
+import io.opensaber.registry.util.Definition;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.validators.IValidate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -29,11 +38,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 
 @Component
 public class RegistryServiceImpl implements RegistryService {
@@ -178,11 +182,38 @@ public class RegistryServiceImpl implements RegistryService {
                 Transaction tx = dbProvider.startTransaction(graph);
                 entityId = tpGraphMain.addEntity(graph, rootNode);
                 shard.getDatabaseProvider().commitTransaction(graph, tx);
-                dbProvider.commitTransaction(graph, tx);
+                dbProvider.commitTransaction(graph, tx);                
+                try {
+                    // get the Vertex from osid
+                    Vertex vertex = getVertex(entityId, graph);
+                    //create index for first time the vertex or table gets persists)
+                    //TODO: check enabled index from parent vertex.. 
+                    ensureIndexForVertex(dbProvider, graph, vertex);
+                } catch (Exception e) {
+                    logger.error("On index creation " + e);
+                }
             }
         }
 
         return entityId;
+    }
+    
+    private void ensureIndexForVertex(DatabaseProvider dbProvider, Graph graph, Vertex vertex) throws Exception{
+        Transaction tx = dbProvider.startTransaction(graph);
+        String definitionTitle = vertex.label();
+        Definition definition = definitionsManager.getDefinition(definitionTitle);
+        //TODO: use indexFields or uniqueIndexFields
+        dbProvider.ensureIndex(definitionTitle, definition.getOsSchemaConfiguration().getPrivateFields());
+        dbProvider.commitTransaction(graph, tx);
+
+    }
+    
+    private Vertex getVertex(String osid, Graph graph) throws Exception{
+        Iterator<Vertex> itrV = graph.vertices(osid);
+        if (!itrV.hasNext()) {
+            throw new Exception("Invalid id");
+        }
+        return itrV.next();
     }
 
     @Override
