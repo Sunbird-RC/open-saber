@@ -228,24 +228,7 @@ public class RegistryDaoImpl implements IRegistryDao {
         //deleting existing vertices
         vertices.forEachRemaining(deleteVertex -> {
             if (activeOsid == null || (activeOsid != null && !activeOsid.contains(deleteVertex.id()) && deleteVertex.edges(Direction.IN).hasNext())) {
-                Edge edge = null;
-                if(rootVertex.label().equalsIgnoreCase(Constants.ARRAY_NODE_KEYWORD)){
-                    if(deleteVertex.label().equalsIgnoreCase(Constants.SIGNATURES_STR)){
-                        edge =  deleteVertex.edges(Direction.IN).next();
-                    } else {
-                        edge = deleteVertex.edges(Direction.IN, label+Constants.ARRAY_ITEM).next();
-                    }
-                } else {
-                    edge = deleteVertex.edges(Direction.IN, label).next();
-                }
-                if(edge !=  null){
-                    deleteVertex.property(Constants.STATUS_KEYWORD, Constants.STATUS_INACTIVE);
-                    edge.remove();
-                }
-                //deleteVertex.edges(Direction.IN,label).next().remove();
-                //deleteVertex.remove();
-                //addEdge(label,deleteVertex,rootVertex);
-
+                deleteVertex.property(Constants.STATUS_KEYWORD, Constants.STATUS_INACTIVE);
             } else {
                 activeOsid.add(deleteVertex.id().toString());
             }
