@@ -1,15 +1,19 @@
 package io.opensaber.registry.sink;
 
 import io.opensaber.registry.model.DBConnectionInfo;
+import java.util.ArrayList;
+import java.util.List;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.umlg.sqlg.structure.SqlgGraph;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import org.umlg.sqlg.structure.topology.IndexType;
+import org.umlg.sqlg.structure.topology.PropertyColumn;
+import org.umlg.sqlg.structure.topology.VertexLabel;
 
 public class SqlgProvider extends DatabaseProvider {
 
@@ -50,5 +54,17 @@ public class SqlgProvider extends DatabaseProvider {
 	@Override
 	public String getId(Vertex vertex) {
 		return (String) vertex.property(getUuidPropertyName()).value();
+	}
+	
+	@Override
+	public void ensureIndex(String label, List<String> propertyNames){	  
+	    //to serialize the String label to VertexLabel(AbstractLabel)
+	    VertexLabel vertexLabel = graph.getTopology().ensureVertexLabelExist(label);  
+	    List<PropertyColumn> properties = new ArrayList<>();
+	    for (String propertyName : propertyNames) {
+            properties.add(vertexLabel.getProperty(propertyName).get());
+        }
+	    //TODO:check the property is unique or non-unique
+	    vertexLabel.ensureIndexExists(IndexType.NON_UNIQUE, properties);
 	}
 }

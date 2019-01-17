@@ -5,9 +5,9 @@ import com.steelbridgelabs.oss.neo4j.structure.Neo4JElementIdProvider;
 import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
 import com.steelbridgelabs.oss.neo4j.structure.Neo4JVertex;
 import io.opensaber.registry.model.DBConnectionInfo;
+import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -95,5 +95,13 @@ public class Neo4jGraphProvider extends DatabaseProvider {
 	@Override
 	public String getId(Edge edge) {
 		return edge.id().toString();
+	}
+	
+	@Override
+	public void ensureIndex(String label, List<String> propertyNames){
+	    Neo4JGraph neo4jGraph = getGraph();
+	    for(String propertyName : propertyNames){
+	        neo4jGraph.createIndex(label, propertyName);
+	    }
 	}
 }
