@@ -135,8 +135,8 @@ public class VertexReader {
             }
         }
 
-        // Here we set the id
-        //contentNode.put(uuidPropertyName, currVertex.id().toString());
+        // Here we set the id - in neo4j this is must.
+        contentNode.put(uuidPropertyName, databaseProvider.getId(currVertex));
 
         return contentNode;
     }
