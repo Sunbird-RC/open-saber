@@ -202,8 +202,7 @@ public class RegistryServiceImpl implements RegistryService {
         Transaction tx = dbProvider.startTransaction(graph);
         String definitionTitle = vertex.label();
         Definition definition = definitionsManager.getDefinition(definitionTitle);
-        //TODO: use indexFields or uniqueIndexFields
-        dbProvider.ensureIndex(definitionTitle, definition.getOsSchemaConfiguration().getPrivateFields());
+        dbProvider.ensureIndex(definitionTitle, definition.getOsSchemaConfiguration().getIndexFields());
         dbProvider.commitTransaction(graph, tx);
 
     }

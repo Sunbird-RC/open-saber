@@ -15,7 +15,9 @@
                       "privateFields: Optional; list of field names to be encrypted and stored in database", 
                       "signedFields: Optional; list of field names that must be pre-signed"],                     
          "privateFields": ["nationalIdentifier", "teacherCode", "birthDate"],
-         "signedFields": ["serialNum"]
+         "signedFields": ["serialNum"],
+         "indexFields": ["nationalIdentifier", "serialNum"],
+         "uniqueIndexFields": ["birthDate"]
   },
   "definitions": {
     "Teacher": {
