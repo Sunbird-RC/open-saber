@@ -212,11 +212,8 @@ public class RegistryServiceImpl implements RegistryService {
         JsonNode childElementNode = rootNode.elements().next();
         DatabaseProvider databaseProvider = shard.getDatabaseProvider();
         ReadConfigurator readConfigurator = new ReadConfigurator();
-        if(signatureEnabled){
-            readConfigurator.setIncludeSignatures(true);
-        } else {
-            readConfigurator.setIncludeSignatures(false);
-        }
+        readConfigurator.setIncludeSignatures(signatureEnabled);
+
         try(OSGraph osGraph = databaseProvider.getOSGraph()){
             Graph graph = osGraph.getGraphStore();
             try (Transaction tx = databaseProvider.startTransaction(graph)) {
@@ -256,7 +253,7 @@ public class RegistryServiceImpl implements RegistryService {
                         Iterator<Vertex> vertices = rootVertex.vertices(Direction.IN,Constants.SIGNATURES_STR);
                         if (null != vertices && vertices.hasNext()) {
                             Vertex signArrayNode = vertices.next();
-                            Iterator<Vertex> sign =  signArrayNode.vertices(Direction.IN,entityNodeType);
+                            Iterator<Vertex> sign =  signArrayNode.vertices(Direction.OUT,entityNodeType);
                             Vertex signVertex = sign.next();
                             // Other signatures are not updated, only the entity level signature.
                             tpGraphMain.updateVertex(graph, signVertex, signNode);
