@@ -11,6 +11,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.umlg.sqlg.structure.SqlgGraph;
+import org.umlg.sqlg.structure.topology.Index;
 import org.umlg.sqlg.structure.topology.IndexType;
 import org.umlg.sqlg.structure.topology.PropertyColumn;
 import org.umlg.sqlg.structure.topology.VertexLabel;
@@ -58,13 +59,15 @@ public class SqlgProvider extends DatabaseProvider {
 	
 	@Override
 	public void ensureIndex(String label, List<String> propertyNames){	  
-	    //to serialize the String label to VertexLabel(AbstractLabel)
 	    VertexLabel vertexLabel = graph.getTopology().ensureVertexLabelExist(label);  
 	    List<PropertyColumn> properties = new ArrayList<>();
 	    for (String propertyName : propertyNames) {
             properties.add(vertexLabel.getProperty(propertyName).get());
         }
 	    //TODO:check the property is unique or non-unique
-	    vertexLabel.ensureIndexExists(IndexType.NON_UNIQUE, properties);
+	    if(properties.size()>0){
+	        Index index = vertexLabel.ensureIndexExists(IndexType.NON_UNIQUE, properties);
+	        logger.info("Index created for " + label + " - "+index.getName());
+	    }
 	}
 }
