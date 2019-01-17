@@ -164,7 +164,7 @@ public class VertexReader {
         int tempCurrLevel = currLevel;
         while (otherVertices.hasNext()) {
             Vertex currVertex = otherVertices.next();
-            if(currVertex.label().equalsIgnoreCase("teachingRole") && currVertex.property(Constants.STATUS_KEYWORD).isPresent() &&
+            if(currVertex.property(Constants.STATUS_KEYWORD).isPresent() &&
                     currVertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE)){
                 continue;
             }
