@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class DatabaseProvider {
+    private Constants.GraphDatabaseProvider provider;
     private String uuidPropertyName;
     private Optional<Boolean> supportsTransaction = Optional.empty();
 
@@ -144,14 +145,24 @@ public abstract class DatabaseProvider {
         return uuidPropertyName;
     }
 
-    public void setUuidPropertyName(String uuidPropertyName) {
+    protected void setUuidPropertyName(String uuidPropertyName) {
         this.uuidPropertyName = uuidPropertyName;
     }
+
     
     /**
      * Creates index
      */
     public void ensureIndex(String label, List<String> propertyNames){
         //Does nothing, suppose to be overridden by extended classes.
+
+    }
+        
+    public Constants.GraphDatabaseProvider getProvider() {
+        return this.provider;
+    }
+
+    protected void setProvider(Constants.GraphDatabaseProvider provider) {
+        this.provider = provider;
     }
 }

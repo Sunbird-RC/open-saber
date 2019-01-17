@@ -4,6 +4,7 @@ import com.steelbridgelabs.oss.neo4j.structure.Neo4JEdge;
 import com.steelbridgelabs.oss.neo4j.structure.Neo4JElementIdProvider;
 import com.steelbridgelabs.oss.neo4j.structure.Neo4JGraph;
 import com.steelbridgelabs.oss.neo4j.structure.Neo4JVertex;
+import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.DBConnectionInfo;
 import java.util.List;
 import javax.annotation.PostConstruct;
@@ -29,6 +30,7 @@ public class Neo4jGraphProvider extends DatabaseProvider {
 	public Neo4jGraphProvider(DBConnectionInfo connection, String uuidPropName) {
 		connectionInfo = connection;
 		profilerEnabled = connection.isProfilerEnabled();
+		setProvider(Constants.GraphDatabaseProvider.NEO4J);
 		setUuidPropertyName(uuidPropName);
 
 		// TODO: Check with auth

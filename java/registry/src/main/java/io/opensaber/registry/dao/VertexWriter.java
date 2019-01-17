@@ -62,15 +62,7 @@ public class VertexWriter {
         Vertex vertex = graph.addVertex(label);
 
         vertex.property(TypePropertyHelper.getTypeName(), label);
-        try {
-            UUID.fromString(vertex.id().toString());
-        } catch (IllegalArgumentException e) {
-            // Must be not a neo4j store. Create an explicit osid property.
-            // Note this will be OS unique record, but the database provider
-            // might choose to use only
-            // id field.
-            vertex.property(uuidPropertyName, databaseProvider.generateId(vertex));
-        }
+        vertex.property(uuidPropertyName, databaseProvider.generateId(vertex));
 
         return vertex;
     }
@@ -133,6 +125,8 @@ public class VertexWriter {
 
     private Vertex processNode(Graph graph, String label, JsonNode jsonObject) {
         Vertex vertex = createVertex(graph, label);
+
+        // This attribute will help identify the root from any child
         if (parentOSid == null || parentOSid.isEmpty()) {
             parentOSid = vertex.id().toString();
         }
@@ -148,9 +142,10 @@ public class VertexWriter {
                 // Recursive calls
                 Vertex v = processNode(graph, entry.getKey(), entryValue);
                 addEdge(entry.getKey(), vertex, v);
-                // String idToSet =
-                // databaseProviderWrapper.getDatabaseProvider().generateId(v);
-                vertex.property(RefLabelHelper.getLabel(entry.getKey(), uuidPropertyName), v.id().toString());
+
+                String idToSet = databaseProvider.generateId(v);
+                vertex.property(RefLabelHelper.getLabel(entry.getKey(), uuidPropertyName), idToSet);
+
                 v.property(Constants.ROOT_KEYWORD, parentOSid);
 
                 logger.debug("Added edge between {} and {}", vertex.label(), v.label());
@@ -210,6 +205,6 @@ public class VertexWriter {
             }
         }
 
-        return resultVertex.id().toString();
+        return databaseProvider.getId(resultVertex);
     }
 }
