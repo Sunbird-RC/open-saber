@@ -60,16 +60,29 @@ public class SqlgProvider extends DatabaseProvider {
 	}
 	
 	@Override
-	public void ensureIndex(String label, List<String> propertyNames){	  
-	    VertexLabel vertexLabel = graph.getTopology().ensureVertexLabelExist(label);  
-	    List<PropertyColumn> properties = new ArrayList<>();
-	    for (String propertyName : propertyNames) {
+	public void createIndex(String label, List<String> propertyNames){	  
+	    createIndexByIndexType(IndexType.NON_UNIQUE, label, propertyNames);
+	}
+	
+	@Override
+	public void createUniqueIndex(String label, List<String> propertyNames){
+	    createIndexByIndexType(IndexType.UNIQUE, label, propertyNames);
+	}
+	/**
+	 * creates sqlg index for a given index type(unique/non-unique)
+	 * @param indexType
+	 * @param label
+	 * @param propertyNames
+	 */
+	private void createIndexByIndexType(IndexType indexType, String label, List<String> propertyNames){
+        VertexLabel vertexLabel = graph.getTopology().ensureVertexLabelExist(label);  
+        List<PropertyColumn> properties = new ArrayList<>();
+        for (String propertyName : propertyNames) {
             properties.add(vertexLabel.getProperty(propertyName).get());
         }
-	    //TODO:check the property is unique or non-unique
-	    if(properties.size()>0){
-	        Index index = vertexLabel.ensureIndexExists(IndexType.NON_UNIQUE, properties);
-	        logger.info("Index created for " + label + " - "+index.getName());
-	    }
+        if(properties.size()>0){
+            Index index = vertexLabel.ensureIndexExists(indexType, properties);
+            logger.info("Index created for " + label + " - "+index.getName());
+        }
 	}
 }

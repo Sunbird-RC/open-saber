@@ -148,14 +148,18 @@ public abstract class DatabaseProvider {
     protected void setUuidPropertyName(String uuidPropertyName) {
         this.uuidPropertyName = uuidPropertyName;
     }
-
-    
+   
     /**
      * Creates index
      */
-    public void ensureIndex(String label, List<String> propertyNames){
+    public void createIndex(String label, List<String> propertyNames){
         //Does nothing, suppose to be overridden by extended classes.
-
+    }
+    /**
+     * Creates unique index
+     */
+    public void createUniqueIndex(String label, List<String> propertyNames){
+        //Does nothing, suppose to be overridden by extended classes.
     }
         
     public Constants.GraphDatabaseProvider getProvider() {

@@ -100,7 +100,7 @@ public class Neo4jGraphProvider extends DatabaseProvider {
 	}
 	
 	@Override
-	public void ensureIndex(String label, List<String> propertyNames){
+	public void createIndex(String label, List<String> propertyNames){
 	    Neo4JGraph neo4jGraph = getGraph();
 	    for(String propertyName : propertyNames){
 	        neo4jGraph.createIndex(label, propertyName);

@@ -25,7 +25,6 @@ import io.opensaber.registry.util.Definition;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.EntityParenter;
 import io.opensaber.registry.util.ReadConfigurator;
-import io.opensaber.validators.IValidate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -98,9 +97,6 @@ public class RegistryServiceImpl implements RegistryService {
     @Autowired
     DBConnectionInfoMgr dbConnectionInfoMgr;
 
-    @Autowired
-    private IValidate iValidate;
-    
     @Autowired
     private EntityParenter entityParenter;
     
@@ -191,14 +187,21 @@ public class RegistryServiceImpl implements RegistryService {
                 // get the Vertex from osid
                 Vertex vertex = getVertex(entityId, graph);
                 //create index for first time the vertex or table gets persists)
-                ensureIndexForVertex(dbProvider, graph, vertex);
+                ensureIndexExists(dbProvider, graph, vertex);
             }
         }
 
         return entityId;
     }
-    
-    private void ensureIndexForVertex(DatabaseProvider dbProvider, Graph graph, Vertex vertex) {
+    /**
+     * Ensures index for a vertex exists 
+     * Checks for parent vertex- enabledIndex property
+     * Unique index and non-unique index is supported 
+     * @param dbProvider
+     * @param graph
+     * @param vertex
+     */
+    private void ensureIndexExists(DatabaseProvider dbProvider, Graph graph, Vertex vertex) {
         String definitionTitle = vertex.label();
         Vertex parentVertex = entityParenter.getKnownParentVertex(definitionTitle, shard.getShardId());
         try {
@@ -206,9 +209,10 @@ public class RegistryServiceImpl implements RegistryService {
             if(parentVertex.property(Constants.ENABLED_INDEX).value().toString().equalsIgnoreCase("false")){
                 Definition definition = definitionsManager.getDefinition(definitionTitle);
                 Transaction tx = dbProvider.startTransaction(graph);
-                dbProvider.ensureIndex(definitionTitle, definition.getOsSchemaConfiguration().getIndexFields());
+                dbProvider.createIndex(definitionTitle, definition.getOsSchemaConfiguration().getIndexFields());
+                dbProvider.createUniqueIndex(definitionTitle, definition.getOsSchemaConfiguration().getUniqueIndexFields());
                 parentVertex.property(Constants.ENABLED_INDEX, "true");
-                logger.debug("after creating index propety value "+parentVertex.property(Constants.ENABLED_INDEX).value());
+                logger.debug("after creating index property value "+parentVertex.property(Constants.ENABLED_INDEX).value());
                 dbProvider.commitTransaction(graph, tx);
             }
         } catch (Exception e) {
@@ -217,7 +221,13 @@ public class RegistryServiceImpl implements RegistryService {
         }
         
     }
-    
+    /**
+     * Return a vertex from a given osid
+     * @param osid
+     * @param graph
+     * @return
+     * @throws Exception
+     */
     private Vertex getVertex(String osid, Graph graph) throws Exception{
         Iterator<Vertex> itrV = graph.vertices(osid);
         if (!itrV.hasNext()) {
