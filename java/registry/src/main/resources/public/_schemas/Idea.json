@@ -3,11 +3,11 @@
   "type": "object",
   "properties": {
     "stall": {
-      "$ref": "#/definitions/stall"
+      "$ref": "#/definitions/idea"
     }
   },
   "required": [
-    "stall"
+    "idea"
   ],
   "title":"stall",
   "_osConfig": {
@@ -16,14 +16,14 @@
     "signedFields": []
   },
   "definitions": {
-    "stall": {
-      "$id": "#/properties/stall",
+    "idea": {
+      "$id": "#/properties/idea",
       "type": "object",
       "title": "The stall Schema",
       "required": [
-        "stallName",
-        "stallCode",
-        "idea"
+        "code",
+        "description",
+        "visitorId"
       ],
       "properties": {
         "code": {
@@ -31,12 +31,12 @@
           "type": "string",
           "$comment": "Code"
         },
-        "name": {
-          "$id": "#/properties/name",
+        "description": {
+          "$id": "#/properties/description",
           "type": "string",
-          "title": "Stall name"
+          "title": "Description about idea"
         },
-        "idea": {
+        "visitorId": {
           "$id": "#/properties/idea",
           "type": "array",
           "$ref": "Idea.json#/definitions/Idea"
