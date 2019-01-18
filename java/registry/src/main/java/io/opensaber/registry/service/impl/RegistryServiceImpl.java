@@ -185,13 +185,9 @@ public class RegistryServiceImpl implements RegistryService {
                 shard.getDatabaseProvider().commitTransaction(graph, tx);
                 dbProvider.commitTransaction(graph, tx);
 
-                // get the Vertex from osid
-                //Vertex vertex = getVertex(entityId, graph);
-                VertexReader vr = new VertexReader(dbProvider, graph, null, uuidPropertyName, definitionsManager);
-                Vertex vertex = vr.getVertex(entityId);
-                // create index for first time the vertex or table gets
-                // persists)
-                ensureIndexExists(dbProvider, graph, vertex);
+                String vertexLabel = rootNode.fieldNames().next();
+                // creates/updates indices for the vertex or table gets persists)
+                ensureIndexExists(dbProvider, graph, vertexLabel);
             }
         }
 
@@ -203,24 +199,24 @@ public class RegistryServiceImpl implements RegistryService {
      * Unique index and non-unique index is supported
      * @param dbProvider
      * @param graph
-     * @param vertex   a type vertex (example:Teacher)
+     * @param label   a type vertex label (example:Teacher)
      */
-    private void ensureIndexExists(DatabaseProvider dbProvider, Graph graph, Vertex vertex) {
-        String definitionTitle = vertex.label();
-        Vertex parentVertex = entityParenter.getKnownParentVertex(definitionTitle, shard.getShardId());
-        Definition definition = definitionsManager.getDefinition(definitionTitle);
+    private void ensureIndexExists(DatabaseProvider dbProvider, Graph graph, String label) {
+
+        Vertex parentVertex = entityParenter.getKnownParentVertex(label, shard.getShardId());
+        Definition definition = definitionsManager.getDefinition(label);
         List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
         List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();
 
         try {
             Transaction tx = dbProvider.startTransaction(graph);
             if (!indexFieldsExists(parentVertex, indexFields)){
-                dbProvider.createIndex(definitionTitle, indexFields);
+                dbProvider.createIndex(label, indexFields);
                 setPropertyValuesOnParentVertex(parentVertex, indexFields);
 
             }
             if(!indexFieldsExists(parentVertex, indexUniqueFields)){
-                dbProvider.createUniqueIndex(definitionTitle, indexUniqueFields);
+                dbProvider.createUniqueIndex(label, indexUniqueFields);
                 setPropertyValuesOnParentVertex(parentVertex, indexUniqueFields);
 
             }
@@ -262,7 +258,7 @@ public class RegistryServiceImpl implements RegistryService {
     private void setPropertyValuesOnParentVertex(Vertex parentVertex, List<String> values) {
         String existingValue = (String) parentVertex.property(Constants.INDEX_FIELDS).value();
         for (String value : values) {
-            existingValue = existingValue + "," + value;
+            existingValue = existingValue.isEmpty() ? value : (existingValue + "," + value);
             parentVertex.property(Constants.INDEX_FIELDS, existingValue);
         }
         logger.debug("After setting the index values to parent vertex property "
