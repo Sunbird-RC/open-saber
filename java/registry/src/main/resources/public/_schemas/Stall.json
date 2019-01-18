@@ -21,9 +21,9 @@
       "type": "object",
       "title": "The stall Schema",
       "required": [
-        "stallName",
-        "stallCode",
-        "idea"
+        "name",
+        "code",
+        "ideaCode"
       ],
       "properties": {
         "code": {
@@ -36,10 +36,10 @@
           "type": "string",
           "title": "Stall name"
         },
-        "idea": {
-          "$id": "#/properties/idea",
+        "ideaCode": {
+          "$id": "#/properties/ideaCode",
           "type": "array",
-          "$ref": "Idea.json#/definitions/Idea"
+          "$comment": "Idea code"
         }
       }
     }
