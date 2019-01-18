@@ -5,23 +5,28 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
-import io.opensaber.registry.schema.configurator.ISchemaConfigurator;
 import io.opensaber.registry.sink.shard.Shard;
+import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.EntityParenter;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.RecordIdentifier;
 import io.opensaber.registry.util.RefLabelHelper;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import java.util.*;
 
 @Component("tpGraphMain")
 public class RegistryDaoImpl implements IRegistryDao {
@@ -32,7 +37,7 @@ public class RegistryDaoImpl implements IRegistryDao {
     EntityParenter entityParenter;
 
     @Autowired
-    private ISchemaConfigurator schemaConfigurator;
+    private DefinitionsManager definitionsManager;
 
     @Autowired
     private Shard shard;
@@ -52,54 +57,13 @@ public class RegistryDaoImpl implements IRegistryDao {
     }
 
     /**
-     * Ensures a parent vertex existence at the exit of this function
-     *
-     * @param graph
-     * @param parentLabel
-     * @return
-     */
-    public Vertex ensureParentVertex(Graph graph, String parentLabel) {
-        Vertex parentVertex = null;
-        P<String> lblPredicate = P.eq(parentLabel);
-
-        GraphTraversalSource gtRootTraversal = graph.traversal().clone();
-        Iterator<Vertex> iterVertex = gtRootTraversal.V().hasLabel(lblPredicate);
-        if (!iterVertex.hasNext()) {
-            VertexWriter vertexWriter = new VertexWriter(uuidPropertyName, shard);
-            parentVertex = vertexWriter.createVertex(graph, parentLabel);
-            logger.info("Parent label {} created {}", parentLabel, parentVertex.id().toString());
-        } else {
-            parentVertex = iterVertex.next();
-            logger.info("Parent label {} already existing {}", parentLabel, parentVertex.id().toString());
-        }
-
-        return parentVertex;
-    }
-
-    /**
-     * Retrieves all vertex UUID for given all labels.
-     */
-    public List<String> getUUIDs(Graph graph, Set<String> labels) {
-        List<String> uuids = new ArrayList<>();
-        // Temporarily adding all the vertex ids.
-        //TODO: get graph traversal by passed labels
-        GraphTraversal<Vertex, Vertex> graphTraversal = graph.traversal().V();
-        while (graphTraversal.hasNext()) {
-            Vertex v = graphTraversal.next();
-            uuids.add(v.id().toString());
-            logger.debug("vertex info- label :" + v.label() + " id: " + v.id());
-        }
-        return uuids;
-    }
-
-    /**
      * Entry point to the dao layer to write a JsonNode entity.
      *
      * @param rootNode
      * @return
      */
     public String addEntity(Graph graph, JsonNode rootNode) {
-        VertexWriter vertexWriter = new VertexWriter(uuidPropertyName, shard);
+        VertexWriter vertexWriter = new VertexWriter(uuidPropertyName, shard.getDatabaseProvider());
         String entityId = vertexWriter.writeNodeEntity(graph, rootNode);
         return entityId;
     }
@@ -112,11 +76,8 @@ public class RegistryDaoImpl implements IRegistryDao {
      * @return
      */
     public JsonNode getEntity(Graph graph, String uuid, ReadConfigurator readConfigurator) throws Exception {
-        if (null == privatePropertyList) {
-            privatePropertyList = new ArrayList<>();
-            setPrivatePropertyList(schemaConfigurator.getAllPrivateProperties());
-        }
-        VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
+
+        VertexReader vr = new VertexReader(shard.getDatabaseProvider(), graph, readConfigurator, uuidPropertyName, definitionsManager);
         JsonNode result = vr.read(uuid);
 
         if (!shard.getShardLabel().isEmpty()) {
@@ -130,11 +91,8 @@ public class RegistryDaoImpl implements IRegistryDao {
 
 
     public JsonNode getEntity(Graph graph, Vertex vertex, ReadConfigurator readConfigurator) {
-        if (null == privatePropertyList) {
-            privatePropertyList = new ArrayList<>();
-            setPrivatePropertyList(schemaConfigurator.getAllPrivateProperties());
-        }
-        VertexReader vr = new VertexReader(graph, readConfigurator, uuidPropertyName, privatePropertyList);
+
+        VertexReader vr = new VertexReader(shard.getDatabaseProvider(), graph, readConfigurator, uuidPropertyName, definitionsManager);
         JsonNode result = vr.constructObject(vertex);
 
         if (!shard.getShardLabel().isEmpty()) {
@@ -201,7 +159,7 @@ public class RegistryDaoImpl implements IRegistryDao {
                 deleteVertices(graph, rootVertex, parentNodeLabel, null);
             }
 
-            VertexWriter vertexWriter = new VertexWriter(uuidPropertyName, shard);
+            VertexWriter vertexWriter = new VertexWriter(uuidPropertyName, shard.getDatabaseProvider());
 
             //Add new vertex
             Vertex newChildVertex = vertexWriter.createVertex(graph, parentNodeLabel);
@@ -270,24 +228,7 @@ public class RegistryDaoImpl implements IRegistryDao {
         //deleting existing vertices
         vertices.forEachRemaining(deleteVertex -> {
             if (activeOsid == null || (activeOsid != null && !activeOsid.contains(deleteVertex.id()) && deleteVertex.edges(Direction.IN).hasNext())) {
-                Edge edge = null;
-                if(rootVertex.label().equalsIgnoreCase(Constants.ARRAY_NODE_KEYWORD)){
-                    if(deleteVertex.label().equalsIgnoreCase(Constants.SIGNATURES_STR)){
-                        edge =  deleteVertex.edges(Direction.IN).next();
-                    } else {
-                        edge = deleteVertex.edges(Direction.IN, label+Constants.ARRAY_ITEM).next();
-                    }
-                } else {
-                    edge = deleteVertex.edges(Direction.IN, label).next();
-                }
-                if(edge !=  null){
-                    deleteVertex.property(Constants.STATUS_KEYWORD, Constants.STATUS_INACTIVE);
-                    edge.remove();
-                }
-                //deleteVertex.edges(Direction.IN,label).next().remove();
-                //deleteVertex.remove();
-                //addEdge(label,deleteVertex,rootVertex);
-
+                deleteVertex.property(Constants.STATUS_KEYWORD, Constants.STATUS_INACTIVE);
             } else {
                 activeOsid.add(deleteVertex.id().toString());
             }
