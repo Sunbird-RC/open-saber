@@ -30,7 +30,7 @@ public class Constants {
 	public static final String TYPE_STR_JSON_LD = "@type";
 	
 	// Parent Vertex Properies
-	public static final String ENABLED_INDEX = "enabledIndex";
+	public static final String INDEX_FIELDS = "indexFields";
 
 
 	// Configuration constants

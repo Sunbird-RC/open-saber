@@ -82,7 +82,7 @@ public class SqlgProvider extends DatabaseProvider {
         }
         if(properties.size()>0){
             Index index = vertexLabel.ensureIndexExists(indexType, properties);
-            logger.info("Index created for " + label + " - "+index.getName());
+            logger.info(indexType + "index created for " + label + " - "+index.getName());
         }
 	}
 }

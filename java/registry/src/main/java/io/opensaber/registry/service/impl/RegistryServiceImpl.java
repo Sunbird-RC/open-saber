@@ -99,7 +99,7 @@ public class RegistryServiceImpl implements RegistryService {
 
     @Autowired
     private EntityParenter entityParenter;
-    
+
     public HealthCheckResponse health() throws Exception {
         HealthCheckResponse healthCheck;
         // TODO
@@ -147,11 +147,12 @@ public class RegistryServiceImpl implements RegistryService {
             Iterator<Vertex> vertexItr = graph.vertices(uuid);
             if (vertexItr.hasNext()) {
                 Vertex vertex = vertexItr.next();
-                if (!(vertex.property(Constants.STATUS_KEYWORD).isPresent() && vertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE))) {
+                if (!(vertex.property(Constants.STATUS_KEYWORD).isPresent()
+                        && vertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE))) {
                     tpGraphMain.deleteEntity(vertex);
                     tx.commit();
                 } else {
-                    //throw exception node already deleted
+                    // throw exception node already deleted
                     throw new RecordNotFoundException("Cannot perform the operation");
                 }
             } else {
@@ -182,58 +183,91 @@ public class RegistryServiceImpl implements RegistryService {
                 Transaction tx = dbProvider.startTransaction(graph);
                 entityId = tpGraphMain.addEntity(graph, rootNode);
                 shard.getDatabaseProvider().commitTransaction(graph, tx);
-                dbProvider.commitTransaction(graph, tx);   
-            
+                dbProvider.commitTransaction(graph, tx);
+
                 // get the Vertex from osid
-                Vertex vertex = getVertex(entityId, graph);
-                //create index for first time the vertex or table gets persists)
+                //Vertex vertex = getVertex(entityId, graph);
+                VertexReader vr = new VertexReader(dbProvider, graph, null, uuidPropertyName, definitionsManager);
+                Vertex vertex = vr.getVertex(entityId);
+                // create index for first time the vertex or table gets
+                // persists)
                 ensureIndexExists(dbProvider, graph, vertex);
             }
         }
 
         return entityId;
     }
+
     /**
      * Ensures index for a vertex exists 
-     * Checks for parent vertex- enabledIndex property
-     * Unique index and non-unique index is supported 
+     * Unique index and non-unique index is supported
      * @param dbProvider
      * @param graph
-     * @param vertex
+     * @param vertex   a type vertex (example:Teacher)
      */
     private void ensureIndexExists(DatabaseProvider dbProvider, Graph graph, Vertex vertex) {
         String definitionTitle = vertex.label();
         Vertex parentVertex = entityParenter.getKnownParentVertex(definitionTitle, shard.getShardId());
+        Definition definition = definitionsManager.getDefinition(definitionTitle);
+        List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
+        List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();
+
         try {
-            //check enabled index from parent vertex.. 
-            if(parentVertex.property(Constants.ENABLED_INDEX).value().toString().equalsIgnoreCase("false")){
-                Definition definition = definitionsManager.getDefinition(definitionTitle);
-                Transaction tx = dbProvider.startTransaction(graph);
-                dbProvider.createIndex(definitionTitle, definition.getOsSchemaConfiguration().getIndexFields());
-                dbProvider.createUniqueIndex(definitionTitle, definition.getOsSchemaConfiguration().getUniqueIndexFields());
-                parentVertex.property(Constants.ENABLED_INDEX, "true");
-                logger.debug("after creating index property value "+parentVertex.property(Constants.ENABLED_INDEX).value());
-                dbProvider.commitTransaction(graph, tx);
+            Transaction tx = dbProvider.startTransaction(graph);
+            if (!indexFieldsExists(parentVertex, indexFields)){
+                dbProvider.createIndex(definitionTitle, indexFields);
+                setPropertyValuesOnParentVertex(parentVertex, indexFields);
+
             }
+            if(!indexFieldsExists(parentVertex, indexUniqueFields)){
+                dbProvider.createUniqueIndex(definitionTitle, indexUniqueFields);
+                setPropertyValuesOnParentVertex(parentVertex, indexUniqueFields);
+
+            }
+            logger.debug("after creating index property value "
+                    + parentVertex.property(Constants.INDEX_FIELDS).value());
+            dbProvider.commitTransaction(graph, tx);
+ 
         } catch (Exception e) {
-            parentVertex.property(Constants.ENABLED_INDEX, "false");
+            e.printStackTrace();
             logger.error("On index creation while add api " + e);
         }
-        
+
     }
+    
     /**
-     * Return a vertex from a given osid
-     * @param osid
-     * @param graph
+     * Checks if fields exist for parent vertex property
+     * @param parentVertex
+     * @param fields
      * @return
-     * @throws Exception
      */
-    private Vertex getVertex(String osid, Graph graph) throws Exception{
-        Iterator<Vertex> itrV = graph.vertices(osid);
-        if (!itrV.hasNext()) {
-            throw new Exception("Invalid id");
+    private boolean indexFieldsExists(Vertex parentVertex, List<String> fields) {
+        String[] indexFields = null;
+        boolean contains = false;
+        if (parentVertex.property(Constants.INDEX_FIELDS).isPresent()) {
+            String values = (String) parentVertex.property(Constants.INDEX_FIELDS).value();
+            indexFields = values.split(",");
+            for (String field : fields) {
+                contains = Arrays.stream(indexFields).anyMatch(field::equals);
+            }
         }
-        return itrV.next();
+        return contains;
+    }
+    
+    /**
+     * Append the values to parent vertex INDEX_FIELDS property
+     * @param parentVertex
+     * @param values
+     */
+    private void setPropertyValuesOnParentVertex(Vertex parentVertex, List<String> values) {
+        String existingValue = (String) parentVertex.property(Constants.INDEX_FIELDS).value();
+        for (String value : values) {
+            existingValue = existingValue + "," + value;
+            parentVertex.property(Constants.INDEX_FIELDS, existingValue);
+        }
+        logger.debug("After setting the index values to parent vertex property "
+                + (String) parentVertex.property(Constants.INDEX_FIELDS).value());
+
     }
 
     @Override
@@ -269,15 +303,16 @@ public class RegistryServiceImpl implements RegistryService {
         try (OSGraph osGraph = databaseProvider.getOSGraph()) {
             Graph graph = osGraph.getGraphStore();
             Transaction tx = databaseProvider.startTransaction(graph);
-            VertexReader vr = new VertexReader(databaseProvider, graph, readConfigurator, uuidPropertyName, definitionsManager);
+            VertexReader vr = new VertexReader(databaseProvider, graph, readConfigurator, uuidPropertyName,
+                    definitionsManager);
             String entityNodeType;
 
             if (null != tx) {
                 ObjectNode entityNode = null;
                 vertexIterator = graph.vertices(id);
                 inputNodeVertex = vertexIterator.hasNext() ? vertexIterator.next() : null;
-                if ((inputNodeVertex.property(Constants.STATUS_KEYWORD).isPresent() &&
-                        inputNodeVertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE))) {
+                if ((inputNodeVertex.property(Constants.STATUS_KEYWORD).isPresent() && inputNodeVertex
+                        .property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE))) {
                     throw new RecordNotFoundException("Cannot perform the operation");
                 }
                 if (inputNodeVertex.property(Constants.ROOT_KEYWORD).isPresent()) {
@@ -288,13 +323,14 @@ public class RegistryServiceImpl implements RegistryService {
 
                 entityNode = (ObjectNode) vr.read(rootVertex.id().toString());
 
-                //merge with entitynode
+                // merge with entitynode
                 entityNode = merge(entityNode, rootNode);
                 entityNodeType = entityNode.fields().next().getKey();
-                //TO-DO validation is failing
-                //boolean isValidate = iValidate.validate("Teacher",entityNode.toString());
+                // TO-DO validation is failing
+                // boolean isValidate =
+                // iValidate.validate("Teacher",entityNode.toString());
                 tpGraphMain.updateVertex(graph, inputNodeVertex, childElementNode);
-                //sign the entitynode
+                // sign the entitynode
                 if (signatureEnabled) {
                     signatureHelper.signJson(entityNode);
                     JsonNode signNode = entityNode.get(entityNodeType).get(Constants.SIGNATURES_STR);
@@ -307,7 +343,8 @@ public class RegistryServiceImpl implements RegistryService {
                         Vertex signArrayNode = vertices.next();
                         Iterator<Vertex> sign = signArrayNode.vertices(Direction.OUT, entityNodeType);
                         Vertex signVertex = sign.next();
-                        // Other signatures are not updated, only the entity level signature.
+                        // Other signatures are not updated, only the entity
+                        // level signature.
                         tpGraphMain.updateVertex(graph, signVertex, signNode);
                     }
                 }
@@ -320,11 +357,12 @@ public class RegistryServiceImpl implements RegistryService {
                 entityNode = merge(entityNode, rootNode);
                 entityNodeType = entityNode.fields().next().getKey();
 
-                //TO-DO validation is failing
-                // boolean isValidate = iValidate.validate("Teacher",entityNode.toString());
+                // TO-DO validation is failing
+                // boolean isValidate =
+                // iValidate.validate("Teacher",entityNode.toString());
                 tpGraphMain.updateVertex(graph, inputNodeVertex, childElementNode);
 
-                //sign the entitynode
+                // sign the entitynode
                 if (signatureEnabled) {
                     signatureHelper.signJson(entityNode);
                     JsonNode signNode = entityNode.get(entityNodeType).get(Constants.SIGNATURES_STR);
@@ -356,8 +394,8 @@ public class RegistryServiceImpl implements RegistryService {
         Iterator<JsonNode> signItr = signatures.elements();
         while (signItr.hasNext()) {
             JsonNode signNode = signItr.next();
-            if (signNode.get(Constants.SIGNATURE_FOR).asText().equals(registryRootEntityType) &&
-                    null == signNode.get(uuidPropertyName)) {
+            if (signNode.get(Constants.SIGNATURE_FOR).asText().equals(registryRootEntityType)
+                    && null == signNode.get(uuidPropertyName)) {
                 entitySignNode = signNode;
                 break;
             }
@@ -366,7 +404,9 @@ public class RegistryServiceImpl implements RegistryService {
     }
 
     /**
-     * Merging input json node to DB entity node, this method in turn calls mergeDestinationWithSourceNode method for deep copy of properties and objects
+     * Merging input json node to DB entity node, this method in turn calls
+     * mergeDestinationWithSourceNode method for deep copy of properties and
+     * objects
      *
      * @param entityNode
      * @param rootNode
@@ -381,9 +421,12 @@ public class RegistryServiceImpl implements RegistryService {
     }
 
     /**
-     * @param propKeyValue - user given entity node
-     * @param entityNode   - read from the database
-     * @param entityKey    - user given entity key (wrapper node supplied by the user)
+     * @param propKeyValue
+     *            - user given entity node
+     * @param entityNode
+     *            - read from the database
+     * @param entityKey
+     *            - user given entity key (wrapper node supplied by the user)
      */
     private void mergeDestinationWithSourceNode(ObjectNode propKeyValue, ObjectNode entityNode, String entityKey) {
         ObjectNode subEntity = (ObjectNode) entityNode.findValue(entityKey);
@@ -396,20 +439,20 @@ public class RegistryServiceImpl implements RegistryService {
                 if (subEntity.get(propKey).size() == 0) {
                     subEntity.set(propKey, propValue);
                 } else if (subEntity.get(propKey).isObject()) {
-                    //As of now filtering only @type
+                    // As of now filtering only @type
                     List<String> filterKeys = Arrays.asList(Constants.JsonldConstants.TYPE);
-                    //removing keys with name osid and type
+                    // removing keys with name osid and type
                     JSONUtil.removeNodes((ObjectNode) subEntity.get(propKey), filterKeys);
-                    //constructNewNodeToParent
+                    // constructNewNodeToParent
                     subEntity.set(propKey, propValue);
                 }
             } else if (subEntity.get(propKey).isArray()) {
                 List<String> filterKeys = Arrays.asList(Constants.JsonldConstants.TYPE);
                 propValue.forEach(arrayElement -> {
-                    //removing keys with name @type
+                    // removing keys with name @type
                     JSONUtil.removeNodes((ObjectNode) arrayElement, filterKeys);
                 });
-                //constructNewNodeToParent
+                // constructNewNodeToParent
                 subEntity.set(propKey, propValue);
             }
         });
