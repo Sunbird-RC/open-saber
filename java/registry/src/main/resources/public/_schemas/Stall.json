@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "stall": {
+      "$ref": "#/definitions/stall"
+    }
+  },
+  "required": [
+    "stall"
+  ],
+  "title":"stall",
+  "_osConfig": {
+    "osComment": [],
+    "privateFields": [],
+    "signedFields": []
+  },
+  "definitions": {
+    "stall": {
+      "$id": "#/properties/stall",
+      "type": "object",
+      "title": "The stall Schema",
+      "required": [
+        "stallName",
+        "stallCode"
+      ],
+      "properties": {
+        "stallCode": {
+          "$id": "#/properties/stallCode",
+          "type": "string",
+          "$comment": "Code"
+        },
+        "stallName": {
+          "$id": "#/properties/stallName",
+          "type": "string",
+          "title": "Full name"
+        }
+      }
+    }
+  }
+}
