@@ -176,15 +176,14 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	
     @Bean
     public IValidate validationServiceImpl() throws IOException, CustomException {
-        //IValidate validator = null;
         // depends on input type,we need to implement validation
         if (getValidationType() == SchemaType.JSON) {
             IValidate validator = new JsonValidationServiceImpl();
-            logger.info("adding resources to validator service: ");
             definitionsManager.getAllDefinitions().forEach(definition->{
-                logger.info("Definition: title-"+definition.getTitle()+ " , content-"+definition.getContent());
+                logger.debug("Definition: title-" + definition.getTitle() + " , content-" + definition.getContent());
                 validator.addDefinitions(definition.getTitle(), definition.getContent());  
             });
+            logger.info(definitionsManager.getAllDefinitions().size() + " definitions added to validator service ");
             return validator;
         } else {
             logger.error("Fatal - not a known validator mentioned in the application configuration.");

@@ -99,7 +99,7 @@ public class DefinitionsManager {
             InputStream is = resource.getInputStream();
             byte[] encoded = IOUtils.toByteArray(is);
             content = new String(encoded, Charset.forName("UTF-8"));
-            logger.debug(resource.getFilename()+" loaded content: " + content);  
+            logger.debug(resource.getFilename() + " loaded content: " + content);  
             
         } catch (IOException e) {
             logger.error("Cannot load resource " + resource.getFilename());

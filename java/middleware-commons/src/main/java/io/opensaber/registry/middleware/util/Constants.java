@@ -67,7 +67,7 @@ public class Constants {
 	public static final String SIGNATURE_VERIFY_ENDPOINT = "/utils/verify";
 	
 	//class path for json resources from _schemas folder
-	public static final String RESOURCE_LOCATION= "classpath*:public/_schemas/*.json";
+	public static final String RESOURCE_LOCATION = "classpath*:public/_schemas/*.json";
 
 
 	public enum GraphDatabaseProvider {

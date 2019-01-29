@@ -14,14 +14,8 @@ import org.slf4j.LoggerFactory;
 public class JsonValidationServiceImpl implements IValidate {
 	private static Logger logger = LoggerFactory.getLogger(JsonValidationServiceImpl.class);
 
-	//private ResourceLoader resourceLoader;
 	private Map<String, Schema> entitySchemaMap = new HashMap<>();
 	private Map<String, String> definitionMap;
-
-	/*@Autowired
-	public void setResourceLoader(ResourceLoader resourceLoader) {
-		this.resourceLoader = resourceLoader;
-	}*/
 
 	private Schema getEntitySchema(String entityType) throws MiddlewareHaltException {
 
@@ -30,7 +24,6 @@ public class JsonValidationServiceImpl implements IValidate {
 		} else {
 			Schema schema;
 			try {
-
 				String definitionContent = definitionMap.get(entityType);
                 JSONObject rawSchema = new JSONObject(definitionContent);
 
