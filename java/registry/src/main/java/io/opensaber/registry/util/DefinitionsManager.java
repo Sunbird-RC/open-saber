@@ -37,7 +37,7 @@ public class DefinitionsManager {
         
         final ObjectMapper mapper = new ObjectMapper();
         Resource[] resources = definitionsReader.getResources(Constants.RESOURCE_LOCATION);
-        logger.info("Raw resource(s): " + resources.length);
+        logger.info("Count of definitions loaded: " + resources.length);
 
         for (Resource resource : resources) {
             String jsonContent = getContent(resource);
@@ -96,7 +96,6 @@ public class DefinitionsManager {
             InputStream is = resource.getInputStream();
             byte[] encoded = IOUtils.toByteArray(is);
             content = new String(encoded, Charset.forName("UTF-8"));
-            logger.debug(resource.getFilename() + " loaded content: " + content);  
             
         } catch (IOException e) {
             logger.error("Cannot load resource " + resource.getFilename());

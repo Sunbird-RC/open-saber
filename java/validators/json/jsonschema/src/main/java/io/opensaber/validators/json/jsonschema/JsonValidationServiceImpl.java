@@ -15,7 +15,7 @@ public class JsonValidationServiceImpl implements IValidate {
 	private static Logger logger = LoggerFactory.getLogger(JsonValidationServiceImpl.class);
 
 	private Map<String, Schema> entitySchemaMap = new HashMap<>();
-	private Map<String, String> definitionMap;
+	private Map<String, String> definitionMap = new HashMap<>();;
 
 	private Schema getEntitySchema(String entityType) throws MiddlewareHaltException {
 
@@ -62,12 +62,8 @@ public class JsonValidationServiceImpl implements IValidate {
 	 */
     @Override
     public void addDefinitions(String definitionTitle, String definitionContent) {
-        if( definitionMap != null ){
-            definitionMap.putIfAbsent(definitionTitle, definitionContent);
-        } else {
-            definitionMap = new HashMap<>();
-        }
-        
+        definitionMap.put(definitionTitle, definitionContent);
+       
     }
 
 }
