@@ -121,21 +121,30 @@ public class RegistryDaoImpl implements IRegistryDao {
                 parseJsonObject(subEntityNode, graph, rootVertex, fieldKey, false);
             } else if (subEntityNode.isArray()) {
                 Vertex arrayNodeVertex = null;
-                if(fieldKey.equalsIgnoreCase(Constants.SIGNATURES_STR)){
-                    arrayNodeVertex = rootVertex.vertices(Direction.IN,fieldKey).next();
-                } else {
-                    arrayNodeVertex = rootVertex.vertices(Direction.OUT,fieldKey).next();
-                }
-                Set<String> osidSet = new HashSet<String>();
-                for (JsonNode arrayElementNode : subEntityNode) {
-                    if (arrayElementNode.isObject()) {
-                        String updatedOsid = parseJsonObject(arrayElementNode, graph, arrayNodeVertex, fieldKey, true);
-                        osidSet.add(updatedOsid);
+                if(subEntityNode.get(0).isObject()){
+                    if(fieldKey.equalsIgnoreCase(Constants.SIGNATURES_STR)){
+                        arrayNodeVertex = rootVertex.vertices(Direction.IN,fieldKey).next();
+                    } else {
+                        arrayNodeVertex = rootVertex.vertices(Direction.OUT,fieldKey).next();
                     }
+                    Set<String> osidSet = new HashSet<String>();
+                    for (JsonNode arrayElementNode : subEntityNode) {
+                        if (arrayElementNode.isObject()) {
+                            String updatedOsid = parseJsonObject(arrayElementNode, graph, arrayNodeVertex, fieldKey, true);
+                            osidSet.add(updatedOsid);
+                        }
+                    }
+                    osidSet = deleteVertices(graph, arrayNodeVertex, fieldKey, osidSet);
+                    String updatedOisdValue = String.join(",", osidSet);
+                    arrayNodeVertex.property(RefLabelHelper.getLabel(fieldKey, uuidPropertyName), updatedOisdValue);
+                } else {
+                    Set<String> valueSet = new HashSet<>();
+                    subEntityNode.forEach( textElement -> {
+                        valueSet.add(textElement.asText());
+                    });
+                    rootVertex.property(VertexProperty.Cardinality.list,fieldKey,valueSet.toString());
                 }
-                osidSet = deleteVertices(graph, arrayNodeVertex, fieldKey, osidSet);
-                String updatedOisdValue = String.join(",", osidSet);
-                arrayNodeVertex.property(RefLabelHelper.getLabel(fieldKey, uuidPropertyName), updatedOisdValue);
+
             }
         });
 
