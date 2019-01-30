@@ -15,6 +15,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -117,9 +118,9 @@ public class VertexWriter {
         // Set up references on a blank node.
         label = RefLabelHelper.getLabel(entryKey, uuidPropertyName);
         if (isArrayItemObject) {
-            blankNode.property(label, StringUtils.arrayToCommaDelimitedString(uidList.toArray()));
+            blankNode.property(VertexProperty.Cardinality.list, label, uidList.toString());
         } else {
-            blankNode.property(entryKey, StringUtils.arrayToCommaDelimitedString(uidList.toArray()));
+            blankNode.property(VertexProperty.Cardinality.list, entryKey, uidList.toString());
         }
     }
 
