@@ -13,21 +13,11 @@ import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
-import io.opensaber.registry.service.EncryptionHelper;
-import io.opensaber.registry.service.EncryptionService;
-import io.opensaber.registry.service.RegistryService;
-import io.opensaber.registry.service.SignatureHelper;
-import io.opensaber.registry.service.SignatureService;
+import io.opensaber.registry.service.*;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.sink.shard.Shard;
-import io.opensaber.registry.util.Definition;
-import io.opensaber.registry.util.DefinitionsManager;
-import io.opensaber.registry.util.EntityParenter;
-import io.opensaber.registry.util.ReadConfigurator;
-import io.opensaber.registry.util.ReadConfiguratorFactory;
-import io.opensaber.registry.util.RecordIdentifier;
-import io.opensaber.validators.IValidate;
+import io.opensaber.registry.util.*;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -162,6 +152,22 @@ public class RegistryServiceImpl implements RegistryService {
         }
     }
 
+    private void addIndex(DatabaseProvider dbProvider, String shardId, String vertexLabel) {
+//        new Thread(() -> {
+//            try (OSGraph osGraph = dbProvider.getOSGraph()) {
+//                Graph graph = osGraph.getGraphStore();
+//                Transaction tx = dbProvider.startTransaction(graph);
+//
+//                // creates/updates indices for the vertex or table gets persists)
+//                ensureIndexExists(dbProvider, shardId, vertexLabel);
+//                dbProvider.commitTransaction(graph, tx);
+//            } catch (Exception e) {
+//                logger.info("Can't create index on table " + vertexLabel);
+//            }
+//            logger.info("Indexing done " + vertexLabel);
+//        }).start();
+    }
+
     public String addEntity(String jsonString) throws Exception {
         String entityId = "entityPlaceholderId";
         ObjectMapper mapper = new ObjectMapper();
@@ -177,17 +183,18 @@ public class RegistryServiceImpl implements RegistryService {
 
         if (persistenceEnabled) {
             DatabaseProvider dbProvider = shard.getDatabaseProvider();
+            String vertexLabel;
             try (OSGraph osGraph = dbProvider.getOSGraph()) {
                 Graph graph = osGraph.getGraphStore();
                 Transaction tx = dbProvider.startTransaction(graph);
                 entityId = registryDao.addEntity(graph, rootNode);
                 shard.getDatabaseProvider().commitTransaction(graph, tx);
                 dbProvider.commitTransaction(graph, tx);
-
-                String vertexLabel = rootNode.fieldNames().next();
-                // creates/updates indices for the vertex or table gets persists)
-                ensureIndexExists(dbProvider, graph, vertexLabel);
+                vertexLabel = rootNode.fieldNames().next();
             }
+
+            logger.info("Starting to ensure index on " + vertexLabel + " for shard " + shard.getShardId());
+            addIndex(dbProvider, shard.getShardId(), vertexLabel);
         }
 
         return entityId;
@@ -197,35 +204,35 @@ public class RegistryServiceImpl implements RegistryService {
      * Ensures index for a vertex exists 
      * Unique index and non-unique index is supported
      * @param dbProvider
-     * @param graph
      * @param label   a type vertex label (example:Teacher)
+     * @param shardId
      */
-    private void ensureIndexExists(DatabaseProvider dbProvider, Graph graph, String label) {
+    private void ensureIndexExists(DatabaseProvider dbProvider, String shardId, String label) {
 
-        Vertex parentVertex = entityParenter.getKnownParentVertex(label, shard.getShardId());
+        Vertex parentVertex = entityParenter.getKnownParentVertex(label, shardId);
         Definition definition = definitionsManager.getDefinition(label);
         List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
         List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();
 
         try {
-            Transaction tx = dbProvider.startTransaction(graph);
             if (!indexFieldsExists(parentVertex, indexFields)){
                 dbProvider.createIndex(label, indexFields);
                 setPropertyValuesOnParentVertex(parentVertex, indexFields);
+                logger.debug("Added index on "
+                        + parentVertex.property(Constants.INDEX_FIELDS).value());
 
             }
+
             if(!indexFieldsExists(parentVertex, indexUniqueFields)){
                 dbProvider.createUniqueIndex(label, indexUniqueFields);
                 setPropertyValuesOnParentVertex(parentVertex, indexUniqueFields);
+                logger.debug("Added unique index on "
+                        + parentVertex.property(Constants.INDEX_FIELDS).value());
 
             }
-            logger.debug("after creating index property value "
-                    + parentVertex.property(Constants.INDEX_FIELDS).value());
-            dbProvider.commitTransaction(graph, tx);
- 
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("On index creation while add api " + e);
+            logger.error("Can't ensure index" + e);
         }
 
     }
@@ -260,9 +267,6 @@ public class RegistryServiceImpl implements RegistryService {
             existingValue = existingValue.isEmpty() ? value : (existingValue + "," + value);
             parentVertex.property(Constants.INDEX_FIELDS, existingValue);
         }
-        logger.debug("After setting the index values to parent vertex property "
-                + (String) parentVertex.property(Constants.INDEX_FIELDS).value());
-
     }
 
     @Override
