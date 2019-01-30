@@ -74,7 +74,9 @@ public class VertexReader {
      * @return
      */
     public ObjectNode constructObject(Vertex currVertex) {
-
+        if(currVertex.label().equalsIgnoreCase("basicProficiencyLevel")){
+            currVertex.label();
+        }
         ObjectNode contentNode = JsonNodeFactory.instance.objectNode();
         String entityType = currVertex.property(TypePropertyHelper.getTypeName()).value().toString();
         Definition definition = definitionsManager.getDefinition(entityType);
@@ -86,6 +88,7 @@ public class VertexReader {
         Iterator<VertexProperty<Object>> properties = currVertex.properties();
         while (properties.hasNext()) {
             VertexProperty<Object> prop = properties.next();
+            String propValue = prop.value().toString();
             if (!RefLabelHelper.isParentLabel(prop.key())) {
                 if (RefLabelHelper.isRefLabel(prop.key(), uuidPropertyName)) {
                     logger.debug("{} is a referenced entity", prop.key());
@@ -93,7 +96,10 @@ public class VertexReader {
                     // otherwise.
 
                     String refEntityName = RefLabelHelper.getRefEntityName(prop.key());
-                    String[] valueArr = prop.value().toString().split("\\s*,\\s*");
+                    if(propValue.startsWith("[")){
+                        propValue = propValue.replace("[", "").replace("]", "");
+                    }
+                    String[] valueArr = propValue.split("\\s*,\\s*");
                     boolean isObjectNode = valueArr.length == 1;
 
                     ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
@@ -117,7 +123,6 @@ public class VertexReader {
                     }
 
                     if (canAdd) {
-                        String propValue = prop.value().toString();
                         if (propValue.startsWith("[")) {
                             propValue = propValue.replace("[", "").replace("]", "");
                             ArrayNode stringArray = JsonNodeFactory.instance.arrayNode();
