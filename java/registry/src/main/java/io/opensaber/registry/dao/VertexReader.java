@@ -173,8 +173,8 @@ public class VertexReader {
                 signatures = JsonNodeFactory.instance.arrayNode();
                 while (signatureVertices.hasNext()) {
                     Vertex oneSignature = signatureVertices.next();
-                    if (oneSignature.property(Constants.SIGNATURE_FOR).isPresent() && !oneSignature
-                            .property(Constants.SIGNATURE_FOR).value().toString().equalsIgnoreCase(entityType)) {
+                    if( oneSignature.label().equalsIgnoreCase(Constants.SIGNATURES_STR)
+                            && !(oneSignature.property(Constants.STATUS_KEYWORD).isPresent() && oneSignature.property(Constants.STATUS_KEYWORD).value().toString().equalsIgnoreCase(Constants.STATUS_INACTIVE))) {
                         ObjectNode signatureNode = constructObject(oneSignature);
                         signatures.add(signatureNode);
                         logger.debug("Added signature node for " + signatureNode.get(Constants.SIGNATURE_FOR));
@@ -214,6 +214,10 @@ public class VertexReader {
         int tempCurrLevel = currLevel;
         while (otherVertices.hasNext()) {
             Vertex currVertex = otherVertices.next();
+            if(currVertex.property(Constants.STATUS_KEYWORD).isPresent() &&
+                    currVertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE)){
+                continue;
+            }
             VertexProperty internalTypeProp = currVertex.property(Constants.INTERNAL_TYPE_KEYWORD);
             String internalType = internalTypeProp.isPresent() ? internalTypeProp.value().toString() : "";
 
@@ -283,6 +287,7 @@ public class VertexReader {
                 if (temp == null) {
                     // No node loaded for this.
                     // No action required.
+                    entityNode.remove(field);
                 } else if (!isArray) {
                     logger.debug("Field {} Not an array type", field);
                     entityNode.setAll(uuidNodeMap.get(uuidVal));
@@ -307,6 +312,9 @@ public class VertexReader {
             } else if (entry.isObject()) {
                 logger.debug("Field {} is an object. Expanding further.", entry);
                 ArrayNode expandChildObject = expandChildObject((ObjectNode) entry);
+                if(expandChildObject.size() == 0 && entityNode.get(field).size() == 0){
+                    entityNode.remove(field);
+                }
                 if (expandChildObject != null && expandChildObject.size() > 0) {
                     entityNode.set(field, expandChildObject);
                 }
@@ -322,7 +330,7 @@ public class VertexReader {
      * @param osid the osid of vertex to be loaded
      * @return the vertex associated with osid passed
      */
-    private Vertex getVertex(String osid) {
+    public Vertex getVertex(String osid) {
         Vertex vertex = null;
         Iterator<Vertex> itrV = null;
         switch (databaseProvider.getProvider()) {

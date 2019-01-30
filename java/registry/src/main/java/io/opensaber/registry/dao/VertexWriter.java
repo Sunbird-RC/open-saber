@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -24,6 +23,7 @@ public class VertexWriter {
     private String uuidPropertyName;
     private DatabaseProvider databaseProvider;
     private String parentOSid;
+    private static final String EMPTY = "";
 
     private Logger logger = LoggerFactory.getLogger(VertexWriter.class);
 
@@ -47,7 +47,10 @@ public class VertexWriter {
         Iterator<Vertex> iterVertex = gtRootTraversal.V().hasLabel(lblPredicate);
         if (!iterVertex.hasNext()) {
             parentVertex = createVertex(graph, parentLabel);
-            logger.info("Parent label {} created {}", parentLabel, databaseProvider.getId(parentVertex));
+
+            //added a property to track vertices belong to parent are indexed
+            parentVertex.property(Constants.INDEX_FIELDS, EMPTY);
+            logger.info("Parent label {} created {}", parentLabel, parentVertex.id().toString());
         } else {
             parentVertex = iterVertex.next();
             logger.info("Parent label {} already existing {}", parentLabel, databaseProvider.getId(parentVertex));
@@ -195,7 +198,6 @@ public class VertexWriter {
         Iterator<Map.Entry<String, JsonNode>> entryIterator = node.fields();
         while (entryIterator.hasNext()) {
             Map.Entry<String, JsonNode> entry = entryIterator.next();
-
             // It is expected that node is wrapped under a root, which is the
             // parent name/definition
             if (entry.getValue().isObject()) {

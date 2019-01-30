@@ -13,11 +13,17 @@ import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
-import io.opensaber.registry.service.*;
+import io.opensaber.registry.service.EncryptionHelper;
+import io.opensaber.registry.service.EncryptionService;
+import io.opensaber.registry.service.RegistryService;
+import io.opensaber.registry.service.SignatureHelper;
+import io.opensaber.registry.service.SignatureService;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.sink.shard.Shard;
+import io.opensaber.registry.util.Definition;
 import io.opensaber.registry.util.DefinitionsManager;
+import io.opensaber.registry.util.EntityParenter;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.ReadConfiguratorFactory;
 import io.opensaber.registry.util.RecordIdentifier;
@@ -92,7 +98,7 @@ public class RegistryServiceImpl implements RegistryService {
     DBConnectionInfoMgr dbConnectionInfoMgr;
 
     @Autowired
-    private IValidate iValidate;
+    private EntityParenter entityParenter;
 
     public HealthCheckResponse health() throws Exception {
         HealthCheckResponse healthCheck;
@@ -141,11 +147,11 @@ public class RegistryServiceImpl implements RegistryService {
             Iterator<Vertex> vertexItr = graph.vertices(uuid);
             if (vertexItr.hasNext()) {
                 Vertex vertex = vertexItr.next();
-                if (!(vertex.property(Constants.STATUS_KEYWORD).isPresent() && vertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE))) {
+                if (!(vertex.property(Constants.STATUS_KEYWORD).isPresent() &&
+                        vertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE))) {
                     registryDao.deleteEntity(vertex);
-                    tx.commit();
                 } else {
-                    //throw exception node already deleted
+                    // throw exception node already deleted
                     throw new RecordNotFoundException("Cannot perform the operation");
                 }
             } else {
@@ -177,10 +183,86 @@ public class RegistryServiceImpl implements RegistryService {
                 entityId = registryDao.addEntity(graph, rootNode);
                 shard.getDatabaseProvider().commitTransaction(graph, tx);
                 dbProvider.commitTransaction(graph, tx);
+
+                String vertexLabel = rootNode.fieldNames().next();
+                // creates/updates indices for the vertex or table gets persists)
+                ensureIndexExists(dbProvider, graph, vertexLabel);
             }
         }
 
         return entityId;
+    }
+
+    /**
+     * Ensures index for a vertex exists 
+     * Unique index and non-unique index is supported
+     * @param dbProvider
+     * @param graph
+     * @param label   a type vertex label (example:Teacher)
+     */
+    private void ensureIndexExists(DatabaseProvider dbProvider, Graph graph, String label) {
+
+        Vertex parentVertex = entityParenter.getKnownParentVertex(label, shard.getShardId());
+        Definition definition = definitionsManager.getDefinition(label);
+        List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
+        List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();
+
+        try {
+            Transaction tx = dbProvider.startTransaction(graph);
+            if (!indexFieldsExists(parentVertex, indexFields)){
+                dbProvider.createIndex(label, indexFields);
+                setPropertyValuesOnParentVertex(parentVertex, indexFields);
+
+            }
+            if(!indexFieldsExists(parentVertex, indexUniqueFields)){
+                dbProvider.createUniqueIndex(label, indexUniqueFields);
+                setPropertyValuesOnParentVertex(parentVertex, indexUniqueFields);
+
+            }
+            logger.debug("after creating index property value "
+                    + parentVertex.property(Constants.INDEX_FIELDS).value());
+            dbProvider.commitTransaction(graph, tx);
+ 
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("On index creation while add api " + e);
+        }
+
+    }
+    
+    /**
+     * Checks if fields exist for parent vertex property
+     * @param parentVertex
+     * @param fields
+     * @return
+     */
+    private boolean indexFieldsExists(Vertex parentVertex, List<String> fields) {
+        String[] indexFields = null;
+        boolean contains = false;
+        if (parentVertex.property(Constants.INDEX_FIELDS).isPresent()) {
+            String values = (String) parentVertex.property(Constants.INDEX_FIELDS).value();
+            indexFields = values.split(",");
+            for (String field : fields) {
+                contains = Arrays.stream(indexFields).anyMatch(field::equals);
+            }
+        }
+        return contains;
+    }
+    
+    /**
+     * Append the values to parent vertex INDEX_FIELDS property
+     * @param parentVertex
+     * @param values
+     */
+    private void setPropertyValuesOnParentVertex(Vertex parentVertex, List<String> values) {
+        String existingValue = (String) parentVertex.property(Constants.INDEX_FIELDS).value();
+        for (String value : values) {
+            existingValue = existingValue.isEmpty() ? value : (existingValue + "," + value);
+            parentVertex.property(Constants.INDEX_FIELDS, existingValue);
+        }
+        logger.debug("After setting the index values to parent vertex property "
+                + (String) parentVertex.property(Constants.INDEX_FIELDS).value());
+
     }
 
     @Override
@@ -279,8 +361,8 @@ public class RegistryServiceImpl implements RegistryService {
         Iterator<JsonNode> signItr = signatures.elements();
         while (signItr.hasNext()) {
             JsonNode signNode = signItr.next();
-            if (signNode.get(Constants.SIGNATURE_FOR).asText().equals(registryRootEntityType) &&
-                    null == signNode.get(uuidPropertyName)) {
+            if (signNode.get(Constants.SIGNATURE_FOR).asText().equals(registryRootEntityType)
+                    && null == signNode.get(uuidPropertyName)) {
                 entitySignNode = signNode;
                 break;
             }
@@ -289,7 +371,9 @@ public class RegistryServiceImpl implements RegistryService {
     }
 
     /**
-     * Merging input json node to DB entity node, this method in turn calls mergeDestinationWithSourceNode method for deep copy of properties and objects
+     * Merging input json node to DB entity node, this method in turn calls
+     * mergeDestinationWithSourceNode method for deep copy of properties and
+     * objects
      *
      * @param databaseNode - the one found in db
      * @param inputNode - the one passed by user
