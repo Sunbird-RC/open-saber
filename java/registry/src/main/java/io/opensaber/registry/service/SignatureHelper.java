@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,7 +57,7 @@ public class SignatureHelper {
         entitySignMap.put(Constants.SIGN_CREATOR, signatureKeyURl + signMap.get("keyId"));
         entitySignMap.put(Constants.SIGNATURE_FOR, entityType);
         entitySignMap.put(Constants.TYPE_STR_JSON_LD, "RSASignature2018");
-        entitySignMap.put(Constants.SIGN_CREATED_TIMESTAMP, "");
+        entitySignMap.put(Constants.SIGN_CREATED_TIMESTAMP, Instant.now().toString());
         entitySignMap.put(Constants.SIGN_NONCE, "");
         JsonNode entitySignNode = objectMapper.convertValue(entitySignMap, JsonNode.class);
         parentSignNode.add(entitySignNode);
