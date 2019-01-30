@@ -10,7 +10,7 @@ public class ReadConfiguratorFactory {
 
     public static ReadConfigurator getWithSignatures() {
         ReadConfigurator configurator = new ReadConfigurator();
-        configurator.setIncludeSignatures(false);
+        configurator.setIncludeSignatures(true);
         configurator.setIncludeTypeAttributes(false);
         return configurator;
     }
