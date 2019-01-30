@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
+import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.EntityParenter;
@@ -26,7 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-@Component("tpGraphMain")
+@Component("registryDao")
 public class RegistryDaoImpl implements IRegistryDao {
     @Value("${database.uuidPropertyName}")
     public String uuidPropertyName;
@@ -37,6 +38,7 @@ public class RegistryDaoImpl implements IRegistryDao {
     @Autowired
     private DefinitionsManager definitionsManager;
 
+    // TODO - Only database provider must be passed, no shard requirements here.
     @Autowired
     private Shard shard;
 
@@ -78,12 +80,6 @@ public class RegistryDaoImpl implements IRegistryDao {
         VertexReader vr = new VertexReader(shard.getDatabaseProvider(), graph, readConfigurator, uuidPropertyName, definitionsManager);
         JsonNode result = vr.read(uuid);
 
-        if (!shard.getShardLabel().isEmpty()) {
-            // Replace osid with shard details
-            String prefix = shard.getShardLabel() + RecordIdentifier.getSeparator();
-            JSONUtil.addPrefix((ObjectNode) result, prefix, new ArrayList<String>(Arrays.asList(uuidPropertyName)));
-        }
-
         return result;
     }
 
@@ -114,7 +110,7 @@ public class RegistryDaoImpl implements IRegistryDao {
             String fieldKey = subEntityField.getKey();
             JsonNode subEntityNode = subEntityField.getValue();
             if (subEntityNode.isValueNode()) {
-                rootVertex.property(fieldKey, subEntityField.getValue().asText());
+                rootVertex.property(fieldKey, ValueType.getValue(subEntityField.getValue()));
             } else if (subEntityNode.isObject()) {
                 parseJsonObject(subEntityNode, graph, rootVertex, fieldKey, false);
             } else if (subEntityNode.isArray()) {
@@ -155,23 +151,25 @@ public class RegistryDaoImpl implements IRegistryDao {
 
             //Add new vertex
             Vertex newChildVertex = vertexWriter.createVertex(graph, parentNodeLabel);
+            String newChildVertexIdStr = shard.getDatabaseProvider().getId(newChildVertex);
+
             updateProperties(elementNode, newChildVertex);
             String nodeOsidLabel = RefLabelHelper.getLabel(parentNodeLabel, uuidPropertyName);
             VertexProperty<Object> vertexProperty = rootVertex.property(nodeOsidLabel);
             if (isArrayElement && vertexProperty.isPresent()) {
                 String existingValue = (String) vertexProperty.value();
-                rootVertex.property(nodeOsidLabel, existingValue + "," + newChildVertex.id().toString());
+                rootVertex.property(nodeOsidLabel, existingValue + "," + newChildVertexIdStr);
             } else {
-                rootVertex.property(nodeOsidLabel, newChildVertex.id().toString());
+                rootVertex.property(nodeOsidLabel, newChildVertexIdStr);
             }
             vertexWriter.addEdge(parentNodeLabel, rootVertex, newChildVertex);
-            return newChildVertex.id().toString();
+            return newChildVertexIdStr;
         } else {
             String shardOsid = elementNode.get(uuidPropertyName).asText();
             RecordIdentifier ri = RecordIdentifier.parse(shardOsid);
             Vertex updateVertex = graph.vertices(ri.getUuid()).next();
             updateProperties(elementNode, updateVertex);
-            return updateVertex.id().toString();
+            return shard.getDatabaseProvider().getId(updateVertex);
         }
     }
 
@@ -186,9 +184,9 @@ public class RegistryDaoImpl implements IRegistryDao {
             JsonNode value = subElementNode.getValue();
             String keyType = subElementNode.getKey();
             if (value.isObject()) {
-
+                // TODO - why is this empty?
             } else if (value.isValueNode() && !keyType.equals("@type") && !keyType.equals(uuidPropertyName)) {
-                vertex.property(keyType, value.asText());
+                vertex.property(keyType, ValueType.getValue(value));
             }
         });
     }
@@ -218,10 +216,6 @@ public class RegistryDaoImpl implements IRegistryDao {
                 deleteVertex.property(Constants.STATUS_KEYWORD, Constants.STATUS_INACTIVE);
                 Edge edge = deleteVertex.edges(Direction.IN, label).next();
                 edge.remove();
-                //deleteVertex.edges(Direction.IN,label).next().remove();
-                //deleteVertex.remove();
-                //addEdge(label,deleteVertex,rootVertex);
-
             }
         });
     }

@@ -47,10 +47,10 @@ public class VertexWriter {
         Iterator<Vertex> iterVertex = gtRootTraversal.V().hasLabel(lblPredicate);
         if (!iterVertex.hasNext()) {
             parentVertex = createVertex(graph, parentLabel);
-            logger.info("Parent label {} created {}", parentLabel, parentVertex.id().toString());
+            logger.info("Parent label {} created {}", parentLabel, databaseProvider.getId(parentVertex));
         } else {
             parentVertex = iterVertex.next();
-            logger.info("Parent label {} already existing {}", parentLabel, parentVertex.id().toString());
+            logger.info("Parent label {} already existing {}", parentLabel, databaseProvider.getId(parentVertex));
         }
 
         return parentVertex;
@@ -92,7 +92,7 @@ public class VertexWriter {
             } else {
                 addEdge(entryKey, vertex, blankNode);
             }
-            vertex.property(label, blankNode.id().toString());
+            vertex.property(label, databaseProvider.getId(blankNode));
             blankNode.property(Constants.INTERNAL_TYPE_KEYWORD, entryKey);
             blankNode.property(Constants.ROOT_KEYWORD, parentOSid);
         }
@@ -101,7 +101,7 @@ public class VertexWriter {
             if (jsonNode.isObject()) {
                 Vertex createdV = processNode(graph, entryKey, jsonNode);
                 createdV.property(Constants.ROOT_KEYWORD, parentOSid);
-                uidList.add(createdV.id().toString());
+                uidList.add(databaseProvider.getId(createdV));
                 if (isSignature) {
                     addEdge(jsonNode.get(Constants.SIGNATURE_FOR).textValue(), blankNode, createdV);
                 } else {
@@ -126,7 +126,7 @@ public class VertexWriter {
 
         // This attribute will help identify the root from any child
         if (parentOSid == null || parentOSid.isEmpty()) {
-            parentOSid = vertex.id().toString();
+            parentOSid = databaseProvider.getId(vertex);
         }
 
         jsonObject.fields().forEachRemaining(entry -> {
@@ -141,7 +141,7 @@ public class VertexWriter {
                 Vertex v = processNode(graph, entry.getKey(), entryValue);
                 addEdge(entry.getKey(), vertex, v);
 
-                String idToSet = databaseProvider.generateId(v);
+                String idToSet = databaseProvider.getId(v);
                 vertex.property(RefLabelHelper.getLabel(entry.getKey(), uuidPropertyName), idToSet);
 
                 v.property(Constants.ROOT_KEYWORD, parentOSid);

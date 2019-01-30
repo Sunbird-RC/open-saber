@@ -75,7 +75,7 @@ public class EntityParenter {
                             Vertex v = vertexWriter.ensureParentVertex(graph, parentLabel);
 
                             ShardParentInfo shardParentInfo = new ShardParentInfo(defintionName, v);
-                            shardParentInfo.setUuid(v.id().toString());
+                            shardParentInfo.setUuid(dbProvider.getId(v));
                             shardParentInfoList.add(shardParentInfo);
                         });
 

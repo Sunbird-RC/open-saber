@@ -2,12 +2,12 @@ package io.opensaber.registry.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
 import io.opensaber.pojos.ComponentHealthInfo;
 import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.registry.dao.IRegistryDao;
-import io.opensaber.registry.dao.RegistryDaoImpl;
 import io.opensaber.registry.dao.VertexReader;
 import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
@@ -19,8 +19,9 @@ import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.ReadConfigurator;
+import io.opensaber.registry.util.ReadConfiguratorFactory;
+import io.opensaber.registry.util.RecordIdentifier;
 import io.opensaber.validators.IValidate;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -88,9 +89,6 @@ public class RegistryServiceImpl implements RegistryService {
     private Shard shard;
 
     @Autowired
-    RegistryDaoImpl tpGraphMain;
-
-    @Autowired
     DBConnectionInfoMgr dbConnectionInfoMgr;
 
     @Autowired
@@ -144,7 +142,7 @@ public class RegistryServiceImpl implements RegistryService {
             if (vertexItr.hasNext()) {
                 Vertex vertex = vertexItr.next();
                 if (!(vertex.property(Constants.STATUS_KEYWORD).isPresent() && vertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE))) {
-                    tpGraphMain.deleteEntity(vertex);
+                    registryDao.deleteEntity(vertex);
                     tx.commit();
                 } else {
                     //throw exception node already deleted
@@ -176,7 +174,7 @@ public class RegistryServiceImpl implements RegistryService {
             try (OSGraph osGraph = dbProvider.getOSGraph()) {
                 Graph graph = osGraph.getGraphStore();
                 Transaction tx = dbProvider.startTransaction(graph);
-                entityId = tpGraphMain.addEntity(graph, rootNode);
+                entityId = registryDao.addEntity(graph, rootNode);
                 shard.getDatabaseProvider().commitTransaction(graph, tx);
                 dbProvider.commitTransaction(graph, tx);
             }
@@ -191,107 +189,83 @@ public class RegistryServiceImpl implements RegistryService {
         try (OSGraph osGraph = dbProvider.getOSGraph()) {
             Graph graph = osGraph.getGraphStore();
             Transaction tx = dbProvider.startTransaction(graph);
-            JsonNode result = tpGraphMain.getEntity(graph, id, configurator);
+            JsonNode result = registryDao.getEntity(graph, id, configurator);
+
+            if (!shard.getShardLabel().isEmpty()) {
+                // Replace osid with shard details
+                String prefix = shard.getShardLabel() + RecordIdentifier.getSeparator();
+                JSONUtil.addPrefix((ObjectNode) result, prefix, new ArrayList<String>(Arrays.asList(uuidPropertyName)));
+            }
+
             shard.getDatabaseProvider().commitTransaction(graph, tx);
             dbProvider.commitTransaction(graph, tx);
             return result;
         }
     }
 
+    /**
+     * Removes the entity signature from the node
+     * @param entityNodeType
+     * @param node
+     */
+    private void removeEntitySignature(String entityNodeType, ObjectNode node) {
+        ArrayNode signatureArr = (ArrayNode) node.get(entityNodeType).get(Constants.SIGNATURES_STR);
+        int entitySignatureIdx = -1;
+        for(int itr = 0; itr < signatureArr.size(); itr++) {
+            JsonNode signature = signatureArr.get(itr);
+            if (signature.get(Constants.SIGNATURE_FOR).toString().contains(entityNodeType)) {
+                entitySignatureIdx = itr;
+                break;
+            }
+        }
+        if (entitySignatureIdx != -1) {
+            signatureArr.remove(entitySignatureIdx);
+        }
+    }
+
     @Override
     public void updateEntity(String id, String jsonString) throws Exception {
-        Iterator<Vertex> vertexIterator = null;
-        Vertex inputNodeVertex = null;
-        Vertex rootVertex = null;
-
-        JsonNode rootNode = objectMapper.readTree(jsonString);
+        JsonNode inputNode = objectMapper.readTree(jsonString);
 
         if (encryptionEnabled) {
-            rootNode = encryptionHelper.getEncryptedJson(rootNode);
+            inputNode = encryptionHelper.getEncryptedJson(inputNode);
         }
 
-        JsonNode childElementNode = rootNode.elements().next();
         DatabaseProvider databaseProvider = shard.getDatabaseProvider();
-        ReadConfigurator readConfigurator = new ReadConfigurator();
-        readConfigurator.setIncludeSignatures(signatureEnabled);
-
         try (OSGraph osGraph = databaseProvider.getOSGraph()) {
             Graph graph = osGraph.getGraphStore();
             Transaction tx = databaseProvider.startTransaction(graph);
+
+            // Read the node and
+            // TODO - decrypt properties to pass validation
+            ReadConfigurator readConfigurator = ReadConfiguratorFactory.getForUpdateValidation();
             VertexReader vr = new VertexReader(databaseProvider, graph, readConfigurator, uuidPropertyName, definitionsManager);
             String entityNodeType;
+            JsonNode readNode = vr.read(id);
+            Vertex rootVertex = vr.getRootVertex();
+            entityNodeType = readNode.fields().next().getKey();
 
-            if (null != tx) {
-                ObjectNode entityNode = null;
-                vertexIterator = graph.vertices(id);
-                inputNodeVertex = vertexIterator.hasNext() ? vertexIterator.next() : null;
-                if ((inputNodeVertex.property(Constants.STATUS_KEYWORD).isPresent() &&
-                        inputNodeVertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE))) {
-                    throw new RecordNotFoundException("Cannot perform the operation");
-                }
-                if (inputNodeVertex.property(Constants.ROOT_KEYWORD).isPresent()) {
-                    rootVertex = graph.vertices(inputNodeVertex.property(Constants.ROOT_KEYWORD).value()).next();
-                } else {
-                    rootVertex = inputNodeVertex;
-                }
+            // Merge the new changes
+            JsonNode mergedNode = mergeWrapper("/" + entityNodeType, (ObjectNode) readNode, (ObjectNode) inputNode);
+            logger.debug("After merge the payload is " + mergedNode.toString());
 
-                entityNode = (ObjectNode) vr.read(rootVertex.id().toString());
-
-                //merge with entitynode
-                entityNode = merge(entityNode, rootNode);
-                entityNodeType = entityNode.fields().next().getKey();
-                //TO-DO validation is failing
-                //boolean isValidate = iValidate.validate("Teacher",entityNode.toString());
-                tpGraphMain.updateVertex(graph, inputNodeVertex, childElementNode);
-                //sign the entitynode
-                if (signatureEnabled) {
-                    signatureHelper.signJson(entityNode);
-                    JsonNode signNode = entityNode.get(entityNodeType).get(Constants.SIGNATURES_STR);
-                    if (signNode.isArray()) {
-                        signNode = getEntitySignNode(signNode, entityNodeType);
-                    }
-
-                    Iterator<Vertex> vertices = rootVertex.vertices(Direction.IN, Constants.SIGNATURES_STR);
-                    if (null != vertices && vertices.hasNext()) {
-                        Vertex signArrayNode = vertices.next();
-                        Iterator<Vertex> sign = signArrayNode.vertices(Direction.OUT, entityNodeType);
-                        Vertex signVertex = sign.next();
-                        // Other signatures are not updated, only the entity level signature.
-                        tpGraphMain.updateVertex(graph, signVertex, signNode);
-                    }
-                }
-                databaseProvider.commitTransaction(graph, tx);
-            } else {
-                // TinkerGraph section for test cases
-                vertexIterator = graph.vertices(new Long(id));
-                inputNodeVertex = vertexIterator.hasNext() ? vertexIterator.next() : null;
-                ObjectNode entityNode = (ObjectNode) vr.read(inputNodeVertex.id().toString());
-                entityNode = merge(entityNode, rootNode);
-                entityNodeType = entityNode.fields().next().getKey();
-
-                //TO-DO validation is failing
-                // boolean isValidate = iValidate.validate("Teacher",entityNode.toString());
-                tpGraphMain.updateVertex(graph, inputNodeVertex, childElementNode);
-
-                //sign the entitynode
-                if (signatureEnabled) {
-                    signatureHelper.signJson(entityNode);
-                    JsonNode signNode = entityNode.get(entityNodeType).get(Constants.SIGNATURES_STR);
-                    if (signNode.isArray()) {
-                        signNode = getEntitySignNode(signNode, entityNodeType);
-                    }
-                    Iterator<Vertex> vertices = rootVertex.vertices(Direction.IN, Constants.SIGNATURES_STR);
-                    while (null != vertices && vertices.hasNext()) {
-                        Vertex signVertex = vertices.next();
-                        if (signVertex.property(Constants.SIGNATURE_FOR).value().equals(entityNodeType)) {
-                            tpGraphMain.updateVertex(graph, signVertex, signNode);
-                        }
-                    }
-
-                }
+            // Re-sign, i.e., remove and add entity signature again
+            if (signatureEnabled) {
+                logger.debug("Removing earlier signature and adding new one");
+                removeEntitySignature(entityNodeType, (ObjectNode) mergedNode);
+                signatureHelper.signJson(mergedNode);
             }
-        }
 
+            // TODO - Validate before update
+            //iValidate.validate(entityNodeType, mergedNode.toString());
+            //logger.debug("Validated payload before update");
+
+            // Finally update
+            ((ObjectNode) mergedNode.get(entityNodeType)).put(uuidPropertyName, id);
+            registryDao.updateVertex(graph, rootVertex, inputNode.get(entityNodeType));
+
+            databaseProvider.commitTransaction(graph, tx);
+        }
     }
 
     /**
@@ -317,51 +291,32 @@ public class RegistryServiceImpl implements RegistryService {
     /**
      * Merging input json node to DB entity node, this method in turn calls mergeDestinationWithSourceNode method for deep copy of properties and objects
      *
-     * @param entityNode
-     * @param rootNode
+     * @param databaseNode - the one found in db
+     * @param inputNode - the one passed by user
      * @return
      */
-    private ObjectNode merge(ObjectNode entityNode, JsonNode rootNode) {
-        rootNode.fields().forEachRemaining(entryJsonNode -> {
-            ObjectNode propKeyValue = (ObjectNode) entryJsonNode.getValue();
-            mergeDestinationWithSourceNode(propKeyValue, entityNode, entryJsonNode.getKey());
+    private ObjectNode mergeWrapper(String entityType, ObjectNode databaseNode, ObjectNode inputNode) {
+        // We know the user is likely to update less fields and so iterate over it.
+        ObjectNode result = databaseNode.deepCopy();
+        inputNode.fields().forEachRemaining(prop -> {
+            merge(entityType, result, (ObjectNode) prop.getValue());
         });
-        return entityNode;
+        return result;
     }
 
-    /**
-     * @param propKeyValue - user given entity node
-     * @param entityNode   - read from the database
-     * @param entityKey    - user given entity key (wrapper node supplied by the user)
-     */
-    private void mergeDestinationWithSourceNode(ObjectNode propKeyValue, ObjectNode entityNode, String entityKey) {
-        ObjectNode subEntity = (ObjectNode) entityNode.findValue(entityKey);
-        propKeyValue.fields().forEachRemaining(prop -> {
+    private void merge(String entityType, ObjectNode result, ObjectNode inputNode) {
+        inputNode.fields().forEachRemaining(prop -> {
             String propKey = prop.getKey();
             JsonNode propValue = prop.getValue();
-            if (propValue.isValueNode() && !uuidPropertyName.equalsIgnoreCase(propKey)) {
-                subEntity.set(propKey, propValue);
+
+            if ((propValue.isValueNode() && !uuidPropertyName.equalsIgnoreCase(propKey)) ||
+                propValue.isArray()) {
+                // Must be a value node and not a uuidPropertyName key pair
+                //((ObjectNode)result.get(entityType)).set(propKey, propValue);
+                ((ObjectNode)result.at(entityType)).set(propKey, propValue);
             } else if (propValue.isObject()) {
-                if (subEntity.get(propKey).size() == 0) {
-                    subEntity.set(propKey, propValue);
-                } else if (subEntity.get(propKey).isObject()) {
-                    //As of now filtering only @type
-                    List<String> filterKeys = Arrays.asList(Constants.JsonldConstants.TYPE);
-                    //removing keys with name osid and type
-                    JSONUtil.removeNodes((ObjectNode) subEntity.get(propKey), filterKeys);
-                    //constructNewNodeToParent
-                    subEntity.set(propKey, propValue);
-                }
-            } else if (subEntity.get(propKey).isArray()) {
-                List<String> filterKeys = Arrays.asList(Constants.JsonldConstants.TYPE);
-                propValue.forEach(arrayElement -> {
-                    //removing keys with name @type
-                    JSONUtil.removeNodes((ObjectNode) arrayElement, filterKeys);
-                });
-                //constructNewNodeToParent
-                subEntity.set(propKey, propValue);
+                merge(entityType + "/" + propKey, result, (ObjectNode) propValue);
             }
         });
     }
-
 }

@@ -97,8 +97,9 @@
     <logger name="io.opensaber.validators.shex.shaclex" level="ERROR"/>
     <logger name="es.weso" level="ERROR"/>
     <logger name="io.opensaber.utils.converters" level="ERROR"/>
-    <logger name="io.opensaber.registry.dao.impl.RegistryDaoImpl" level="ERROR"/>
+    <logger name="io.opensaber.registry.dao.RegistryDaoImpl" level="DEBUG"/>
     <logger name="org.springframework" level="ERROR"/>
+    <logger name="io.opensaber.registry.service" level="DEBUG"/>
     <!--
     <logger name="PERFORMANCE_INSTRUMENTATION" level="TRACE" additivity="false">
         <appender-ref ref="PERF_FILE_OUT"/>
