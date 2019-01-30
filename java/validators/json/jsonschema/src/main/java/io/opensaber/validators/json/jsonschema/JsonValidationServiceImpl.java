@@ -56,7 +56,10 @@ public class JsonValidationServiceImpl implements IValidate {
 		}
 		return result;
 	}
-
+	/**
+	 * Store all list of known definitions as definitionMap.
+	 * Must get populated before creating the schema.
+	 */
     @Override
     public void addDefinitions(String definitionTitle, String definitionContent) {
         if( definitionMap != null ){
