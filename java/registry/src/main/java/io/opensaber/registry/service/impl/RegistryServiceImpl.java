@@ -238,17 +238,34 @@ public class RegistryServiceImpl implements RegistryService {
      * @return
      */
     private boolean indexFieldsExists(Vertex parentVertex, List<String> fields) {
+        boolean contains = false;
+        if (parentVertex.property(Constants.INDEX_FIELDS).isPresent()) {
+            for (String field : fields) {
+                contains = fieldExists(parentVertex, field);
+                if(!contains)
+                    break;
+            }
+        }
+        return contains;
+    }
+    
+    /**
+     * check given field exists on the index field property of parent vertex
+     * @param parentVertex
+     * @param field
+     * @return
+     */
+    private boolean fieldExists(Vertex parentVertex, String field) {
         String[] indexFields = null;
         boolean contains = false;
         if (parentVertex.property(Constants.INDEX_FIELDS).isPresent()) {
             String values = (String) parentVertex.property(Constants.INDEX_FIELDS).value();
             indexFields = values.split(",");
-            for (String field : fields) {
-                contains = Arrays.stream(indexFields).anyMatch(field::equals);
-            }
+            contains = Arrays.stream(indexFields).anyMatch(field::equals);
         }
         return contains;
     }
+    
     
     /**
      * Append the values to parent vertex INDEX_FIELDS property
@@ -258,8 +275,10 @@ public class RegistryServiceImpl implements RegistryService {
     private void setPropertyValuesOnParentVertex(Vertex parentVertex, List<String> values) {
         String existingValue = (String) parentVertex.property(Constants.INDEX_FIELDS).value();
         for (String value : values) {
-            existingValue = existingValue.isEmpty() ? value : (existingValue + "," + value);
-            parentVertex.property(Constants.INDEX_FIELDS, existingValue);
+            if(!fieldExists(parentVertex, value)){
+                existingValue = existingValue.isEmpty() ? value : (existingValue + "," + value);
+                parentVertex.property(Constants.INDEX_FIELDS, existingValue);
+            }
         }
         logger.debug("After setting the index values to parent vertex property "
                 + (String) parentVertex.property(Constants.INDEX_FIELDS).value());
