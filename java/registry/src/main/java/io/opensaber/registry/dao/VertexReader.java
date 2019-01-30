@@ -118,7 +118,8 @@ public class VertexReader {
 
                     if (canAdd) {
                         String propValue = prop.value().toString();
-                        if (propValue.contains(",")) {
+                        if (propValue.startsWith("[")) {
+                            propValue = propValue.replace("[", "").replace("]", "");
                             ArrayNode stringArray = JsonNodeFactory.instance.arrayNode();
                             String[] valArray = propValue.split(",");
                             for (String val : valArray) {
