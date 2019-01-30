@@ -26,6 +26,8 @@ public class Neo4jGraphProvider extends DatabaseProvider {
     private boolean profilerEnabled;
     private DBConnectionInfo connectionInfo;
     private Neo4jIdProvider neo4jIdProvider = new Neo4jIdProvider();
+    private Neo4JGraph neo4jGraph;
+
 
 	public Neo4jGraphProvider(DBConnectionInfo connection, String uuidPropName) {
 		connectionInfo = connection;
@@ -40,7 +42,6 @@ public class Neo4jGraphProvider extends DatabaseProvider {
 	}
 
     private Neo4JGraph getGraph() {
-        Neo4JGraph neo4jGraph;
         Neo4JElementIdProvider<?> idProvider = neo4jIdProvider;
 
         neo4jGraph = new Neo4JGraph(driver, idProvider, idProvider);
@@ -101,9 +102,10 @@ public class Neo4jGraphProvider extends DatabaseProvider {
 	
 	@Override
 	public void createIndex(String label, List<String> propertyNames){
-	    Neo4JGraph neo4jGraph = getGraph();
 	    for(String propertyName : propertyNames){
 	        neo4jGraph.createIndex(label, propertyName);
+            logger.info("Neo4jGraph index created for " + label);
+
 	    }
 	}
 }
