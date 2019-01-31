@@ -8,6 +8,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,6 +76,7 @@ public class SqlgProvider extends DatabaseProvider {
 	 * @param propertyNames
 	 */
 	private void createIndexByIndexType(IndexType indexType, String label, List<String> propertyNames){
+	    Transaction tx = startTransaction(graph);
         VertexLabel vertexLabel = graph.getTopology().ensureVertexLabelExist(label);  
         List<PropertyColumn> properties = new ArrayList<>();
         for (String propertyName : propertyNames) {
@@ -84,5 +86,7 @@ public class SqlgProvider extends DatabaseProvider {
             Index index = vertexLabel.ensureIndexExists(indexType, properties);
             logger.info(indexType + "index created for " + label + " - "+index.getName());
         }
+        commitTransaction(graph, tx);
+
 	}
 }

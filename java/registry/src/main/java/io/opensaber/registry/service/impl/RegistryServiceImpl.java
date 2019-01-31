@@ -177,6 +177,7 @@ public class RegistryServiceImpl implements RegistryService {
         }
 
         if (persistenceEnabled) {
+            String vertexLabel = null;
             DatabaseProvider dbProvider = shard.getDatabaseProvider();
             try (OSGraph osGraph = dbProvider.getOSGraph()) {
                 Graph graph = osGraph.getGraphStore();
@@ -185,10 +186,10 @@ public class RegistryServiceImpl implements RegistryService {
                 shard.getDatabaseProvider().commitTransaction(graph, tx);
                 dbProvider.commitTransaction(graph, tx);
 
-                String vertexLabel = rootNode.fieldNames().next();
-                // creates/updates indices for the vertex or table gets persists)
-                ensureIndexExists(dbProvider, graph, vertexLabel);
+                vertexLabel = rootNode.fieldNames().next();
             }
+            // creates/updates indices for the vertex or table gets persists)
+            ensureIndexExists(dbProvider, shard.getShardId(), vertexLabel);
         }
 
         return entityId;
@@ -201,28 +202,26 @@ public class RegistryServiceImpl implements RegistryService {
      * @param graph
      * @param label   a type vertex label (example:Teacher)
      */
-    private void ensureIndexExists(DatabaseProvider dbProvider, Graph graph, String label) {
+    private void ensureIndexExists(DatabaseProvider dbProvider, String shardId, String label) {
 
-        Vertex parentVertex = entityParenter.getKnownParentVertex(label, shard.getShardId());
+        Vertex parentVertex = entityParenter.getKnownParentVertex(label, shardId);
         Definition definition = definitionsManager.getDefinition(label);
         List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
         List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();
 
         try {
-            Transaction tx = dbProvider.startTransaction(graph);
             if (!indexFieldsExists(parentVertex, indexFields)){
-                dbProvider.createIndex(label, indexFields);
                 setPropertyValuesOnParentVertex(parentVertex, indexFields);
+                dbProvider.createIndex(label, indexFields);
 
             }
             if(!indexFieldsExists(parentVertex, indexUniqueFields)){
-                dbProvider.createUniqueIndex(label, indexUniqueFields);
                 setPropertyValuesOnParentVertex(parentVertex, indexUniqueFields);
+                dbProvider.createUniqueIndex(label, indexUniqueFields);
 
             }
             logger.debug("after creating index property value "
                     + parentVertex.property(Constants.INDEX_FIELDS).value());
-            dbProvider.commitTransaction(graph, tx);
  
         } catch (Exception e) {
             e.printStackTrace();
@@ -239,13 +238,12 @@ public class RegistryServiceImpl implements RegistryService {
      */
     private boolean indexFieldsExists(Vertex parentVertex, List<String> fields) {
         boolean contains = false;
-        if (parentVertex.property(Constants.INDEX_FIELDS).isPresent()) {
-            for (String field : fields) {
-                contains = fieldExists(parentVertex, field);
-                if(!contains)
-                    break;
-            }
+        for (String field : fields) {
+            contains = fieldExists(parentVertex, field);
+            if(!contains)
+                break;
         }
+      
         return contains;
     }
     
@@ -256,13 +254,11 @@ public class RegistryServiceImpl implements RegistryService {
      * @return
      */
     private boolean fieldExists(Vertex parentVertex, String field) {
-        String[] indexFields = null;
         boolean contains = false;
         if (parentVertex.property(Constants.INDEX_FIELDS).isPresent()) {
             String values = (String) parentVertex.property(Constants.INDEX_FIELDS).value();
-            indexFields = values.split(",");
-            contains = Arrays.stream(indexFields).anyMatch(field::equals);
-        }
+            contains = values.contains(field);
+      }
         return contains;
     }
     
