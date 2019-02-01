@@ -15,7 +15,7 @@ public class StringHelper {
      * This method checks the input String in array format and removes the characters "[", "]"
      *
      * @param input as any String content
-     * @return string replaced with angle braces with empty character
+     * @return string replaced with square braces with empty character
      */
     public static String removeSquareBraces(String input) {
         Pattern pattern = Pattern.compile(SQUARE_BRACE_REGEX);
