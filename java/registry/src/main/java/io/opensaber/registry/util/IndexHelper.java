@@ -52,18 +52,15 @@ public class IndexHelper {
      *            a type vertex label (example:Teacher) and table in rdbms
      */
     public void create(String label) {
-
         if (label != null && !label.isEmpty()) {
             createIndex(label);
             createUniqueIndex(label);
         } else {
             logger.info("label is required for creating indexing");
         }
-
     }
 
     private void createIndex(String label) {
-
         try {
             addFields(indexFields, false);
             setPropertyValues(newIndexFields, false);
@@ -73,7 +70,6 @@ public class IndexHelper {
             e.printStackTrace();
             logger.error("On non-unique index creation " + e);
         }
-
     }
 
     private void createUniqueIndex(String label) {
@@ -103,7 +99,7 @@ public class IndexHelper {
             if (!values.contains(field))
                 newFields.add(field);
         }
-        logger.info("No of fields to add index are {}", propertyName + newFields.size());
+        logger.info("No of fields to add {} ", propertyName + newFields.size());
     }
 
     /**
