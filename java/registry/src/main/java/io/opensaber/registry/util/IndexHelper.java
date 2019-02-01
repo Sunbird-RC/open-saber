@@ -7,9 +7,15 @@ import java.util.List;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+@Component
 public class IndexHelper {
     private static Logger logger = LoggerFactory.getLogger(IndexHelper.class);
+    
+    @Value("${database.uuidPropertyName}")
+    public String uuidPropertyName;
 
     private List<String> indexFields;
     private List<String> indexUniqueFields;
@@ -20,6 +26,9 @@ public class IndexHelper {
 
     public IndexHelper(List<String> indexFields, List<String> indexUniqueFields, Vertex parentVertex) {
 
+        //Added a default property(uuid)
+        indexFields.add(uuidPropertyName);
+        
         this.indexFields = indexFields;
         this.indexUniqueFields = indexUniqueFields;
         this.parentVertex = parentVertex;
