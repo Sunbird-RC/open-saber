@@ -7,15 +7,9 @@ import java.util.List;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
-@Component
 public class IndexHelper {
     private static Logger logger = LoggerFactory.getLogger(IndexHelper.class);
-    
-    @Value("${database.uuidPropertyName}")
-    public String uuidPropertyName;
 
     private List<String> indexFields;
     private List<String> indexUniqueFields;
@@ -26,9 +20,6 @@ public class IndexHelper {
 
     public IndexHelper(List<String> indexFields, List<String> indexUniqueFields, Vertex parentVertex) {
 
-        //Added a default property(uuid)
-        indexFields.add(uuidPropertyName);
-        
         this.indexFields = indexFields;
         this.indexUniqueFields = indexUniqueFields;
         this.parentVertex = parentVertex;
@@ -36,27 +27,35 @@ public class IndexHelper {
     }
 
     /**
-     * Creates index for a given databaseProvider  
+     * Creates index for a given databaseProvider
      * 
      * @param dbProvider
-     * @param label     a type vertex label (example:Teacher)
+     * @param label
+     *            a type vertex label (example:Teacher)
      */
-    public void create(DatabaseProvider dbProvider, String label) {
+    public void create(DatabaseProvider dbProvider, String label, String uuidPropertyName) {
 
-        try {
-            // creates non-unique index
-            addFields(indexFields, false);
-            setPropertyValues(newIndexFields, false); 
-            dbProvider.createIndex(label, newIndexFields);
-            
-            //creates unique index
-            addFields(indexUniqueFields, true);
-            setPropertyValues(newIndexUniqueFields, true);
-            dbProvider.createUniqueIndex(label, newIndexUniqueFields);
+        if(label != null && !label.isEmpty() && (uuidPropertyName != null &&  ! uuidPropertyName.isEmpty())){
+            try {
+                //added a default field(uuid) for indexing 
+                indexFields.add(uuidPropertyName);
+                
+                // creates non-unique index
+                addFields(indexFields, false);
+                setPropertyValues(newIndexFields, false);
+                dbProvider.createIndex(label, newIndexFields);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            logger.error("On non-unique index creation " + e);
+                // creates unique index
+                addFields(indexUniqueFields, true);
+                setPropertyValues(newIndexUniqueFields, true);
+                dbProvider.createUniqueIndex(label, newIndexUniqueFields);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                logger.error("On non-unique index creation " + e);
+            }
+        } else {
+            logger.info("label, uuidPropertyName is required for creating indexing");
         }
         
     }
@@ -77,11 +76,12 @@ public class IndexHelper {
             if (!values.contains(field))
                 newFields.add(field);
         }
-        logger.info("No of fields to add index are {}" , propertyName + newFields.size());
+        logger.info("No of fields to add index are {}", propertyName + newFields.size());
     }
 
     /**
-     * Append the values to parent vertex INDEX_FIELDS and UNIQUE_INDEX_FIELDS property
+     * Append the values to parent vertex INDEX_FIELDS and UNIQUE_INDEX_FIELDS
+     * property
      * 
      * @param parentVertex
      * @param values

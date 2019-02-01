@@ -211,7 +211,7 @@ public class RegistryServiceImpl implements RegistryService {
         List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();
         
         IndexHelper indexHelper = new IndexHelper(indexFields, indexUniqueFields, parentVertex);
-        indexHelper.create(dbProvider, label);
+        indexHelper.create(dbProvider, label, uuidPropertyName);
 
     }
 

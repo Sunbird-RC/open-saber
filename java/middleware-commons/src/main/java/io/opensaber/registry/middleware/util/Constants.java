@@ -31,7 +31,7 @@ public class Constants {
 	
 	// Parent Vertex Properies
 	public static final String INDEX_FIELDS = "indexFields";
-	public static final String UNIQUE_INDEX_FIELDS ="uniqueIndexFields";
+	public static final String UNIQUE_INDEX_FIELDS = "uniqueIndexFields";
 
 
 	// Configuration constants
