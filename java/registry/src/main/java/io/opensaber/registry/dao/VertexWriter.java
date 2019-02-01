@@ -6,19 +6,18 @@ import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.util.RefLabelHelper;
 import io.opensaber.registry.util.TypePropertyHelper;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 public class VertexWriter {
     private String uuidPropertyName;
@@ -78,7 +77,7 @@ public class VertexWriter {
      * @param arrayNode
      */
     private void writeArrayNode(Graph graph, Vertex vertex, String entryKey, ArrayNode arrayNode) {
-        List<String> uidList = new ArrayList<>();
+        Set<String> uidSet = new HashSet<>();
         boolean isArrayItemObject = arrayNode.get(0).isObject();
         boolean isSignature = entryKey.equals(Constants.SIGNATURES_STR);
 
@@ -104,23 +103,23 @@ public class VertexWriter {
             if (jsonNode.isObject()) {
                 Vertex createdV = processNode(graph, entryKey, jsonNode);
                 createdV.property(Constants.ROOT_KEYWORD, parentOSid);
-                uidList.add(createdV.id().toString());
+                uidSet.add(createdV.id().toString());
                 if (isSignature) {
                     addEdge(jsonNode.get(Constants.SIGNATURE_FOR).textValue(), blankNode, createdV);
                 } else {
                     addEdge(entryKey + Constants.ARRAY_ITEM, blankNode, createdV);
                 }
             } else {
-                uidList.add(jsonNode.asText());
+                uidSet.add(jsonNode.asText());
             }
         }
 
         // Set up references on a blank node.
         label = RefLabelHelper.getLabel(entryKey, uuidPropertyName);
         if (isArrayItemObject) {
-            blankNode.property(VertexProperty.Cardinality.list, label, uidList.toString());
+            blankNode.property( label, uidSet.toString());
         } else {
-            blankNode.property(VertexProperty.Cardinality.list, entryKey, uidList.toString());
+            blankNode.property( entryKey, uidSet.toString());
         }
     }
 

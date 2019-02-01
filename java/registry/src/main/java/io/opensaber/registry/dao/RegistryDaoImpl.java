@@ -6,11 +6,8 @@ import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.sink.shard.Shard;
-import io.opensaber.registry.util.DefinitionsManager;
-import io.opensaber.registry.util.EntityParenter;
-import io.opensaber.registry.util.ReadConfigurator;
-import io.opensaber.registry.util.RecordIdentifier;
-import io.opensaber.registry.util.RefLabelHelper;
+import io.opensaber.registry.util.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -135,14 +132,13 @@ public class RegistryDaoImpl implements IRegistryDao {
                         }
                     }
                     osidSet = deleteVertices(graph, arrayNodeVertex, fieldKey, osidSet);
-                    String updatedOisdValue = String.join(",", osidSet);
-                    arrayNodeVertex.property(RefLabelHelper.getLabel(fieldKey, uuidPropertyName), updatedOisdValue);
+                    arrayNodeVertex.property(RefLabelHelper.getLabel(fieldKey, uuidPropertyName), osidSet.toString());
                 } else {
                     Set<String> valueSet = new HashSet<>();
                     subEntityNode.forEach( textElement -> {
                         valueSet.add(textElement.asText());
                     });
-                    rootVertex.property(VertexProperty.Cardinality.list,fieldKey,valueSet.toString());
+                    rootVertex.property(fieldKey,valueSet.toString());
                 }
 
             }
@@ -177,15 +173,19 @@ public class RegistryDaoImpl implements IRegistryDao {
             String nodeOsidLabel = RefLabelHelper.getLabel(parentNodeLabel, uuidPropertyName);
             VertexProperty<Object> vertexProperty = rootVertex.property(nodeOsidLabel);
             if (isArrayElement && vertexProperty.isPresent()) {
-                String existingValue = (String) vertexProperty.value();
-                rootVertex.property(nodeOsidLabel, existingValue + "," + newChildVertex.id().toString());
+                String existingValue = StringHelper.modifyArrayFormat((String) vertexProperty.value());
+                existingValue = existingValue + "," + newChildVertex.id().toString();
+                String[] newOsidArray = existingValue.split(",");
+                rootVertex.property(nodeOsidLabel, Arrays.asList(newOsidArray).toString());
             } else {
                 rootVertex.property(nodeOsidLabel, newChildVertex.id().toString());
             }
             if(rootVertex.label().equalsIgnoreCase(Constants.ARRAY_NODE_KEYWORD)){
-                vertexWriter.addEdge(newChildVertex.property(Constants.SIGNATURE_FOR).value().toString(), rootVertex, newChildVertex);
-            } else {
-                vertexWriter.addEdge(parentNodeLabel, rootVertex, newChildVertex);
+                if(newChildVertex.property(Constants.SIGNATURE_FOR).isPresent()){
+                    vertexWriter.addEdge(newChildVertex.property(Constants.SIGNATURE_FOR).value().toString(), rootVertex, newChildVertex);
+                } else {
+                    vertexWriter.addEdge(parentNodeLabel, rootVertex, newChildVertex);
+                }
             }
             return newChildVertex.id().toString();
         } else {
@@ -227,7 +227,7 @@ public class RegistryDaoImpl implements IRegistryDao {
     private Set<String> deleteVertices(Graph graph, Vertex rootVertex, String label, Set<String> activeOsid) {
         String[] osidArray = null;
         VertexProperty vp = rootVertex.property(label + "_" + uuidPropertyName);
-        String osidPropValue = (String) vp.value();
+        String osidPropValue = StringHelper.modifyArrayFormat((String) vp.value());
         if (osidPropValue.contains(",")) {
             osidArray = osidPropValue.split(",");
         } else {
