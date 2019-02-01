@@ -23,7 +23,7 @@ public class VertexWriter {
     private String uuidPropertyName;
     private DatabaseProvider databaseProvider;
     private String parentOSid;
-    private static final String EMPTY = "";
+    private static final String EMPTY_STR = "";
 
     private Logger logger = LoggerFactory.getLogger(VertexWriter.class);
 
@@ -48,7 +48,8 @@ public class VertexWriter {
         if (!iterVertex.hasNext()) {
             parentVertex = createVertex(graph, parentLabel);
             //added a property to track vertices belong to parent are indexed
-            parentVertex.property(Constants.INDEX_FIELDS, EMPTY);
+            parentVertex.property(Constants.INDEX_FIELDS, EMPTY_STR);
+            parentVertex.property(Constants.UNIQUE_INDEX_FIELDS, EMPTY_STR);
             logger.info("Parent label {} created {}", parentLabel, parentVertex.id().toString());
         } else {
             parentVertex = iterVertex.next();

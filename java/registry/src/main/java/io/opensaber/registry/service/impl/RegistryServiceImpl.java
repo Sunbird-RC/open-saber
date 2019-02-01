@@ -24,6 +24,7 @@ import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.util.Definition;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.EntityParenter;
+import io.opensaber.registry.util.IndexHelper;
 import io.opensaber.registry.util.ReadConfigurator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -188,7 +189,6 @@ public class RegistryServiceImpl implements RegistryService {
 
                 vertexLabel = rootNode.fieldNames().next();
             }
-            // creates/updates indices for the vertex or table gets persists)
             ensureIndexExists(dbProvider, shard.getShardId(), vertexLabel);
         }
 
@@ -206,76 +206,12 @@ public class RegistryServiceImpl implements RegistryService {
 
         Vertex parentVertex = entityParenter.getKnownParentVertex(label, shardId);
         Definition definition = definitionsManager.getDefinition(label);
+        
         List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
         List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();
-
-        try {
-            List<String> newIndexFields = fieldsToCreateIndex(parentVertex, indexFields);
-            if(newIndexFields.size() > 0){
-                setPropertyValuesOnParentVertex(parentVertex, newIndexFields);
-                dbProvider.createIndex(label, indexFields);
-
-            }
-            List<String> newIndexUniqueFields = fieldsToCreateIndex(parentVertex, indexUniqueFields);
-            if(newIndexUniqueFields.size() > 0){
-                setPropertyValuesOnParentVertex(parentVertex, newIndexUniqueFields);
-                dbProvider.createUniqueIndex(label, newIndexUniqueFields);
-
-            }
-            logger.debug("after creating index property value "
-                    + parentVertex.property(Constants.INDEX_FIELDS).value());
- 
-        } catch (Exception e) {
-            e.printStackTrace();
-            logger.error("On index creation while add api " + e);
-        }
-
-    }
-    /**
-     * Gives new fields for creating index
-     * @param parentVertex
-     * @param fields
-     * @return
-     */
-    private List<String> fieldsToCreateIndex(Vertex parentVertex, List<String> fields){
-        List<String> newFields = new ArrayList<>();
-        for(String field: fields){
-            if(!fieldExists(parentVertex, field)){
-                newFields.add(field);
-            }
-        }
-        return newFields;
-    }
- 
-    /**
-     * check given field exists on the index field property of parent vertex
-     * @param parentVertex
-     * @param field
-     * @return
-     */
-    private boolean fieldExists(Vertex parentVertex, String field) {
-        boolean contains = false;
-        if (parentVertex.property(Constants.INDEX_FIELDS).isPresent()) {
-            String values = (String) parentVertex.property(Constants.INDEX_FIELDS).value();
-            contains = values.contains(field);
-      }
-        return contains;
-    }
-    
-    
-    /**
-     * Append the values to parent vertex INDEX_FIELDS property
-     * @param parentVertex
-     * @param values
-     */
-    private void setPropertyValuesOnParentVertex(Vertex parentVertex, List<String> values) {
-        String existingValue = (String) parentVertex.property(Constants.INDEX_FIELDS).value();
-        for (String value : values) {
-            existingValue = existingValue.isEmpty() ? value : (existingValue + "," + value);
-            parentVertex.property(Constants.INDEX_FIELDS, existingValue);
-        }
-        logger.debug("After setting the index values to parent vertex property "
-                + (String) parentVertex.property(Constants.INDEX_FIELDS).value());
+        
+        IndexHelper indexHelper = new IndexHelper(indexFields, indexUniqueFields, parentVertex);
+        indexHelper.create(dbProvider, label);
 
     }
 
