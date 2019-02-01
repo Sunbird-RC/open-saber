@@ -13,7 +13,7 @@ import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.RefLabelHelper;
 import io.opensaber.registry.util.TypePropertyHelper;
-
+import io.opensaber.registry.util.StringHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
