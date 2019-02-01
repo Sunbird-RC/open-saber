@@ -8,7 +8,12 @@ import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.sink.DatabaseProvider;
-import io.opensaber.registry.util.*;
+import io.opensaber.registry.util.Definition;
+import io.opensaber.registry.util.DefinitionsManager;
+import io.opensaber.registry.util.ReadConfigurator;
+import io.opensaber.registry.util.RefLabelHelper;
+import io.opensaber.registry.util.TypePropertyHelper;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
