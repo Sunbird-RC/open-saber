@@ -196,22 +196,28 @@ public class RegistryServiceImpl implements RegistryService {
     }
 
     /**
-     * Ensures index for a vertex exists 
-     * Unique index and non-unique index is supported
+     * Ensures index for a vertex exists Unique index and non-unique index is
+     * supported
+     * 
      * @param dbProvider
-     * @param graph
-     * @param label   a type vertex label (example:Teacher)
+     * @param shardId
+     * @param label
+     *            a type vertex label (example:Teacher)
      */
     private void ensureIndexExists(DatabaseProvider dbProvider, String shardId, String label) {
 
         Vertex parentVertex = entityParenter.getKnownParentVertex(label, shardId);
         Definition definition = definitionsManager.getDefinition(label);
-        
+
         List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
         List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();
-        
-        IndexHelper indexHelper = new IndexHelper(indexFields, indexUniqueFields, parentVertex);
-        indexHelper.create(dbProvider, label, uuidPropertyName);
+        // adds default field (uuid)
+        indexUniqueFields.add(uuidPropertyName);
+
+        IndexHelper indexHelper = new IndexHelper(dbProvider, parentVertex);
+        indexHelper.setIndexFields(indexFields);
+        indexHelper.setUniqueIndexFields(indexUniqueFields);
+        indexHelper.create(label);
 
     }
 

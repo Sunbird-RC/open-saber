@@ -8,65 +8,92 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class helps to create index of unique or non-unique type. Must set the
+ * values for unique index & non-unique index fields
+ *
+ */
 public class IndexHelper {
     private static Logger logger = LoggerFactory.getLogger(IndexHelper.class);
 
     private List<String> indexFields;
     private List<String> indexUniqueFields;
     private Vertex parentVertex;
+    private DatabaseProvider databaseProvider;
 
     private List<String> newIndexFields = new ArrayList<>();
     private List<String> newIndexUniqueFields = new ArrayList<>();
 
-    public IndexHelper(List<String> indexFields, List<String> indexUniqueFields, Vertex parentVertex) {
-
-        this.indexFields = indexFields;
-        this.indexUniqueFields = indexUniqueFields;
+    public IndexHelper(DatabaseProvider databaseProvider, Vertex parentVertex) {
+        this.databaseProvider = databaseProvider;
         this.parentVertex = parentVertex;
-
     }
 
     /**
-     * Creates index for a given databaseProvider
-     * 
-     * @param dbProvider
-     * @param label
-     *            a type vertex label (example:Teacher)
+     * Required to set non-unique fields to create
+     * @param indexFields
      */
-    public void create(DatabaseProvider dbProvider, String label, String uuidPropertyName) {
-
-        if(label != null && !label.isEmpty() && (uuidPropertyName != null &&  ! uuidPropertyName.isEmpty())){
-            try {
-                //added a default field(uuid) for indexing 
-                indexFields.add(uuidPropertyName);
-                
-                // creates non-unique index
-                addFields(indexFields, false);
-                setPropertyValues(newIndexFields, false);
-                dbProvider.createIndex(label, newIndexFields);
-
-                // creates unique index
-                addFields(indexUniqueFields, true);
-                setPropertyValues(newIndexUniqueFields, true);
-                dbProvider.createUniqueIndex(label, newIndexUniqueFields);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                logger.error("On non-unique index creation " + e);
-            }
-        } else {
-            logger.info("label, uuidPropertyName is required for creating indexing");
-        }
-        
+    public void setIndexFields(List<String> indexFields) {
+        this.indexFields = indexFields;
     }
 
     /**
-     * Gives new fields for creating index Parent vertex are always have
+     * Required to set unique fields to create 
+     * @param indexUniqueFields
+     */
+    public void setUniqueIndexFields(List<String> indexUniqueFields) {
+        this.indexUniqueFields = indexUniqueFields;
+    }
+
+    /**
+     * Creates index for a given label
+     * 
+     * @param label
+     *            a type vertex label (example:Teacher) and table in rdbms
+     */
+    public void create(String label) {
+
+        if (label != null && !label.isEmpty()) {
+            createIndex(label);
+            createUniqueIndex(label);
+        } else {
+            logger.info("label is required for creating indexing");
+        }
+
+    }
+
+    private void createIndex(String label) {
+
+        try {
+            addFields(indexFields, false);
+            setPropertyValues(newIndexFields, false);
+            databaseProvider.createIndex(label, newIndexFields);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("On non-unique index creation " + e);
+        }
+
+    }
+
+    private void createUniqueIndex(String label) {
+        try {
+            addFields(indexUniqueFields, true);
+            setPropertyValues(newIndexUniqueFields, true);
+            databaseProvider.createUniqueIndex(label, newIndexUniqueFields);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("On unique index creation " + e);
+        }
+    }
+
+    /**
+     * Adds new fields for creating index. Parent vertex are always have
      * INDEX_FIELDS and UNIQUE_INDEX_FIELDS property
      * 
-     * @param parentVertex
      * @param fields
-     * @return
+     * @param isUnique
      */
     private void addFields(List<String> fields, boolean isUnique) {
         List<String> newFields = isUnique ? newIndexUniqueFields : newIndexFields;
@@ -83,8 +110,8 @@ public class IndexHelper {
      * Append the values to parent vertex INDEX_FIELDS and UNIQUE_INDEX_FIELDS
      * property
      * 
-     * @param parentVertex
      * @param values
+     * @param isUnique
      */
     private void setPropertyValues(List<String> values, boolean isUnique) {
 
