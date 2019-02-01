@@ -13,8 +13,8 @@ import org.slf4j.LoggerFactory;
  * values for unique index & non-unique index fields
  *
  */
-public class IndexHelper {
-    private static Logger logger = LoggerFactory.getLogger(IndexHelper.class);
+public class Indexer {
+    private static Logger logger = LoggerFactory.getLogger(Indexer.class);
 
     private List<String> indexFields;
     private List<String> indexUniqueFields;
@@ -24,7 +24,7 @@ public class IndexHelper {
     private List<String> newIndexFields = new ArrayList<>();
     private List<String> newIndexUniqueFields = new ArrayList<>();
 
-    public IndexHelper(DatabaseProvider databaseProvider, Vertex parentVertex) {
+    public Indexer(DatabaseProvider databaseProvider, Vertex parentVertex) {
         this.databaseProvider = databaseProvider;
         this.parentVertex = parentVertex;
     }

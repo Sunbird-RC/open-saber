@@ -24,7 +24,7 @@ import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.util.Definition;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.EntityParenter;
-import io.opensaber.registry.util.IndexHelper;
+import io.opensaber.registry.util.Indexer;
 import io.opensaber.registry.util.ReadConfigurator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -214,10 +214,10 @@ public class RegistryServiceImpl implements RegistryService {
         // adds default field (uuid)
         indexUniqueFields.add(uuidPropertyName);
 
-        IndexHelper indexHelper = new IndexHelper(dbProvider, parentVertex);
-        indexHelper.setIndexFields(indexFields);
-        indexHelper.setUniqueIndexFields(indexUniqueFields);
-        indexHelper.create(label);
+        Indexer indexer = new Indexer(dbProvider, parentVertex);
+        indexer.setIndexFields(indexFields);
+        indexer.setUniqueIndexFields(indexUniqueFields);
+        indexer.createIndex(label);
 
     }
 
