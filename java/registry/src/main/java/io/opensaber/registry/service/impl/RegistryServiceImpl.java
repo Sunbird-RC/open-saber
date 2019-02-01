@@ -210,14 +210,16 @@ public class RegistryServiceImpl implements RegistryService {
         List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();
 
         try {
-            if (!indexFieldsExists(parentVertex, indexFields)){
-                setPropertyValuesOnParentVertex(parentVertex, indexFields);
+            List<String> newIndexFields = fieldsToCreateIndex(parentVertex, indexFields);
+            if(newIndexFields.size() > 0){
+                setPropertyValuesOnParentVertex(parentVertex, newIndexFields);
                 dbProvider.createIndex(label, indexFields);
 
             }
-            if(!indexFieldsExists(parentVertex, indexUniqueFields)){
-                setPropertyValuesOnParentVertex(parentVertex, indexUniqueFields);
-                dbProvider.createUniqueIndex(label, indexUniqueFields);
+            List<String> newIndexUniqueFields = fieldsToCreateIndex(parentVertex, indexUniqueFields);
+            if(newIndexUniqueFields.size() > 0){
+                setPropertyValuesOnParentVertex(parentVertex, newIndexUniqueFields);
+                dbProvider.createUniqueIndex(label, newIndexUniqueFields);
 
             }
             logger.debug("after creating index property value "
@@ -229,24 +231,22 @@ public class RegistryServiceImpl implements RegistryService {
         }
 
     }
-    
     /**
-     * Checks if fields exist for parent vertex property
+     * Gives new fields for creating index
      * @param parentVertex
      * @param fields
      * @return
      */
-    private boolean indexFieldsExists(Vertex parentVertex, List<String> fields) {
-        boolean contains = false;
-        for (String field : fields) {
-            contains = fieldExists(parentVertex, field);
-            if(!contains)
-                break;
+    private List<String> fieldsToCreateIndex(Vertex parentVertex, List<String> fields){
+        List<String> newFields = new ArrayList<>();
+        for(String field: fields){
+            if(!fieldExists(parentVertex, field)){
+                newFields.add(field);
+            }
         }
-      
-        return contains;
+        return newFields;
     }
-    
+ 
     /**
      * check given field exists on the index field property of parent vertex
      * @param parentVertex
@@ -271,10 +271,8 @@ public class RegistryServiceImpl implements RegistryService {
     private void setPropertyValuesOnParentVertex(Vertex parentVertex, List<String> values) {
         String existingValue = (String) parentVertex.property(Constants.INDEX_FIELDS).value();
         for (String value : values) {
-            if(!fieldExists(parentVertex, value)){
-                existingValue = existingValue.isEmpty() ? value : (existingValue + "," + value);
-                parentVertex.property(Constants.INDEX_FIELDS, existingValue);
-            }
+            existingValue = existingValue.isEmpty() ? value : (existingValue + "," + value);
+            parentVertex.property(Constants.INDEX_FIELDS, existingValue);
         }
         logger.debug("After setting the index values to parent vertex property "
                 + (String) parentVertex.property(Constants.INDEX_FIELDS).value());
