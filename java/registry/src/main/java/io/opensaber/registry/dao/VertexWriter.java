@@ -14,10 +14,12 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
+
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
+
 
 public class VertexWriter {
     private String uuidPropertyName;
@@ -77,7 +79,7 @@ public class VertexWriter {
      * @param arrayNode
      */
     private void writeArrayNode(Graph graph, Vertex vertex, String entryKey, ArrayNode arrayNode) {
-        Set<String> uidSet = new HashSet<>();
+        List<String> uidList = new ArrayList<>();
         boolean isArrayItemObject = arrayNode.get(0).isObject();
         boolean isSignature = entryKey.equals(Constants.SIGNATURES_STR);
 
@@ -103,23 +105,23 @@ public class VertexWriter {
             if (jsonNode.isObject()) {
                 Vertex createdV = processNode(graph, entryKey, jsonNode);
                 createdV.property(Constants.ROOT_KEYWORD, parentOSid);
-                uidSet.add(createdV.id().toString());
+                uidList.add(createdV.id().toString());
                 if (isSignature) {
                     addEdge(jsonNode.get(Constants.SIGNATURE_FOR).textValue(), blankNode, createdV);
                 } else {
                     addEdge(entryKey + Constants.ARRAY_ITEM, blankNode, createdV);
                 }
             } else {
-                uidSet.add(jsonNode.asText());
+                uidList.add(jsonNode.asText());
             }
         }
 
         // Set up references on a blank node.
         label = RefLabelHelper.getLabel(entryKey, uuidPropertyName);
         if (isArrayItemObject) {
-            blankNode.property( label, uidSet.toString());
+            blankNode.property( label, uidList.toString());
         } else {
-            blankNode.property( entryKey, uidSet.toString());
+            blankNode.property( entryKey, uidList.toString());
         }
     }
 
