@@ -77,9 +77,6 @@ public class VertexReader {
      * @return
      */
     public ObjectNode constructObject(Vertex currVertex) {
-        if(currVertex.label().equalsIgnoreCase("basicProficiencyLevel")){
-            currVertex.label();
-        }
         ObjectNode contentNode = JsonNodeFactory.instance.objectNode();
         String entityType = currVertex.property(TypePropertyHelper.getTypeName()).value().toString();
         Definition definition = definitionsManager.getDefinition(entityType);
@@ -91,7 +88,7 @@ public class VertexReader {
         Iterator<VertexProperty<Object>> properties = currVertex.properties();
         while (properties.hasNext()) {
             VertexProperty<Object> prop = properties.next();
-            String propValue = StringHelper.modifyArrayFormat(prop.value().toString());
+            String propValue = StringHelper.replaceAngleBraces(prop.value().toString());
             if (!RefLabelHelper.isParentLabel(prop.key())) {
                 if (RefLabelHelper.isRefLabel(prop.key(), uuidPropertyName)) {
                     logger.debug("{} is a referenced entity", prop.key());

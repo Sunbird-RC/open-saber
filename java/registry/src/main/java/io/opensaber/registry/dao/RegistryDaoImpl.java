@@ -6,7 +6,12 @@ import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.sink.shard.Shard;
-import io.opensaber.registry.util.*;
+import io.opensaber.registry.util.StringHelper;
+import io.opensaber.registry.util.ReadConfigurator;
+import io.opensaber.registry.util.RecordIdentifier;
+import io.opensaber.registry.util.RefLabelHelper;
+import io.opensaber.registry.util.EntityParenter;
+import io.opensaber.registry.util.DefinitionsManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,7 +20,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -173,7 +177,7 @@ public class RegistryDaoImpl implements IRegistryDao {
             String nodeOsidLabel = RefLabelHelper.getLabel(parentNodeLabel, uuidPropertyName);
             VertexProperty<Object> vertexProperty = rootVertex.property(nodeOsidLabel);
             if (isArrayElement && vertexProperty.isPresent()) {
-                String existingValue = StringHelper.modifyArrayFormat((String) vertexProperty.value());
+                String existingValue = StringHelper.replaceAngleBraces((String) vertexProperty.value());
                 existingValue = existingValue + "," + newChildVertex.id().toString();
                 String[] newOsidArray = existingValue.split(",");
                 rootVertex.property(nodeOsidLabel, Arrays.asList(newOsidArray).toString());
@@ -227,7 +231,7 @@ public class RegistryDaoImpl implements IRegistryDao {
     private Set<String> deleteVertices(Graph graph, Vertex rootVertex, String label, Set<String> activeOsid) {
         String[] osidArray = null;
         VertexProperty vp = rootVertex.property(label + "_" + uuidPropertyName);
-        String osidPropValue = StringHelper.modifyArrayFormat((String) vp.value());
+        String osidPropValue = StringHelper.replaceAngleBraces((String) vp.value());
         if (osidPropValue.contains(",")) {
             osidArray = osidPropValue.split(",");
         } else {
