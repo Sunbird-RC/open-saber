@@ -177,7 +177,7 @@ public class RegistryDaoImpl implements IRegistryDao {
             String nodeOsidLabel = RefLabelHelper.getLabel(parentNodeLabel, uuidPropertyName);
             VertexProperty<Object> vertexProperty = rootVertex.property(nodeOsidLabel);
             if (isArrayElement && vertexProperty.isPresent()) {
-                String existingValue = StringHelper.replaceAngleBraces((String) vertexProperty.value());
+                String existingValue = StringHelper.removeSquareBraces((String) vertexProperty.value());
                 existingValue = existingValue + "," + newChildVertex.id().toString();
                 String[] newOsidArray = existingValue.split(",");
                 rootVertex.property(nodeOsidLabel, Arrays.asList(newOsidArray).toString());
@@ -204,8 +204,8 @@ public class RegistryDaoImpl implements IRegistryDao {
     /**
      * updates the vertex properties with given json node elements
      *
-     * @param elementNode
-     * @param vertex
+     * @param elementNode - the elementNode contains the new values
+     * @param vertex - the target vertex where the new values will be copied
      */
     private void updateProperties(JsonNode elementNode, Vertex vertex) {
         elementNode.fields().forEachRemaining(subElementNode -> {
@@ -231,7 +231,7 @@ public class RegistryDaoImpl implements IRegistryDao {
     private Set<String> deleteVertices(Graph graph, Vertex rootVertex, String label, Set<String> activeOsid) {
         String[] osidArray = null;
         VertexProperty vp = rootVertex.property(label + "_" + uuidPropertyName);
-        String osidPropValue = StringHelper.replaceAngleBraces((String) vp.value());
+        String osidPropValue = StringHelper.removeSquareBraces((String) vp.value());
         if (osidPropValue.contains(",")) {
             osidArray = osidPropValue.split(",");
         } else {

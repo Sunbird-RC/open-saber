@@ -88,7 +88,7 @@ public class VertexReader {
         Iterator<VertexProperty<Object>> properties = currVertex.properties();
         while (properties.hasNext()) {
             VertexProperty<Object> prop = properties.next();
-            String propValue = StringHelper.replaceAngleBraces(prop.value().toString());
+            String propValue = StringHelper.removeSquareBraces(prop.value().toString());
             if (!RefLabelHelper.isParentLabel(prop.key())) {
                 if (RefLabelHelper.isRefLabel(prop.key(), uuidPropertyName)) {
                     logger.debug("{} is a referenced entity", prop.key());
