@@ -180,7 +180,7 @@ public class RegistryDaoImpl implements IRegistryDao {
                 String existingValue = StringHelper.removeSquareBraces((String) vertexProperty.value());
                 existingValue = existingValue + "," + newChildVertex.id().toString();
                 String[] newOsidArray = existingValue.split(",");
-                rootVertex.property(nodeOsidLabel, Arrays.asList(newOsidArray).toString());
+                rootVertex.property(nodeOsidLabel, StringHelper.toString(Arrays.asList(newOsidArray)));
             } else {
                 rootVertex.property(nodeOsidLabel, newChildVertex.id().toString());
             }

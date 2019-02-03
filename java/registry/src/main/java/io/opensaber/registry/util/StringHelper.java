@@ -1,5 +1,6 @@
 package io.opensaber.registry.util;
 
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -8,8 +9,8 @@ import java.util.regex.Matcher;
  */
 public class StringHelper {
 
-    private static final String SQUARE_BRACE_REGEX = "[\\s\\[\\]]";
-    private static final String EMPTY = "";
+    private static final String SQUARE_BRACE_REGEX = "[\\[\\]]";
+    private static final String EMPTY_STR = "";
 
     /**
      * This method checks the input String in array format and removes the characters "[", "]"
@@ -20,6 +21,15 @@ public class StringHelper {
     public static String removeSquareBraces(String input) {
         Pattern pattern = Pattern.compile(SQUARE_BRACE_REGEX);
         Matcher matcher = pattern.matcher(input);
-        return matcher.replaceAll(EMPTY);
+        return matcher.replaceAll(EMPTY_STR);
+    }
+
+    /**This method creates String from the input list, no white space is allowed as prefix when each element is appeneded
+     * @param inputList - which contains list of Strings
+     * @return - String, in array format
+     */
+    public static String toString(List<String> inputList){
+        StringBuilder sb = new StringBuilder(String.join(",",inputList));
+        return sb.insert(0,'[').append(']').toString();
     }
 }
