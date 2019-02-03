@@ -214,10 +214,10 @@ public class RegistryServiceImpl implements RegistryService {
         // adds default field (uuid)
         indexUniqueFields.add(uuidPropertyName);
 
-        Indexer indexer = new Indexer(dbProvider, parentVertex);
+        Indexer indexer = new Indexer(dbProvider);
         indexer.setIndexFields(indexFields);
         indexer.setUniqueIndexFields(indexUniqueFields);
-        indexer.createIndex(label);
+        indexer.createIndex(label, parentVertex);
 
     }
 

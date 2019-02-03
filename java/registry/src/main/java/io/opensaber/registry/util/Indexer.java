@@ -18,15 +18,13 @@ public class Indexer {
 
     private List<String> indexFields;
     private List<String> indexUniqueFields;
-    private Vertex parentVertex;
     private DatabaseProvider databaseProvider;
 
     private List<String> newIndexFields = new ArrayList<>();
     private List<String> newIndexUniqueFields = new ArrayList<>();
 
-    public Indexer(DatabaseProvider databaseProvider, Vertex parentVertex) {
+    public Indexer(DatabaseProvider databaseProvider) {
         this.databaseProvider = databaseProvider;
-        this.parentVertex = parentVertex;
     }
 
     /**
@@ -51,36 +49,34 @@ public class Indexer {
      * @param label
      *            a type vertex label (example:Teacher) and table in rdbms
      */
-    public void create(String label) {
+    public void createIndex(String label, Vertex parentVertex) {
         if (label != null && !label.isEmpty()) {
-            createIndex(label);
-            createUniqueIndex(label);
+            createNonUniqueIndex(label, parentVertex);
+            createUniqueIndex(label, parentVertex);
         } else {
             logger.info("label is required for creating indexing");
         }
     }
 
-    private void createIndex(String label) {
+    private void createNonUniqueIndex(String label, Vertex parentVertex) {
         try {
-            addFields(indexFields, false);
-            setPropertyValues(newIndexFields, false);
+            addFields(indexFields, parentVertex, false);
+            setPropertyValues(newIndexFields, parentVertex, false);
             databaseProvider.createIndex(label, newIndexFields);
 
         } catch (Exception e) {
-            e.printStackTrace();
-            logger.error("On non-unique index creation " + e);
+            logger.error("Non-unique index creation error: " + e);
         }
     }
 
-    private void createUniqueIndex(String label) {
+    private void createUniqueIndex(String label, Vertex parentVertex) {
         try {
-            addFields(indexUniqueFields, true);
-            setPropertyValues(newIndexUniqueFields, true);
+            addFields(indexUniqueFields, parentVertex, true);
+            setPropertyValues(newIndexUniqueFields, parentVertex, true);
             databaseProvider.createUniqueIndex(label, newIndexUniqueFields);
 
         } catch (Exception e) {
-            e.printStackTrace();
-            logger.error("On unique index creation " + e);
+            logger.error("Unique index creation error: " + e);
         }
     }
 
@@ -91,7 +87,7 @@ public class Indexer {
      * @param fields
      * @param isUnique
      */
-    private void addFields(List<String> fields, boolean isUnique) {
+    private void addFields(List<String> fields, Vertex parentVertex, boolean isUnique) {
         List<String> newFields = isUnique ? newIndexUniqueFields : newIndexFields;
         String propertyName = isUnique ? Constants.UNIQUE_INDEX_FIELDS : Constants.INDEX_FIELDS;
         String values = (String) parentVertex.property(propertyName).value();
@@ -109,7 +105,7 @@ public class Indexer {
      * @param values
      * @param isUnique
      */
-    private void setPropertyValues(List<String> values, boolean isUnique) {
+    private void setPropertyValues(List<String> values, Vertex parentVertex, boolean isUnique) {
 
         if (values.size() > 0) {
             String propertyName = isUnique ? Constants.UNIQUE_INDEX_FIELDS : Constants.INDEX_FIELDS;
