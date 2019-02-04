@@ -95,7 +95,6 @@ public class Indexer {
             if (!values.contains(field))
                 newFields.add(field);
         }
-        logger.info("No of fields to add {} ", propertyName + newFields.size());
     }
 
     /**
