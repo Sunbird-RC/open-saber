@@ -20,9 +20,6 @@ public class Indexer {
     private List<String> indexUniqueFields;
     private DatabaseProvider databaseProvider;
 
-    private List<String> newIndexFields = new ArrayList<>();
-    private List<String> newIndexUniqueFields = new ArrayList<>();
-
     public Indexer(DatabaseProvider databaseProvider) {
         this.databaseProvider = databaseProvider;
     }
@@ -60,8 +57,8 @@ public class Indexer {
 
     private void createNonUniqueIndex(String label, Vertex parentVertex) {
         try {
-            addFields(indexFields, parentVertex, false);
-            setPropertyValues(newIndexFields, parentVertex, false);
+            List<String> newIndexFields = getNewFields(indexFields, parentVertex, false);
+            updateIndices(newIndexFields, parentVertex, false);
             databaseProvider.createIndex(label, newIndexFields);
 
         } catch (Exception e) {
@@ -71,8 +68,8 @@ public class Indexer {
 
     private void createUniqueIndex(String label, Vertex parentVertex) {
         try {
-            addFields(indexUniqueFields, parentVertex, true);
-            setPropertyValues(newIndexUniqueFields, parentVertex, true);
+            List<String> newIndexUniqueFields  = getNewFields(indexUniqueFields, parentVertex, true);
+            updateIndices(newIndexUniqueFields, parentVertex, true);
             databaseProvider.createUniqueIndex(label, newIndexUniqueFields);
 
         } catch (Exception e) {
@@ -87,14 +84,15 @@ public class Indexer {
      * @param fields
      * @param isUnique
      */
-    private void addFields(List<String> fields, Vertex parentVertex, boolean isUnique) {
-        List<String> newFields = isUnique ? newIndexUniqueFields : newIndexFields;
+    private List<String> getNewFields(List<String> fields, Vertex parentVertex, boolean isUnique) {
+        List<String> newFields = new ArrayList<>();
         String propertyName = isUnique ? Constants.UNIQUE_INDEX_FIELDS : Constants.INDEX_FIELDS;
         String values = (String) parentVertex.property(propertyName).value();
         for (String field : fields) {
             if (!values.contains(field))
                 newFields.add(field);
         }
+        return newFields;
     }
 
     /**
@@ -104,10 +102,10 @@ public class Indexer {
      * @param values
      * @param isUnique
      */
-    private void setPropertyValues(List<String> values, Vertex parentVertex, boolean isUnique) {
+    private void updateIndices(List<String> values, Vertex parentVertex, boolean isUnique) {
+        String propertyName = isUnique ? Constants.UNIQUE_INDEX_FIELDS : Constants.INDEX_FIELDS;
 
         if (values.size() > 0) {
-            String propertyName = isUnique ? Constants.UNIQUE_INDEX_FIELDS : Constants.INDEX_FIELDS;
             String existingValue = (String) parentVertex.property(propertyName).value();
             for (String value : values) {
                 existingValue = existingValue.isEmpty() ? value : (existingValue + "," + value);
@@ -115,7 +113,7 @@ public class Indexer {
             }
             logger.info("parent vertex property {}:{}", propertyName, existingValue);
         } else {
-            logger.info("no values to set for parent vertex property ");
+            logger.info("no values to set for parent vertex property for {}", propertyName);
         }
     }
 
