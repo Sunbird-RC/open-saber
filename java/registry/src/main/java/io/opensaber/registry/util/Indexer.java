@@ -4,6 +4,7 @@ import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.sink.DatabaseProvider;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +17,13 @@ import org.slf4j.LoggerFactory;
 public class Indexer {
     private static Logger logger = LoggerFactory.getLogger(Indexer.class);
 
+    /**
+     * Non unique index fields 
+     */
     private List<String> indexFields;
+    /**
+     * Unique index fields
+     */
     private List<String> indexUniqueFields;
     private DatabaseProvider databaseProvider;
 
@@ -26,6 +33,7 @@ public class Indexer {
 
     /**
      * Required to set non-unique fields to create
+     * 
      * @param indexFields
      */
     public void setIndexFields(List<String> indexFields) {
@@ -33,7 +41,8 @@ public class Indexer {
     }
 
     /**
-     * Required to set unique fields to create 
+     * Required to set unique fields to create
+     * 
      * @param indexUniqueFields
      */
     public void setUniqueIndexFields(List<String> indexUniqueFields) {
@@ -43,34 +52,35 @@ public class Indexer {
     /**
      * Creates index for a given label
      * 
-     * @param label
-     *            a type vertex label (example:Teacher) and table in rdbms
+     * @param graph
+     * @param label     type vertex label (example:Teacher) and table in rdbms           
+     * @param parentVertex
      */
-    public void createIndex(String label, Vertex parentVertex) {
+    public void createIndex(Graph graph, String label, Vertex parentVertex) {
         if (label != null && !label.isEmpty()) {
-            createNonUniqueIndex(label, parentVertex);
-            createUniqueIndex(label, parentVertex);
+            createNonUniqueIndex(graph, label, parentVertex);
+            createUniqueIndex(graph, label, parentVertex);
         } else {
             logger.info("label is required for creating indexing");
         }
     }
 
-    private void createNonUniqueIndex(String label, Vertex parentVertex) {
+    private void createNonUniqueIndex(Graph graph, String label, Vertex parentVertex) {
         try {
-            List<String> newIndexFields = getNewFields(indexFields, parentVertex, false);
-            updateIndices(newIndexFields, parentVertex, false);
-            databaseProvider.createIndex(label, newIndexFields);
+            List<String> newIndexFields = getNewFields(parentVertex, indexFields, false);
+            databaseProvider.createIndex(graph, label, newIndexFields);
+            updateIndices(parentVertex, newIndexFields, false);
 
         } catch (Exception e) {
             logger.error("Non-unique index creation error: " + e);
         }
     }
 
-    private void createUniqueIndex(String label, Vertex parentVertex) {
+    private void createUniqueIndex(Graph graph, String label, Vertex parentVertex) {
         try {
-            List<String> newIndexUniqueFields  = getNewFields(indexUniqueFields, parentVertex, true);
-            updateIndices(newIndexUniqueFields, parentVertex, true);
-            databaseProvider.createUniqueIndex(label, newIndexUniqueFields);
+            List<String> newIndexUniqueFields = getNewFields(parentVertex, indexUniqueFields, true);
+            databaseProvider.createUniqueIndex(graph, label, newIndexUniqueFields);
+            updateIndices(parentVertex, newIndexUniqueFields, true);
 
         } catch (Exception e) {
             logger.error("Unique index creation error: " + e);
@@ -78,13 +88,14 @@ public class Indexer {
     }
 
     /**
-     * Adds new fields for creating index. Parent vertex are always have
+     * Identifies new fields for creating index. Parent vertex are always have
      * INDEX_FIELDS and UNIQUE_INDEX_FIELDS property
      * 
+     * @param parentVertex
      * @param fields
      * @param isUnique
      */
-    private List<String> getNewFields(List<String> fields, Vertex parentVertex, boolean isUnique) {
+    private List<String> getNewFields(Vertex parentVertex, List<String> fields, boolean isUnique) {
         List<String> newFields = new ArrayList<>();
         String propertyName = isUnique ? Constants.UNIQUE_INDEX_FIELDS : Constants.INDEX_FIELDS;
         String values = (String) parentVertex.property(propertyName).value();
@@ -99,10 +110,11 @@ public class Indexer {
      * Append the values to parent vertex INDEX_FIELDS and UNIQUE_INDEX_FIELDS
      * property
      * 
+     * @param parentVertex
      * @param values
      * @param isUnique
      */
-    private void updateIndices(List<String> values, Vertex parentVertex, boolean isUnique) {
+    private void updateIndices(Vertex parentVertex, List<String> values, boolean isUnique) {
         String propertyName = isUnique ? Constants.UNIQUE_INDEX_FIELDS : Constants.INDEX_FIELDS;
 
         if (values.size() > 0) {

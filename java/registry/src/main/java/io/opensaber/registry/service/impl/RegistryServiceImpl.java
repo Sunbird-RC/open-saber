@@ -189,22 +189,38 @@ public class RegistryServiceImpl implements RegistryService {
 
                 vertexLabel = rootNode.fieldNames().next();
             }
-            ensureIndexExists(dbProvider, shard.getShardId(), vertexLabel);
+            addIndex(dbProvider, shard.getShardId(), vertexLabel);
         }
 
         return entityId;
+    }
+    /**
+     * Adds a index to the given label(vertex/table)
+     * @param dbProvider
+     * @param shardId
+     * @param label
+     * @throws Exception
+     */
+    private void addIndex(DatabaseProvider dbProvider, String shardId, String label) throws Exception{
+        try (OSGraph osGraph = dbProvider.getOSGraph()) {
+            Graph graph = osGraph.getGraphStore();
+            Transaction tx = dbProvider.startTransaction(graph);           
+            ensureIndexExists(graph, dbProvider, shardId, label);
+            dbProvider.commitTransaction(graph, tx);
+        }            
     }
 
     /**
      * Ensures index for a vertex exists Unique index and non-unique index is
      * supported
      * 
+     * @param graph
      * @param dbProvider
      * @param shardId
      * @param label
      *            a type vertex label (example:Teacher)
      */
-    private void ensureIndexExists(DatabaseProvider dbProvider, String shardId, String label) {
+    private void ensureIndexExists(Graph graph, DatabaseProvider dbProvider, String shardId, String label) {
 
         Vertex parentVertex = entityParenter.getKnownParentVertex(label, shardId);
         Definition definition = definitionsManager.getDefinition(label);
@@ -217,7 +233,7 @@ public class RegistryServiceImpl implements RegistryService {
         Indexer indexer = new Indexer(dbProvider);
         indexer.setIndexFields(indexFields);
         indexer.setUniqueIndexFields(indexUniqueFields);
-        indexer.createIndex(label, parentVertex);
+        indexer.createIndex(graph, label, parentVertex);
 
     }
 

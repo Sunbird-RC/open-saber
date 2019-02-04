@@ -102,16 +102,14 @@ public class Neo4jGraphProvider extends DatabaseProvider {
     }
 
     @Override
-    public void createIndex(String label, List<String> propertyNames) {
+    public void createIndex(Graph graph,String label, List<String> propertyNames) {
 
-        Neo4JGraph neo4jGraph = getGraph();
-        Transaction tx = startTransaction(neo4jGraph);
-
+        Neo4JGraph neo4jGraph = (Neo4JGraph) graph;
+        
         for (String propertyName : propertyNames) {
             neo4jGraph.createIndex(label, propertyName);
             logger.info("Neo4jGraph index created for " + label);
         }
-        commitTransaction(neo4jGraph, tx);
-
+        
     }
 }
