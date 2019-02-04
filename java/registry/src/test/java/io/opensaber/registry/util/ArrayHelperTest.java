@@ -19,7 +19,7 @@ public class ArrayHelperTest {
 
     @Test(expected = NullPointerException.class)
     public void testRemoveSquareBracesWithNull() {
-        String actualString = ArrayHelper.removeSquareBraces(null);
+        ArrayHelper.removeSquareBraces(null);
     }
 
     @Test
