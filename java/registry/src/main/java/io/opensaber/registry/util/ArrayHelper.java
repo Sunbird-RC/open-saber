@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 /**
  * This class creates util methods for String modification and replacing
  */
-public class StringHelper {
+public class ArrayHelper {
 
     private static final String SQUARE_BRACE_REGEX = "[\\[\\]]";
     private static final String EMPTY_STR = "";
@@ -28,7 +28,7 @@ public class StringHelper {
      * @param inputList - which contains list of Strings
      * @return - String, in array format
      */
-    public static String toString(List<String> inputList){
+    public static String formatToString(List<String> inputList){
         StringBuilder sb = new StringBuilder(String.join(",",inputList));
         return sb.insert(0,'[').append(']').toString();
     }

@@ -6,7 +6,7 @@ import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.sink.shard.Shard;
-import io.opensaber.registry.util.StringHelper;
+import io.opensaber.registry.util.ArrayHelper;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.RecordIdentifier;
 import io.opensaber.registry.util.RefLabelHelper;
@@ -177,10 +177,10 @@ public class RegistryDaoImpl implements IRegistryDao {
             String nodeOsidLabel = RefLabelHelper.getLabel(parentNodeLabel, uuidPropertyName);
             VertexProperty<Object> vertexProperty = rootVertex.property(nodeOsidLabel);
             if (isArrayElement && vertexProperty.isPresent()) {
-                String existingValue = StringHelper.removeSquareBraces((String) vertexProperty.value());
+                String existingValue = ArrayHelper.removeSquareBraces((String) vertexProperty.value());
                 existingValue = existingValue + "," + newChildVertex.id().toString();
                 String[] newOsidArray = existingValue.split(",");
-                rootVertex.property(nodeOsidLabel, StringHelper.toString(Arrays.asList(newOsidArray)));
+                rootVertex.property(nodeOsidLabel, ArrayHelper.formatToString(Arrays.asList(newOsidArray)));
             } else {
                 rootVertex.property(nodeOsidLabel, newChildVertex.id().toString());
             }
@@ -231,7 +231,7 @@ public class RegistryDaoImpl implements IRegistryDao {
     private Set<String> deleteVertices(Graph graph, Vertex rootVertex, String label, Set<String> activeOsid) {
         String[] osidArray = null;
         VertexProperty vp = rootVertex.property(label + "_" + uuidPropertyName);
-        String osidPropValue = StringHelper.removeSquareBraces((String) vp.value());
+        String osidPropValue = ArrayHelper.removeSquareBraces((String) vp.value());
         if (osidPropValue.contains(",")) {
             osidArray = osidPropValue.split(",");
         } else {

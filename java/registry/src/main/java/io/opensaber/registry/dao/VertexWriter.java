@@ -118,9 +118,9 @@ public class VertexWriter {
         // Set up references on a blank node.
         label = RefLabelHelper.getLabel(entryKey, uuidPropertyName);
         if (isArrayItemObject) {
-            blankNode.property( label, StringHelper.toString(uidList));
+            blankNode.property( label, ArrayHelper.formatToString(uidList));
         } else {
-            blankNode.property( entryKey, StringHelper.toString(uidList));
+            blankNode.property( entryKey, ArrayHelper.formatToString(uidList));
         }
     }
 
