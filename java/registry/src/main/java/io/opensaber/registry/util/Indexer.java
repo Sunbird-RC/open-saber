@@ -2,7 +2,6 @@ package io.opensaber.registry.util;
 
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.sink.DatabaseProvider;
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -67,9 +66,8 @@ public class Indexer {
 
     private void createNonUniqueIndex(Graph graph, String label, Vertex parentVertex) {
         try {
-            List<String> newIndexFields = getNewFields(parentVertex, indexFields, false);
-            databaseProvider.createIndex(graph, label, newIndexFields);
-            updateIndices(parentVertex, newIndexFields, false);
+            databaseProvider.createIndex(graph, label, indexFields);
+            updateIndices(parentVertex, indexFields, false);
 
         } catch (Exception e) {
             logger.error("Non-unique index creation error: " + e);
@@ -78,32 +76,12 @@ public class Indexer {
 
     private void createUniqueIndex(Graph graph, String label, Vertex parentVertex) {
         try {
-            List<String> newIndexUniqueFields = getNewFields(parentVertex, indexUniqueFields, true);
-            databaseProvider.createUniqueIndex(graph, label, newIndexUniqueFields);
-            updateIndices(parentVertex, newIndexUniqueFields, true);
+            databaseProvider.createUniqueIndex(graph, label, indexUniqueFields);
+            updateIndices(parentVertex, indexUniqueFields, true);
 
         } catch (Exception e) {
             logger.error("Unique index creation error: " + e);
         }
-    }
-
-    /**
-     * Identifies new fields for creating index. Parent vertex are always have
-     * INDEX_FIELDS and UNIQUE_INDEX_FIELDS property
-     * 
-     * @param parentVertex
-     * @param fields
-     * @param isUnique
-     */
-    private List<String> getNewFields(Vertex parentVertex, List<String> fields, boolean isUnique) {
-        List<String> newFields = new ArrayList<>();
-        String propertyName = isUnique ? Constants.UNIQUE_INDEX_FIELDS : Constants.INDEX_FIELDS;
-        String values = (String) parentVertex.property(propertyName).value();
-        for (String field : fields) {
-            if (!values.contains(field))
-                newFields.add(field);
-        }
-        return newFields;
     }
 
     /**

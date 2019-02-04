@@ -24,7 +24,6 @@ import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.util.Definition;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.EntityParenter;
-import io.opensaber.registry.util.Indexer;
 import io.opensaber.registry.util.ReadConfigurator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -189,56 +188,13 @@ public class RegistryServiceImpl implements RegistryService {
 
                 vertexLabel = rootNode.fieldNames().next();
             }
-            addIndex(dbProvider, shard.getShardId(), vertexLabel);
+            //Add indices: executed only once.
+            Vertex parentVertex = entityParenter.getKnownParentVertex(vertexLabel, shard.getShardId());
+            Definition definition = definitionsManager.getDefinition(vertexLabel);
+            entityParenter.ensureIndexExists(dbProvider, parentVertex, definition);
         }
 
         return entityId;
-    }
-    /**
-     * Adds a index to the given label(vertex/table)
-     * @param dbProvider
-     * @param shardId
-     * @param label
-     * @throws Exception
-     */
-    private void addIndex(DatabaseProvider dbProvider, String shardId, String label) {
-        new Thread(() -> {
-            try (OSGraph osGraph = dbProvider.getOSGraph()) {
-                Graph graph = osGraph.getGraphStore();
-                Transaction tx = dbProvider.startTransaction(graph);           
-                ensureIndexExists(graph, dbProvider, shardId, label);
-                dbProvider.commitTransaction(graph, tx);
-            } catch (Exception e) {
-              logger.info("Can't create index on table " + label);
-          }
-        }).start();           
-    }
-
-    /**
-     * Ensures index for a vertex exists Unique index and non-unique index is
-     * supported
-     * 
-     * @param graph
-     * @param dbProvider
-     * @param shardId
-     * @param label
-     *            a type vertex label (example:Teacher)
-     */
-    private void ensureIndexExists(Graph graph, DatabaseProvider dbProvider, String shardId, String label) {
-
-        Vertex parentVertex = entityParenter.getKnownParentVertex(label, shardId);
-        Definition definition = definitionsManager.getDefinition(label);
-
-        List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
-        List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();
-        // adds default field (uuid)
-        indexUniqueFields.add(uuidPropertyName);
-
-        Indexer indexer = new Indexer(dbProvider);
-        indexer.setIndexFields(indexFields);
-        indexer.setUniqueIndexFields(indexUniqueFields);
-        indexer.createIndex(graph, label, parentVertex);
-
     }
 
     @Override

@@ -24,6 +24,9 @@ import org.springframework.stereotype.Component;
 public class EntityParenter {
     private static Logger logger = LoggerFactory.getLogger(EntityParenter.class);
 
+    @Autowired
+    private IndexHelper indexHelper;
+    
     @Value("${database.uuidPropertyName}")
     public String uuidPropertyName;
     
@@ -35,6 +38,7 @@ public class EntityParenter {
 
     private Set<String> defintionNames;
     private List<DBConnectionInfo> dbConnectionInfoList;
+
     /**
      * Holds information about a shard and a list of definitionParents
      */
@@ -74,6 +78,11 @@ public class EntityParenter {
                             VertexWriter vertexWriter = new VertexWriter(uuidPropertyName, dbProvider);
                             Vertex v = vertexWriter.ensureParentVertex(graph, parentLabel);
 
+                            //adding index to shard
+                            logger.info("Adding index to shard: {} for definition: {}",dbConnectionInfo.getShardId(), defintionName );
+                            Definition definition = definitionsManager.getDefinition(defintionName);
+                            ensureIndexExists(dbProvider, v, definition);
+                            
                             ShardParentInfo shardParentInfo = new ShardParentInfo(defintionName, v);
                             shardParentInfo.setUuid(v.id().toString());
                             shardParentInfoList.add(shardParentInfo);
@@ -131,4 +140,61 @@ public class EntityParenter {
         }
         return vertex;
     }
+    
+    /**
+     * Ensures index for a vertex exists Unique index and non-unique index is
+     * supported
+     * 
+     * @param dbProvider
+     * @param parentVertex
+     * @param definition
+     */
+    public void ensureIndexExists(DatabaseProvider dbProvider, Vertex parentVertex, Definition definition) {
+        try{
+            logger.info("definition "+definition.getTitle() );
+            if(!indexHelper.isIndexPresent(parentVertex, definition)){
+                asyncAddIndex(dbProvider, parentVertex, definition);
+            }
+        }catch(Exception e){
+            logger.error("ensureknownparenter: Can't create index on table " + definition.getTitle());
+        }
+       
+
+    }
+    
+    /**
+     * Adds indices to the given label(vertex/table) asynchronously
+     * @param dbProvider
+     * @param parentVertex
+     * @param definition
+     */
+    private void asyncAddIndex(DatabaseProvider dbProvider, Vertex parentVertex, Definition definition) {
+        new Thread(() -> {
+            try (OSGraph osGraph = dbProvider.getOSGraph()) {
+                Graph graph = osGraph.getGraphStore();
+                Transaction tx = dbProvider.startTransaction(graph);           
+                if(parentVertex != null && definition != null){
+                    List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
+                    List<String> newIndexFields = indexHelper.getNewFields(parentVertex, indexFields, false);
+                    List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();
+                    // adds default field (uuid)
+                    indexUniqueFields.add(uuidPropertyName);
+                    List<String> newUniqueIndexFields = indexHelper.getNewFields(parentVertex, indexUniqueFields, true);
+
+
+                    Indexer indexer = new Indexer(dbProvider);
+                    indexer.setIndexFields(newIndexFields);
+                    indexer.setUniqueIndexFields(newUniqueIndexFields);
+                    indexer.createIndex(graph, definition.getTitle(), parentVertex);
+                } else {
+                    logger.info("No definition found for create index");
+                }
+                
+                dbProvider.commitTransaction(graph, tx);
+            } catch (Exception e) {
+              logger.info("Can't create index on table " + definition.getTitle());
+          }
+        }).start();           
+    }
+
 }
