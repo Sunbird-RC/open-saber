@@ -34,6 +34,12 @@ public class ReadConfigurator {
      */
     private boolean includeIdentifiers = true;
 
+    /**
+     * Whether or not to include root identifiers
+     * False, by default
+     */
+    private boolean includeRootIdentifiers = false;
+
     public boolean isIncludeTypeAttributes() {
         return includeTypeAttributes;
     }
@@ -72,5 +78,13 @@ public class ReadConfigurator {
 
     public void setIncludeIdentifiers(boolean includeIdentifiers) {
         this.includeIdentifiers = includeIdentifiers;
+    }
+
+    public boolean isIncludeRootIdentifiers() {
+        return includeRootIdentifiers;
+    }
+
+    public void setIncludeRootIdentifiers(boolean includeRootIdentifiers) {
+        this.includeRootIdentifiers = includeRootIdentifiers;
     }
 }

@@ -1,11 +1,11 @@
 package io.opensaber.registry.dao;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
-import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.EntityParenter;
@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -65,8 +64,8 @@ public class RegistryDaoImpl implements IRegistryDao {
      * @return
      */
     public String addEntity(Graph graph, JsonNode rootNode) {
-        VertexWriter vertexWriter = new VertexWriter(uuidPropertyName, shard.getDatabaseProvider());
-        String entityId = vertexWriter.writeNodeEntity(graph, rootNode);
+        VertexWriter vertexWriter = new VertexWriter(graph, shard.getDatabaseProvider(), uuidPropertyName);
+        String entityId = vertexWriter.writeNodeEntity(rootNode);
         return entityId;
     }
 
@@ -103,39 +102,55 @@ public class RegistryDaoImpl implements IRegistryDao {
 
     /**
      * This method update the inputJsonNode related vertices in the database
+     * Notes:
+     * This graph object is the same one used for reading the entire record
      *
-     * @param rootVertex
+     * @param vertex
      * @param inputJsonNode
      */
-    public void updateVertex(Graph graph, Vertex rootVertex, JsonNode inputJsonNode) {
-        inputJsonNode.fields().forEachRemaining(subEntityField -> {
-            String fieldKey = subEntityField.getKey();
-            JsonNode subEntityNode = subEntityField.getValue();
-            if (subEntityNode.isValueNode()) {
-                rootVertex.property(fieldKey, ValueType.getValue(subEntityField.getValue()));
-            } else if (subEntityNode.isObject()) {
-                parseJsonObject(subEntityNode, graph, rootVertex, fieldKey, false);
-            } else if (subEntityNode.isArray()) {
-                Vertex arrayNodeVertex = null;
-                if(fieldKey.equalsIgnoreCase(Constants.SIGNATURES_STR)){
-                    arrayNodeVertex = rootVertex.vertices(Direction.IN,fieldKey).next();
-                } else {
-                    arrayNodeVertex = rootVertex.vertices(Direction.OUT,fieldKey).next();
+    public void updateVertex(Graph graph, Vertex vertex, JsonNode inputJsonNode) {
+        if (inputJsonNode.isObject()) {
+            updateObject(graph, vertex, (ObjectNode) inputJsonNode);
+        } else {
+            logger.error("Unexpected input passed here.");
+        }
+    }
+
+    private void updateArray(Graph graph, Vertex vertex, String fieldKey, ArrayNode arrayNode) {
+        Set<String> osidSet = new HashSet<String>();
+        for (JsonNode arrayElementNode : arrayNode) {
+            if (arrayElementNode.isObject()) {
+                String updatedOsid = addNewEntity(arrayElementNode, graph, vertex, fieldKey, true);
+
+                osidSet.add(updatedOsid);
+            } else {
+                logger.debug("Not expected to just update an array without a type enclosure");
+            }
+        }
+        osidSet = deleteVertices(graph, vertex, fieldKey, osidSet);
+        String updatedOisdValue = String.join(",", osidSet);
+        vertex.property(RefLabelHelper.getLabel(fieldKey, uuidPropertyName), updatedOisdValue);
+    }
+
+    private void updateObject(Graph graph, Vertex vertex, ObjectNode inputJsonNode) {
+        inputJsonNode.fields().forEachRemaining(field -> {
+            JsonNode fieldValue = field.getValue();
+            String fieldKey = field.getKey();
+            if (fieldKey.equals(uuidPropertyName)) {
+                // Should not update the uuid
+            } else {
+                if (fieldValue.isValueNode() && !fieldKey.equals(Constants.TYPE_STR_JSON_LD)) {
+                    vertex.property(fieldKey, ValueType.getValue(fieldValue));
+                } else if (fieldValue.isObject()) {
+                    // Ignore, the caller would call us again for each object found
+                } else if (fieldValue.isArray()) {
+                    updateArray(graph, vertex, fieldKey, (ArrayNode) fieldValue);
                 }
-                Set<String> osidSet = new HashSet<String>();
-                for (JsonNode arrayElementNode : subEntityNode) {
-                    if (arrayElementNode.isObject()) {
-                        String updatedOsid = parseJsonObject(arrayElementNode, graph, arrayNodeVertex, fieldKey, true);
-                        osidSet.add(updatedOsid);
-                    }
-                }
-                osidSet = deleteVertices(graph, arrayNodeVertex, fieldKey, osidSet);
-                String updatedOisdValue = String.join(",", osidSet);
-                arrayNodeVertex.property(RefLabelHelper.getLabel(fieldKey, uuidPropertyName), updatedOisdValue);
             }
         });
-
     }
+
+
 
 
     /**
@@ -143,70 +158,45 @@ public class RegistryDaoImpl implements IRegistryDao {
      *
      * @param elementNode
      * @param graph
-     * @param rootVertex
+     * @param vertex
      * @param parentNodeLabel
      * @param isArrayElement
      * @return
      */
-    private String parseJsonObject(JsonNode elementNode, Graph graph, Vertex rootVertex, String parentNodeLabel,
+    private String addNewEntity(JsonNode elementNode, Graph graph, Vertex vertex, String parentNodeLabel,
                                    boolean isArrayElement) {
+        String newChildVertexIdStr = "";
         if (null == elementNode.get(uuidPropertyName)) {
-            if (!isArrayElement) {
-                deleteVertices(graph, rootVertex, parentNodeLabel, null);
-            }
+            // Adding a new entity
 
-            VertexWriter vertexWriter = new VertexWriter(uuidPropertyName, shard.getDatabaseProvider());
+            VertexWriter vertexWriter = new VertexWriter(graph, shard.getDatabaseProvider(), uuidPropertyName);
+            Vertex newChildVertex = vertexWriter.createVertex(parentNodeLabel);
+            newChildVertexIdStr = shard.getDatabaseProvider().getId(newChildVertex);
+            String rootId = vertex.property(uuidPropertyName).toString();
 
-            //Add new vertex
-            Vertex newChildVertex = vertexWriter.createVertex(graph, parentNodeLabel);
-            String newChildVertexIdStr = shard.getDatabaseProvider().getId(newChildVertex);
-            String rootId = rootVertex.property(uuidPropertyName).toString();
             if (null == rootId) {
-                rootId = rootVertex.property(Constants.ROOT_KEYWORD).value().toString();
+                rootId = vertex.property(Constants.ROOT_KEYWORD).value().toString();
             }
             newChildVertex.property(Constants.ROOT_KEYWORD, rootId);
-            updateProperties(elementNode, newChildVertex);
+            updateVertex(graph, newChildVertex, elementNode);
 
             String nodeOsidLabel = RefLabelHelper.getLabel(parentNodeLabel, uuidPropertyName);
-            VertexProperty<Object> vertexProperty = rootVertex.property(nodeOsidLabel);
+            VertexProperty<Object> vertexProperty = vertex.property(nodeOsidLabel);
             if (isArrayElement && vertexProperty.isPresent()) {
                 String existingValue = (String) vertexProperty.value();
-                rootVertex.property(nodeOsidLabel, existingValue + "," + newChildVertexIdStr);
+                vertex.property(nodeOsidLabel, existingValue + "," + newChildVertexIdStr);
             } else {
-                rootVertex.property(nodeOsidLabel, newChildVertexIdStr);
+                vertex.property(nodeOsidLabel, newChildVertexIdStr);
             }
 
-            if(rootVertex.label().equalsIgnoreCase(Constants.ARRAY_NODE_KEYWORD)){
-                vertexWriter.addEdge(newChildVertex.property(Constants.SIGNATURE_FOR).value().toString(), rootVertex, newChildVertex);
+            if(vertex.label().equalsIgnoreCase(Constants.ARRAY_NODE_KEYWORD)){
+                vertexWriter.addEdge(newChildVertex.property(Constants.SIGNATURE_FOR).value().toString(), vertex, newChildVertex);
             } else {
-                vertexWriter.addEdge(parentNodeLabel, rootVertex, newChildVertex);
+                vertexWriter.addEdge(parentNodeLabel, vertex, newChildVertex);
             }
-            return newChildVertexIdStr;
-        } else {
-            String shardOsid = elementNode.get(uuidPropertyName).asText();
-            RecordIdentifier ri = RecordIdentifier.parse(shardOsid);
-            Vertex updateVertex = graph.vertices(ri.getUuid()).next();
-            updateProperties(elementNode, updateVertex);
-            return shard.getDatabaseProvider().getId(updateVertex);
+
         }
-    }
-
-    /**
-     * updates the vertex properties with given json node elements
-     *
-     * @param elementNode
-     * @param vertex
-     */
-    private void updateProperties(JsonNode elementNode, Vertex vertex) {
-        elementNode.fields().forEachRemaining(subElementNode -> {
-            JsonNode value = subElementNode.getValue();
-            String keyType = subElementNode.getKey();
-            if (value.isObject()) {
-                // TODO - why is this empty?
-            } else if (value.isValueNode() && !keyType.equals("@type") && !keyType.equals(uuidPropertyName)) {
-                vertex.property(keyType, ValueType.getValue(value));
-            }
-        });
+        return newChildVertexIdStr;
     }
 
     /**
@@ -232,8 +222,6 @@ public class RegistryDaoImpl implements IRegistryDao {
         vertices.forEachRemaining(deleteVertex -> {
             if (activeOsid == null || (activeOsid != null && !activeOsid.contains(deleteVertex.id()) && deleteVertex.edges(Direction.IN).hasNext())) {
                 deleteVertex.property(Constants.STATUS_KEYWORD, Constants.STATUS_INACTIVE);
-                Edge edge = deleteVertex.edges(Direction.IN, label).next();
-                edge.remove();
             } else {
                 activeOsid.add(deleteVertex.id().toString());
             }

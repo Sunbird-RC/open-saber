@@ -18,19 +18,19 @@ import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.util.*;
+import io.opensaber.validators.IValidate;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tomcat.util.bcel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import javax.json.Json;
+import java.util.*;
 
 @Component
 public class RegistryServiceImpl implements RegistryService {
@@ -83,6 +83,9 @@ public class RegistryServiceImpl implements RegistryService {
 
     @Autowired
     private Shard shard;
+
+    @Autowired
+    private IValidate iValidate;
 
     @Autowired
     DBConnectionInfoMgr dbConnectionInfoMgr;
@@ -289,29 +292,10 @@ public class RegistryServiceImpl implements RegistryService {
         }
     }
 
-    /**
-     * Removes the entity signature from the node
-     * @param entityNodeType
-     * @param node
-     */
-    private void removeEntitySignature(String entityNodeType, ObjectNode node) {
-        ArrayNode signatureArr = (ArrayNode) node.get(entityNodeType).get(Constants.SIGNATURES_STR);
-        int entitySignatureIdx = -1;
-        for(int itr = 0; itr < signatureArr.size(); itr++) {
-            JsonNode signature = signatureArr.get(itr);
-            if (signature.get(Constants.SIGNATURE_FOR).toString().contains(entityNodeType)) {
-                entitySignatureIdx = itr;
-                break;
-            }
-        }
-        if (entitySignatureIdx != -1) {
-            signatureArr.remove(entitySignatureIdx);
-        }
-    }
-
     @Override
     public void updateEntity(String id, String jsonString) throws Exception {
         JsonNode inputNode = objectMapper.readTree(jsonString);
+        String entityType = inputNode.fields().next().getKey();
 
         if (encryptionEnabled) {
             inputNode = encryptionHelper.getEncryptedJson(inputNode);
@@ -326,10 +310,20 @@ public class RegistryServiceImpl implements RegistryService {
             // TODO - decrypt properties to pass validation
             ReadConfigurator readConfigurator = ReadConfiguratorFactory.getForUpdateValidation();
             VertexReader vr = new VertexReader(databaseProvider, graph, readConfigurator, uuidPropertyName, definitionsManager);
-            String entityNodeType;
-            JsonNode readNode = vr.read(id);
-            Vertex rootVertex = vr.getRootVertex();
-            entityNodeType = readNode.fields().next().getKey();
+            JsonNode readNode = vr.read(entityType, id);
+
+            String rootId = readNode.findPath(Constants.ROOT_KEYWORD).textValue();
+            if ( rootId != null && !rootId.equals(id)) {
+                // Child node is getting updated individually. So, read the parent to
+                // validate the parent record
+                logger.debug("Reading the parent record {}", rootId);
+                readNode = vr.read(entityType, readNode.findPath(Constants.ROOT_KEYWORD).textValue());
+            } else {
+                // Update is for the parent entity.
+                // Nothing to do as the record has been already read.
+            }
+            String entityNodeType = readNode.fields().next().getKey();
+            HashMap<String, Vertex> uuidVertexMap = vr.getUuidVertexMap();
 
             // Merge the new changes
             JsonNode mergedNode = mergeWrapper("/" + entityNodeType, (ObjectNode) readNode, (ObjectNode) inputNode);
@@ -338,19 +332,62 @@ public class RegistryServiceImpl implements RegistryService {
             // Re-sign, i.e., remove and add entity signature again
             if (signatureEnabled) {
                 logger.debug("Removing earlier signature and adding new one");
-                removeEntitySignature(entityNodeType, (ObjectNode) mergedNode);
-                signatureHelper.signJson(mergedNode);
+                String entitySignUUID = signatureHelper.removeEntitySignature(entityNodeType, (ObjectNode) mergedNode);
+                JsonNode newSignature = signatureHelper.signJson(mergedNode);
+                Vertex oldEntitySignatureVertex = uuidVertexMap.get(entitySignUUID);
+
+                registryDao.updateVertex(graph, oldEntitySignatureVertex, newSignature);
             }
 
             // TODO - Validate before update
-            //iValidate.validate(entityNodeType, mergedNode.toString());
-            //logger.debug("Validated payload before update");
+            JsonNode validationNode = mergedNode.deepCopy();
+            JSONUtil.removeNode((ObjectNode) validationNode, uuidPropertyName);
+//            iValidate.validate(entityNodeType, mergedNode.toString());
+//            logger.debug("Validated payload before update");
 
             // Finally update
-            ((ObjectNode) mergedNode.get(entityNodeType)).put(uuidPropertyName, id);
-            registryDao.updateVertex(graph, rootVertex, inputNode.get(entityNodeType));
+            // Input nodes have shard labels
+            if (!shard.getShardLabel().isEmpty()) {
+                // Replace osid without shard details
+                String prefix = shard.getShardLabel() + RecordIdentifier.getSeparator();
+                JSONUtil.trimPrefix((ObjectNode) inputNode, prefix);
+            }
+            doUpdate(graph, vr, inputNode.get(entityNodeType));
 
             databaseProvider.commitTransaction(graph, tx);
+        }
+    }
+
+    private void doUpdate(Graph graph, VertexReader vr, JsonNode userInputNode) throws Exception {
+
+        HashMap<String, Vertex> uuidVertexMap = vr.getUuidVertexMap();
+
+        // For each of the input node, take the following actions as it is fit
+        // Simple object - just update that object (new uuid will not be issued)
+        // Simple NEW object - need to update the root
+        // Array object - need to delete and then add new one
+        String parentOsid = userInputNode.get(uuidPropertyName).textValue();
+        Vertex existingVertex = uuidVertexMap.getOrDefault(parentOsid, null);
+
+        // Build up a list of vertices to be updated
+//        Map<Vertex, JsonNode> toBeUpdated = new HashMap<>();
+//        toBeUpdated.put(existingVertex, userInputNode);
+//
+//        Iterator<Map.Entry<String, JsonNode>> updatedElementsItr = userInputNode.fields();
+//        while (updatedElementsItr.hasNext()) {
+//            Map.Entry<String, JsonNode> entry = updatedElementsItr.next();
+//            if (!entry.getValue().isValueNode()) {
+//                Vertex someVertex = uuidVertexMap.getOrDefault(entry.getValue().get(uuidPropertyName), null);
+//                toBeUpdated.put(someVertex, entry.getValue());
+//            }
+//        }
+
+        if (existingVertex != null) {
+            // Existing vertex - just add/update properties
+            registryDao.updateVertex(graph, existingVertex, userInputNode);
+        } else {
+            // Likely a new addition
+            logger.info("Adding a new node to existing one");
         }
     }
 

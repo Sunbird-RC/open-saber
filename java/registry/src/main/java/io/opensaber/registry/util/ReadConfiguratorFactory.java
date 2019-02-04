@@ -31,8 +31,11 @@ public class ReadConfiguratorFactory {
         // Get rid of type attributes, which would fail validation
         configurator.setIncludeTypeAttributes(false);
 
-        // Get rid of uuidPropertyNames, which would fail validation
-        configurator.setIncludeIdentifiers(false);
+        // Load uuidPropertyNames too and remove before validation
+        configurator.setIncludeIdentifiers(true);
+
+        // We want to know if the passed in value is child or not
+        configurator.setIncludeRootIdentifiers(true);
 
         return configurator;
     }
