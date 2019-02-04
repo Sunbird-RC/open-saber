@@ -79,7 +79,7 @@ public class EntityParenter {
                             Vertex v = vertexWriter.ensureParentVertex(graph, parentLabel);
 
                             //adding index to shard
-                            logger.info("Adding index to shard: {} for definition: {}",dbConnectionInfo.getShardId(), defintionName );
+                            logger.info("Adding index to shard: {} for definition: {}", dbConnectionInfo.getShardId(), defintionName );
                             Definition definition = definitionsManager.getDefinition(defintionName);
                             ensureIndexExists(dbProvider, v, definition);
                             
@@ -151,12 +151,11 @@ public class EntityParenter {
      */
     public void ensureIndexExists(DatabaseProvider dbProvider, Vertex parentVertex, Definition definition) {
         try{
-            logger.info("definition "+definition.getTitle() );
             if(!indexHelper.isIndexPresent(parentVertex, definition)){
                 asyncAddIndex(dbProvider, parentVertex, definition);
             }
         }catch(Exception e){
-            logger.error("ensureknownparenter: Can't create index on table " + definition.getTitle());
+            logger.error("ensureIndexExists: Can't create index on table {}", definition.getTitle());
         }
        
 

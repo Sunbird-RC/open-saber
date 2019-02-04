@@ -18,9 +18,15 @@ public class IndexHelper {
 
     @Autowired
     private DefinitionsManager definitionManager;
-
+    
+    /**
+     * Holds mapping for each definitions and its index status 
+     */
     private Map<String, Boolean> definitionIndexMap = new HashMap<String, Boolean>();
-
+    
+    /**
+     * loads each the definitions with default index status as false
+     */
     @PostConstruct
     public void loadDefinitionIndex() {
         List<Definition> definitions = definitionManager.getAllDefinitions();
