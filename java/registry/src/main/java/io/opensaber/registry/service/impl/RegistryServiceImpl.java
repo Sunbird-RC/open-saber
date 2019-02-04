@@ -201,13 +201,17 @@ public class RegistryServiceImpl implements RegistryService {
      * @param label
      * @throws Exception
      */
-    private void addIndex(DatabaseProvider dbProvider, String shardId, String label) throws Exception{
-        try (OSGraph osGraph = dbProvider.getOSGraph()) {
-            Graph graph = osGraph.getGraphStore();
-            Transaction tx = dbProvider.startTransaction(graph);           
-            ensureIndexExists(graph, dbProvider, shardId, label);
-            dbProvider.commitTransaction(graph, tx);
-        }            
+    private void addIndex(DatabaseProvider dbProvider, String shardId, String label) {
+        new Thread(() -> {
+            try (OSGraph osGraph = dbProvider.getOSGraph()) {
+                Graph graph = osGraph.getGraphStore();
+                Transaction tx = dbProvider.startTransaction(graph);           
+                ensureIndexExists(graph, dbProvider, shardId, label);
+                dbProvider.commitTransaction(graph, tx);
+            } catch (Exception e) {
+              logger.info("Can't create index on table " + label);
+          }
+        }).start();           
     }
 
     /**
