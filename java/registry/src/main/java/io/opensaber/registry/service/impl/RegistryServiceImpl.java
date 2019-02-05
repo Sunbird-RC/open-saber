@@ -188,10 +188,11 @@ public class RegistryServiceImpl implements RegistryService {
 
                 vertexLabel = rootNode.fieldNames().next();
             }
-            //Add indices: executed only once.
-            Vertex parentVertex = entityParenter.getKnownParentVertex(vertexLabel, shard.getShardId());
+            //Add indices: executes only once.
+            String shardId = shard.getShardId();
+            Vertex parentVertex = entityParenter.getKnownParentVertex(vertexLabel, shardId);
             Definition definition = definitionsManager.getDefinition(vertexLabel);
-            entityParenter.ensureIndexExists(dbProvider, parentVertex, definition);
+            entityParenter.ensureIndexExists(dbProvider, parentVertex, definition, shardId);
         }
 
         return entityId;

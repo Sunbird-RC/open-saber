@@ -9,8 +9,10 @@ import io.opensaber.registry.sink.OSGraph;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -52,6 +54,33 @@ public class EntityParenter {
         defintionNames = this.definitionsManager.getAllKnownDefinitions();
         dbConnectionInfoList = this.dbConnectionInfoMgr.getConnectionInfo();
     }
+    /**
+     * Loads all the definitions for each shard 
+     */
+    public void loadDefinitionIndex() {
+        Map<String, Boolean> indexMap = new ConcurrentHashMap<String, Boolean>();
+
+        for (Map.Entry<String, ShardParentInfoList> entry : shardParentMap.entrySet()){
+          String shardId = entry.getKey();
+          ShardParentInfoList shardParentInfoList = entry.getValue();
+          shardParentInfoList.getParentInfos().forEach(shardParentInfo->{
+              Definition definition = definitionsManager.getDefinition(shardParentInfo.getName());
+              Vertex parentVertex = shardParentInfo.getVertex();
+              List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
+              List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();
+
+              int nNewIndices = indexHelper.getNewFields(parentVertex, indexFields, false).size();
+              int nNewUniqIndices = indexHelper.getNewFields(parentVertex, indexUniqueFields, true).size();
+              
+              boolean indexingComplete = (nNewIndices == 0 && nNewUniqIndices == 0);
+              indexHelper.updateDefinitionIndex(shardId, definition.getTitle(), indexingComplete);
+              logger.info("On loadDefination, for Shard:"+ shardId + " definition: {} updated index to {} ", definition.getTitle(), indexingComplete);
+              
+          });
+          
+        }        
+        indexHelper.setDefinitionIndexMap(indexMap);
+    }
 
     /**
      * Creates the parent vertex in all the shards for all default definitions
@@ -77,11 +106,6 @@ public class EntityParenter {
                             parentLabels.add(parentLabel);
                             VertexWriter vertexWriter = new VertexWriter(uuidPropertyName, dbProvider);
                             Vertex v = vertexWriter.ensureParentVertex(graph, parentLabel);
-
-                            //adding index to shard
-                            logger.info("Adding index to shard: {} for definition: {}", dbConnectionInfo.getShardId(), defintionName );
-                            Definition definition = definitionsManager.getDefinition(defintionName);
-                            ensureIndexExists(dbProvider, v, definition);
                             
                             ShardParentInfo shardParentInfo = new ShardParentInfo(defintionName, v);
                             shardParentInfo.setUuid(v.id().toString());
@@ -140,6 +164,39 @@ public class EntityParenter {
         }
         return vertex;
     }
+    /**
+     * Indices gets added 
+     */
+    public void ensureIndexExists(){        
+        dbConnectionInfoList.forEach(dbConnectionInfo -> {
+            DatabaseProvider dbProvider = dbProviderFactory.getInstance(dbConnectionInfo);
+            try {
+                try (OSGraph osGraph = dbProvider.getOSGraph()) {
+                    Graph graph = osGraph.getGraphStore();
+                    try (Transaction tx = dbProvider.startTransaction(graph)) {
+                        List<String> parentLabels = new ArrayList<>();
+                        defintionNames.forEach(defintionName -> {
+                            
+                            String parentLabel = ParentLabelGenerator.getLabel(defintionName);
+                            parentLabels.add(parentLabel);
+                            VertexWriter vertexWriter = new VertexWriter(uuidPropertyName, dbProvider);
+                            Vertex v = vertexWriter.ensureParentVertex(graph, parentLabel);
+
+                            //adding index to shard
+                            Definition definition = definitionsManager.getDefinition(defintionName);
+                            ensureIndexExists(dbProvider, v, definition, dbConnectionInfo.getShardId());
+                        });
+                    }
+                }
+                
+            } catch (Exception e) {
+                logger.error("ensureIndex error: {}", e);
+            }
+        });
+
+        
+ 
+    }
     
     /**
      * Ensures index for a vertex exists Unique index and non-unique index is
@@ -149,16 +206,18 @@ public class EntityParenter {
      * @param parentVertex
      * @param definition
      */
-    public void ensureIndexExists(DatabaseProvider dbProvider, Vertex parentVertex, Definition definition) {
+    private  void ensureIndexExists(DatabaseProvider dbProvider, Vertex parentVertex, Definition definition, String shardId) {
         try{
-            if(!indexHelper.isIndexPresent(parentVertex, definition)){
+            if(!indexHelper.isIndexPresent(definition, shardId)){
+                logger.info("Adding index to shard: {} for definition: {}", shardId, definition.getTitle() );
                 asyncAddIndex(dbProvider, parentVertex, definition);
+                //key is concatenation of shardId and definitionTitle
+                indexHelper.updateDefinitionIndex(shardId, definition.getTitle(), true);
+                logger.info("On ensureIndex, definition: {} updated index to true for shardId {}", definition.getTitle(), shardId);
             }
         }catch(Exception e){
-            logger.error("ensureIndexExists: Can't create index on table {}", definition.getTitle());
+            logger.error("ensureIndexExists: Can't create index on table {} for shardId: {} ", definition.getTitle(), shardId);
         }
-       
-
     }
     
     /**
@@ -179,7 +238,6 @@ public class EntityParenter {
                     // adds default field (uuid)
                     indexUniqueFields.add(uuidPropertyName);
                     List<String> newUniqueIndexFields = indexHelper.getNewFields(parentVertex, indexUniqueFields, true);
-
 
                     Indexer indexer = new Indexer(dbProvider);
                     indexer.setIndexFields(newIndexFields);

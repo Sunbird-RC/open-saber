@@ -2,68 +2,46 @@ package io.opensaber.registry.util;
 
 import io.opensaber.registry.middleware.util.Constants;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.PostConstruct;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class IndexHelper {
     private static Logger logger = LoggerFactory.getLogger(IndexHelper.class);
-
-    @Autowired
-    private DefinitionsManager definitionManager;
     
     /**
-     * Holds mapping for each definitions and its index status 
+     * Holds mapping for each shard & each definitions and its index status 
+     * key = shardId+definitionName 
+     * value = true/false
      */
-    private Map<String, Boolean> definitionIndexMap = new HashMap<String, Boolean>();
-    
-    /**
-     * loads each the definitions with default index status as false
-     */
-    @PostConstruct
-    public void loadDefinitionIndex() {
-        List<Definition> definitions = definitionManager.getAllDefinitions();
-        definitions.forEach(definition -> {
-            definitionIndexMap.put(definition.getTitle(), false);
-        });
+    private Map<String, Boolean> definitionIndexMap = new ConcurrentHashMap<String, Boolean>();
+ 
+    public void setDefinitionIndexMap(Map<String, Boolean> definitionIndexMap) {
+        this.definitionIndexMap.putAll(definitionIndexMap);
+    }
+   
+    public void updateDefinitionIndex(String label, String definitionName, boolean flag){
+        String key = label + definitionName;
+        definitionIndexMap.put(key, flag);
     }
 
     /**
-     * Checks any new index available to for index creation
+     * Checks any new index available for index creation
      * 
      * @param parentVertex
      * @param definition
      * @return
      */
-    public boolean isIndexPresent(Vertex parentVertex, Definition definition) {
-        boolean isIndexPresent = false;
+    public boolean isIndexPresent(Definition definition, String shardId) {
         String defTitle = definition.getTitle();
-        logger.info("isIndexPresent flag for {}: {}", defTitle, definitionIndexMap.get(defTitle));
-        if (!definitionIndexMap.get(defTitle)) {
-
-            List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
-            int indexSize = (indexFields.size() == 0) ? 0 : getNewFields(parentVertex, indexFields, false).size();
-            if (indexSize > 0)
-                return isIndexPresent;
-
-            List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();
-            int uniqueIndexSize = (indexUniqueFields.size() == 0) ? 0
-                    : getNewFields(parentVertex, indexUniqueFields, true).size();
-            if (uniqueIndexSize > 0)
-                return isIndexPresent;
-
-        }
-        definitionIndexMap.put(defTitle, true);
-        isIndexPresent = true;
-
-        return isIndexPresent;
+        boolean isIndexPresent = definitionIndexMap.getOrDefault(shardId + defTitle, false);
+        logger.debug("isIndexPresent flag for {}: {}", defTitle, isIndexPresent);
+        return isIndexPresent;       
     }
 
     /**
