@@ -14,8 +14,7 @@ import io.opensaber.registry.service.SearchService;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.sink.shard.ShardManager;
 import io.opensaber.registry.transform.*;
-import io.opensaber.registry.util.ReadConfigurator;
-import io.opensaber.registry.util.RecordIdentifier;
+import io.opensaber.registry.util.*;
 
 import java.lang.reflect.Type;
 import java.util.HashMap;
@@ -200,6 +199,8 @@ public class RegistryController {
 
     @RequestMapping(value = "/read", method = RequestMethod.POST)
     public ResponseEntity<Response> readEntity(@RequestHeader HttpHeaders header) {
+        boolean requireLDResponse = header.getAccept().contains(Constants.LD_JSON_MEDIA_TYPE);
+
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
@@ -211,11 +212,10 @@ public class RegistryController {
 
         String acceptType = header.getAccept().iterator().next().toString();
 
-        ReadConfigurator configurator = new ReadConfigurator();
         boolean includeSignatures = (boolean) apiMessage.getRequest().getRequestMap().getOrDefault("includeSignatures",
                 false);
-        configurator.setIncludeSignatures(includeSignatures);
-        configurator.setIncludeTypeAttributes(acceptType.equals(Constants.LD_JSON_MEDIA_TYPE));
+        ReadConfigurator configurator = ReadConfiguratorFactory.getOne(includeSignatures);
+        configurator.setIncludeTypeAttributes(requireLDResponse);
 
         try {
             JsonNode resultNode = registryService.getEntity(recordId.getUuid(), configurator);

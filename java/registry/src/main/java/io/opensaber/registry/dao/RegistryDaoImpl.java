@@ -64,8 +64,8 @@ public class RegistryDaoImpl implements IRegistryDao {
      * @return
      */
     public String addEntity(Graph graph, JsonNode rootNode) {
-        VertexWriter vertexWriter = new VertexWriter(uuidPropertyName, shard.getDatabaseProvider());
-        String entityId = vertexWriter.writeNodeEntity(graph, rootNode);
+        VertexWriter vertexWriter = new VertexWriter(graph, shard.getDatabaseProvider(), uuidPropertyName);
+        String entityId = vertexWriter.writeNodeEntity(rootNode);
         return entityId;
     }
 
@@ -166,10 +166,10 @@ public class RegistryDaoImpl implements IRegistryDao {
                 deleteVertices(graph, rootVertex, parentNodeLabel, null);
             }
 
-            VertexWriter vertexWriter = new VertexWriter(uuidPropertyName, shard.getDatabaseProvider());
+            VertexWriter vertexWriter = new VertexWriter(graph, shard.getDatabaseProvider(), uuidPropertyName);
 
             //Add new vertex
-            Vertex newChildVertex = vertexWriter.createVertex(graph, parentNodeLabel);
+            Vertex newChildVertex = vertexWriter.createVertex(parentNodeLabel);
             newChildVertex.property(Constants.ROOT_KEYWORD,rootVertex.property(Constants.ROOT_KEYWORD).value());
             updateProperties(elementNode, newChildVertex);
             String nodeOsidLabel = RefLabelHelper.getLabel(parentNodeLabel, uuidPropertyName);
@@ -212,7 +212,7 @@ public class RegistryDaoImpl implements IRegistryDao {
             if (value.isObject()) {
 
             } else if (value.isValueNode() && !keyType.equals("@type") && !keyType.equals(uuidPropertyName)) {
-                vertex.property(keyType, value.asText());
+                vertex.property(keyType, ValueType.getValue(value));
             }
         });
     }

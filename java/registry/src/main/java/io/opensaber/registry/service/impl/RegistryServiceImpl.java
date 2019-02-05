@@ -21,10 +21,8 @@ import io.opensaber.registry.service.SignatureService;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.sink.shard.Shard;
-import io.opensaber.registry.util.Definition;
-import io.opensaber.registry.util.DefinitionsManager;
-import io.opensaber.registry.util.EntityParenter;
-import io.opensaber.registry.util.ReadConfigurator;
+import io.opensaber.registry.util.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -184,7 +182,7 @@ public class RegistryServiceImpl implements RegistryService {
 
                 String vertexLabel = rootNode.fieldNames().next();
                 // creates/updates indices for the vertex or table gets persists)
-                ensureIndexExists(dbProvider, graph, vertexLabel);
+                //ensureIndexExists(dbProvider, graph, vertexLabel);
             }
         }
 
@@ -290,8 +288,7 @@ public class RegistryServiceImpl implements RegistryService {
 
         JsonNode childElementNode = rootNode.elements().next();
         DatabaseProvider databaseProvider = shard.getDatabaseProvider();
-        ReadConfigurator readConfigurator = new ReadConfigurator();
-        readConfigurator.setIncludeSignatures(signatureEnabled);
+        ReadConfigurator readConfigurator = ReadConfiguratorFactory.getForUpdateValidation();
 
         try (OSGraph osGraph = databaseProvider.getOSGraph()) {
             Graph graph = osGraph.getGraphStore();
@@ -326,15 +323,13 @@ public class RegistryServiceImpl implements RegistryService {
                 // sign the entitynode
                 if (signatureEnabled) {
                     signatureHelper.signJson(entityNode);
-                    JsonNode signNode = entityNode.get(entityNodeType).get(Constants.SIGNATURES_STR);
-                    if (signNode.isArray()) {
-                        signNode = getEntitySignNode(signNode, entityNodeType);
-                    }
+                    JsonNode signNode = signatureHelper.getItemSignature(entityNodeType,
+                            entityNode.get(entityNodeType).get(Constants.SIGNATURES_STR));
 
                     Iterator<Vertex> vertices = rootVertex.vertices(Direction.IN, Constants.SIGNATURES_STR);
                     if (null != vertices && vertices.hasNext()) {
                         Vertex signArrayNode = vertices.next();
-                        Iterator<Vertex> sign = signArrayNode.vertices(Direction.OUT, entityNodeType);
+                        Iterator<Vertex> sign = signArrayNode.vertices(Direction.OUT, signatureHelper.getEntitySignaturePrefix() + entityNodeType);
                         Vertex signVertex = sign.next();
                         // Other signatures are not updated, only the entity
                         // level signature.
@@ -358,10 +353,8 @@ public class RegistryServiceImpl implements RegistryService {
                 // sign the entitynode
                 if (signatureEnabled) {
                     signatureHelper.signJson(entityNode);
-                    JsonNode signNode = entityNode.get(entityNodeType).get(Constants.SIGNATURES_STR);
-                    if (signNode.isArray()) {
-                        signNode = getEntitySignNode(signNode, entityNodeType);
-                    }
+                    JsonNode signNode = signatureHelper.getItemSignature(entityNodeType,
+                            entityNode.get(entityNodeType).get(Constants.SIGNATURES_STR));
                     Iterator<Vertex> vertices = rootVertex.vertices(Direction.IN, Constants.SIGNATURES_STR);
                     while (null != vertices && vertices.hasNext()) {
                         Vertex signVertex = vertices.next();
@@ -374,26 +367,6 @@ public class RegistryServiceImpl implements RegistryService {
             }
         }
 
-    }
-
-    /**
-     * filters entity sign node from the signatures json array
-     *
-     * @param signatures
-     * @return
-     */
-    private JsonNode getEntitySignNode(JsonNode signatures, String registryRootEntityType) {
-        JsonNode entitySignNode = null;
-        Iterator<JsonNode> signItr = signatures.elements();
-        while (signItr.hasNext()) {
-            JsonNode signNode = signItr.next();
-            if (signNode.get(Constants.SIGNATURE_FOR).asText().equals(registryRootEntityType)
-                    && null == signNode.get(uuidPropertyName)) {
-                entitySignNode = signNode;
-                break;
-            }
-        }
-        return entitySignNode;
     }
 
     /**

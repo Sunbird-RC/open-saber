@@ -63,6 +63,10 @@ public class SignatureHelper {
         return signMap;
     }
 
+    public String getEntitySignaturePrefix() {
+        return registryContextBase;
+    }
+
     /**
      * Converts map to signature node
      *
