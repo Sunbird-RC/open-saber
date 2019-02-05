@@ -149,6 +149,6 @@
          "privateFields": ["nationalIdentifier", "teacherCode", "birthDate"],
          "signedFields": ["serialNum"],
          "indexFields": ["nationalIdentifier"],
-         "uniqueIndexFields": []
+         "uniqueIndexFields": ["serialNum"]
   }
 }

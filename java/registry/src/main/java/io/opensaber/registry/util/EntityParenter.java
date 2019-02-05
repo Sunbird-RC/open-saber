@@ -187,6 +187,7 @@ public class EntityParenter {
                             Definition definition = definitionsManager.getDefinition(defintionName);
                             ensureIndexExists(dbProvider, v, definition, dbConnectionInfo.getShardId());
                         });
+                        dbProvider.commitTransaction(graph, tx);
                     }
                 }
                 

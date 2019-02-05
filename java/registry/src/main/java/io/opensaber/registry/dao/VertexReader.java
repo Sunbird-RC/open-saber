@@ -132,7 +132,6 @@ public class VertexReader {
                 } else {
                     logger.debug("{} is a simple value", prop.key());
                     if (canAdd(prop.key(), privatePropertyList)) {
-                        String propValue = prop.value().toString();
                         if (propValue.contains(",")) {
                             ArrayNode stringArray = JsonNodeFactory.instance.arrayNode();
                             String[] valArray = propValue.split(",");
