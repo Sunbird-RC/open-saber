@@ -369,22 +369,15 @@ public class RegistryServiceImpl implements RegistryService {
         String parentOsid = userInputNode.get(uuidPropertyName).textValue();
         Vertex existingVertex = uuidVertexMap.getOrDefault(parentOsid, null);
 
-        // Build up a list of vertices to be updated
-//        Map<Vertex, JsonNode> toBeUpdated = new HashMap<>();
-//        toBeUpdated.put(existingVertex, userInputNode);
-//
-//        Iterator<Map.Entry<String, JsonNode>> updatedElementsItr = userInputNode.fields();
-//        while (updatedElementsItr.hasNext()) {
-//            Map.Entry<String, JsonNode> entry = updatedElementsItr.next();
-//            if (!entry.getValue().isValueNode()) {
-//                Vertex someVertex = uuidVertexMap.getOrDefault(entry.getValue().get(uuidPropertyName), null);
-//                toBeUpdated.put(someVertex, entry.getValue());
-//            }
-//        }
-
         if (existingVertex != null) {
             // Existing vertex - just add/update properties
-            registryDao.updateVertex(graph, existingVertex, userInputNode);
+            Iterator<JsonNode> elementsItr = userInputNode.elements();
+            while (elementsItr.hasNext()) {
+                JsonNode oneElement = elementsItr.next();
+                if (!oneElement.isValueNode()) {
+                    registryDao.updateVertex(graph, existingVertex, userInputNode);
+                }
+            }
         } else {
             // Likely a new addition
             logger.info("Adding a new node to existing one");
