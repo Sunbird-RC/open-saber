@@ -7,7 +7,6 @@ import com.google.gson.Gson;
 import io.opensaber.pojos.ComponentHealthInfo;
 import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.registry.dao.IRegistryDao;
-import io.opensaber.registry.dao.RegistryDaoImpl;
 import io.opensaber.registry.dao.VertexReader;
 import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
@@ -25,6 +24,7 @@ import io.opensaber.registry.util.Definition;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.EntityParenter;
 import io.opensaber.registry.util.ReadConfigurator;
+import io.opensaber.registry.util.ReadConfiguratorFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -92,9 +92,6 @@ public class RegistryServiceImpl implements RegistryService {
     private Shard shard;
 
     @Autowired
-    RegistryDaoImpl tpGraphMain;
-
-    @Autowired
     DBConnectionInfoMgr dbConnectionInfoMgr;
 
     @Autowired
@@ -149,7 +146,7 @@ public class RegistryServiceImpl implements RegistryService {
                 Vertex vertex = vertexItr.next();
                 if (!(vertex.property(Constants.STATUS_KEYWORD).isPresent()
                         && vertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE))) {
-                    tpGraphMain.deleteEntity(vertex);
+                    registryDao.deleteEntity(vertex);
                     tx.commit();
                 } else {
                     // throw exception node already deleted
@@ -182,11 +179,12 @@ public class RegistryServiceImpl implements RegistryService {
             try (OSGraph osGraph = dbProvider.getOSGraph()) {
                 Graph graph = osGraph.getGraphStore();
                 Transaction tx = dbProvider.startTransaction(graph);
-                entityId = tpGraphMain.addEntity(graph, rootNode);
+                entityId = registryDao.addEntity(graph, rootNode);
                 shard.getDatabaseProvider().commitTransaction(graph, tx);
                 dbProvider.commitTransaction(graph, tx);
 
                 vertexLabel = rootNode.fieldNames().next();
+
             }
             //Add indices: executes only once.
             String shardId = shard.getShardId();
@@ -204,7 +202,7 @@ public class RegistryServiceImpl implements RegistryService {
         try (OSGraph osGraph = dbProvider.getOSGraph()) {
             Graph graph = osGraph.getGraphStore();
             Transaction tx = dbProvider.startTransaction(graph);
-            JsonNode result = tpGraphMain.getEntity(graph, id, configurator);
+            JsonNode result = registryDao.getEntity(graph, id, configurator);
             shard.getDatabaseProvider().commitTransaction(graph, tx);
             dbProvider.commitTransaction(graph, tx);
             return result;
@@ -225,8 +223,7 @@ public class RegistryServiceImpl implements RegistryService {
 
         JsonNode childElementNode = rootNode.elements().next();
         DatabaseProvider databaseProvider = shard.getDatabaseProvider();
-        ReadConfigurator readConfigurator = new ReadConfigurator();
-        readConfigurator.setIncludeSignatures(signatureEnabled);
+        ReadConfigurator readConfigurator = ReadConfiguratorFactory.getForUpdateValidation();
 
         try (OSGraph osGraph = databaseProvider.getOSGraph()) {
             Graph graph = osGraph.getGraphStore();
@@ -257,23 +254,21 @@ public class RegistryServiceImpl implements RegistryService {
                 // TO-DO validation is failing
                 // boolean isValidate =
                 // iValidate.validate("Teacher",entityNode.toString());
-                tpGraphMain.updateVertex(graph, inputNodeVertex, childElementNode);
+                registryDao.updateVertex(graph, inputNodeVertex, childElementNode);
                 // sign the entitynode
                 if (signatureEnabled) {
                     signatureHelper.signJson(entityNode);
-                    JsonNode signNode = entityNode.get(entityNodeType).get(Constants.SIGNATURES_STR);
-                    if (signNode.isArray()) {
-                        signNode = getEntitySignNode(signNode, entityNodeType);
-                    }
+                    JsonNode signNode = signatureHelper.getItemSignature(entityNodeType,
+                            entityNode.get(entityNodeType).get(Constants.SIGNATURES_STR));
 
                     Iterator<Vertex> vertices = rootVertex.vertices(Direction.IN, Constants.SIGNATURES_STR);
                     if (null != vertices && vertices.hasNext()) {
                         Vertex signArrayNode = vertices.next();
-                        Iterator<Vertex> sign = signArrayNode.vertices(Direction.OUT, entityNodeType);
+                        Iterator<Vertex> sign = signArrayNode.vertices(Direction.OUT, signatureHelper.getEntitySignaturePrefix() + entityNodeType);
                         Vertex signVertex = sign.next();
                         // Other signatures are not updated, only the entity
                         // level signature.
-                        tpGraphMain.updateVertex(graph, signVertex, signNode);
+                        registryDao.updateVertex(graph, signVertex, signNode);
                     }
                 }
                 databaseProvider.commitTransaction(graph, tx);
@@ -288,20 +283,18 @@ public class RegistryServiceImpl implements RegistryService {
                 // TO-DO validation is failing
                 // boolean isValidate =
                 // iValidate.validate("Teacher",entityNode.toString());
-                tpGraphMain.updateVertex(graph, inputNodeVertex, childElementNode);
+                registryDao.updateVertex(graph, inputNodeVertex, childElementNode);
 
                 // sign the entitynode
                 if (signatureEnabled) {
                     signatureHelper.signJson(entityNode);
-                    JsonNode signNode = entityNode.get(entityNodeType).get(Constants.SIGNATURES_STR);
-                    if (signNode.isArray()) {
-                        signNode = getEntitySignNode(signNode, entityNodeType);
-                    }
+                    JsonNode signNode = signatureHelper.getItemSignature(entityNodeType,
+                            entityNode.get(entityNodeType).get(Constants.SIGNATURES_STR));
                     Iterator<Vertex> vertices = rootVertex.vertices(Direction.IN, Constants.SIGNATURES_STR);
                     while (null != vertices && vertices.hasNext()) {
                         Vertex signVertex = vertices.next();
                         if (signVertex.property(Constants.SIGNATURE_FOR).value().equals(entityNodeType)) {
-                            tpGraphMain.updateVertex(graph, signVertex, signNode);
+                            registryDao.updateVertex(graph, signVertex, signNode);
                         }
                     }
 
@@ -309,26 +302,6 @@ public class RegistryServiceImpl implements RegistryService {
             }
         }
 
-    }
-
-    /**
-     * filters entity sign node from the signatures json array
-     *
-     * @param signatures
-     * @return
-     */
-    private JsonNode getEntitySignNode(JsonNode signatures, String registryRootEntityType) {
-        JsonNode entitySignNode = null;
-        Iterator<JsonNode> signItr = signatures.elements();
-        while (signItr.hasNext()) {
-            JsonNode signNode = signItr.next();
-            if (signNode.get(Constants.SIGNATURE_FOR).asText().equals(registryRootEntityType)
-                    && null == signNode.get(uuidPropertyName)) {
-                entitySignNode = signNode;
-                break;
-            }
-        }
-        return entitySignNode;
     }
 
     /**
@@ -377,8 +350,10 @@ public class RegistryServiceImpl implements RegistryService {
             } else if (subEntity.get(propKey).isArray()) {
                 List<String> filterKeys = Arrays.asList(Constants.JsonldConstants.TYPE);
                 propValue.forEach(arrayElement -> {
-                    // removing keys with name @type
-                    JSONUtil.removeNodes((ObjectNode) arrayElement, filterKeys);
+                    if(arrayElement.isObject()){
+                        // removing keys with name @type
+                        JSONUtil.removeNodes((ObjectNode) arrayElement, filterKeys);
+                    }
                 });
                 // constructNewNodeToParent
                 subEntity.set(propKey, propValue);

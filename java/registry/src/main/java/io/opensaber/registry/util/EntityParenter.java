@@ -104,9 +104,10 @@ public class EntityParenter {
                         defintionNames.forEach(defintionName -> {
                             String parentLabel = ParentLabelGenerator.getLabel(defintionName);
                             parentLabels.add(parentLabel);
-                            VertexWriter vertexWriter = new VertexWriter(uuidPropertyName, dbProvider);
-                            Vertex v = vertexWriter.ensureParentVertex(graph, parentLabel);
-                            
+
+                            VertexWriter vertexWriter = new VertexWriter(graph, dbProvider, uuidPropertyName);
+                            Vertex v = vertexWriter.ensureParentVertex(parentLabel);
+
                             ShardParentInfo shardParentInfo = new ShardParentInfo(defintionName, v);
                             shardParentInfo.setUuid(v.id().toString());
                             shardParentInfoList.add(shardParentInfo);
@@ -179,8 +180,8 @@ public class EntityParenter {
                             
                             String parentLabel = ParentLabelGenerator.getLabel(defintionName);
                             parentLabels.add(parentLabel);
-                            VertexWriter vertexWriter = new VertexWriter(uuidPropertyName, dbProvider);
-                            Vertex v = vertexWriter.ensureParentVertex(graph, parentLabel);
+                            VertexWriter vertexWriter = new VertexWriter(graph, dbProvider, uuidPropertyName);
+                            Vertex v = vertexWriter.ensureParentVertex(parentLabel);
 
                             //adding index to shard
                             Definition definition = definitionsManager.getDefinition(defintionName);
@@ -206,7 +207,7 @@ public class EntityParenter {
      * @param parentVertex
      * @param definition
      */
-    private  void ensureIndexExists(DatabaseProvider dbProvider, Vertex parentVertex, Definition definition, String shardId) {
+    public  void ensureIndexExists(DatabaseProvider dbProvider, Vertex parentVertex, Definition definition, String shardId) {
         try{
             if(!indexHelper.isIndexPresent(definition, shardId)){
                 logger.info("Adding index to shard: {} for definition: {}", shardId, definition.getTitle() );

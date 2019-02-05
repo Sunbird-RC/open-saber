@@ -21,45 +21,47 @@ import org.springframework.util.StringUtils;
 
 public class VertexWriter {
     private String uuidPropertyName;
+    private Graph graph;
     private DatabaseProvider databaseProvider;
     private String parentOSid;
     private static final String EMPTY_STR = "";
 
     private Logger logger = LoggerFactory.getLogger(VertexWriter.class);
 
-    public VertexWriter(String uuidPropertyName, DatabaseProvider databaseProvider) {
-        this.uuidPropertyName = uuidPropertyName;
+    public VertexWriter(Graph graph, DatabaseProvider databaseProvider, String uuidPropertyName) {
+        this.graph = graph;
         this.databaseProvider = databaseProvider;
+        this.uuidPropertyName = uuidPropertyName;
     }
 
     /**
      * Ensures a parent vertex existence at the exit of this function
      *
-     * @param graph
      * @param parentLabel
      * @return
      */
-    public Vertex ensureParentVertex(Graph graph, String parentLabel) {
+    public Vertex ensureParentVertex(String parentLabel) {
         Vertex parentVertex = null;
         P<String> lblPredicate = P.eq(parentLabel);
 
         GraphTraversalSource gtRootTraversal = graph.traversal().clone();
         Iterator<Vertex> iterVertex = gtRootTraversal.V().hasLabel(lblPredicate);
         if (!iterVertex.hasNext()) {
-            parentVertex = createVertex(graph, parentLabel);
+            parentVertex = createVertex(parentLabel);
+
             //added a property to track vertices belong to parent are indexed
             parentVertex.property(Constants.INDEX_FIELDS, EMPTY_STR);
             parentVertex.property(Constants.UNIQUE_INDEX_FIELDS, EMPTY_STR);
             logger.info("Parent label {} created {}", parentLabel, parentVertex.id().toString());
         } else {
             parentVertex = iterVertex.next();
-            logger.info("Parent label {} already existing {}", parentLabel, parentVertex.id().toString());
+            logger.info("Parent label {} already existing {}", parentLabel, databaseProvider.getId(parentVertex));
         }
 
         return parentVertex;
     }
-    
-    public Vertex createVertex(Graph graph, String label) {
+
+    public Vertex createVertex(String label) {
         Vertex vertex = graph.addVertex(label);
 
         vertex.property(TypePropertyHelper.getTypeName(), label);
@@ -72,12 +74,11 @@ public class VertexWriter {
      * Writes an array into the database. For each array item, if it is an
      * object creates/populates a new vertex/table and stores the reference
      *
-     * @param graph
      * @param vertex
      * @param entryKey
      * @param arrayNode
      */
-    private void writeArrayNode(Graph graph, Vertex vertex, String entryKey, ArrayNode arrayNode) {
+    private void writeArrayNode(Vertex vertex, String entryKey, ArrayNode arrayNode) {
         List<String> uidList = new ArrayList<>();
         boolean isArrayItemObject = arrayNode.get(0).isObject();
         boolean isSignature = entryKey.equals(Constants.SIGNATURES_STR);
@@ -88,23 +89,23 @@ public class VertexWriter {
             label = RefLabelHelper.getArrayLabel(entryKey, uuidPropertyName);
 
             // Create a label with array_node_keyword
-            blankNode = createVertex(graph, Constants.ARRAY_NODE_KEYWORD);
+            blankNode = createVertex(Constants.ARRAY_NODE_KEYWORD);
 
             if (isSignature) {
                 addEdge(entryKey, blankNode, vertex);
             } else {
                 addEdge(entryKey, vertex, blankNode);
             }
-            vertex.property(label, blankNode.id().toString());
+            vertex.property(label, databaseProvider.getId(blankNode));
             blankNode.property(Constants.INTERNAL_TYPE_KEYWORD, entryKey);
             blankNode.property(Constants.ROOT_KEYWORD, parentOSid);
         }
 
         for (JsonNode jsonNode : arrayNode) {
             if (jsonNode.isObject()) {
-                Vertex createdV = processNode(graph, entryKey, jsonNode);
+                Vertex createdV = processNode(entryKey, jsonNode);
                 createdV.property(Constants.ROOT_KEYWORD, parentOSid);
-                uidList.add(createdV.id().toString());
+                uidList.add(databaseProvider.getId(createdV));
                 if (isSignature) {
                     addEdge(jsonNode.get(Constants.SIGNATURE_FOR).textValue(), blankNode, createdV);
                 } else {
@@ -124,12 +125,12 @@ public class VertexWriter {
         }
     }
 
-    private Vertex processNode(Graph graph, String label, JsonNode jsonObject) {
-        Vertex vertex = createVertex(graph, label);
+    private Vertex processNode(String label, JsonNode jsonObject) {
+        Vertex vertex = createVertex(label);
 
         // This attribute will help identify the root from any child
         if (parentOSid == null || parentOSid.isEmpty()) {
-            parentOSid = vertex.id().toString();
+            parentOSid = databaseProvider.getId(vertex);
         }
 
         jsonObject.fields().forEachRemaining(entry -> {
@@ -141,17 +142,17 @@ public class VertexWriter {
                 vertex.property(entry.getKey(), ValueType.getValue(entryValue));
             } else if (entryValue.isObject()) {
                 // Recursive calls
-                Vertex v = processNode(graph, entry.getKey(), entryValue);
+                Vertex v = processNode(entry.getKey(), entryValue);
                 addEdge(entry.getKey(), vertex, v);
 
-                String idToSet = databaseProvider.generateId(v);
+                String idToSet = databaseProvider.getId(v);
                 vertex.property(RefLabelHelper.getLabel(entry.getKey(), uuidPropertyName), idToSet);
 
                 v.property(Constants.ROOT_KEYWORD, parentOSid);
 
                 logger.debug("Added edge between {} and {}", vertex.label(), v.label());
             } else if (entryValue.isArray()) {
-                writeArrayNode(graph, vertex, entry.getKey(), (ArrayNode) entry.getValue());
+                writeArrayNode(vertex, entry.getKey(), (ArrayNode) entry.getValue());
             }
         });
         return vertex;
@@ -189,11 +190,10 @@ public class VertexWriter {
     /**
      * Writes the node entity into the database.
      *
-     * @param graph
      * @param node
      * @return
      */
-    public String writeNodeEntity(Graph graph, JsonNode node) {
+    public String writeNodeEntity(JsonNode node) {
         Vertex resultVertex = null;
         Iterator<Map.Entry<String, JsonNode>> entryIterator = node.fields();
         while (entryIterator.hasNext()) {
@@ -201,7 +201,7 @@ public class VertexWriter {
             // It is expected that node is wrapped under a root, which is the
             // parent name/definition
             if (entry.getValue().isObject()) {
-                resultVertex = processNode(graph, entry.getKey(), entry.getValue());
+                resultVertex = processNode(entry.getKey(), entry.getValue());
             }
         }
 
