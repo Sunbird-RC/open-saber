@@ -74,7 +74,7 @@ public class EntityParenter {
               
               boolean indexingComplete = (nNewIndices == 0 && nNewUniqIndices == 0);
               indexHelper.updateDefinitionIndex(shardId, definition.getTitle(), indexingComplete);
-              logger.info("On loadDefination, for Shard:"+ shardId + " definition: {} updated index to {} ", definition.getTitle(), indexingComplete);
+              logger.info("On loadDefinitionIndex for Shard:"+ shardId + " definition: {} updated index to {} ", definition.getTitle(), indexingComplete);
               
           });
           
@@ -212,10 +212,7 @@ public class EntityParenter {
         try{
             if(!indexHelper.isIndexPresent(definition, shardId)){
                 logger.info("Adding index to shard: {} for definition: {}", shardId, definition.getTitle() );
-                asyncAddIndex(dbProvider, parentVertex, definition);
-                //key is concatenation of shardId and definitionTitle
-                indexHelper.updateDefinitionIndex(shardId, definition.getTitle(), true);
-                logger.info("On ensureIndex, definition: {} updated index to true for shardId {}", definition.getTitle(), shardId);
+                asyncAddIndex(dbProvider,shardId, parentVertex, definition);
             }
         }catch(Exception e){
             logger.error("ensureIndexExists: Can't create index on table {} for shardId: {} ", definition.getTitle(), shardId);
@@ -228,17 +225,18 @@ public class EntityParenter {
      * @param parentVertex
      * @param definition
      */
-    private void asyncAddIndex(DatabaseProvider dbProvider, Vertex parentVertex, Definition definition) {
+    private void asyncAddIndex(DatabaseProvider dbProvider, String shardId, Vertex parentVertex, Definition definition) {
         new Thread(() -> {
-            try (OSGraph osGraph = dbProvider.getOSGraph()) {
+          try{
+                OSGraph osGraph = dbProvider.getOSGraph();
                 Graph graph = osGraph.getGraphStore();
                 Transaction tx = dbProvider.startTransaction(graph);           
                 if(parentVertex != null && definition != null){
                     List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
-                    List<String> newIndexFields = indexHelper.getNewFields(parentVertex, indexFields, false);
-                    List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();
                     // adds default field (uuid)
-                    indexUniqueFields.add(uuidPropertyName);
+                    indexFields.add(uuidPropertyName);
+                    List<String> newIndexFields = indexHelper.getNewFields(parentVertex, indexFields, false);
+                    List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();               
                     List<String> newUniqueIndexFields = indexHelper.getNewFields(parentVertex, indexUniqueFields, true);
 
                     Indexer indexer = new Indexer(dbProvider);
@@ -247,12 +245,12 @@ public class EntityParenter {
                     indexer.createIndex(graph, definition.getTitle(), parentVertex);
                 } else {
                     logger.info("No definition found for create index");
-                }
-                
+                }               
                 dbProvider.commitTransaction(graph, tx);
-            } catch (Exception e) {
-              logger.info("Can't create index on table " + definition.getTitle());
-          }
+                indexHelper.updateDefinitionIndex(shardId, definition.getTitle(), true);
+          } catch (Exception e) {
+              logger.error("Failed to create index {}", definition.getTitle());
+          }      
         }).start();           
     }
 

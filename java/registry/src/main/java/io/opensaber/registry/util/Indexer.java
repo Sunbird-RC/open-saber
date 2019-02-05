@@ -3,6 +3,7 @@ package io.opensaber.registry.util;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.sink.DatabaseProvider;
 import java.util.List;
+import java.util.NoSuchElementException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
@@ -55,7 +56,7 @@ public class Indexer {
      * @param label     type vertex label (example:Teacher) and table in rdbms           
      * @param parentVertex
      */
-    public void createIndex(Graph graph, String label, Vertex parentVertex) {
+    public void createIndex(Graph graph, String label, Vertex parentVertex) throws NoSuchElementException {
         if (label != null && !label.isEmpty()) {
             createNonUniqueIndex(graph, label, parentVertex);
             createUniqueIndex(graph, label, parentVertex);
@@ -64,24 +65,18 @@ public class Indexer {
         }
     }
 
-    private void createNonUniqueIndex(Graph graph, String label, Vertex parentVertex) {
-        try {
-            databaseProvider.createIndex(graph, label, indexFields);
-            updateIndices(parentVertex, indexFields, false);
+    private void createNonUniqueIndex(Graph graph, String label, Vertex parentVertex) throws NoSuchElementException {
 
-        } catch (Exception e) {
-            logger.error("Non-unique index creation error: " + e);
-        }
+        databaseProvider.createIndex(graph, label, indexFields);
+        updateIndices(parentVertex, indexFields, false);
+
     }
 
-    private void createUniqueIndex(Graph graph, String label, Vertex parentVertex) {
-        try {
-            databaseProvider.createUniqueIndex(graph, label, indexUniqueFields);
-            updateIndices(parentVertex, indexUniqueFields, true);
+    private void createUniqueIndex(Graph graph, String label, Vertex parentVertex) throws NoSuchElementException {
 
-        } catch (Exception e) {
-            logger.error("Unique index creation error: " + e);
-        }
+        databaseProvider.createUniqueIndex(graph, label, indexUniqueFields);
+        updateIndices(parentVertex, indexUniqueFields, true);
+
     }
 
     /**
