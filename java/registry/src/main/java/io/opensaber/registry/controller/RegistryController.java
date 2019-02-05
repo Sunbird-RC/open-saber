@@ -133,7 +133,7 @@ public class RegistryController {
     }
 
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
-    public ResponseEntity<Response> deleteEntity(@RequestHeader HttpHeaders header) {
+    public ResponseEntity<Response> deleteEntity() {
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.DELETE, "OK", responseParams);
         try {
@@ -159,7 +159,7 @@ public class RegistryController {
     }
 
     @RequestMapping(value = "/add", method = RequestMethod.POST)
-    public ResponseEntity<Response> addTP2Graph(@RequestParam(value = "id", required = false) String id,
+    public ResponseEntity<Response> addEntity(@RequestParam(value = "id", required = false) String id,
                                                 @RequestParam(value = "prop", required = false) String property) {
 
         ResponseParams responseParams = new ResponseParams();
@@ -184,7 +184,7 @@ public class RegistryController {
             String label = recordId.toString();
             resultMap.put(dbConnectionInfoMgr.getUuidPropertyName(), label);
 
-            result.put("entity", resultMap);
+            result.put(entityType, resultMap);
             response.setResult(result);
             responseParams.setStatus(Response.Status.SUCCESSFUL);
             watch.stop("RegistryController.addToExistingEntity");
@@ -199,7 +199,7 @@ public class RegistryController {
     }
 
     @RequestMapping(value = "/read", method = RequestMethod.POST)
-    public ResponseEntity<Response> greadGraph2Json(@RequestHeader HttpHeaders header) {
+    public ResponseEntity<Response> readEntity(@RequestHeader HttpHeaders header) {
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.READ, "OK", responseParams);
 
@@ -239,7 +239,7 @@ public class RegistryController {
 
     @ResponseBody
     @RequestMapping(value = "/update", method = RequestMethod.POST)
-    public ResponseEntity<Response> updateTP2Graph() {
+    public ResponseEntity<Response> updateEntity() {
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.UPDATE, "OK", responseParams);
 
