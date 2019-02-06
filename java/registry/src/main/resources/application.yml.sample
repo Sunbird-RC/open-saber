@@ -112,6 +112,10 @@ encryption:
         timeout: ${encryption_service_connection_request_timeout:5000}
     read:
       timeout: ${encryption_service_read_timeout:5000}
+    retry:
+      maxAttempts: ${signature_retry_maxAttempts:5}
+      backoff:
+        delay: ${signature_retry_backoff_delay:1000}
 
 decryption:
   uri: ${decryption_uri:http://localhost:8013/decrypt}
@@ -128,6 +132,10 @@ signature:
   schema:
     config:
       name: SignatureShape
+  retry:
+      maxAttempts: ${signature_retry_maxAttempts:5}
+      backoff:
+          delay: ${signature_retry_backoff_delay:1000}
 
 audit:
   enabled: ${audit_enabled:false}
@@ -210,6 +218,10 @@ encryption:
         timeout: ${encryption_service_connection_request_timeout:5000}
     read:
       timeout: ${encryption_service_read_timeout:5000}
+    retry:
+      maxAttempts: ${signature_retry_maxAttempts:5}
+      backoff:
+        delay: ${signature_retry_backoff_delay:1000}
 
 decryption:
   uri: https://dev.sunbirded.org/encryption/decrypt
@@ -226,6 +238,10 @@ signature:
   schema:
     config:
       name: SignatureShape
+  retry:
+    maxAttempts: ${signature_retry_maxAttempts:5}
+    backoff:
+        delay: ${signature_retry_backoff_delay:1000}
 
 audit:
   enabled: false
