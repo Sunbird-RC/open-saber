@@ -15,6 +15,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -54,8 +56,17 @@ public class EncryptionServiceImpl implements EncryptionService {
 	@Autowired
 	private OpenSaberInstrumentation watch;
 
+
+	/** encrypts the input
+	 * @param propertyValue - single value or object as input for encryption
+	 * @return - encrypted value
+	 * @throws EncryptionException
+	 */
 	@Override
+	@Retryable(value ={ResourceAccessException.class,ServiceUnavailableException.class }, maxAttemptsExpression = "#{${encryption.service.retry.maxAttempts}}",
+			backoff = @Backoff(delayExpression = "#{${encryption.service.retry.backoff.delay}}"))
 	public String encrypt(Object propertyValue) throws EncryptionException {
+		logger.debug("encrypt starts with value {}", propertyValue);
 		MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 		map.add("value", propertyValue);
 		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map);
@@ -74,9 +85,16 @@ public class EncryptionServiceImpl implements EncryptionService {
 		}
 	}
 
+	/** decrypts the input
+	 * @param propertyValue - single value or object as input for decryption
+	 * @return - decrypted value
+	 * @throws EncryptionException
+	 */
 	@Override
+	@Retryable(value ={ResourceAccessException.class,ServiceUnavailableException.class }, maxAttemptsExpression = "#{${encryption.service.retry.maxAttempts}}",
+			backoff = @Backoff(delayExpression = "#{${encryption.service.retry.backoff.delay}}"))
 	public String decrypt(Object propertyValue) throws EncryptionException {
-
+		logger.debug("decrypt starts with value {}", propertyValue);
 		MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
 		map.add("value", propertyValue);
 		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map);
@@ -96,8 +114,16 @@ public class EncryptionServiceImpl implements EncryptionService {
 		}
 	}
 
+	/** encrypts the input which is in Map format
+	 * @param propertyValue - input is in format Map<String, Object>
+	 * @return Map<String, Object>
+	 * @throws EncryptionException
+	 */
 	@Override
+	@Retryable(value ={ResourceAccessException.class,ServiceUnavailableException.class }, maxAttemptsExpression = "#{${encryption.service.retry.maxAttempts}}",
+			backoff = @Backoff(delayExpression = "#{${encryption.service.retry.backoff.delay}}"))
 	public Map<String, Object> encrypt(Map<String, Object> propertyValue) throws EncryptionException {
+		logger.debug("encrypt starts with value {}", propertyValue);
 		Map<String, Object> map = new HashMap<>();
 		map.put("value", propertyValue);
 
@@ -122,8 +148,16 @@ public class EncryptionServiceImpl implements EncryptionService {
 		}
 	}
 
+	/** decrypts the input which is in Map format
+	 * @param propertyValue - input is in format Map<String, Object>
+	 * @return Map<String, Object>
+	 * @throws EncryptionException
+	 */
 	@Override
+	@Retryable(value ={ResourceAccessException.class,ServiceUnavailableException.class }, maxAttemptsExpression = "#{${encryption.service.retry.maxAttempts}}",
+			backoff = @Backoff(delayExpression = "#{${encryption.service.retry.backoff.delay}}"))
 	public Map<String, Object> decrypt(Map<String, Object> propertyValue) throws EncryptionException {
+		logger.debug("decrypt starts with value {}", propertyValue);
 		Map<String, Object> map = new HashMap<>();
 		map.put("value", propertyValue);
 
@@ -152,9 +186,11 @@ public class EncryptionServiceImpl implements EncryptionService {
 	/**
 	 * This method is used to check if the sunbird encryption service is up
 	 * 
-	 * @return
+	 * @return boolean true/false
 	 */
 	@Override
+	@Retryable(value ={ResourceAccessException.class,ServiceUnavailableException.class }, maxAttemptsExpression = "#{${encryption.service.retry.maxAttempts}}",
+			backoff = @Backoff(delayExpression = "#{${encryption.service.retry.backoff.delay}}"))
 	public boolean isEncryptionServiceUp() {
 		boolean isEncryptionServiceUp = false;
 		HttpClient httpClient = HttpClientBuilder.create().build();
