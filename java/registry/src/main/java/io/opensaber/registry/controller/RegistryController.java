@@ -217,7 +217,6 @@ public class RegistryController {
         boolean includeSignatures = (boolean) apiMessage.getRequest().getRequestMap().getOrDefault("includeSignatures",
                 false);
         ReadConfigurator configurator = ReadConfiguratorFactory.getOne(includeSignatures);
-
         configurator.setIncludeTypeAttributes(requireLDResponse);
 
         try {

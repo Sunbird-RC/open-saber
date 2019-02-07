@@ -68,15 +68,6 @@
         <appender-ref ref="Perf4jFileAppender"/>
     </logger>
 
-    <logger name="GraphEventLogger" level="DEBUG" additivity="FALSE">
-        <appender-ref ref="RegistryAuditAppender"/>
-    </logger>
-
-    <root level="INFO" additivity="FALSE">
-        <appender-ref ref="STDOUT"/>
-        <appender-ref ref="FILE"/>
-    </root>
-
     <logger name="es.weso" level="ERROR"/>
     <logger name="org.springframework" level="ERROR"/>
 
@@ -85,5 +76,14 @@
     <logger name="com.steelbridgelabs.oss.neo4j.structure.Neo4JSession" level="DEBUG"/>
     <logger name="io.opensaber.registry.dao.RegistryDaoImpl" level="DEBUG"/>
     <logger name="com.mchange.v2.c3p0.impl.NewProxyPreparedStatement" level="DEBUG"/>
+
+    <logger name="GraphEventLogger" level="DEBUG" additivity="FALSE">
+        <appender-ref ref="RegistryAuditAppender"/>
+    </logger>
+
+    <root level="INFO" additivity="FALSE">
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="FILE"/>
+    </root>
 
 </configuration>

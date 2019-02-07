@@ -8,6 +8,7 @@ import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.sink.DatabaseProvider;
+import io.opensaber.registry.util.ArrayHelper;
 import io.opensaber.registry.util.Definition;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.ReadConfigurator;
@@ -45,7 +46,7 @@ public class VertexReader {
     private Logger logger = LoggerFactory.getLogger(VertexReader.class);
 
     public VertexReader(DatabaseProvider databaseProvider, Graph graph, ReadConfigurator configurator, String uuidPropertyName,
-            DefinitionsManager definitionsManager) {
+                        DefinitionsManager definitionsManager) {
         this.databaseProvider = databaseProvider;
         this.graph = graph;
         this.configurator = configurator;
@@ -106,6 +107,7 @@ public class VertexReader {
         Iterator<VertexProperty<Object>> properties = currVertex.properties();
         while (properties.hasNext()) {
             VertexProperty<Object> prop = properties.next();
+            String propValue = ArrayHelper.removeSquareBraces(prop.value().toString());
             if (!RefLabelHelper.isParentLabel(prop.key())) {
                 if (RefLabelHelper.isRefLabel(prop.key(), uuidPropertyName)) {
                     logger.debug("{} is a referenced entity", prop.key());
@@ -113,7 +115,7 @@ public class VertexReader {
                     // otherwise.
 
                     String refEntityName = RefLabelHelper.getRefEntityName(prop.key());
-                    String[] valueArr = prop.value().toString().split("\\s*,\\s*");
+                    String[] valueArr = propValue.split("\\s*,\\s*");
                     boolean isObjectNode = valueArr.length == 1;
 
                     ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
@@ -130,7 +132,6 @@ public class VertexReader {
                 } else {
                     logger.debug("{} is a simple value", prop.key());
                     if (canAdd(prop.key(), privatePropertyList)) {
-                        String propValue = prop.value().toString();
                         if (propValue.contains(",")) {
                             ArrayNode stringArray = JsonNodeFactory.instance.arrayNode();
                             String[] valArray = propValue.split(",");
@@ -174,12 +175,16 @@ public class VertexReader {
                 signatures = JsonNodeFactory.instance.arrayNode();
                 while (signatureVertices.hasNext()) {
                     Vertex oneSignature = signatureVertices.next();
-                    if( oneSignature.label().equalsIgnoreCase(Constants.SIGNATURES_STR)
-                            && !(oneSignature.property(Constants.STATUS_KEYWORD).isPresent() && oneSignature.property(Constants.STATUS_KEYWORD).value().toString().equalsIgnoreCase(Constants.STATUS_INACTIVE))) {
+                    if( oneSignature.label().equalsIgnoreCase(Constants.SIGNATURES_STR) &&
+                            !(oneSignature.property(Constants.STATUS_KEYWORD).isPresent() &&
+                            oneSignature.property(Constants.STATUS_KEYWORD).value().toString().equalsIgnoreCase(Constants.STATUS_INACTIVE))) {
                         ObjectNode signatureNode = constructObject(oneSignature);
                         signatures.add(signatureNode);
                         logger.debug("Added signature node for " + signatureNode.get(Constants.SIGNATURE_FOR));
-                        uuidVertexMap.put(oneSignature.value(uuidPropertyName), oneSignature);
+
+                        if (configurator.isIncludeIdentifiers()) {
+                            uuidVertexMap.put(oneSignature.value(uuidPropertyName), oneSignature);
+                        }
                     }
                 }
                 uuidVertexMap.put(Constants.SIGNATURES_STR, signatureArrayV);
@@ -258,7 +263,7 @@ public class VertexReader {
                 if (canLoadVertex(++tempCurrLevel, configurator.getDepth())) {
                     loadOtherVertices(currVertex, tempCurrLevel);
                     tempCurrLevel = currLevel; // After loading reset for other
-                                               // vertices.
+                    // vertices.
                 }
             }
         }
@@ -345,6 +350,39 @@ public class VertexReader {
      * @return the vertex associated with osid passed
      */
     public Vertex getVertex(String entityType, String osid) {
+        Vertex vertex = null;
+        Iterator<Vertex> itrV = null;
+        switch (databaseProvider.getProvider()) {
+            case NEO4J:
+                itrV = graph.vertices(osid);
+                break;
+            case SQLG:
+                if (null != entityType) {
+                    itrV = graph.traversal().clone().V().hasLabel(entityType).has(uuidPropertyName, osid);
+                } else {
+                    itrV = graph.traversal().clone().V().has(uuidPropertyName, osid);
+                }
+                break;
+            default:
+                itrV = graph.vertices(osid);
+                break;
+        }
+
+        if (itrV.hasNext()) {
+            vertex = itrV.next();
+        }
+
+        return vertex;
+    }
+
+    /**
+     * Neo4j supports custom ids and so we can directly query vertex with id - without client side filtering.
+     * SqlG does not support custom id, but the result is direct from the database without client side filtering
+     *      unlike Neo4j.
+     * @param osid the osid of vertex to be loaded
+     * @return the vertex associated with osid passed
+     */
+    public Vertex getVertex(String entityType, String[] osid) {
         Vertex vertex = null;
         Iterator<Vertex> itrV = null;
         switch (databaseProvider.getProvider()) {

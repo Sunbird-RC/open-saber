@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.json.Json;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +28,9 @@ public class SignatureHelper {
     @Value("${database.uuidPropertyName}")
     public String uuidPropertyName;
 
-    /** Signs the entity and returns the entity with signed json appending
+    /**
+     * Signs the entity and returns the entity with signed json appending
+     *
      * @param rootNode
      * @return The new signature created
      * @throws SignatureException.UnreachableException
@@ -47,13 +48,14 @@ public class SignatureHelper {
 
     /**
      * Invokes the SignatureService to generate the signature for this entity
+     *
      * @param rootNode
      * @return
      * @throws SignatureException.UnreachableException
      * @throws SignatureException.CreationException
      */
 
-    private Map generateSignature(JsonNode rootNode) throws SignatureException.UnreachableException, SignatureException.CreationException{
+    private Map generateSignature(JsonNode rootNode) throws SignatureException.UnreachableException, SignatureException.CreationException {
         Map signReq = new HashMap<String, Object>();
         signReq.put("entity", rootNode);
         Map<String, Object> signMap = (Map<String, Object>) signatureService.sign(signReq);
@@ -61,10 +63,15 @@ public class SignatureHelper {
         return signMap;
     }
 
+    public String getEntitySignaturePrefix() {
+        return registryContextBase;
+    }
+
     /**
      * Converts map to signature node
+     *
      * @param entityType Entity name for which the signature node needs to be generated
-     * @param signMap The response got from signature service
+     * @param signMap    The response got from signature service
      * @return
      */
     private JsonNode convertMapToNode(String entityType, Map<String, Object> signMap) {
@@ -96,6 +103,7 @@ public class SignatureHelper {
 
     /**
      * Gets the signature for the supplied itemName
+     *
      * @param itemName
      * @param signaturesArr
      * @return
@@ -114,6 +122,7 @@ public class SignatureHelper {
 
     /**
      * Removes the entity signature from the node
+     *
      * @param entityNodeType
      * @param node
      */

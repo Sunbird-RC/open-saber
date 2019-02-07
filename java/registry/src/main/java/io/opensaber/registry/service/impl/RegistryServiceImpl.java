@@ -2,7 +2,6 @@ package io.opensaber.registry.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
 import io.opensaber.pojos.ComponentHealthInfo;
@@ -22,14 +21,12 @@ import io.opensaber.validators.IValidate;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tomcat.util.bcel.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.json.Json;
 import java.util.*;
 
 @Component
@@ -137,38 +134,16 @@ public class RegistryServiceImpl implements RegistryService {
         try (OSGraph osGraph = databaseProvider.getOSGraph()) {
             Graph graph = osGraph.getGraphStore();
             Transaction tx = databaseProvider.startTransaction(graph);
-            Iterator<Vertex> vertexItr = graph.vertices(uuid);
-            if (vertexItr.hasNext()) {
-                Vertex vertex = vertexItr.next();
-                if (!(vertex.property(Constants.STATUS_KEYWORD).isPresent() &&
-                        vertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE))) {
-                    registryDao.deleteEntity(vertex);
-                } else {
-                    // throw exception node already deleted
-                    throw new RecordNotFoundException("Cannot perform the operation");
-                }
-            } else {
-                throw new RecordNotFoundException("No such record found");
+            ReadConfigurator configurator = ReadConfiguratorFactory.getOne(false);
+            VertexReader vertexReader = new VertexReader(databaseProvider, graph, configurator, uuidPropertyName, definitionsManager);
+            Vertex vertex  = vertexReader.getVertex(null, uuid);
+            if (!(vertex.property(Constants.STATUS_KEYWORD).isPresent()
+                    && vertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE))) {
+                registryDao.deleteEntity(vertex);
             }
-
+            logger.info("Entity {} marked deleted", uuid);
             databaseProvider.commitTransaction(graph, tx);
         }
-    }
-
-    private void addIndex(DatabaseProvider dbProvider, String shardId, String vertexLabel) {
-//        new Thread(() -> {
-//            try (OSGraph osGraph = dbProvider.getOSGraph()) {
-//                Graph graph = osGraph.getGraphStore();
-//                Transaction tx = dbProvider.startTransaction(graph);
-//
-//                // creates/updates indices for the vertex or table gets persists)
-//                ensureIndexExists(dbProvider, shardId, vertexLabel);
-//                dbProvider.commitTransaction(graph, tx);
-//            } catch (Exception e) {
-//                logger.info("Can't create index on table " + vertexLabel);
-//            }
-//            logger.info("Indexing done " + vertexLabel);
-//        }).start();
     }
 
     public String addEntity(String jsonString) throws Exception {
@@ -185,91 +160,25 @@ public class RegistryServiceImpl implements RegistryService {
         }
 
         if (persistenceEnabled) {
+            String vertexLabel = null;
             DatabaseProvider dbProvider = shard.getDatabaseProvider();
-            String vertexLabel;
             try (OSGraph osGraph = dbProvider.getOSGraph()) {
                 Graph graph = osGraph.getGraphStore();
                 Transaction tx = dbProvider.startTransaction(graph);
                 entityId = registryDao.addEntity(graph, rootNode);
                 shard.getDatabaseProvider().commitTransaction(graph, tx);
                 dbProvider.commitTransaction(graph, tx);
+
                 vertexLabel = rootNode.fieldNames().next();
             }
-
-            logger.info("Starting to ensure index on " + vertexLabel + " for shard " + shard.getShardId());
-            addIndex(dbProvider, shard.getShardId(), vertexLabel);
+            //Add indices: executes only once.
+            String shardId = shard.getShardId();
+            Vertex parentVertex = entityParenter.getKnownParentVertex(vertexLabel, shardId);
+            Definition definition = definitionsManager.getDefinition(vertexLabel);
+            entityParenter.ensureIndexExists(dbProvider, parentVertex, definition, shardId);
         }
 
         return entityId;
-    }
-
-    /**
-     * Ensures index for a vertex exists 
-     * Unique index and non-unique index is supported
-     * @param dbProvider
-     * @param label   a type vertex label (example:Teacher)
-     * @param shardId
-     */
-    private void ensureIndexExists(DatabaseProvider dbProvider, String shardId, String label) {
-
-        Vertex parentVertex = entityParenter.getKnownParentVertex(label, shardId);
-        Definition definition = definitionsManager.getDefinition(label);
-        List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
-        List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();
-
-        try {
-            if (!indexFieldsExists(parentVertex, indexFields)){
-                dbProvider.createIndex(label, indexFields);
-                setPropertyValuesOnParentVertex(parentVertex, indexFields);
-                logger.debug("Added index on "
-                        + parentVertex.property(Constants.INDEX_FIELDS).value());
-
-            }
-
-            if(!indexFieldsExists(parentVertex, indexUniqueFields)){
-                dbProvider.createUniqueIndex(label, indexUniqueFields);
-                setPropertyValuesOnParentVertex(parentVertex, indexUniqueFields);
-                logger.debug("Added unique index on "
-                        + parentVertex.property(Constants.INDEX_FIELDS).value());
-
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            logger.error("Can't ensure index" + e);
-        }
-
-    }
-    
-    /**
-     * Checks if fields exist for parent vertex property
-     * @param parentVertex
-     * @param fields
-     * @return
-     */
-    private boolean indexFieldsExists(Vertex parentVertex, List<String> fields) {
-        String[] indexFields = null;
-        boolean contains = false;
-        if (parentVertex.property(Constants.INDEX_FIELDS).isPresent()) {
-            String values = (String) parentVertex.property(Constants.INDEX_FIELDS).value();
-            indexFields = values.split(",");
-            for (String field : fields) {
-                contains = Arrays.stream(indexFields).anyMatch(field::equals);
-            }
-        }
-        return contains;
-    }
-    
-    /**
-     * Append the values to parent vertex INDEX_FIELDS property
-     * @param parentVertex
-     * @param values
-     */
-    private void setPropertyValuesOnParentVertex(Vertex parentVertex, List<String> values) {
-        String existingValue = (String) parentVertex.property(Constants.INDEX_FIELDS).value();
-        for (String value : values) {
-            existingValue = existingValue.isEmpty() ? value : (existingValue + "," + value);
-            parentVertex.property(Constants.INDEX_FIELDS, existingValue);
-        }
     }
 
     @Override
@@ -279,13 +188,6 @@ public class RegistryServiceImpl implements RegistryService {
             Graph graph = osGraph.getGraphStore();
             Transaction tx = dbProvider.startTransaction(graph);
             JsonNode result = registryDao.getEntity(graph, id, configurator);
-
-            if (!shard.getShardLabel().isEmpty()) {
-                // Replace osid with shard details
-                String prefix = shard.getShardLabel() + RecordIdentifier.getSeparator();
-                JSONUtil.addPrefix((ObjectNode) result, prefix, new ArrayList<String>(Arrays.asList(uuidPropertyName)));
-            }
-
             shard.getDatabaseProvider().commitTransaction(graph, tx);
             dbProvider.commitTransaction(graph, tx);
             return result;
@@ -382,26 +284,6 @@ public class RegistryServiceImpl implements RegistryService {
             // Likely a new addition
             logger.info("Adding a new node to existing one");
         }
-    }
-
-    /**
-     * filters entity sign node from the signatures json array
-     *
-     * @param signatures
-     * @return
-     */
-    private JsonNode getEntitySignNode(JsonNode signatures, String registryRootEntityType) {
-        JsonNode entitySignNode = null;
-        Iterator<JsonNode> signItr = signatures.elements();
-        while (signItr.hasNext()) {
-            JsonNode signNode = signItr.next();
-            if (signNode.get(Constants.SIGNATURE_FOR).asText().equals(registryRootEntityType)
-                    && null == signNode.get(uuidPropertyName)) {
-                entitySignNode = signNode;
-                break;
-            }
-        }
-        return entitySignNode;
     }
 
     /**
