@@ -255,7 +255,7 @@ public class EntityParenter {
                         indexer.setCompositeIndexFields(newCIndexFields);
                         indexer.setUniqueIndexFields(newUniqueIndexFields);
                         status = indexer.createIndex(graph, definition.getTitle(), parentVertex);
-                        logger.info("CREATE INDEX ====== " + status);
+                        logger.info("CREATE INDEX STATUS ====== " + status);
     
                                   
                     dbProvider.commitTransaction(graph, tx);

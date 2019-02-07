@@ -16,11 +16,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Indexer {
     private static Logger logger = LoggerFactory.getLogger(Indexer.class);
-/*
-    *//**
-     * Non unique index fields 
-     *//*
-    private List<String> indexFields;*/
+
     /**
      * Unique index fields
      */
@@ -39,15 +35,6 @@ public class Indexer {
         this.databaseProvider = databaseProvider;
     }
 
-/*    *//**
-     * Required to set non-unique fields to create
-     * 
-     * @param indexFields
-     *//*
-    public void setIndexFields(List<String> indexFields) {
-        this.indexFields = indexFields;
-    }
-*/
     /**
      * Required to set unique fields to create
      * 
@@ -89,7 +76,6 @@ public class Indexer {
                 updateIndices(parentVertex);
                 isCreated = true;
             } catch (Exception e) {
-                // TODO Auto-generated catch block
                 logger.error(e.getMessage());
                 logger.error("Failed to create index {}", label);
             }
@@ -98,48 +84,42 @@ public class Indexer {
         }
         return isCreated;
     }
-
+    /**
+     * Creates single and composite indices
+     * @param graph
+     * @param label
+     * @param parentVertex
+     * @throws NoSuchElementException
+     */
     private void createNonUniqueIndex(Graph graph, String label, Vertex parentVertex) throws NoSuchElementException {
         databaseProvider.createIndex(graph, label, singleIndexFields);        
         databaseProvider.createCompositeIndex(graph, label, compositeIndexFields);
 
     }
-
+    /**
+     * Creates only unique indices
+     * @param graph
+     * @param label
+     * @param parentVertex
+     * @throws NoSuchElementException
+     */
     private void createUniqueIndex(Graph graph, String label, Vertex parentVertex) throws NoSuchElementException {
         databaseProvider.createUniqueIndex(graph, label, indexUniqueFields);
     }
 
-/*    *//**
-     * Append the values to parent vertex INDEX_FIELDS and UNIQUE_INDEX_FIELDS
-     * property
-     * 
-     * @param parentVertex
-     * @param values
-     * @param isUnique
-     *//*
-    private void updateIndices(Vertex parentVertex, List<String> values, boolean isUnique) {
-        String propertyName = isUnique ? Constants.UNIQUE_INDEX_FIELDS : Constants.INDEX_FIELDS;
-
-        if (values.size() > 0) {
-            String properties = new StringBuilder(String.join(",", values)).toString();
-            parentVertex.property(propertyName, properties);
-            logger.info("parent vertex property {}:{}", propertyName, properties);
-        } else {
-            logger.info("no values to set for parent vertex property for {}", propertyName);
-        }
-    }*/
     /**
-     * 
+     * Updates INDEX_FIELDS(single, composite) and UNIQUE_INDEX_FIELDS property of parent vertex
      * @param parentVertex
      */
-    private void updateIndices(Vertex parentVertex) {  
+    private void updateIndices(Vertex parentVertex) { 
+        //Non-unique
         if (singleIndexFields.size() > 0 && compositeIndexFields.size() > 0) {
             StringBuilder sproperties = new StringBuilder(String.join(",", singleIndexFields));
             StringBuilder cproperties = sproperties.append(",(").append(String.join(",", compositeIndexFields)).append(")");
-            //sproperties.append(cproperties);
             replaceVertexProperty(parentVertex, cproperties.toString(), false);
 
         }
+        //unique
         if(indexUniqueFields.size() > 0){
             StringBuilder properties = new StringBuilder(String.join(",", indexUniqueFields));
             replaceVertexProperty(parentVertex, properties.toString(), true);

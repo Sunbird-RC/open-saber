@@ -107,11 +107,20 @@ public class SqlgProvider extends DatabaseProvider {
         }
         ensureIndex(vertexLabel, IndexType.NON_UNIQUE, properties);
     }
-
+    /**
+     * 
+     * @param label
+     * @return
+     */
     private VertexLabel getVertexLabel(String label) {
         return ((SqlgGraph) graph).getTopology().ensureVertexLabelExist(label);
     }
-
+    /**
+     * ensure index for a given label for non-unique index type
+     * @param vertexLabel
+     * @param indexType
+     * @param properties
+     */
     private void ensureIndex(VertexLabel vertexLabel, IndexType indexType, List<PropertyColumn> properties) {
         Index index = vertexLabel.ensureIndexExists(indexType, properties);
         logger.info(indexType + "index created for " + vertexLabel.getLabel() + " - " + index.getName());
