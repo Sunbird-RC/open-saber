@@ -66,27 +66,55 @@ public class SqlgProvider extends DatabaseProvider {
     }
 
     @Override
+    public void createCompositeIndex(Graph graph, String label, List<String> propertyNames) {
+        createCompositeIndexByIndexType(graph, label, propertyNames);
+    }
+
+    @Override
     public void createUniqueIndex(Graph graph, String label, List<String> propertyNames) {
         createIndexByIndexType(graph, IndexType.UNIQUE, label, propertyNames);
     }
 
     /**
      * creates sqlg index for a given index type(unique/non-unique)
+     * 
      * @param graph
      * @param indexType
      * @param label
      * @param propertyNames
      */
     private void createIndexByIndexType(Graph graph, IndexType indexType, String label, List<String> propertyNames) {
-        VertexLabel vertexLabel = ((SqlgGraph) graph).getTopology().ensureVertexLabelExist(label);
+        VertexLabel vertexLabel = getVertexLabel(label);
+        for (String propertyName : propertyNames) {
+            List<PropertyColumn> properties = new ArrayList<>();
+            properties.add(vertexLabel.getProperty(propertyName).get());
+            ensureIndex(vertexLabel, indexType, properties);
+        }
+    }
+    /**
+     * create composite index for a given label for non-unique index type
+     * @param graph
+     * @param indexType
+     * @param label
+     * @param propertyNames
+     */
+    private void createCompositeIndexByIndexType(Graph graph, String label, List<String> propertyNames) {
+        VertexLabel vertexLabel = getVertexLabel(label);
         List<PropertyColumn> properties = new ArrayList<>();
+
         for (String propertyName : propertyNames) {
             properties.add(vertexLabel.getProperty(propertyName).get());
         }
-        if (properties.size() > 0) {
-            Index index = vertexLabel.ensureIndexExists(indexType, properties);
-            logger.info(indexType + "index created for " + label + " - " + index.getName());
-        }
-
+        ensureIndex(vertexLabel, IndexType.NON_UNIQUE, properties);
     }
+
+    private VertexLabel getVertexLabel(String label) {
+        return ((SqlgGraph) graph).getTopology().ensureVertexLabelExist(label);
+    }
+
+    private void ensureIndex(VertexLabel vertexLabel, IndexType indexType, List<PropertyColumn> properties) {
+        Index index = vertexLabel.ensureIndexExists(indexType, properties);
+        logger.info(indexType + "index created for " + vertexLabel.getLabel() + " - " + index.getName());
+    }
+
 }
