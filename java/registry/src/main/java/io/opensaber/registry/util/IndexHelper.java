@@ -2,9 +2,13 @@ package io.opensaber.registry.util;
 
 import io.opensaber.registry.middleware.util.Constants;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +71,38 @@ public class IndexHelper {
                 newFields.add(field);
         }
         return newFields;
+    }
+    
+    //TODO: optimizations required
+    //get substr = "(" between values ")".
+    public static List<String> getCompositeIndexFields(List<String> fields){
+        if(fields.size()>0){
+            StringBuilder list = new StringBuilder(String.join(",",fields));
+            String subString = StringUtils.substringBetween(list.toString(), "(", ")").replaceAll("'", "");
+            String[] commaSeparatedArr = subString.split("\\s*,\\s*");
+            List<String> result = Arrays.stream(commaSeparatedArr).collect(Collectors.toList());
+            return result;
+        } else {
+            return new ArrayList<>();
+        }
+
+    }
+    
+    //TODO: optimizations required
+    public static List<String> getSingleIndexFields(List<String> fields){
+        if(fields.size()>0){
+            StringBuilder list = new StringBuilder(String.join(",", fields));
+            String subString = (StringUtils.substringBetween(list.toString(), "(", ")"));
+            String orginal = list.toString().replaceAll(subString, "").replaceAll(Pattern.quote("()"), "");
+
+            String[] commaSeparatedArr = orginal.split(",");
+            List<String> result = Arrays.stream(commaSeparatedArr).collect(Collectors.toList());
+            return result;
+        } else {
+            return new ArrayList<>();
+
+        }
+
     }
 
 }
