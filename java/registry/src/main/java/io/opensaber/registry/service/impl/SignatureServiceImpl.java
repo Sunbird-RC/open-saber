@@ -5,11 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.Gson;
 
@@ -29,19 +26,17 @@ public class SignatureServiceImpl implements SignatureService {
 	@Value("${signature.keysURL}")
 	private String keysURL;
 	@Autowired
-	private RestTemplate restTemplate;
+	private RetryRestTemplate retryRestTemplate;
 
 	/** This method checks signature service is available or not
 	 * @return - true or false
 	 * @throws SignatureException.UnreachableException
 	 */
 	@Override
-	@Retryable(value ={SignatureException.UnreachableException.class }, maxAttemptsExpression = "#{${signature.retry.maxAttempts}}",
-			backoff = @Backoff(delayExpression = "#{${signature.retry.backoff.delay}}"))
 	public boolean isServiceUp() throws SignatureException.UnreachableException {
 		boolean isSignServiceUp = false;
 		try {
-			ResponseEntity<String> response = restTemplate.getForEntity(healthCheckURL, String.class);
+			ResponseEntity<String> response = retryRestTemplate.getForEntity(healthCheckURL);
 			if (response.getBody().equalsIgnoreCase("UP")) {
 				isSignServiceUp = true;
 				logger.debug("Signature service running !");
@@ -60,15 +55,13 @@ public class SignatureServiceImpl implements SignatureService {
 	 * @throws SignatureException.CreationException
 	 */
 	@Override
-	@Retryable(value ={SignatureException.UnreachableException.class }, maxAttemptsExpression = "#{${signature.retry.maxAttempts}}",
-			backoff = @Backoff(delayExpression = "#{${signature.retry.backoff.delay}}"))
 	public Object sign(Object propertyValue)
 			throws SignatureException.UnreachableException, SignatureException.CreationException {
 		logger.debug("sign method starts with value {}",propertyValue);
 		ResponseEntity<String> response = null;
 		Object result = null;
 		try {
-			response = restTemplate.postForEntity(signURL, propertyValue, String.class);
+			response = retryRestTemplate.postForEntity(signURL, propertyValue);
 			result = new Gson().fromJson(response.getBody(), Object.class);
 		} catch (RestClientException ex) {
 			logger.error("RestClientException when signing: ", ex);
@@ -88,15 +81,13 @@ public class SignatureServiceImpl implements SignatureService {
 	 * @throws SignatureException.VerificationException
 	 */
 	@Override
-	@Retryable(value ={ SignatureException.UnreachableException.class }, maxAttemptsExpression = "#{${signature.retry.maxAttempts}}",
-			backoff = @Backoff(delayExpression = "#{${signature.retry.backoff.delay}}"))
 	public Object verify(Object propertyValue)
 			throws SignatureException.UnreachableException, SignatureException.VerificationException {
 		logger.debug("verify method starts with value {}",propertyValue);
 		ResponseEntity<String> response = null;
 		Object result = null;
 		try {
-			response = restTemplate.postForEntity(verifyURL, propertyValue, String.class);
+			response = retryRestTemplate.postForEntity(verifyURL, propertyValue);
 			result = new Gson().fromJson(response.getBody(), Object.class);
 		} catch (RestClientException ex) {
 			logger.error("RestClientException when verifying: ", ex);
@@ -116,15 +107,13 @@ public class SignatureServiceImpl implements SignatureService {
 	 * @throws SignatureException.KeyNotFoundException
 	 */
 	@Override
-	@Retryable(value ={ SignatureException.UnreachableException.class }, maxAttemptsExpression = "#{${signature.retry.maxAttempts}}",
-			backoff = @Backoff(delayExpression = "#{${signature.retry.backoff.delay}}"))
 	public String getKey(String keyId)
 			throws SignatureException.UnreachableException, SignatureException.KeyNotFoundException {
 		logger.debug("getKey method starts with value {}",keyId);
 		ResponseEntity<String> response = null;
 		String result = null;
 		try {
-			response = restTemplate.getForEntity(keysURL + "/" + keyId, String.class);
+			response = retryRestTemplate.getForEntity(keysURL + "/" + keyId);
 			result = response.getBody();
 		} catch (RestClientException ex) {
 			logger.error("RestClientException when verifying: ", ex);
