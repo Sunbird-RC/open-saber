@@ -256,15 +256,19 @@ public class EntityParenter {
                         indexer.setUniqueIndexFields(newUniqueIndexFields);
                         status = indexer.createIndex(graph, definition.getTitle(), parentVertex);
                         logger.info("CREATE INDEX STATUS ====== " + status);
-    
+                        if(status){
+                            indexHelper.updateParentIndexProperty(parentVertex, indexFields, indexUniqueFields);
+                        }
                                   
                     dbProvider.commitTransaction(graph, tx);
+                    indexHelper.updateDefinitionIndex(shardId, definition.getTitle(), status); 
+
+                    
                 } catch (Exception e) {
                     status = false;
                     logger.error(e.getMessage());
                     logger.error("Failed Transaction creating index {}", definition.getTitle());
                 }
-                indexHelper.updateDefinitionIndex(shardId, definition.getTitle(), status); 
             } else {
                 logger.info("No definition found for create index");
             } 

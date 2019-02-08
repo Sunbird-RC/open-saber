@@ -1,6 +1,5 @@
 package io.opensaber.registry.util;
 
-import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.sink.DatabaseProvider;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -74,7 +73,6 @@ public class Indexer {
                 createSingleIndex(graph, label, parentVertex);
                 createCompositeIndex(graph, label, parentVertex);
                 createUniqueIndex(graph, label, parentVertex);
-                updateIndices(parentVertex);
                 isCreated = true;
             } catch (Exception e) {
                 logger.error(e.getMessage());
@@ -116,37 +114,6 @@ public class Indexer {
      */
     private void createUniqueIndex(Graph graph, String label, Vertex parentVertex) throws NoSuchElementException {
         databaseProvider.createUniqueIndex(graph, label, indexUniqueFields);
-    }
-
-    /**
-     * Updates INDEX_FIELDS(single, composite) and UNIQUE_INDEX_FIELDS property of parent vertex
-     * @param parentVertex
-     */
-    private void updateIndices(Vertex parentVertex) { 
-        //Non-unique
-        if (singleIndexFields.size() > 0 && compositeIndexFields.size() > 0) {
-            StringBuilder sproperties = new StringBuilder(String.join(",", singleIndexFields));
-            StringBuilder cproperties = sproperties.append(",(").append(String.join(",", compositeIndexFields)).append(")");
-            replaceVertexProperty(parentVertex, cproperties.toString(), false);
-
-        }
-        //unique
-        if(indexUniqueFields.size() > 0){
-            StringBuilder properties = new StringBuilder(String.join(",", indexUniqueFields));
-            replaceVertexProperty(parentVertex, properties.toString(), true);
-  
-        }
-    }
-    /**
-     * Replace the INDEX_FIELDS and UNIQUE_INDEX_FIELDS of parent vertex
-     * @param parentVertex
-     * @param properties
-     * @param isUnique
-     */
-    private void replaceVertexProperty(Vertex parentVertex, String properties, boolean isUnique){
-        String propertyName = isUnique ? Constants.UNIQUE_INDEX_FIELDS : Constants.INDEX_FIELDS;
-        parentVertex.property(propertyName, properties);
-        logger.info("parent vertex property {}:{}", propertyName, properties);
     }
     
 }
