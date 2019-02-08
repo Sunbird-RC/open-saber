@@ -148,9 +148,9 @@ validation:
   type: ${validation_type:json}
 
 retry:
-  maxAttempts: ${signature_retry_maxAttempts:5}
+  maxAttempts: ${retry_maxAttempts:5}
   backoff:
-    delay: ${signature_retry_backoff_delay:1000}
+    delay: ${retry_backoff_delay:1000}
 
 ---
 ##################################################################
@@ -251,7 +251,7 @@ validation:
   type: ${validation_type:json}
 
 retry:
-  maxAttempts: ${signature_retry_maxAttempts:5}
+  maxAttempts: ${retry_maxAttempts:5}
   backoff:
-    delay: ${signature_retry_backoff_delay:1000}
+    delay: ${retry_backoff_delay:1000}
   
