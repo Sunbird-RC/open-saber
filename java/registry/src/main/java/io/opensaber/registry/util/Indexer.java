@@ -67,11 +67,12 @@ public class Indexer {
      * @param label     type vertex label (example:Teacher) and table in rdbms           
      * @param parentVertex
      */
-    public boolean createIndex(Graph graph, String label, Vertex parentVertex) throws NoSuchElementException {
+    public boolean createIndex(Graph graph, String label, Vertex parentVertex) {
         boolean isCreated = false;
         if (label != null && !label.isEmpty()) {
             try {
-                createNonUniqueIndex(graph, label, parentVertex);
+                createSingleIndex(graph, label, parentVertex);
+                createCompositeIndex(graph, label, parentVertex);
                 createUniqueIndex(graph, label, parentVertex);
                 updateIndices(parentVertex);
                 isCreated = true;
@@ -85,17 +86,27 @@ public class Indexer {
         return isCreated;
     }
     /**
-     * Creates single and composite indices
+     * Creates single indices
      * @param graph
      * @param label
      * @param parentVertex
      * @throws NoSuchElementException
      */
-    private void createNonUniqueIndex(Graph graph, String label, Vertex parentVertex) throws NoSuchElementException {
+    private void createSingleIndex(Graph graph, String label, Vertex parentVertex) throws NoSuchElementException {
         databaseProvider.createIndex(graph, label, singleIndexFields);        
-        databaseProvider.createCompositeIndex(graph, label, compositeIndexFields);
 
     }
+    /**
+     * Creates composite indices
+     * @param graph
+     * @param label
+     * @param parentVertex
+     * @throws NoSuchElementException
+     */
+    private void createCompositeIndex(Graph graph, String label, Vertex parentVertex) throws NoSuchElementException {
+        databaseProvider.createCompositeIndex(graph, label, compositeIndexFields);
+    }
+    
     /**
      * Creates only unique indices
      * @param graph

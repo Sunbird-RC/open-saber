@@ -67,7 +67,7 @@ public class SqlgProvider extends DatabaseProvider {
 
     @Override
     public void createCompositeIndex(Graph graph, String label, List<String> propertyNames) {
-        createCompositeIndexByIndexType(graph, label, propertyNames);
+        createCompositeIndexByIndexType(graph, IndexType.NON_UNIQUE, label, propertyNames);
     }
 
     @Override
@@ -84,7 +84,7 @@ public class SqlgProvider extends DatabaseProvider {
      * @param propertyNames
      */
     private void createIndexByIndexType(Graph graph, IndexType indexType, String label, List<String> propertyNames) {
-        VertexLabel vertexLabel = getVertexLabel(label);
+        VertexLabel vertexLabel = getVertex(label);
         for (String propertyName : propertyNames) {
             List<PropertyColumn> properties = new ArrayList<>();
             properties.add(vertexLabel.getProperty(propertyName).get());
@@ -98,21 +98,21 @@ public class SqlgProvider extends DatabaseProvider {
      * @param label
      * @param propertyNames
      */
-    private void createCompositeIndexByIndexType(Graph graph, String label, List<String> propertyNames) {
-        VertexLabel vertexLabel = getVertexLabel(label);
+    private void createCompositeIndexByIndexType(Graph graph, IndexType indexType, String label, List<String> propertyNames) {
+        VertexLabel vertexLabel = getVertex(label);
         List<PropertyColumn> properties = new ArrayList<>();
 
         for (String propertyName : propertyNames) {
             properties.add(vertexLabel.getProperty(propertyName).get());
         }
-        ensureIndex(vertexLabel, IndexType.NON_UNIQUE, properties);
+        ensureIndex(vertexLabel, indexType, properties);
     }
     /**
      * 
      * @param label
      * @return
      */
-    private VertexLabel getVertexLabel(String label) {
+    private VertexLabel getVertex(String label) {
         return ((SqlgGraph) graph).getTopology().ensureVertexLabelExist(label);
     }
     /**

@@ -17,19 +17,18 @@ import org.springframework.stereotype.Component;
 @Component
 public class IndexHelper {
     private static Logger logger = LoggerFactory.getLogger(IndexHelper.class);
-    
+
     /**
-     * Holds mapping for each shard & each definitions and its index status 
-     * key = shardId+definitionName 
-     * value = true/false
+     * Holds mapping for each shard & each definitions and its index status key
+     * = shardId+definitionName value = true/false
      */
     private Map<String, Boolean> definitionIndexMap = new ConcurrentHashMap<String, Boolean>();
- 
+
     public void setDefinitionIndexMap(Map<String, Boolean> definitionIndexMap) {
         this.definitionIndexMap.putAll(definitionIndexMap);
     }
-   
-    public void updateDefinitionIndex(String label, String definitionName, boolean flag){
+
+    public void updateDefinitionIndex(String label, String definitionName, boolean flag) {
         String key = label + definitionName;
         definitionIndexMap.put(key, flag);
     }
@@ -45,7 +44,7 @@ public class IndexHelper {
         String defTitle = definition.getTitle();
         boolean isIndexPresent = definitionIndexMap.getOrDefault(shardId + defTitle, false);
         logger.debug("isIndexPresent flag for {}: {}", defTitle, isIndexPresent);
-        return isIndexPresent;       
+        return isIndexPresent;
     }
 
     /**
@@ -72,12 +71,15 @@ public class IndexHelper {
         }
         return newFields;
     }
-    
-    //TODO: optimizations required
-    //get substr = "(" between values ")".
-    public static List<String> getCompositeIndexFields(List<String> fields){
-        if(fields.size()>0){
-            StringBuilder list = new StringBuilder(String.join(",",fields));
+
+    /**
+     * extract values between "( values with comma separated )"
+     * @param fields
+     * @return
+     */
+    public static List<String> getCompositeIndexFields(List<String> fields) {
+        if (fields.size() > 0) {
+            StringBuilder list = new StringBuilder(String.join(",", fields));
             String subString = StringUtils.substringBetween(list.toString(), "(", ")").replaceAll("'", "");
             String[] commaSeparatedArr = subString.split("\\s*,\\s*");
             List<String> result = Arrays.stream(commaSeparatedArr).collect(Collectors.toList());
@@ -87,10 +89,13 @@ public class IndexHelper {
         }
 
     }
-    
-    //TODO: optimizations required
-    public static List<String> getSingleIndexFields(List<String> fields){
-        if(fields.size()>0){
+    /**
+     * Remove fields with format = "( values with comma separated )"
+     * @param fields
+     * @return
+     */
+    public static List<String> getSingleIndexFields(List<String> fields) {
+        if (fields.size() > 0) {
             StringBuilder list = new StringBuilder(String.join(",", fields));
             String subString = (StringUtils.substringBetween(list.toString(), "(", ")"));
             String orginal = list.toString().replaceAll(subString, "").replaceAll(Pattern.quote("()"), "");
