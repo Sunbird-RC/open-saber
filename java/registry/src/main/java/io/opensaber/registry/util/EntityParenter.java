@@ -240,11 +240,12 @@ public class EntityParenter {
                     
                         
                         List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
-                        // adds default field (uuid)
-                        indexFields.add(uuidPropertyName);
+                        if(!indexFields.contains(uuidPropertyName)){
+                            // adds default field (uuid)
+                            indexFields.add(uuidPropertyName);
+                        }
                         List<String> cIndexFields = IndexHelper.getCompositeIndexFields(indexFields);
                         List<String> sIndexFields = IndexHelper.getSingleIndexFields(indexFields);
-                        List<String> newCIndexFields = indexHelper.getNewFields(parentVertex, cIndexFields, false);
                         List<String> newSIndexFields = indexHelper.getNewFields(parentVertex, sIndexFields, false);
                        
                         List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();               
@@ -252,7 +253,8 @@ public class EntityParenter {
                         
                         Indexer indexer = new Indexer(dbProvider);
                         indexer.setSingleIndexFields(newSIndexFields);
-                        indexer.setCompositeIndexFields(newCIndexFields);
+                        indexer.setCompositeIndexFields(cIndexFields);
+
                         indexer.setUniqueIndexFields(newUniqueIndexFields);
                         status = indexer.createIndex(graph, definition.getTitle(), parentVertex);
                         logger.info("CREATE INDEX STATUS ====== " + status);
