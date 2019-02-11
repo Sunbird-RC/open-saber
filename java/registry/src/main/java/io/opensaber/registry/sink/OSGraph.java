@@ -14,6 +14,10 @@ public class OSGraph implements AutoCloseable {
     }
 
     public void close() throws Exception {
+        if (graph != null && graph.tx().isOpen()) {
+            graph.tx().close();
+        }
+
         if (closeRequired) {
             graph.close();
         } else {
