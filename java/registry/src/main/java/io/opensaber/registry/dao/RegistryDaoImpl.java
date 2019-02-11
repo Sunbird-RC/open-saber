@@ -114,19 +114,29 @@ public class RegistryDaoImpl implements IRegistryDao {
     }
 
     private void updateArray(Graph graph, Vertex vertex, String fieldKey, ArrayNode arrayNode) {
-        Set<String> osidSet = new HashSet<String>();
+        List<String> osidSet = new ArrayList<>();
+        boolean arrayItemIsObject = false;
         for (JsonNode arrayElementNode : arrayNode) {
+            String updatedOsid = arrayElementNode.asText();
             if (arrayElementNode.isObject()) {
-                String updatedOsid = addNewEntity(arrayElementNode, graph, vertex, fieldKey, true);
-
-                osidSet.add(updatedOsid);
-            } else {
-                logger.debug("Not expected to just update an array without a type enclosure");
+                updatedOsid = addNewEntity(arrayElementNode, graph, vertex, fieldKey, true);
+                arrayItemIsObject = true;
             }
+            osidSet.add(updatedOsid);
         }
-        osidSet = deleteVertices(graph, vertex, fieldKey, osidSet);
-        String updatedOisdValue = String.join(",", osidSet);
-        vertex.property(RefLabelHelper.getLabel(fieldKey, uuidPropertyName), updatedOisdValue);
+
+        if (arrayItemIsObject) {
+            logger.debug("Array items are objects");
+            Set<String> tempSet = new HashSet<>();
+            tempSet.addAll(osidSet);
+            tempSet = deleteVertices(graph, vertex, fieldKey, tempSet);
+            String updatedOisdValue = String.join(",", tempSet);
+            vertex.property(RefLabelHelper.getLabel(fieldKey, uuidPropertyName), updatedOisdValue);
+        } else {
+            logger.debug("Array items are simple values");
+            vertex.property(fieldKey, ArrayHelper.formatToString(osidSet));
+        }
+
     }
 
     private void updateObject(Graph graph, Vertex vertex, ObjectNode inputJsonNode) {

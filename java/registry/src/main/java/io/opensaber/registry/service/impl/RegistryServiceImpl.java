@@ -215,26 +215,27 @@ public class RegistryServiceImpl implements RegistryService {
             JsonNode readNode = vr.read(entityType, id);
 
             String rootId = readNode.findPath(Constants.ROOT_KEYWORD).textValue();
-            if ( rootId != null && !rootId.equals(id)) {
+            if (rootId != null && !rootId.equals(id)) {
                 // Child node is getting updated individually. So, read the parent to
                 // validate the parent record
                 logger.debug("Reading the parent record {}", rootId);
-                readNode = vr.read(entityType, readNode.findPath(Constants.ROOT_KEYWORD).textValue());
+                // Here we don't know the parent entity type
+                readNode = vr.read(readNode.findPath(Constants.ROOT_KEYWORD).textValue());
             } else {
                 // Update is for the parent entity.
                 // Nothing to do as the record has been already read.
             }
-            String entityNodeType = readNode.fields().next().getKey();
+            String parentEntityType = readNode.fields().next().getKey();
             HashMap<String, Vertex> uuidVertexMap = vr.getUuidVertexMap();
 
             // Merge the new changes
-            JsonNode mergedNode = mergeWrapper("/" + entityNodeType, (ObjectNode) readNode, (ObjectNode) inputNode);
+            JsonNode mergedNode = mergeWrapper("/" + parentEntityType, (ObjectNode) readNode, (ObjectNode) inputNode);
             logger.debug("After merge the payload is " + mergedNode.toString());
 
             // Re-sign, i.e., remove and add entity signature again
             if (signatureEnabled) {
                 logger.debug("Removing earlier signature and adding new one");
-                String entitySignUUID = signatureHelper.removeEntitySignature(entityNodeType, (ObjectNode) mergedNode);
+                String entitySignUUID = signatureHelper.removeEntitySignature(parentEntityType, (ObjectNode) mergedNode);
                 JsonNode newSignature = signatureHelper.signJson(mergedNode);
                 Vertex oldEntitySignatureVertex = uuidVertexMap.get(entitySignUUID);
 
@@ -254,7 +255,9 @@ public class RegistryServiceImpl implements RegistryService {
                 String prefix = shard.getShardLabel() + RecordIdentifier.getSeparator();
                 JSONUtil.trimPrefix((ObjectNode) inputNode, prefix);
             }
-            doUpdate(graph, vr, inputNode.get(entityNodeType));
+
+            // The entity type is a child and so could be different from parent entity type.
+            doUpdate(graph, vr, inputNode.get(entityType));
 
             databaseProvider.commitTransaction(graph, tx);
         }
@@ -276,8 +279,12 @@ public class RegistryServiceImpl implements RegistryService {
             Iterator<JsonNode> elementsItr = userInputNode.elements();
             while (elementsItr.hasNext()) {
                 JsonNode oneElement = elementsItr.next();
-                if (!oneElement.isValueNode()) {
+                if (oneElement.isValueNode() || oneElement.isArray()) {
+                    logger.info("Value or array node, going to update");
                     registryDao.updateVertex(graph, existingVertex, userInputNode);
+                } else {
+                    logger.info("Object node {}", oneElement.toString());
+                    doUpdate(graph, vr, oneElement);
                 }
             }
         } else {

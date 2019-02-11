@@ -29,7 +29,7 @@ public class ArrayHelper {
      * @return - String, in array format
      */
     public static String formatToString(List<String> inputList){
-        StringBuilder sb = new StringBuilder(String.join(",",inputList));
+        StringBuilder sb = new StringBuilder(inputList.toArray().toString());
         return sb.insert(0,'[').append(']').toString();
     }
 }
