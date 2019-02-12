@@ -26,14 +26,6 @@ registry:
     base: ${registry_system_base:http://localhost:8080/opensaber/}
   rootEntity:
         type: ${registry_rootentity_type:Teacher}
-
-restTemplate:
-  connection:
-    timeout: ${restTemplate_connection_timeout:5000}
-    request:
-      timeout: ${restTemplate_connection_request_timeout:5000}
-  read:
-    timeout: ${restTemplate_read_timeout:5000}
         
 database:
   # This property is internal and not to be confused with the schema definition.
