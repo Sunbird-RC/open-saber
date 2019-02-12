@@ -224,56 +224,75 @@ public class EntityParenter {
 
     private void asyncAddIndex(DatabaseProvider dbProvider, String shardId, Vertex parentVertex,
             Definition definition) {
-        new Thread(() -> {
-            if (parentVertex != null && definition != null) {
-                boolean status = false;
-                try {
-
-                    try (OSGraph osGraph = dbProvider.getOSGraph()) {
-                        Graph graph = osGraph.getGraphStore();
-                        try (Transaction tx = dbProvider.startTransaction(graph)) {
-
-                            List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
-                            if (!indexFields.contains(uuidPropertyName)) {
-                                // adds default field (uuid)
-                                indexFields.add(uuidPropertyName);
-                            }
-                            List<String> cIndexFields = IndexHelper.getCompositeIndexFields(indexFields);
-                            List<String> sIndexFields = IndexHelper.getSingleIndexFields(indexFields);
-                            List<String> newSIndexFields = indexHelper.getNewFields(parentVertex, sIndexFields, false);
-
-                            List<String> indexUniqueFields = definition.getOsSchemaConfiguration()
-                                    .getUniqueIndexFields();
-                            List<String> newUniqueIndexFields = indexHelper.getNewFields(parentVertex,
-                                    indexUniqueFields, true);
-
-                            Indexer indexer = new Indexer(dbProvider);
-                            indexer.setSingleIndexFields(newSIndexFields);
-                            indexer.setCompositeIndexFields(cIndexFields);
-
-                            indexer.setUniqueIndexFields(newUniqueIndexFields);
-                            status = indexer.createIndex(graph, definition.getTitle(), parentVertex);
-                            logger.info("CREATE INDEX STATUS ====== " + status);
-                            if (status) {
-                                indexHelper.updateParentIndexProperty(parentVertex, indexFields, indexUniqueFields);
-                            }
-
-                            dbProvider.commitTransaction(graph, tx);
-                            indexHelper.updateDefinitionIndex(shardId, definition.getTitle(), status);
-                        }
-                    }
-
-                } catch (Exception e) {
-                    status = false;
-                    logger.error(e.getMessage());
-                    logger.error("Failed Transaction creating index {}", definition.getTitle());
-                }
-            } else {
-                logger.info("No definition found for create index");
+        // new Thread(() -> {
+        if (parentVertex != null && definition != null) {
+            boolean status = false;
+            List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
+            if (!indexFields.contains(uuidPropertyName)) {                
+                indexFields.add(uuidPropertyName); // adds default field (uuid)
             }
+            List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();
+            try (OSGraph osGraph = dbProvider.getOSGraph()) {
+                Graph graph = osGraph.getGraphStore();
+                try (Transaction tx = dbProvider.startTransaction(graph)) {
 
-        }).start();
+                    List<String> cIndexFields = IndexHelper.getCompositeIndexFields(indexFields);
+                    List<String> sIndexFields = IndexHelper.getSingleIndexFields(indexFields);
+                    List<String> newSIndexFields = indexHelper.getNewFields(parentVertex, sIndexFields, false);
+                    List<String> newUniqueIndexFields = indexHelper.getNewFields(parentVertex, indexUniqueFields, true);
+                    Indexer indexer = new Indexer(dbProvider);
+                    indexer.setSingleIndexFields(newSIndexFields);
+                    indexer.setCompositeIndexFields(cIndexFields);
 
+                    indexer.setUniqueIndexFields(newUniqueIndexFields);
+                    status = indexer.createIndex(graph, definition.getTitle(), parentVertex);
+                    logger.info("CREATE INDEX STATUS ====== " + status);
+
+                    dbProvider.commitTransaction(graph, tx);
+                }
+            } catch (Exception e) {
+                status = false;
+                logger.error(e.getMessage());
+                logger.error("Failed Transaction creating index {}", definition.getTitle());
+            }
+            if (status) {
+                updateParentVertexIndexProperties(dbProvider, parentVertex.label(), indexFields, indexUniqueFields);
+            }
+            indexHelper.updateDefinitionIndex(shardId, definition.getTitle(), status);
+
+        } else {
+            logger.info("No definition found for create index");
+        }
+
+        // }).start();
+
+    }
+
+    /**
+     * Updates the group/parent vertex index properties.
+     * 
+     * @param dbProvider
+     * @param parentlabel
+     * @param indexFields
+     * @param indexUniqueFields
+     */
+    private void updateParentVertexIndexProperties(DatabaseProvider dbProvider, String parentlabel,
+            List<String> indexFields, List<String> indexUniqueFields) {
+        try {
+            try (OSGraph osGraph = dbProvider.getOSGraph()) {
+                Graph graph = osGraph.getGraphStore();
+                try (Transaction tx = dbProvider.startTransaction(graph)) {
+                    VertexWriter vertexWriter = new VertexWriter(graph, dbProvider, uuidPropertyName);
+                    vertexWriter.updateParentIndexProperty(parentlabel, indexFields, indexUniqueFields);
+                    dbProvider.commitTransaction(graph, tx);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error(e.getMessage());
+            logger.error("Failed Transaction updating parent index properties {}", e);
+
+        }
     }
 
 }
