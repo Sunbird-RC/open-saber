@@ -70,9 +70,9 @@ public class Indexer {
         boolean isCreated = false;
         if (label != null && !label.isEmpty()) {
             try {
+                createUniqueIndex(graph, label, parentVertex);
                 createSingleIndex(graph, label, parentVertex);
                 createCompositeIndex(graph, label, parentVertex);
-                createUniqueIndex(graph, label, parentVertex);
                 isCreated = true;
             } catch (Exception e) {
                 logger.error(e.getMessage());
