@@ -32,6 +32,7 @@ import org.springframework.web.client.RestTemplate;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -69,6 +70,9 @@ public class SignatureServiceImplTest {
 		}
 	}
 
+	/** Test case for signing simple string as value
+	 * @throws Exception
+	 */
 	@Test
 	public void test_sign_with_value_as_string() throws Exception {
 
@@ -80,6 +84,9 @@ public class SignatureServiceImplTest {
 		assertThat(resMap, IsMapContaining.hasKey("keyId"));
 	}
 
+	/** Test case for signing map object as entity value
+	 * @throws Exception
+	 */
 	@Test
 	public void test_sign_with_entity_as_map() throws Exception {
 		Map<String, Object> inputSignMap = new HashMap<>();
@@ -91,6 +98,9 @@ public class SignatureServiceImplTest {
 		assertThat(resMap, IsMapContaining.hasKey("keyId"));
 	}
 
+	/** Test case for verify api with simple string as value
+	 * @throws Exception
+	 */
 	@Test
 	public void test_verify_sign_with_value_as_string() throws Exception {
 
@@ -102,6 +112,9 @@ public class SignatureServiceImplTest {
 		assertTrue((boolean) signatureService.verify(verifyInput));
 	}
 
+	/** Test case for verify api with map object as entity
+	 * @throws Exception
+	 */
 	@Test
 	public void test_verify_sign_with_entity_as_map() throws Exception {
 
@@ -113,6 +126,9 @@ public class SignatureServiceImplTest {
 		assertTrue((boolean) signatureService.verify(verifyInput));
 	}
 
+	/** Test case for verify api with different claim data after signing
+	 * @throws Exception
+	 */
 	@Test
 	public void test_verify_sign_with_different_claim_data() throws Exception {
 
@@ -125,28 +141,55 @@ public class SignatureServiceImplTest {
 		assertFalse((boolean) signatureService.verify(verifyInput));
 	}
 
+	/** Test case for sending array object for sign api
+	 * @throws Exception
+	 */
 	@Test
 	public void test_sign_with_value_as_array() throws Exception {
-
-		byte[] array = new byte[7];
-		new Random().nextBytes(array);
-		//String generatedString = new String(array, Charset.forName("UTF-8"));
-		String[] strArray = {"String1","Sting2"};
+		String[] strArray = {"String1","String2"};
 		Map<String, Object> map = new HashMap<>();
 		map.put("value", strArray);
 		List arrayObj = (List) signatureService.sign(map);
 		assertEquals(arrayObj.size(),strArray.length);
 	}
 
+	/** Test case for sending empty value for sign api
+	 * @throws Exception
+	 */
 	@Test
 	public void test_sign_with_empty_value() throws Exception {
 		expectedEx.expect(SignatureException.UnreachableException.class);
 		Map<String,Object> map = new HashMap<>();
 		map.put("value", "");
-		String response = signatureService.sign(map).toString();
+		signatureService.sign(map).toString();
 	}
 
-	private Map<String,Object> createVerifyMap(Map<String,Object> resMap, Map<String,Object> signInput) {
+	/** Test case to get sign key for valid key-id
+	 * @throws Exception
+	 */
+	@Test
+	public void test_get_key_with_valid_keyId() throws Exception {
+		String signKey = signatureService.getKey("2");
+		assertNotNull(signKey);
+	}
+
+	/** Test case to get sign key for invalid key-id
+	 * @throws Exception
+	 */
+	@Test
+	public void test_get_key_with_invalid_keyId() throws Exception {
+		String keyId  = "100";
+		expectedEx.expect(SignatureException.KeyNotFoundException.class);
+		expectedEx.expectMessage("Unable to get key: "+keyId);
+		signatureService.getKey("100");
+	}
+
+	/** creates map for verify-api
+	 * @param signMap contains signed data
+	 * @param signInput contains unsigned data
+	 * @return
+	 */
+	private Map<String,Object> createVerifyMap(Map<String,Object> signMap, Map<String,Object> signInput) {
 		Map<String, Object> verifyInput =  new HashMap();
 		Map<String, Object> claimMap = new HashMap<>();
 		if(signInput.containsKey("value")){
@@ -155,11 +198,14 @@ public class SignatureServiceImplTest {
 			claimMap.put("claim",signInput.get("entity"));
 		}
 		verifyInput.putAll(claimMap);
-		verifyInput.put("signatureValue",resMap.get("signatureValue"));
-		verifyInput.put("keyId",resMap.get("keyId"));
+		verifyInput.put("signatureValue",signMap.get("signatureValue"));
+		verifyInput.put("keyId",signMap.get("keyId"));
 		return verifyInput;
 	}
 
+	/** creates simple map which contains value with random string
+	 * @return map
+	 */
 	public Map createSimpleValue(){
 		byte[] array = new byte[7];
 		new Random().nextBytes(array);
@@ -169,6 +215,9 @@ public class SignatureServiceImplTest {
 		return map;
 	}
 
+	/** creates map with entity as sub-map
+	 * @return map
+	 */
 	public Map createSimpleEntity(){
 		Map<String, Object> map = new HashMap<>();
 		Map<String, Object> inputSignMap = new HashMap<>();

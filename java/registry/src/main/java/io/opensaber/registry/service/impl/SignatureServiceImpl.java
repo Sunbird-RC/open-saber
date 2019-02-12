@@ -1,5 +1,6 @@
 package io.opensaber.registry.service.impl;
 
+import io.opensaber.registry.middleware.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -115,12 +116,15 @@ public class SignatureServiceImpl implements SignatureService {
 		try {
 			response = retryRestTemplate.getForEntity(keysURL + "/" + keyId);
 			result = response.getBody();
+			if(result == null){
+				throw new Exception(Constants.KEY_RETRIEVE_ERROR_MESSAGE);
+			}
 		} catch (RestClientException ex) {
 			logger.error("RestClientException when verifying: ", ex);
 			throw new SignatureException().new UnreachableException(ex.getMessage());
 		} catch (Exception e) {
 			logger.error("RestClientException when verifying: ", e);
-			throw new SignatureException().new KeyNotFoundException(e.getMessage());
+			throw new SignatureException().new KeyNotFoundException(keyId);
 		}
 		logger.debug("getKey method ends with value {}",result);
 		return result;
