@@ -67,7 +67,7 @@ public class SqlgProvider extends DatabaseProvider {
 
     @Override
     public void createCompositeIndex(Graph graph, String label, List<String> propertyNames) {
-        createCompositeIndexByIndexType(graph, IndexType.NON_UNIQUE, label, propertyNames);
+        ensureCompositeIndex(graph, label, propertyNames);
     }
 
     @Override
@@ -92,20 +92,19 @@ public class SqlgProvider extends DatabaseProvider {
         }
     }
     /**
-     * create composite index for a given label for non-unique index type
+     * ensures composite index for a given label for non-unique index type
      * @param graph
-     * @param indexType
      * @param label
      * @param propertyNames
      */
-    private void createCompositeIndexByIndexType(Graph graph, IndexType indexType, String label, List<String> propertyNames) {
+    private void ensureCompositeIndex(Graph graph, String label, List<String> propertyNames) {
         VertexLabel vertexLabel = getVertex(label);
         List<PropertyColumn> properties = new ArrayList<>();
 
         for (String propertyName : propertyNames) {
             properties.add(vertexLabel.getProperty(propertyName).get());
         }
-        ensureIndex(vertexLabel, indexType, properties);
+        ensureIndex(vertexLabel, IndexType.NON_UNIQUE, properties);
     }
     /**
      * 
