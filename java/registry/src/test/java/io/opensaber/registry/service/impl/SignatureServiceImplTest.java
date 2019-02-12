@@ -1,11 +1,9 @@
 package io.opensaber.registry.service.impl;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import io.opensaber.registry.exception.SignatureException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.service.SignatureService;
-import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.List;
@@ -42,10 +40,6 @@ import static org.junit.Assert.assertTrue;
 @ActiveProfiles(Constants.TEST_ENVIRONMENT)
 public class SignatureServiceImplTest {
 
-
-
-	Type type = new TypeToken<Map<String, String>>() {
-	}.getType();
 	@Rule
 	public ExpectedException expectedEx = ExpectedException.none();
 	@Autowired
