@@ -84,7 +84,7 @@ public class SqlgProvider extends DatabaseProvider {
      * @param propertyNames
      */
     private void createIndexByIndexType(Graph graph, IndexType indexType, String label, List<String> propertyNames) {
-        VertexLabel vertexLabel = getVertex(label);
+        VertexLabel vertexLabel = getVertex(graph, label);
         for (String propertyName : propertyNames) {
             List<PropertyColumn> properties = new ArrayList<>();
             properties.add(vertexLabel.getProperty(propertyName).get());
@@ -98,7 +98,7 @@ public class SqlgProvider extends DatabaseProvider {
      * @param propertyNames
      */
     private void ensureCompositeIndex(Graph graph, String label, List<String> propertyNames) {
-        VertexLabel vertexLabel = getVertex(label);
+        VertexLabel vertexLabel = getVertex(graph, label);
         List<PropertyColumn> properties = new ArrayList<>();
 
         for (String propertyName : propertyNames) {
@@ -111,7 +111,7 @@ public class SqlgProvider extends DatabaseProvider {
      * @param label
      * @return
      */
-    private VertexLabel getVertex(String label) {
+    private VertexLabel getVertex(Graph graph, String label) {
         return ((SqlgGraph) graph).getTopology().ensureVertexLabelExist(label);
     }
     /**
