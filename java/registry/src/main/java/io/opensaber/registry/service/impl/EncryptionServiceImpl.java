@@ -63,14 +63,14 @@ public class EncryptionServiceImpl implements EncryptionService {
 			ResponseEntity<String> response = new RestTemplate().postForEntity(encryptionUri, request, String.class);
 			return response.getBody();
 		} catch (ResourceAccessException e) {
-			logger.error("ResourceAccessException while connecting enryption service : ", e);
-			throw new EncryptionException("Exception while connecting enryption service! ");
+			logger.error("ResourceAccessException while connecting encryption service : ", e);
+			throw new EncryptionException("Can't reach encryption service");
 		} catch (ServiceUnavailableException e) {
-			logger.error("ServiceUnavailableException while connecting enryption service!: ", e);
-			throw new EncryptionException("Encryption service is not available !");
+			logger.error("ServiceUnavailableException while connecting encryption service!: ", e);
+			throw new EncryptionException("Encryption service is not available");
 		} catch (Exception e) {
-			logger.error("Exception in encryption servie !: ", e);
-			throw new EncryptionException("Exception in encryption service ! ");
+			logger.error("Exception in encryption service !: ", e);
+			throw new EncryptionException("Exception in encryption service");
 		}
 	}
 
@@ -111,14 +111,14 @@ public class EncryptionServiceImpl implements EncryptionService {
 			return gson.fromJson(response.getBody(), new TypeToken<HashMap<String, Object>>() {
 			}.getType());
 		} catch (ResourceAccessException e) {
-			logger.error("Exception while connecting enryption service : ", e);
-			throw new EncryptionException("Exception while connecting enryption service! ");
+			logger.error("Exception while connecting encryption service : ", e);
+			throw new EncryptionException("Can't reach encryption service.");
 		} catch (ServiceUnavailableException e) {
 			logger.error("Service not available exception !: ", e);
-			throw new EncryptionException("Encryption service is not available !");
+			throw new EncryptionException("Encryption service is not available.");
 		} catch (Exception e) {
 			logger.error("Exception in encryption servie !: ", e);
-			throw new EncryptionException("Exception in encryption service ! ");
+			throw new EncryptionException("Exception in encryption service.");
 		}
 	}
 

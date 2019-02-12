@@ -1,26 +1,15 @@
 package io.opensaber.registry.util;
 
-import io.opensaber.registry.dao.VertexWriter;
-import io.opensaber.registry.model.DBConnectionInfo;
-import io.opensaber.registry.model.DBConnectionInfoMgr;
-import io.opensaber.registry.sink.DBProviderFactory;
-import io.opensaber.registry.sink.DatabaseProvider;
-import io.opensaber.registry.sink.OSGraph;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import io.opensaber.registry.dao.*;
+import io.opensaber.registry.model.*;
+import io.opensaber.registry.sink.*;
+import org.apache.tinkerpop.gremlin.structure.*;
+import org.slf4j.*;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.stereotype.*;
+
+import java.util.*;
+import java.util.concurrent.*;
 
 @Component("entityParenter")
 public class EntityParenter {
@@ -227,42 +216,44 @@ public class EntityParenter {
      */
     private void asyncAddIndex(DatabaseProvider dbProvider, String shardId, Vertex parentVertex, Definition definition) {
         new Thread(() -> {
-          try{
-                boolean createIndexSkipped = false;
-                OSGraph osGraph = dbProvider.getOSGraph();
-                Graph graph = osGraph.getGraphStore();
-                Transaction tx = dbProvider.startTransaction(graph);           
-                if(parentVertex != null && definition != null){
-                    List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
-                    // adds default field (uuid)
-                    indexFields.add(uuidPropertyName);
-                    List<String> newIndexFields = indexHelper.getNewFields(parentVertex, indexFields, false);
-                    List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();               
-                    List<String> newUniqueIndexFields = indexHelper.getNewFields(parentVertex, indexUniqueFields, true);
+            try {
+                try (OSGraph osGraph = dbProvider.getOSGraph()) {
 
-                    Indexer indexer = new Indexer(dbProvider);
-                    indexer.setIndexFields(newIndexFields);
-                    indexer.setUniqueIndexFields(newUniqueIndexFields);
-                    if ((newIndexFields.size() != 0 && newIndexFields.size() != indexFields.size()) ||
-                        (newUniqueIndexFields.size() != 0 && newUniqueIndexFields.size() != indexUniqueFields.size())) {
-                        // Dont attempt create index on a fresh database
-                        indexer.createIndex(graph, definition.getTitle(), parentVertex);
-                    } else { 
-                        createIndexSkipped = true;
+                    boolean createIndexSkipped = false;
+
+                    Graph graph = osGraph.getGraphStore();
+                    Transaction tx = dbProvider.startTransaction(graph);
+                    if (parentVertex != null && definition != null) {
+                        List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
+                        // adds default field (uuid)
+                        indexFields.add(uuidPropertyName);
+                        List<String> newIndexFields = indexHelper.getNewFields(parentVertex, indexFields, false);
+                        List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();
+                        List<String> newUniqueIndexFields = indexHelper.getNewFields(parentVertex, indexUniqueFields, true);
+
+                        Indexer indexer = new Indexer(dbProvider);
+                        indexer.setIndexFields(newIndexFields);
+                        indexer.setUniqueIndexFields(newUniqueIndexFields);
+                        if ((newIndexFields.size() != 0 && newIndexFields.size() != indexFields.size()) ||
+                                (newUniqueIndexFields.size() != 0 && newUniqueIndexFields.size() != indexUniqueFields.size())) {
+                            // Dont attempt create index on a fresh database
+                            indexer.createIndex(graph, definition.getTitle(), parentVertex);
+                        } else {
+                            createIndexSkipped = true;
+                        }
+                    } else {
+                        logger.info("No definition found for create index");
                     }
-                } else {
-                    logger.info("No definition found for create index");
-                }               
-                dbProvider.commitTransaction(graph, tx);
-                if (!createIndexSkipped) {
-                    indexHelper.updateDefinitionIndex(shardId, definition.getTitle(), true);
+                    dbProvider.commitTransaction(graph, tx);
+                    if (!createIndexSkipped) {
+                        indexHelper.updateDefinitionIndex(shardId, definition.getTitle(), true);
+                    }
                 }
-          } catch (Exception e) {
-              logger.error(e.getMessage());
-              logger.error("Failed to create index {}", definition.getTitle());
-             
-          }      
-        }).start();           
+            } catch (Exception e) {
+                logger.error(e.getMessage());
+                logger.error("Failed to create index {}", definition.getTitle());
+            }
+    }).start();
     }
 
 }

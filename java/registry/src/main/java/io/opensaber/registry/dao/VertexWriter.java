@@ -79,7 +79,7 @@ public class VertexWriter {
      * @param entryKey
      * @param arrayNode
      */
-    private void writeArrayNode(Vertex vertex, String entryKey, ArrayNode arrayNode) {
+    private void writeArrayNode(Vertex vertex, String entryKey, ArrayNode arrayNode, boolean isUpdate) {
         List<String> uidList = new ArrayList<>();
         boolean isArrayItemObject = arrayNode.get(0).isObject();
         boolean isSignature = entryKey.equals(Constants.SIGNATURES_STR);
@@ -126,6 +126,14 @@ public class VertexWriter {
         }
     }
 
+    private void createArrayNode(Vertex vertex, String entryKey, ArrayNode arrayNode) {
+        writeArrayNode(vertex, entryKey, arrayNode, false);
+    }
+
+    private void updateArrayNode(Vertex vertex, String entryKey, ArrayNode arrayNode) {
+        writeArrayNode(vertex, entryKey, arrayNode, true);
+    }
+
     private Vertex processNode(String label, JsonNode jsonObject) {
         Vertex vertex = createVertex(label);
 
@@ -153,7 +161,7 @@ public class VertexWriter {
 
                 logger.debug("Added edge between {} and {}", vertex.label(), v.label());
             } else if (entryValue.isArray()) {
-                writeArrayNode(vertex, entry.getKey(), (ArrayNode) entry.getValue());
+                createArrayNode(vertex, entry.getKey(), (ArrayNode) entry.getValue());
             }
         });
         return vertex;
