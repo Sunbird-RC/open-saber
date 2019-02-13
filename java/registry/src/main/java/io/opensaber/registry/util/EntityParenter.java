@@ -227,7 +227,6 @@ public class EntityParenter {
             Definition definition) {
         new Thread(() -> {
             if (parentVertex != null && definition != null) {
-                boolean status = false;
                 List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
                 if (!indexFields.contains(uuidPropertyName)) {
                     indexFields.add(uuidPropertyName); // adds default field
@@ -250,15 +249,14 @@ public class EntityParenter {
                         indexer.setUniqueIndexFields(newUniqueIndexFields);
                         indexer.createIndex(graph, definition.getTitle(), parentVertex);
                         dbProvider.commitTransaction(graph, tx);
-                        
+
                         updateParentVertexIndexProperties(dbProvider, parentVertex, indexFields, indexUniqueFields);
-                        indexHelper.updateDefinitionIndex(shardId, definition.getTitle(), status);
-                   }
+                        indexHelper.updateDefinitionIndex(shardId, definition.getTitle(), true);
+                    }
                 } catch (Exception e) {
                     logger.error(e.getMessage());
                     logger.error("Failed Transaction creating index {}", definition.getTitle());
                 }
-
 
             } else {
                 logger.info("No definition found for create index");
@@ -277,23 +275,17 @@ public class EntityParenter {
      * @param indexUniqueFields
      */
     private void updateParentVertexIndexProperties(DatabaseProvider dbProvider, Vertex parentVertex,
-            List<String> indexFields, List<String> indexUniqueFields) {
-        try {
-            try (OSGraph osGraph = dbProvider.getOSGraph()) {
-                Graph graph = osGraph.getGraphStore();
-                try (Transaction tx = dbProvider.startTransaction(graph)) {
+            List<String> indexFields, List<String> indexUniqueFields) throws Exception {
 
-                    VertexWriter vertexWriter = new VertexWriter(graph, dbProvider, uuidPropertyName);
-                    vertexWriter.updateParentIndexProperty(parentVertex, Constants.INDEX_FIELDS, indexFields);
-                    vertexWriter.updateParentIndexProperty(parentVertex, Constants.UNIQUE_INDEX_FIELDS, indexUniqueFields);
-                    dbProvider.commitTransaction(graph, tx);
-                }
+        try (OSGraph osGraph = dbProvider.getOSGraph()) {
+            Graph graph = osGraph.getGraphStore();
+            try (Transaction tx = dbProvider.startTransaction(graph)) {
+
+                VertexWriter vertexWriter = new VertexWriter(graph, dbProvider, uuidPropertyName);
+                vertexWriter.updateParentIndexProperty(parentVertex, Constants.INDEX_FIELDS, indexFields);
+                vertexWriter.updateParentIndexProperty(parentVertex, Constants.UNIQUE_INDEX_FIELDS, indexUniqueFields);
+                dbProvider.commitTransaction(graph, tx);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            logger.error(e.getMessage());
-            logger.error("Failed Transaction updating parent index properties {}", e);
-
         }
     }
 
