@@ -130,10 +130,6 @@ public class VertexWriter {
         writeArrayNode(vertex, entryKey, arrayNode, false);
     }
 
-    private void updateArrayNode(Vertex vertex, String entryKey, ArrayNode arrayNode) {
-        writeArrayNode(vertex, entryKey, arrayNode, true);
-    }
-
     public void writeSingleNode(Vertex parentVertex, String label, JsonNode entryValue) {
         Vertex v = processNode(label, entryValue);
         addEdge(label, parentVertex, v);

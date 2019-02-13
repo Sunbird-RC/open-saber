@@ -30,21 +30,21 @@ public class JSONUtilTest {
         return objectNode;
     }
 
-    @Test
-    public void convertObjectJsonMap() {
-    }
-
-    @Test
-    public void getStringWithReplacedText() {
-    }
-
-    @Test
-    public void frameJsonAndRemoveIds() {
-    }
-
-    @Test
-    public void isJsonString() {
-    }
+//    @Test
+//    public void convertObjectJsonMap() {
+//    }
+//
+//    @Test
+//    public void getStringWithReplacedText() {
+//    }
+//
+//    @Test
+//    public void frameJsonAndRemoveIds() {
+//    }
+//
+//    @Test
+//    public void isJsonString() {
+//    }
 
     @Test
     public void replaceField() {
@@ -107,13 +107,13 @@ public class JSONUtilTest {
         assertEquals(actualNode, expectedNode);
     }
 
-    @Test
-    public void removeNodes() {
-    }
-
-    @Test
-    public void findKey() {
-    }
+//    @Test
+//    public void removeNodes() {
+//    }
+//
+//    @Test
+//    public void findKey() {
+//    }
 
     private String getContent(String fileName) {
         InputStream in;

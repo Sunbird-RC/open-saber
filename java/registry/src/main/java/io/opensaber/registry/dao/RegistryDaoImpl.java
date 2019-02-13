@@ -1,30 +1,21 @@
 package io.opensaber.registry.dao;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.middleware.util.JSONUtil;
-import io.opensaber.registry.sink.*;
-import io.opensaber.registry.sink.shard.Shard;
-import io.opensaber.registry.util.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
-import org.apache.tinkerpop.gremlin.structure.Direction;
+
+import io.opensaber.registry.sink.DatabaseProvider;
+import io.opensaber.registry.util.DefinitionsManager;
+import io.opensaber.registry.util.ReadConfigurator;
+import io.opensaber.registry.util.RefLabelHelper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 public class RegistryDaoImpl implements IRegistryDao {
     public String uuidPropertyName;

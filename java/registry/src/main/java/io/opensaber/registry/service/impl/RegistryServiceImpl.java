@@ -76,14 +76,7 @@ public class RegistryServiceImpl implements RegistryService {
     private Shard shard;
 
     @Autowired
-    private IValidate iValidate;
-
-    @Autowired
-    private DBConnectionInfoMgr dbConnectionInfoMgr;
-
-    @Autowired
     private EntityParenter entityParenter;
-
 
     public HealthCheckResponse health() throws Exception {
         HealthCheckResponse healthCheck;
