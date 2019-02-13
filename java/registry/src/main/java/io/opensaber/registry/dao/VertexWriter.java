@@ -19,6 +19,9 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Helps in writing a vertex, edge into the database
+ */
 public class VertexWriter {
     private String uuidPropertyName;
     private Graph graph;
@@ -61,6 +64,12 @@ public class VertexWriter {
         return parentVertex;
     }
 
+
+    /**
+     * Creates a vertex - each vertex would have a @type and uuidPropertyName attribute
+     * @param label - the string you want the vertex to be labelled
+     * @return
+     */
     public Vertex createVertex(String label) {
         Vertex vertex = graph.addVertex(label);
 
@@ -186,21 +195,6 @@ public class VertexWriter {
      */
     public Edge addEdge(String label, Vertex v1, Vertex v2) {
         return v1.addEdge(label, v2);
-    }
-
-    /**
-     * Fetches the parent. In the current use cases, we expect only one top
-     * level parent is passed.
-     *
-     * @param node
-     * @return
-     */
-    private String getParentName(JsonNode node) {
-        return node.fieldNames().next();
-    }
-
-    private void setParentId(String id) {
-        this.parentOSid = id;
     }
 
     /**

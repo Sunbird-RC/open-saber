@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.registry.authorization.AuthorizationToken;
 import io.opensaber.registry.authorization.pojos.AuthInfo;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.model.DBConnectionInfo;
+import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.sink.DBProviderFactory;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.tests.utility.TestHelper;
@@ -18,15 +20,21 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.UUID;
 import org.apache.commons.lang.StringUtils;
+import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@EnableConfigurationProperties
-public class RegistryTestBase {
+@SpringBootTest
+@ActiveProfiles(Constants.TEST_ENVIRONMENT)
+abstract public class RegistryTestBase {
 
 	public static final String FORMAT = "JSON-LD";
 	private static final String INVALID_SUBJECT_LABEL = "ex:Picasso";
@@ -40,7 +48,6 @@ public class RegistryTestBase {
 	public DatabaseProvider databaseProvider;
 	@Autowired
 	public DBProviderFactory dbProviderFactory;
-
 
 	public RegistryTestBase() {
 		databaseProvider = dbProviderFactory.getInstance(null);

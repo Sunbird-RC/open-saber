@@ -29,7 +29,7 @@ public class DefinitionsManagerTest {
         try {
             int nDefinitions = definitionsManager.getAllKnownDefinitions().size();
             int nResources = definitionsReader.getResources(Constants.RESOURCE_LOCATION).length;
-            flag = (nDefinitions == nResources);
+            flag = (2*nDefinitions == nResources);
         } catch (IOException ioe) {
 
         }

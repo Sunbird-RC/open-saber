@@ -1,5 +1,7 @@
 package io.opensaber.registry;
 
+import com.googlecode.junittoolbox.SuiteClasses;
+import com.googlecode.junittoolbox.WildcardPatternSuite;
 import io.opensaber.registry.dao.impl.EncryptionDaoImplTest;
 import io.opensaber.registry.dao.impl.RegistryDaoImplTest;
 import io.opensaber.registry.dao.impl.SearchDaoImplTest;
@@ -11,11 +13,8 @@ import junit.framework.TestSuite;
 import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
-@Ignore
-@SuiteClasses({ RegistryDaoImplTest.class, RegistryServiceImplTest.class, EncryptionDaoImplTest.class,
-		EncryptionServiceImplTest.class, SearchServiceImplTest.class, SearchDaoImplTest.class})
-@RunWith(Suite.class)
+@RunWith(WildcardPatternSuite.class)
+@SuiteClasses("**/*Test.class")
 public class RegistryTestSuite {
 
 	public static Test suite() {

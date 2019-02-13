@@ -77,6 +77,10 @@ public class RegistryServiceImpl implements RegistryService {
     @Autowired
     private EntityParenter entityParenter;
 
+    public void setShard(Shard shard) {
+        this.shard = shard;
+    }
+
     public HealthCheckResponse health() throws Exception {
         HealthCheckResponse healthCheck;
         // TODO

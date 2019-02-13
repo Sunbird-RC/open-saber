@@ -14,6 +14,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -33,6 +34,7 @@ import io.opensaber.registry.exception.audit.LabelCannotBeNullException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.sink.DatabaseProvider;
 
+@Ignore
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { Environment.class, GenericConfiguration.class, AuditRecordReader.class })
 @ActiveProfiles(Constants.TEST_ENVIRONMENT)

@@ -3,7 +3,6 @@ package io.opensaber.registry.dao.impl;
 import java.io.IOException;
 import java.util.Map;
 
-import io.opensaber.registry.dao.RegistryDaoImpl;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -52,7 +51,7 @@ import io.opensaber.registry.tests.utility.TestHelper;
 
 @Ignore
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { RegistryDaoImpl.class, Environment.class, ObjectMapper.class, GenericConfiguration.class,
+@SpringBootTest(classes = { Environment.class, ObjectMapper.class, GenericConfiguration.class,
 		EncryptionServiceImpl.class, AuditRecordReader.class })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @ActiveProfiles(Constants.TEST_ENVIRONMENT)
@@ -91,9 +90,6 @@ public class EncryptionDaoImplTest extends RegistryTestBase {
 	private Gson gson;
 	@Mock
 	private EncryptionServiceImpl encryptionMock;
-	@Autowired
-	@InjectMocks
-	private RegistryDaoImpl registryDaoImpl;
 
 	@Value("${encryption.enabled}")
 	private boolean encryptionEnabled;

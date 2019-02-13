@@ -24,7 +24,7 @@ public class ArrayHelperTest {
 
     @Test
     public void testFormatToString(){
-        String expectedString = "[ hari,sri ram,giri]";
+        String expectedString = "[\" hari\",\"sri ram\",\"giri\"]";
         List<String> inputLst = new ArrayList<>();
         inputLst.add(" hari");
         inputLst.add("sri ram");

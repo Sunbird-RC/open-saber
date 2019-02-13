@@ -1,8 +1,16 @@
 package io.opensaber.registry.util;
 
+<<<<<<< Updated upstream
 import java.util.*;
 import java.util.regex.Pattern;
+=======
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+>>>>>>> Stashed changes
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This class creates util methods for String modification and replacing
@@ -28,8 +36,13 @@ public class ArrayHelper {
      * @param inputList - which contains list of Strings
      * @return - String, in array format
      */
-    public static String formatToString(List<String> inputList){
-        StringBuilder sb = new StringBuilder(String.join(",",inputList));
+    public static String formatToString(List<String> inputList) {
+        List<String> quotedStr = new ArrayList<>();
+        inputList.forEach(input -> {
+            input = "\"" + input + "\"";
+            quotedStr.add(input);
+        });
+        StringBuilder sb = new StringBuilder(StringUtils.join(quotedStr, ','));
         return sb.insert(0,'[').append(']').toString();
     }
 }
