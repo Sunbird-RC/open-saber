@@ -282,8 +282,10 @@ public class EntityParenter {
             try (Transaction tx = dbProvider.startTransaction(graph)) {
 
                 VertexWriter vertexWriter = new VertexWriter(graph, dbProvider, uuidPropertyName);
-                vertexWriter.updateParentIndexProperty(parentVertex, Constants.INDEX_FIELDS, indexFields);
-                vertexWriter.updateParentIndexProperty(parentVertex, Constants.UNIQUE_INDEX_FIELDS, indexUniqueFields);
+                Vertex v = graph.vertices(parentVertex.id()).next();
+                
+                vertexWriter.updateParentIndexProperty(v, Constants.INDEX_FIELDS, indexFields);
+                vertexWriter.updateParentIndexProperty(v, Constants.UNIQUE_INDEX_FIELDS, indexUniqueFields);
                 dbProvider.commitTransaction(graph, tx);
             }
         }

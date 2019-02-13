@@ -80,8 +80,7 @@ public class VertexWriter {
     public void updateParentIndexProperty(Vertex parentVertex, String propertyName, List<String> indexFields){
         if (indexFields.size() > 0) {
             StringBuilder properties = new StringBuilder(String.join(",", indexFields));        
-            Vertex v = graph.vertices(parentVertex.id()).next();
-            v.property(propertyName, properties.toString());
+            parentVertex.property(propertyName, properties.toString());
             logger.info("parent vertex property {}:{}", propertyName, properties);
 
         }            
