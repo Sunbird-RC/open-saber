@@ -432,6 +432,11 @@ public class VertexReader {
         return StringUtils.commaDelimitedListToSet(allItemUuids);
     }
 
+    public String getInternalType(Vertex vertex) {
+        String intType = vertex.value(Constants.INTERNAL_TYPE_KEYWORD);
+        return intType;
+    }
+
     /**
      * Hits the database to read contents
      * This is the entry function to read contents of a given entity
