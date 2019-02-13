@@ -107,7 +107,8 @@ public class SqlgProvider extends DatabaseProvider {
         ensureIndex(vertexLabel, IndexType.NON_UNIQUE, properties);
     }
     /**
-     * 
+     * Ensures that the vertex table exist in the db.
+     * @param graph
      * @param label
      * @return
      */
