@@ -43,7 +43,7 @@ public class SignatureServiceImpl implements SignatureService {
 				logger.debug("Signature service running !");
 			}
 		} catch (RestClientException ex) {
-			logger.error("RestClientException when checking the health of the Sunbird encryption service: ", ex);
+			logger.error("RestClientException when checking the health of the Sunbird signature service: ", ex);
 			throw new SignatureException().new UnreachableException(ex.getMessage());
 		}
 		return isSignServiceUp;
@@ -116,9 +116,6 @@ public class SignatureServiceImpl implements SignatureService {
 		try {
 			response = retryRestTemplate.getForEntity(keysURL + "/" + keyId);
 			result = response.getBody();
-			if(result == null){
-				throw new Exception(Constants.KEY_RETRIEVE_ERROR_MESSAGE);
-			}
 		} catch (RestClientException ex) {
 			logger.error("RestClientException when verifying: ", ex);
 			throw new SignatureException().new UnreachableException(ex.getMessage());

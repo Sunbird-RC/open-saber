@@ -140,4 +140,16 @@ public class SignatureServiceImplTest {
         signatureServiceImpl.getKey("100");
 	}
 
+    @Test
+    public void test_encryption_isup() throws Exception {
+        when(retryRestTemplate.getForEntity(nullable(String.class))).thenReturn(ResponseEntity.accepted().body("UP"));
+        assertTrue(signatureServiceImpl.isServiceUp());
+    }
+
+    @Test(expected = SignatureException.UnreachableException.class)
+    public void test_encryption_isup_throw_restclientexception() throws Exception {
+        when(retryRestTemplate.getForEntity(nullable(String.class))).thenThrow(RestClientException.class);
+        signatureServiceImpl.isServiceUp();
+    }
+
 }
