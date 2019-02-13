@@ -1,6 +1,5 @@
 package io.opensaber.registry.service.impl;
 
-import io.opensaber.registry.middleware.util.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

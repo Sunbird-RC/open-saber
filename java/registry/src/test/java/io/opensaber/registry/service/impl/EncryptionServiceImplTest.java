@@ -1,31 +1,12 @@
 package io.opensaber.registry.service.impl;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.core.IsNull.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.ArgumentMatchers.nullable;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
-
 import com.google.gson.Gson;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.exception.EncryptionException;
+import io.opensaber.registry.middleware.util.Constants;
 import java.lang.reflect.Type;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
-
-import org.elasticsearch.client.RestClient;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,20 +17,22 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
-import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.service.EncryptionService;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.core.IsNull.notNullValue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles(Constants.TEST_ENVIRONMENT)
