@@ -1,6 +1,7 @@
 package io.opensaber.registry.util;
 
 import io.opensaber.registry.dao.VertexWriter;
+import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.DBConnectionInfo;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.sink.DBProviderFactory;
@@ -247,20 +248,17 @@ public class EntityParenter {
                         indexer.setCompositeIndexFields(cIndexFields);
 
                         indexer.setUniqueIndexFields(newUniqueIndexFields);
-                        status = indexer.createIndex(graph, definition.getTitle(), parentVertex);
-                        logger.info("CREATE INDEX STATUS ====== " + status);
-
+                        indexer.createIndex(graph, definition.getTitle(), parentVertex);
                         dbProvider.commitTransaction(graph, tx);
-                    }
+                        
+                        updateParentVertexIndexProperties(dbProvider, parentVertex, indexFields, indexUniqueFields);
+                        indexHelper.updateDefinitionIndex(shardId, definition.getTitle(), status);
+                   }
                 } catch (Exception e) {
-                    status = false;
                     logger.error(e.getMessage());
                     logger.error("Failed Transaction creating index {}", definition.getTitle());
                 }
-                if (status) {
-                    updateParentVertexIndexProperties(dbProvider, parentVertex.label(), indexFields, indexUniqueFields);
-                }
-                indexHelper.updateDefinitionIndex(shardId, definition.getTitle(), status);
+
 
             } else {
                 logger.info("No definition found for create index");
@@ -278,14 +276,16 @@ public class EntityParenter {
      * @param indexFields
      * @param indexUniqueFields
      */
-    private void updateParentVertexIndexProperties(DatabaseProvider dbProvider, String parentlabel,
+    private void updateParentVertexIndexProperties(DatabaseProvider dbProvider, Vertex parentVertex,
             List<String> indexFields, List<String> indexUniqueFields) {
         try {
             try (OSGraph osGraph = dbProvider.getOSGraph()) {
                 Graph graph = osGraph.getGraphStore();
                 try (Transaction tx = dbProvider.startTransaction(graph)) {
+
                     VertexWriter vertexWriter = new VertexWriter(graph, dbProvider, uuidPropertyName);
-                    vertexWriter.updateParentIndexProperty(parentlabel, indexFields, indexUniqueFields);
+                    vertexWriter.updateParentIndexProperty(parentVertex, Constants.INDEX_FIELDS, indexFields);
+                    vertexWriter.updateParentIndexProperty(parentVertex, Constants.UNIQUE_INDEX_FIELDS, indexUniqueFields);
                     dbProvider.commitTransaction(graph, tx);
                 }
             }

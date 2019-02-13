@@ -69,49 +69,23 @@ public class VertexWriter {
 
         return vertex;
     }
-
+    
     /**
-     * Updates INDEX_FIELDS(single, composite) and UNIQUE_INDEX_FIELDS property of parent vertex
+     * Updates index fields property of parent vertex for a given propertyName
      * 
-     * @param parentlabel
+     * @param parentVertex
+     * @param propertyName
      * @param indexFields
-     * @param uniqueIndexFields
      */
-    public void updateParentIndexProperty(String parentlabel, List<String> indexFields, List<String> uniqueIndexFields) { 
-
-        //Non-unique
+    public void updateParentIndexProperty(Vertex parentVertex, String propertyName, List<String> indexFields){
         if (indexFields.size() > 0) {
-            replaceVertexProperty(parentlabel, indexFields, false);
-        }
-        //unique
-        if(uniqueIndexFields.size() > 0){
-            replaceVertexProperty(parentlabel, uniqueIndexFields, true);
-  
-        }
-    }
-
-    /**
-     * Replace the INDEX_FIELDS and UNIQUE_INDEX_FIELDS of parent vertex
-     * 
-     * @param parentlabel
-     * @param indexFields
-     * @param isUnique
-     */
-    private void replaceVertexProperty(String parentlabel, List<String> indexFields, boolean isUnique){
-        String propertyName = isUnique ? Constants.UNIQUE_INDEX_FIELDS : Constants.INDEX_FIELDS;
-        StringBuilder properties = new StringBuilder(String.join(",", indexFields));        
-        P<String> lblPredicate = P.eq(parentlabel);
-        GraphTraversalSource gtRootTraversal = graph.traversal().clone();
-        Iterator<Vertex> iterVertex = gtRootTraversal.V().hasLabel(lblPredicate);
-        if (iterVertex.hasNext()) {
-            Vertex pVertex = iterVertex.next();
-            pVertex.property(propertyName, properties.toString());
+            StringBuilder properties = new StringBuilder(String.join(",", indexFields));        
+            Vertex v = graph.vertices(parentVertex.id()).next();
+            v.property(propertyName, properties.toString());
             logger.info("parent vertex property {}:{}", propertyName, properties);
-        }
-        
+
+        }            
     }
-
-
 
     /**
      * Writes an array into the database. For each array item, if it is an
