@@ -1,0 +1,201 @@
+Index: java/registry/src/test/java/io/opensaber/registry/dao/impl/EncryptionDaoImplTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- java/registry/src/test/java/io/opensaber/registry/dao/impl/EncryptionDaoImplTest.java	(revision 0ce673b45d1c1b27fd832b1a7180844c6c614761)
++++ java/registry/src/test/java/io/opensaber/registry/dao/impl/EncryptionDaoImplTest.java	(date 1544624110000)
+@@ -17,6 +17,7 @@
+ import java.util.List;
+ import java.util.Map;
+ 
++import io.opensaber.registry.exception.CustomException;
+ import org.apache.jena.rdf.model.Model;
+ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+@@ -122,8 +123,12 @@
+ 
+ 	@Before
+ 	public void initializeGraph() throws IOException {
+-	    databaseProvider = dbProviderFactory.getInstance(null);
+-	    registryDao.setDatabaseProvider(databaseProvider);
++		try {
++			databaseProvider = dbProviderFactory.getInstance(null);
++		} catch (CustomException e) {
++			e.printStackTrace();
++		}
++		registryDao.setDatabaseProvider(databaseProvider);
+ 		auditRecordReader = new AuditRecordReader(databaseProvider);
+ 		Assume.assumeTrue(encryptionEnabled);
+ 		graph = TinkerGraph.open();
+Index: java/registry/src/test/java/io/opensaber/registry/service/impl/SearchServiceImplTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- java/registry/src/test/java/io/opensaber/registry/service/impl/SearchServiceImplTest.java	(revision 0ce673b45d1c1b27fd832b1a7180844c6c614761)
++++ java/registry/src/test/java/io/opensaber/registry/service/impl/SearchServiceImplTest.java	(date 1544623985000)
+@@ -7,6 +7,7 @@
+ import java.util.Collections;
+ import java.util.List;
+ 
++import io.opensaber.registry.exception.*;
+ import org.apache.jena.rdf.model.Model;
+ import org.apache.jena.rdf.model.Property;
+ import org.apache.jena.rdf.model.Resource;
+@@ -37,13 +38,6 @@
+ import io.opensaber.registry.controller.RegistryTestBase;
+ import io.opensaber.registry.dao.RegistryDao;
+ import io.opensaber.registry.dao.SearchDao;
+-import io.opensaber.registry.exception.AuditFailedException;
+-import io.opensaber.registry.exception.DuplicateRecordException;
+-import io.opensaber.registry.exception.EncryptionException;
+-import io.opensaber.registry.exception.EntityCreationException;
+-import io.opensaber.registry.exception.MultipleEntityException;
+-import io.opensaber.registry.exception.RecordNotFoundException;
+-import io.opensaber.registry.exception.TypeNotProvidedException;
+ import io.opensaber.registry.middleware.util.Constants;
+ import io.opensaber.registry.middleware.util.RDFUtil;
+ import io.opensaber.registry.service.RegistryService;
+@@ -73,7 +67,11 @@
+ 
+ 	@Before
+ 	public void initialize() throws IOException {
+-		databaseProvider = dbProviderFactory.getInstance(null);
++		try {
++			databaseProvider = dbProviderFactory.getInstance(null);
++		} catch (CustomException e) {
++			e.printStackTrace();
++		}
+ 		registryService.setDatabaseProvider(databaseProvider);
+ 		searchService.setDatabaseProvider(databaseProvider);
+ 		MockitoAnnotations.initMocks(this);
+Index: java/registry/src/test/java/io/opensaber/registry/service/impl/RegistryServiceImplTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- java/registry/src/test/java/io/opensaber/registry/service/impl/RegistryServiceImplTest.java	(revision 0ce673b45d1c1b27fd832b1a7180844c6c614761)
++++ java/registry/src/test/java/io/opensaber/registry/service/impl/RegistryServiceImplTest.java	(date 1544624202000)
+@@ -9,6 +9,7 @@
+ import java.util.Collections;
+ import java.util.List;
+ 
++import io.opensaber.registry.exception.*;
+ import org.apache.jena.rdf.model.Model;
+ import org.apache.jena.rdf.model.ModelFactory;
+ import org.apache.jena.rdf.model.Resource;
+@@ -45,12 +46,6 @@
+ import io.opensaber.registry.controller.RegistryTestBase;
+ import io.opensaber.registry.dao.RegistryDao;
+ import io.opensaber.registry.dao.impl.RegistryDaoImpl;
+-import io.opensaber.registry.exception.AuditFailedException;
+-import io.opensaber.registry.exception.DuplicateRecordException;
+-import io.opensaber.registry.exception.EncryptionException;
+-import io.opensaber.registry.exception.EntityCreationException;
+-import io.opensaber.registry.exception.MultipleEntityException;
+-import io.opensaber.registry.exception.RecordNotFoundException;
+ import io.opensaber.registry.middleware.MiddlewareHaltException;
+ import io.opensaber.registry.middleware.util.Constants;
+ import io.opensaber.registry.middleware.util.RDFUtil;
+@@ -106,8 +101,12 @@
+ 
+ 	@Before
+ 	public void initialize() throws IOException {
+-	    databaseProvider = dbProviderFactory.getInstance(null);
+-	    registryService.setDatabaseProvider(databaseProvider);
++		try {
++			databaseProvider = dbProviderFactory.getInstance(null);
++		} catch (CustomException e) {
++			e.printStackTrace();
++		}
++		registryService.setDatabaseProvider(databaseProvider);
+ 	    mockDatabaseProvider = Mockito.mock(DatabaseProvider.class);
+ 	    registryServiceForHealth.setDatabaseProvider(mockDatabaseProvider);
+ 		setup();
+Index: java/registry/src/test/java/io/opensaber/registry/dao/impl/SearchDaoImplTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- java/registry/src/test/java/io/opensaber/registry/dao/impl/SearchDaoImplTest.java	(revision 0ce673b45d1c1b27fd832b1a7180844c6c614761)
++++ java/registry/src/test/java/io/opensaber/registry/dao/impl/SearchDaoImplTest.java	(date 1544624081000)
+@@ -8,6 +8,7 @@
+ import java.util.List;
+ import java.util.Map;
+ 
++import io.opensaber.registry.exception.*;
+ import org.apache.jena.rdf.model.Model;
+ import org.apache.jena.rdf.model.ResourceFactory;
+ import org.apache.jena.vocabulary.RDF;
+@@ -36,12 +37,6 @@
+ import io.opensaber.registry.controller.RegistryTestBase;
+ import io.opensaber.registry.dao.RegistryDao;
+ import io.opensaber.registry.dao.SearchDao;
+-import io.opensaber.registry.exception.AuditFailedException;
+-import io.opensaber.registry.exception.DuplicateRecordException;
+-import io.opensaber.registry.exception.EncryptionException;
+-import io.opensaber.registry.exception.EntityCreationException;
+-import io.opensaber.registry.exception.MultipleEntityException;
+-import io.opensaber.registry.exception.RecordNotFoundException;
+ import io.opensaber.registry.middleware.util.Constants;
+ import io.opensaber.registry.sink.DBProviderFactory;
+ import io.opensaber.registry.sink.DatabaseProvider;
+@@ -67,8 +62,12 @@
+ 
+ 	@Before
+ 	public void initializeGraph() throws IOException {
+-	    databaseProvider = dbProviderFactory.getInstance(null);
+-	    registryDao.setDatabaseProvider(databaseProvider);
++		try {
++			databaseProvider = dbProviderFactory.getInstance(null);
++		} catch (CustomException e) {
++			e.printStackTrace();
++		}
++		registryDao.setDatabaseProvider(databaseProvider);
+ 	    searchDao.setDatabaseProvider(databaseProvider);
+ 
+ 		graph = TinkerGraph.open();
+Index: java/registry/src/test/java/io/opensaber/registry/dao/impl/RegistryDaoImplTest.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- java/registry/src/test/java/io/opensaber/registry/dao/impl/RegistryDaoImplTest.java	(revision 0ce673b45d1c1b27fd832b1a7180844c6c614761)
++++ java/registry/src/test/java/io/opensaber/registry/dao/impl/RegistryDaoImplTest.java	(date 1544624150000)
+@@ -23,6 +23,7 @@
+ import java.util.NoSuchElementException;
+ import java.util.UUID;
+ 
++import io.opensaber.registry.exception.*;
+ import org.apache.jena.rdf.model.Literal;
+ import org.apache.jena.rdf.model.Model;
+ import org.apache.jena.rdf.model.ModelFactory;
+@@ -74,12 +75,6 @@
+ import io.opensaber.registry.authorization.pojos.AuthInfo;
+ import io.opensaber.registry.config.GenericConfiguration;
+ import io.opensaber.registry.controller.RegistryTestBase;
+-import io.opensaber.registry.exception.AuditFailedException;
+-import io.opensaber.registry.exception.DuplicateRecordException;
+-import io.opensaber.registry.exception.EncryptionException;
+-import io.opensaber.registry.exception.EntityCreationException;
+-import io.opensaber.registry.exception.MultipleEntityException;
+-import io.opensaber.registry.exception.RecordNotFoundException;
+ import io.opensaber.registry.exception.audit.LabelCannotBeNullException;
+ import io.opensaber.registry.middleware.util.Constants;
+ import io.opensaber.registry.middleware.util.RDFUtil;
+@@ -135,8 +130,12 @@
+ 	@Before
+ 	public void initializeGraph() throws IOException {
+ 		graph = TinkerGraph.open();
+-	    databaseProvider = dbProviderFactory.getInstance(null);
+-	    registryDao.setDatabaseProvider(databaseProvider);
++		try {
++			databaseProvider = dbProviderFactory.getInstance(null);
++		} catch (CustomException e) {
++			e.printStackTrace();
++		}
++		registryDao.setDatabaseProvider(databaseProvider);
+ 		auditRecordReader = new AuditRecordReader(databaseProvider);
+ 
+ 		MockitoAnnotations.initMocks(this);

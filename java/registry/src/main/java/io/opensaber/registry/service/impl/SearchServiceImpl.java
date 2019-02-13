@@ -1,21 +1,34 @@
 package io.opensaber.registry.service.impl;
 
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.node.*;
-import io.opensaber.pojos.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.opensaber.pojos.Filter;
+import io.opensaber.pojos.SearchQuery;
 import io.opensaber.registry.dao.*;
-import io.opensaber.registry.middleware.util.*;
-import io.opensaber.registry.model.*;
-import io.opensaber.registry.service.*;
-import io.opensaber.registry.sink.*;
-import io.opensaber.registry.sink.shard.*;
-import io.opensaber.registry.util.*;
-import org.apache.tinkerpop.gremlin.structure.*;
-import org.slf4j.*;
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.stereotype.*;
+import io.opensaber.registry.middleware.util.JSONUtil;
+import io.opensaber.registry.model.DBConnectionInfo;
+import io.opensaber.registry.model.DBConnectionInfoMgr;
+import io.opensaber.registry.service.SearchService;
+import io.opensaber.registry.sink.OSGraph;
+import io.opensaber.registry.sink.shard.Shard;
+import io.opensaber.registry.sink.shard.ShardManager;
+import io.opensaber.registry.util.DefinitionsManager;
+import io.opensaber.registry.util.RecordIdentifier;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class SearchServiceImpl implements SearchService {
@@ -94,7 +107,7 @@ public class SearchServiceImpl implements SearchService {
 						if (!shard.getShardLabel().isEmpty()) {
 							// Replace osid with shard details
 							String prefix = shard.getShardLabel() + RecordIdentifier.getSeparator();
-							JSONUtil.addPrefix((ObjectNode) jsonNode, prefix, new ArrayList<String>(Arrays.asList(uuidPropertyName)));
+							JSONUtil.addPrefix((ObjectNode) jsonNode, prefix, new ArrayList<>(Arrays.asList(uuidPropertyName)));
 						}
 
 						result.add(jsonNode);

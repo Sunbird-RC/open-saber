@@ -1,15 +1,26 @@
 package io.opensaber.registry.util;
 
-import io.opensaber.registry.dao.*;
-import io.opensaber.registry.model.*;
-import io.opensaber.registry.sink.*;
-import org.apache.tinkerpop.gremlin.structure.*;
-import org.slf4j.*;
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.stereotype.*;
-
-import java.util.*;
-import java.util.concurrent.*;
+import io.opensaber.registry.dao.VertexWriter;
+import io.opensaber.registry.model.DBConnectionInfo;
+import io.opensaber.registry.model.DBConnectionInfoMgr;
+import io.opensaber.registry.sink.DBProviderFactory;
+import io.opensaber.registry.sink.DatabaseProvider;
+import io.opensaber.registry.sink.OSGraph;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 @Component("entityParenter")
 public class EntityParenter {

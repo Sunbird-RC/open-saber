@@ -86,7 +86,8 @@ public class SignatureHelper {
         return entitySignNode;
     }
 
-    /** Merges sign data to entity json
+    /**
+     * Merges sign data to entity json
      *
      * @param entityNode
      * @param toAdd
