@@ -50,6 +50,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
+@Ignore
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { OpenSaberApplication.class, RegistryController.class, GenericConfiguration.class,
 		EncryptionServiceImpl.class, AuditRecord.class, SignatureServiceImpl.class,

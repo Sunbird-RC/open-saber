@@ -1,14 +1,9 @@
 package io.opensaber.registry.util;
 
-<<<<<<< Updated upstream
-import java.util.*;
-import java.util.regex.Pattern;
-=======
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
->>>>>>> Stashed changes
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

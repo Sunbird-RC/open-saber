@@ -86,7 +86,7 @@ public class VertexWriterTest {
         vertexWriter.addEdge(eLabel, v1, v2);
 
         Assert.assertTrue(v1.vertices(Direction.OUT).next() != null &&
-                            !v2.vertices(Direction.OUT).hasNext());
+                !v2.vertices(Direction.OUT).hasNext());
     }
 
     @Test

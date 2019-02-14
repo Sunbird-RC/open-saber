@@ -32,7 +32,16 @@ public class ArrayHelperTest {
 
         String actualString = ArrayHelper.formatToString(inputLst);
         assertTrue(expectedString.equalsIgnoreCase(actualString));
+    }
 
+    @Test
+    public void testFormatToStringSingle(){
+        String expectedString = "[\"giri\"]";
+        List<String> inputLst = new ArrayList<>();
+        inputLst.add("giri");
+
+        String actualString = ArrayHelper.formatToString(inputLst);
+        assertTrue(expectedString.equalsIgnoreCase(actualString));
     }
 
     @Test(expected = NullPointerException.class)
