@@ -310,6 +310,9 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		return new CustomExceptionHandler(gson());
 	}
 
+	/** This method creates ThreadPool task-executor
+	 * @return - TaskExecutor
+	 */
 	@Bean(name = "taskExecutor")
 	public TaskExecutor taskExecutor() {
 		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
