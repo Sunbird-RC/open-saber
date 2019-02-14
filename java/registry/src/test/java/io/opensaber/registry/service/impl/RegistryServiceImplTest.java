@@ -1,36 +1,21 @@
 package io.opensaber.registry.service.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.opensaber.registry.model.DBConnectionInfo;
-import io.opensaber.registry.model.DBConnectionInfoMgr;
-import io.opensaber.registry.sink.DBProviderFactory;
-import io.opensaber.registry.sink.OSGraph;
-import io.opensaber.registry.sink.shard.Shard;
-import io.opensaber.registry.sink.shard.ShardManager;
 import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.registry.app.OpenSaberApplication;
 import io.opensaber.registry.config.GenericConfiguration;
 import io.opensaber.registry.controller.RegistryController;
-import io.opensaber.registry.controller.RegistryTestBase;
 import io.opensaber.registry.dao.IRegistryDao;
-import io.opensaber.registry.dao.RegistryDaoImpl;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.AuditRecord;
+import io.opensaber.registry.model.DBConnectionInfo;
+import io.opensaber.registry.model.DBConnectionInfoMgr;
+import io.opensaber.registry.sink.DBProviderFactory;
 import io.opensaber.registry.sink.DatabaseProvider;
-import io.opensaber.registry.util.ReadConfigurator;
-
-import java.io.IOException;
-
-import io.opensaber.registry.util.RecordIdentifier;
+import io.opensaber.registry.sink.OSGraph;
+import io.opensaber.registry.sink.shard.Shard;
+import io.opensaber.registry.sink.shard.ShardManager;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -49,6 +34,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
+
+import java.io.IOException;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 @Ignore
 @RunWith(SpringRunner.class)

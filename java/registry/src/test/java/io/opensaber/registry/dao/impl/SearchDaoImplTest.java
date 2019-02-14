@@ -1,13 +1,17 @@
 package io.opensaber.registry.dao.impl;
 
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.fasterxml.jackson.databind.JsonNode;
+import io.opensaber.pojos.Filter;
+import io.opensaber.pojos.SearchQuery;
+import io.opensaber.registry.app.OpenSaberApplication;
+import io.opensaber.registry.config.GenericConfiguration;
+import io.opensaber.registry.controller.RegistryTestBase;
+import io.opensaber.registry.dao.IRegistryDao;
+import io.opensaber.registry.dao.SearchDao;
+import io.opensaber.registry.exception.AuditFailedException;
+import io.opensaber.registry.exception.EncryptionException;
+import io.opensaber.registry.exception.RecordNotFoundException;
+import io.opensaber.registry.middleware.util.Constants;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.junit.Before;
@@ -21,17 +25,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import io.opensaber.pojos.Filter;
-import io.opensaber.pojos.SearchQuery;
-import io.opensaber.registry.app.OpenSaberApplication;
-import io.opensaber.registry.config.GenericConfiguration;
-import io.opensaber.registry.controller.RegistryTestBase;
-import io.opensaber.registry.dao.IRegistryDao;
-import io.opensaber.registry.dao.SearchDao;
-import io.opensaber.registry.exception.AuditFailedException;
-import io.opensaber.registry.exception.EncryptionException;
-import io.opensaber.registry.exception.RecordNotFoundException;
-import io.opensaber.registry.middleware.util.Constants;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertTrue;
 
 @Ignore
 @RunWith(SpringRunner.class)

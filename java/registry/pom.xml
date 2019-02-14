@@ -368,9 +368,10 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <systemPropertyVariables>
-                        <jacoco-agent.destfile>target/jacoco.exec</jacoco-agent.destfile>
-                    </systemPropertyVariables>
+                    <excludes>
+                        <exclude>io/opensaber/pojos/*</exclude>
+                        <exclude>**/I*.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>

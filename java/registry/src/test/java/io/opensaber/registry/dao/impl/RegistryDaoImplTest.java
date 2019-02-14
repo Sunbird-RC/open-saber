@@ -1,7 +1,13 @@
 package io.opensaber.registry.dao.impl;
 
+import io.opensaber.pojos.APIMessage;
+import io.opensaber.registry.config.GenericConfiguration;
+import io.opensaber.registry.controller.RegistryTestBase;
 import io.opensaber.registry.dao.RegistryDaoImpl;
+import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.model.AuditRecordReader;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
+import io.opensaber.registry.service.impl.EncryptionServiceImpl;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.tinkergraph.structure.TinkerGraph;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -24,13 +30,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import io.opensaber.pojos.APIMessage;
-import io.opensaber.registry.config.GenericConfiguration;
-import io.opensaber.registry.controller.RegistryTestBase;
-import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.model.AuditRecordReader;
-import io.opensaber.registry.service.impl.EncryptionServiceImpl;
 
 @Ignore
 @RunWith(SpringRunner.class)

@@ -10,7 +10,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {DefinitionsReader.class, DefinitionsManager.class})

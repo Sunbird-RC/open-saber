@@ -1,8 +1,12 @@
 package io.opensaber.registry.dao.impl;
 
-import java.io.IOException;
-import java.util.Map;
-
+import com.google.gson.Gson;
+import io.opensaber.registry.config.GenericConfiguration;
+import io.opensaber.registry.controller.RegistryTestBase;
+import io.opensaber.registry.dao.IRegistryDao;
+import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.model.AuditRecordReader;
+import io.opensaber.registry.service.impl.EncryptionServiceImpl;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -22,7 +26,6 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,24 +33,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.google.gson.Gson;
-
-import io.opensaber.registry.authorization.AuthorizationToken;
-import io.opensaber.registry.authorization.pojos.AuthInfo;
-import io.opensaber.registry.config.GenericConfiguration;
-import io.opensaber.registry.controller.RegistryTestBase;
-import io.opensaber.registry.dao.IRegistryDao;
-import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.model.AuditRecordReader;
-import io.opensaber.registry.service.impl.EncryptionServiceImpl;
-import io.opensaber.registry.sink.DBProviderFactory;
-import io.opensaber.registry.sink.DatabaseProvider;
-import io.opensaber.registry.tests.utility.TestHelper;
+import java.io.IOException;
+import java.util.Map;
 
 @Ignore
 @RunWith(SpringRunner.class)
