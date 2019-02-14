@@ -158,6 +158,13 @@ service:
       # The fixed time interval, in milliseconds, between each such attempt.
       delay: ${service_retry_backoff_delay:1000}
 
+taskExecutor:
+  index:
+    threadPoolName: ${taskExecutor_index_threadPoolName:IndexThread-}
+    corePoolSize: ${taskExecutor_index_corePoolSize:2}
+    maxPoolSize: ${taskExecutor_index_maxPoolSize:2}
+    queueCapacity: ${taskExecutor_index_queueCapacity:3}
+
 ---
 ##################################################################
 #                      TEST PROFILE                              #
@@ -266,4 +273,10 @@ service:
     backoff:
       # The fixed time interval, in milliseconds, between each such attempt.
       delay: ${service_retry_backoff_delay:1000}
-  
+
+taskExecutor:
+  index:
+    threadPoolName: ${taskExecutor_index_threadPoolName:IndexThread-}
+    corePoolSize: ${taskExecutor_index_corePoolSize:2}
+    maxPoolSize: ${taskExecutor_index_maxPoolSize:2}
+    queueCapacity: ${taskExecutor_index_queueCapacity:3}

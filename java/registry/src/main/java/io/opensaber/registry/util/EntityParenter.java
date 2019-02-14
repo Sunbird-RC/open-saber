@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component("entityParenter")
@@ -199,19 +200,18 @@ public class EntityParenter {
                 logger.error("ensureIndex error: {}", e);
             }
         });
-
-        
  
     }
     
     /**
-     * Ensures index for a vertex exists Unique index and non-unique index is
+     * Ensures index for a vertex exists Unique index and non-unique index is (executes in a async way when it is called from other bean)
      * supported
      * 
      * @param dbProvider
      * @param parentVertex
      * @param definition
      */
+    @Async("taskExecutor")
     public  void ensureIndexExists(DatabaseProvider dbProvider, Vertex parentVertex, Definition definition, String shardId) {
         try{
             if(!indexHelper.isIndexPresent(definition, shardId)){
@@ -229,53 +229,53 @@ public class EntityParenter {
      * @param parentVertex
      * @param definition
      */
-    private void asyncAddIndex(DatabaseProvider dbProvider, String shardId, Vertex parentVertex, Definition definition) {
-        new Thread(() -> {
-            if(parentVertex != null && definition != null){
-                boolean status = false;
-                try {
-                    OSGraph osGraph = dbProvider.getOSGraph();
-                    Graph graph = osGraph.getGraphStore();
-                    Transaction tx = dbProvider.startTransaction(graph);           
-                    
-                        
-                        List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
-                        if(!indexFields.contains(uuidPropertyName)){
-                            // adds default field (uuid)
-                            indexFields.add(uuidPropertyName);
-                        }
-                        List<String> cIndexFields = IndexHelper.getCompositeIndexFields(indexFields);
-                        List<String> sIndexFields = IndexHelper.getSingleIndexFields(indexFields);
-                        List<String> newSIndexFields = indexHelper.getNewFields(parentVertex, sIndexFields, false);
-                       
-                        List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();               
-                        List<String> newUniqueIndexFields = indexHelper.getNewFields(parentVertex, indexUniqueFields, true);
-                        
-                        Indexer indexer = new Indexer(dbProvider);
-                        indexer.setSingleIndexFields(newSIndexFields);
-                        indexer.setCompositeIndexFields(cIndexFields);
 
-                        indexer.setUniqueIndexFields(newUniqueIndexFields);
-                        status = indexer.createIndex(graph, definition.getTitle(), parentVertex);
-                        logger.info("CREATE INDEX STATUS ====== " + status);
-                        if(status){
-                            indexHelper.updateParentIndexProperty(parentVertex, indexFields, indexUniqueFields);
-                        }
-                                  
-                    dbProvider.commitTransaction(graph, tx);
-                    indexHelper.updateDefinitionIndex(shardId, definition.getTitle(), status); 
+    public void asyncAddIndex(DatabaseProvider dbProvider, String shardId, Vertex parentVertex, Definition definition) {
+        logger.info("asyncAddIndex starts with params shardId: {},  definition: {}",
+                shardId, definition.toString());
+        if (parentVertex != null && definition != null) {
+            boolean status = false;
+            try {
+                OSGraph osGraph = dbProvider.getOSGraph();
+                Graph graph = osGraph.getGraphStore();
+                Transaction tx = dbProvider.startTransaction(graph);
 
-                    
-                } catch (Exception e) {
-                    status = false;
-                    logger.error(e.getMessage());
-                    logger.error("Failed Transaction creating index {}", definition.getTitle());
+
+                List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
+                if (!indexFields.contains(uuidPropertyName)) {
+                    // adds default field (uuid)
+                    indexFields.add(uuidPropertyName);
                 }
-            } else {
-                logger.info("No definition found for create index");
-            } 
-            
-        }).start();           
+                List<String> cIndexFields = IndexHelper.getCompositeIndexFields(indexFields);
+                List<String> sIndexFields = IndexHelper.getSingleIndexFields(indexFields);
+                List<String> newSIndexFields = indexHelper.getNewFields(parentVertex, sIndexFields, false);
+
+                List<String> indexUniqueFields = definition.getOsSchemaConfiguration().getUniqueIndexFields();
+                List<String> newUniqueIndexFields = indexHelper.getNewFields(parentVertex, indexUniqueFields, true);
+
+                Indexer indexer = new Indexer(dbProvider);
+                indexer.setSingleIndexFields(newSIndexFields);
+                indexer.setCompositeIndexFields(cIndexFields);
+
+                indexer.setUniqueIndexFields(newUniqueIndexFields);
+                status = indexer.createIndex(graph, definition.getTitle(), parentVertex);
+                logger.info("CREATE INDEX STATUS ====== " + status);
+                if (status) {
+                    indexHelper.updateParentIndexProperty(parentVertex, indexFields, indexUniqueFields);
+                }
+
+                dbProvider.commitTransaction(graph, tx);
+                indexHelper.updateDefinitionIndex(shardId, definition.getTitle(), status);
+
+            } catch (Exception e) {
+                status = false;
+                logger.error(e.getMessage());
+                logger.error("Failed Transaction creating index {}", definition.getTitle());
+            }
+        } else {
+            logger.info("No definition found for create index");
+        }
+        logger.info("asyncAddIndex ends");
     }
 
 }
