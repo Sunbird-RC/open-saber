@@ -1,20 +1,20 @@
 package io.opensaber.registry.dao;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.*;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.opensaber.pojos.Filter;
+import io.opensaber.pojos.FilterOperators;
 import io.opensaber.pojos.SearchQuery;
-import io.opensaber.registry.middleware.util.*;
-import io.opensaber.registry.util.*;
+import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.util.ReadConfigurator;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.*;
 
 public class SearchDaoImpl implements SearchDao {
     private IRegistryDao registryDao;
@@ -35,13 +35,13 @@ public class SearchDaoImpl implements SearchDao {
 			for (Filter filter : filterList) {
 				String property = filter.getProperty();
 				String genericValue = filter.getValue();
-				String operator = filter.getOperator();
+				FilterOperators operator = filter.getOperator();
 				String path = filter.getPath();
 
 				//List valueList = getValueList(value);
 
 				// Defaulting to "equals" operation
-				if (operator == null || operator == "=") {
+				if (operator == null || operator == FilterOperators.eq) {
 					resultGraphTraversal = resultGraphTraversal.has(property,
 							P.eq(genericValue));
 				}
