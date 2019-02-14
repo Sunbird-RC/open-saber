@@ -69,4 +69,13 @@ public class Definition {
         return osSchemaConfiguration;
     }
 
+    @Override
+    public String toString() {
+        return "Definition{" +
+                "content='" + content + '\'' +
+                ", title='" + title + '\'' +
+                ", osSchemaConfiguration=" + osSchemaConfiguration +
+                '}';
+    }
+
 }
