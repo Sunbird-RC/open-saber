@@ -199,17 +199,17 @@ public class EntityParenter {
     /**
      * Ensures index for a vertex exists Unique index and non-unique index is (executes in a async way when it is called from other bean)
      * supported
-     * 
+     *
      * @param dbProvider
      * @param parentVertex
      * @param definition
      */
     @Async("taskExecutor")
-    public  void ensureIndexExists(DatabaseProvider dbProvider, Vertex parentVertex, Definition definition, String shardId) {
-        try{
-            if(!indexHelper.isIndexPresent(definition, shardId)){
-                logger.info("Adding index to shard: {} for definition: {}", shardId, definition.getTitle() );
-                asyncAddIndex(dbProvider,shardId, parentVertex, definition);
+    public void ensureIndexExists(DatabaseProvider dbProvider, Vertex parentVertex, Definition definition, String shardId) {
+        try {
+            if (!indexHelper.isIndexPresent(definition, shardId)) {
+                logger.info("Adding index to shard: {} for definition: {}", shardId, definition.getTitle());
+                asyncAddIndex(dbProvider, shardId, parentVertex, definition);
             }
         } catch (Exception e) {
             logger.error("ensureIndexExists: Can't create index on table {} for shardId: {} ", definition.getTitle(),
@@ -219,7 +219,7 @@ public class EntityParenter {
 
     /**
      * Adds indices to the given label(vertex/table) asynchronously
-     * 
+     *
      * @param dbProvider
      * @param parentVertex
      * @param definition
@@ -227,8 +227,7 @@ public class EntityParenter {
 
     private void asyncAddIndex(DatabaseProvider dbProvider, String shardId, Vertex parentVertex,
             Definition definition) {
-        logger.info("asyncAddIndex starts with params shardId: {},  definition: {}",
-                shardId, definition.toString());
+        logger.debug("asyncAddIndex starts");
         if (parentVertex != null && definition != null) {
             List<String> indexFields = definition.getOsSchemaConfiguration().getIndexFields();
             if (!indexFields.contains(uuidPropertyName)) {
@@ -264,12 +263,12 @@ public class EntityParenter {
         } else {
             logger.info("No definition found for create index");
         }
-        logger.info("asyncAddIndex ends");
+        logger.debug("asyncAddIndex ends");
     }
 
     /**
      * Updates the group/parent vertex index properties.
-     * 
+     *
      * @param dbProvider
      * @param indexFields
      * @param indexUniqueFields
@@ -283,7 +282,7 @@ public class EntityParenter {
 
                 VertexWriter vertexWriter = new VertexWriter(graph, dbProvider, uuidPropertyName);
                 Vertex v = graph.vertices(parentVertex.id()).next();
-                
+
                 vertexWriter.updateParentIndexProperty(v, Constants.INDEX_FIELDS, indexFields);
                 vertexWriter.updateParentIndexProperty(v, Constants.UNIQUE_INDEX_FIELDS, indexUniqueFields);
                 dbProvider.commitTransaction(graph, tx);
