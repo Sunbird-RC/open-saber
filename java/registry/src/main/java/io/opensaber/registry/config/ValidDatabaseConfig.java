@@ -1,4 +1,4 @@
-package io.opensaber.registry.config.validation;
+package io.opensaber.registry.config;
 
 import javax.validation.Constraint;
 import javax.validation.Payload;

@@ -1,4 +1,4 @@
-package io.opensaber.registry.model;
+package io.opensaber.pojos;
 
 /**
  * Represents what registry puts up its signature stamp.

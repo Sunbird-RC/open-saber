@@ -2,7 +2,7 @@ package io.opensaber.registry.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.pojos.Constants;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

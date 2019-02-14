@@ -1,16 +1,14 @@
 package io.opensaber.registry.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import io.opensaber.pojos.APIMessage;
 import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.pojos.Response;
 import io.opensaber.pojos.ResponseParams;
-import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.pojos.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
-import io.opensaber.registry.model.DBConnectionInfoMgr;
+import io.opensaber.registry.config.DBConnectionInfoMgr;
 import io.opensaber.registry.service.RegistryAuditService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
@@ -38,7 +36,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 

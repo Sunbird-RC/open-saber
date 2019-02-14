@@ -1,6 +1,6 @@
-package io.opensaber.registry.model;
+package io.opensaber.registry.config;
 
-import io.opensaber.registry.config.validation.ValidDatabaseConfig;
+import io.opensaber.pojos.DBConnectionInfo;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;

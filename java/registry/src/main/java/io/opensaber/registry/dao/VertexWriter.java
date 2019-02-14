@@ -2,7 +2,7 @@ package io.opensaber.registry.dao;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.pojos.Constants;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.util.ArrayHelper;
 import io.opensaber.registry.util.RefLabelHelper;

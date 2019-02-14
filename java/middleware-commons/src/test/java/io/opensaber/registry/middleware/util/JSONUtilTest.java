@@ -3,6 +3,7 @@ package io.opensaber.registry.middleware.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.opensaber.pojos.Constants;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;

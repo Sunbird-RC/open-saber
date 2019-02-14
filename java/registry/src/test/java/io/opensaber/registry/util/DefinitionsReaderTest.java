@@ -1,6 +1,6 @@
 package io.opensaber.registry.util;
 
-import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.pojos.Constants;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

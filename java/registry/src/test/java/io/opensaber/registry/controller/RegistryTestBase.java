@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.registry.authorization.AuthorizationToken;
 import io.opensaber.registry.authorization.pojos.AuthInfo;
-import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.pojos.Constants;
 import io.opensaber.registry.sink.DBProviderFactory;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.tests.utility.TestHelper;

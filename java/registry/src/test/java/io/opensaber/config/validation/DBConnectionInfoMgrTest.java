@@ -1,7 +1,7 @@
 package io.opensaber.config.validation;
 
-import io.opensaber.registry.model.DBConnectionInfo;
-import io.opensaber.registry.model.DBConnectionInfoMgr;
+import io.opensaber.pojos.DBConnectionInfo;
+import io.opensaber.registry.config.DBConnectionInfoMgr;
 import org.junit.Before;
 import org.junit.Test;
 

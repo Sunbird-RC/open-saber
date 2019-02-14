@@ -1,7 +1,7 @@
 package io.opensaber.registry.sink;
 
-import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.model.DBConnectionInfo;
+import io.opensaber.pojos.Constants;
+import io.opensaber.pojos.DBConnectionInfo;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.structure.Graph;

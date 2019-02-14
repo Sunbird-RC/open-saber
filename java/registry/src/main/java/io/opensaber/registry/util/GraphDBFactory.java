@@ -1,6 +1,6 @@
 package io.opensaber.registry.util;
 
-import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.pojos.Constants;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;

@@ -3,7 +3,7 @@ package io.opensaber.registry.service.impl;
 import com.google.gson.Gson;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.exception.EncryptionException;
-import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.pojos.Constants;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

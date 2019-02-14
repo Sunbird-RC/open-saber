@@ -1,6 +1,6 @@
 package io.opensaber.registry.util;
 
-import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.pojos.Constants;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;

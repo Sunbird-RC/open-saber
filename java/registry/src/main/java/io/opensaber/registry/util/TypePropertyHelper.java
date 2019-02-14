@@ -1,6 +1,6 @@
 package io.opensaber.registry.util;
 
-import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.pojos.Constants;
 
 /**
  * TypePropertyHelper will hold functions related to the internal, LD-centric

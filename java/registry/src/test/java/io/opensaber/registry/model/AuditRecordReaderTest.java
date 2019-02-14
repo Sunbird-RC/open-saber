@@ -3,7 +3,7 @@ package io.opensaber.registry.model;
 import io.opensaber.registry.authorization.pojos.AuthInfo;
 import io.opensaber.registry.config.GenericConfiguration;
 import io.opensaber.registry.exception.audit.LabelCannotBeNullException;
-import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.pojos.Constants;
 import io.opensaber.registry.sink.DatabaseProvider;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;

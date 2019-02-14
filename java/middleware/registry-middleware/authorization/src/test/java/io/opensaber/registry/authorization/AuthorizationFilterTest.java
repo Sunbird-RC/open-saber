@@ -5,7 +5,7 @@ import com.google.gson.reflect.TypeToken;
 import io.opensaber.pojos.APIMessage;
 import io.opensaber.registry.authorization.pojos.AuthInfo;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
-import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.pojos.Constants;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;

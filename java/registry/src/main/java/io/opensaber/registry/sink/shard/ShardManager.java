@@ -1,8 +1,8 @@
 package io.opensaber.registry.sink.shard;
 
 import io.opensaber.registry.exception.CustomException;
-import io.opensaber.registry.model.DBConnectionInfo;
-import io.opensaber.registry.model.DBConnectionInfoMgr;
+import io.opensaber.pojos.DBConnectionInfo;
+import io.opensaber.registry.config.DBConnectionInfoMgr;
 import io.opensaber.registry.sink.DBProviderFactory;
 import io.opensaber.registry.sink.DatabaseProvider;
 import org.slf4j.Logger;

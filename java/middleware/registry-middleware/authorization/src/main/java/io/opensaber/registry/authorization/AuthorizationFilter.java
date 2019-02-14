@@ -8,7 +8,7 @@ import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.authorization.pojos.AuthInfo;
 import io.opensaber.registry.middleware.Middleware;
 import io.opensaber.registry.middleware.MiddlewareHaltException;
-import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.pojos.Constants;
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

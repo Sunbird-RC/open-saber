@@ -1,7 +1,7 @@
 package io.opensaber.registry.sink.shard;
 
-import io.opensaber.registry.model.DBConnectionInfo;
-import io.opensaber.registry.model.DBConnectionInfoMgr;
+import io.opensaber.pojos.DBConnectionInfo;
+import io.opensaber.registry.config.DBConnectionInfoMgr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

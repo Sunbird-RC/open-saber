@@ -1,7 +1,6 @@
-package io.opensaber.registry.config.validation;
+package io.opensaber.registry.config;
 
-import io.opensaber.registry.model.DBConnectionInfo;
-import io.opensaber.registry.model.DBConnectionInfoMgr;
+import io.opensaber.pojos.DBConnectionInfo;
 import org.springframework.stereotype.Component;
 
 import javax.validation.ConstraintValidator;

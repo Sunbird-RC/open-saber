@@ -1,7 +1,7 @@
 package io.opensaber.registry.controller;
 
 import io.opensaber.registry.exception.CustomException;
-import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.pojos.Constants;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

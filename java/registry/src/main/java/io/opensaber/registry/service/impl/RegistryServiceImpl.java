@@ -10,7 +10,7 @@ import io.opensaber.registry.dao.IRegistryDao;
 import io.opensaber.registry.dao.RegistryDaoImpl;
 import io.opensaber.registry.dao.VertexReader;
 import io.opensaber.registry.dao.VertexWriter;
-import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.pojos.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.service.EncryptionHelper;
 import io.opensaber.registry.service.EncryptionService;

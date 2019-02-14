@@ -1,4 +1,4 @@
-package io.opensaber.registry.middleware.util;
+package io.opensaber.pojos;
 
 public class Constants {
 

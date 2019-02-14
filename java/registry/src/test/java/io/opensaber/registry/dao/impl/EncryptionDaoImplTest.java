@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import io.opensaber.registry.config.GenericConfiguration;
 import io.opensaber.registry.controller.RegistryTestBase;
 import io.opensaber.registry.dao.IRegistryDao;
-import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.pojos.Constants;
 import io.opensaber.registry.model.AuditRecordReader;
 import io.opensaber.registry.service.impl.EncryptionServiceImpl;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;

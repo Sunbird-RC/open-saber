@@ -1,7 +1,7 @@
 package io.opensaber.registry.kernel.extension;
 
 import io.opensaber.registry.kernel.util.LogGraphEvent;
-import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.pojos.Constants;
 import org.apache.commons.lang3.StringUtils;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;

@@ -6,7 +6,7 @@ import io.opensaber.registry.config.GenericConfiguration;
 import io.opensaber.registry.controller.RegistryTestBase;
 import io.opensaber.registry.dao.IRegistryDao;
 import io.opensaber.registry.dao.SearchDao;
-import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.pojos.Constants;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SearchService;
 import org.junit.Before;

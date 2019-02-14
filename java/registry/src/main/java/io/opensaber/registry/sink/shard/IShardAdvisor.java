@@ -1,6 +1,6 @@
 package io.opensaber.registry.sink.shard;
 
-import io.opensaber.registry.model.DBConnectionInfo;
+import io.opensaber.pojos.DBConnectionInfo;
 
 /**
  * This interface must be implemented by all shard advisors.

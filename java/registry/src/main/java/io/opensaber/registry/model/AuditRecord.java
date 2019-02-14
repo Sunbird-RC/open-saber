@@ -3,7 +3,7 @@ package io.opensaber.registry.model;
 import com.google.gson.Gson;
 import io.opensaber.registry.authorization.pojos.AuthInfo;
 import io.opensaber.registry.exception.AuditFailedException;
-import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.pojos.Constants;
 import io.opensaber.registry.sink.DatabaseProvider;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
