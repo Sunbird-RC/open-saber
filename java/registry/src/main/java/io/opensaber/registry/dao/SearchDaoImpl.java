@@ -59,8 +59,7 @@ public class SearchDaoImpl implements SearchDao {
                     break;
                 case between:
                     List<Object> objects = (List<Object>) genericValue;
-                    resultGraphTraversal = resultGraphTraversal.has(property,
-                            P.between(objects.get(0), objects.get(objects.size() - 1)));
+                    resultGraphTraversal = resultGraphTraversal.has(property, P.between(objects.get(0), objects.get(objects.size() - 1)));
                     break;
                 default:
                     resultGraphTraversal = resultGraphTraversal.has(property, P.eq(genericValue));
