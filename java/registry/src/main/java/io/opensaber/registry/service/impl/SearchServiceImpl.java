@@ -10,6 +10,7 @@ import io.opensaber.pojos.SearchQuery;
 import io.opensaber.registry.dao.IRegistryDao;
 import io.opensaber.registry.dao.RegistryDaoImpl;
 import io.opensaber.registry.dao.SearchDaoImpl;
+import io.opensaber.registry.dao.ValueType;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.model.DBConnectionInfo;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
@@ -83,7 +84,7 @@ public class SearchServiceImpl implements SearchService {
 				Filter filter = new Filter(path);
 				filter.setProperty(entry.getKey());
 				filter.setOperator(FilterOperators.eq);
-				filter.setValue(entryVal.asText());
+				filter.setValue(ValueType.getValue(entryVal));
 				filterList.add(filter);
 			}
 		}

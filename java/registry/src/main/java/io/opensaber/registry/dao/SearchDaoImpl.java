@@ -34,7 +34,7 @@ public class SearchDaoImpl implements SearchDao {
 		if (filterList != null) {
 			for (Filter filter : filterList) {
 				String property = filter.getProperty();
-				String genericValue = filter.getValue();
+				Object genericValue = filter.getValue();
 				FilterOperators operator = filter.getOperator();
 				String path = filter.getPath();
 

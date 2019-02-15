@@ -11,7 +11,7 @@ public class Filter {
 	private FilterOperators operator;
 
 	// The value that needs to be searched
-	private String value;
+	private Object value;
 
 	public Filter(String path) {
 		this.path = path;
@@ -33,11 +33,11 @@ public class Filter {
 		return operator;
 	}*/
 
-	public String getValue() {
+	public Object getValue() {
 		return value;
 	}
 
-	public void setValue(String value) { this.value = value; }
+	public void setValue(Object object) { this.value = object; }
 
 	public String getPath() {
 		return path;
