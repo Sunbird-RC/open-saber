@@ -80,22 +80,18 @@ public class SearchServiceImpl implements SearchService {
             JsonNode entryVal = entry.getValue();
             if (entryVal.isObject() && (entryVal.fields().hasNext())) {
                 Map.Entry<String, JsonNode> json = entryVal.fields().next();
+                String operator = json.getKey();
+                Filter filter = new Filter(path);
+                String property = entry.getKey();
+                filter.setProperty(property);
+                filter.setOperator(FilterOperator.valueOf(operator));
+
                 if (json.getValue().isArray()) {
                     List<Object> ol = getRange(json);
-                    String operator = json.getKey();
-                    Filter filter = new Filter(path);
-                    String property = entry.getKey();
-                    filter.setProperty(property);
                     filter.setValue(ol);
-                    filter.setOperator(FilterOperator.valueOf(operator));
                     filterList.add(filter);
                 } else if (json.getValue().isValueNode()) {
-                    String operator = json.getKey();
-                    Filter filter = new Filter(path);
-                    String property = entry.getKey();
-                    filter.setProperty(property);
                     filter.setValue(ValueType.getValue(json.getValue()));
-                    filter.setOperator(FilterOperator.valueOf(operator));
                     filterList.add(filter);
 
                 } else if (json.getValue().isObject()) {

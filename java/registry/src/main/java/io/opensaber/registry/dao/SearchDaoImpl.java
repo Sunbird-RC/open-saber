@@ -16,7 +16,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-
 public class SearchDaoImpl implements SearchDao {
     private IRegistryDao registryDao;
 
@@ -24,23 +23,22 @@ public class SearchDaoImpl implements SearchDao {
         registryDao = registryDaoImpl;
     }
 
-    public JsonNode search(Graph graphFromStore, SearchQuery searchQuery) {
+	public JsonNode search(Graph graphFromStore, SearchQuery searchQuery) {
 
-        GraphTraversalSource dbGraphTraversalSource = graphFromStore.traversal().clone();
-        List<Filter> filterList = searchQuery.getFilters();
-        GraphTraversal<Vertex, Vertex> resultGraphTraversal = dbGraphTraversalSource.clone().V()
-                .hasLabel(searchQuery.getRootLabel());
+		GraphTraversalSource dbGraphTraversalSource = graphFromStore.traversal().clone();
+		List<Filter> filterList = searchQuery.getFilters();
+		GraphTraversal<Vertex, Vertex> resultGraphTraversal = dbGraphTraversalSource.clone().V().hasLabel(searchQuery.getRootLabel());
 
-        List<P> predicates = new ArrayList<>();
-        // Ensure the root label is correct
-        if (filterList != null) {
-            for (Filter filter : filterList) {
-                String property = filter.getProperty();
-                Object genericValue = filter.getValue();
-                FilterOperator operator = filter.getOperator();
-                String path = filter.getPath();
+		List<P> predicates = new ArrayList<>();
+		// Ensure the root label is correct
+		if (filterList != null) {
+			for (Filter filter : filterList) {
+				String property = filter.getProperty();
+				Object genericValue = filter.getValue();
+				FilterOperator operator = filter.getOperator();
+				String path = filter.getPath();
 
-                // List valueList = getValueList(value);
+				//List valueList = getValueList(value);
 
                 switch (operator) {
                 case eq:
@@ -67,16 +65,16 @@ public class SearchDaoImpl implements SearchDao {
                     break;
                 }
 
-                if (path != null) {
-                    if (resultGraphTraversal.asAdmin().clone().hasNext()) {
-                        resultGraphTraversal = resultGraphTraversal.asAdmin().clone().outE(path).outV();
-                    }
-                }
-            }
-        }
+				if (path != null) {
+					if (resultGraphTraversal.asAdmin().clone().hasNext()) {
+						resultGraphTraversal = resultGraphTraversal.asAdmin().clone().outE(path).outV();
+					}
+				}
+			}
+		}
 
-        return getResult(graphFromStore, resultGraphTraversal);
-    }
+		return getResult(graphFromStore, resultGraphTraversal);
+	}
 
 	private void updateValueList(Object value, List valueList) {
 		valueList.add(value);
