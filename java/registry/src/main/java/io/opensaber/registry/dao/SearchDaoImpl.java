@@ -23,24 +23,25 @@ public class SearchDaoImpl implements SearchDao {
         registryDao = registryDaoImpl;
     }
 
-	public JsonNode search(Graph graphFromStore, SearchQuery searchQuery) {
+    public JsonNode search(Graph graphFromStore, SearchQuery searchQuery) {
 
-		GraphTraversalSource dbGraphTraversalSource = graphFromStore.traversal().clone();
-		List<Filter> filterList = searchQuery.getFilters();
-		GraphTraversal<Vertex, Vertex> resultGraphTraversal = dbGraphTraversalSource.clone().V().hasLabel(searchQuery.getRootLabel());
+        GraphTraversalSource dbGraphTraversalSource = graphFromStore.traversal().clone();
+        List<Filter> filterList = searchQuery.getFilters();
+        GraphTraversal<Vertex, Vertex> resultGraphTraversal = dbGraphTraversalSource.clone().V()
+                .hasLabel(searchQuery.getRootLabel());
 
-		List<P> predicates = new ArrayList<>();
-		// Ensure the root label is correct
-		if (filterList != null) {
-			for (Filter filter : filterList) {
-				String property = filter.getProperty();
-				Object genericValue = filter.getValue();
-				FilterOperator operator = filter.getOperator();
-				String path = filter.getPath();
+        List<P> predicates = new ArrayList<>();
+        // Ensure the root label is correct
+        if (filterList != null) {
+            for (Filter filter : filterList) {
+                String property = filter.getProperty();
+                Object genericValue = filter.getValue();
+                FilterOperator operator = filter.getOperator();
+                String path = filter.getPath();
 
-				//List valueList = getValueList(value);
+                // List valueList = getValueList(value);
 
-				switch (operator) {
+                switch (operator) {
                 case eq:
                     resultGraphTraversal = resultGraphTraversal.has(property, P.eq(genericValue));
                     break;
@@ -56,21 +57,26 @@ public class SearchDaoImpl implements SearchDao {
                 case lte:
                     resultGraphTraversal = resultGraphTraversal.has(property, P.gte(genericValue));
                     break;
+                case between:
+                    List<Object> objects = (List<Object>) genericValue;
+                    resultGraphTraversal = resultGraphTraversal.has(property,
+                            P.between(objects.get(0), objects.get(objects.size() - 1)));
+                    break;
                 default:
                     resultGraphTraversal = resultGraphTraversal.has(property, P.eq(genericValue));
                     break;
                 }
-								
-				if (path != null) {
-					if (resultGraphTraversal.asAdmin().clone().hasNext()) {
-						resultGraphTraversal = resultGraphTraversal.asAdmin().clone().outE(path).outV();
-					}
-				}
-			}
-		}
 
-		return getResult(graphFromStore, resultGraphTraversal);
-	}
+                if (path != null) {
+                    if (resultGraphTraversal.asAdmin().clone().hasNext()) {
+                        resultGraphTraversal = resultGraphTraversal.asAdmin().clone().outE(path).outV();
+                    }
+                }
+            }
+        }
+
+        return getResult(graphFromStore, resultGraphTraversal);
+    }
 
 	private void updateValueList(Object value, List valueList) {
 		valueList.add(value);

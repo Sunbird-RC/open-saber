@@ -80,7 +80,16 @@ public class SearchServiceImpl implements SearchService {
             JsonNode entryVal = entry.getValue();
             if (entryVal.isObject() && (entryVal.fields().hasNext())) {
                 Map.Entry<String, JsonNode> json = entryVal.fields().next();
-                if (json.getValue().isValueNode()) {
+                if (json.getValue().isArray()) {
+                    List<Object> ol = getRange(json);
+                    String operator = json.getKey();
+                    Filter filter = new Filter(path);
+                    String property = entry.getKey();
+                    filter.setProperty(property);
+                    filter.setValue(ol);
+                    filter.setOperator(FilterOperator.valueOf(operator));
+                    filterList.add(filter);
+                } else if (json.getValue().isValueNode()) {
                     String operator = json.getKey();
                     Filter filter = new Filter(path);
                     String property = entry.getKey();
@@ -95,6 +104,17 @@ public class SearchServiceImpl implements SearchService {
 
             }
         }
+    }
+
+    private List<Object> getRange(Map.Entry<String, JsonNode> entry) {
+        List<Object> rangeValues = new ArrayList<>();
+        JsonNode array = entry.getValue();
+        for (int i = 0; i < array.size(); i++) {
+            JsonNode entryVal = entry.getValue().get(i);
+            if (entryVal.isValueNode())
+                rangeValues.add(ValueType.getValue(entryVal));
+        }
+        return rangeValues;
     }
 
 	@Override
