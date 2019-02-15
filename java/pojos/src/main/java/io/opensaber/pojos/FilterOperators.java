@@ -13,4 +13,8 @@ public enum FilterOperators {
     public String getName() {
         return name;
     }
+    
+    public enum FilterOperator{
+        eq, lt, gt, gte, lte, between
+    }
 }

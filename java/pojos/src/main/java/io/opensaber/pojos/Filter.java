@@ -1,5 +1,7 @@
 package io.opensaber.pojos;
 
+import io.opensaber.pojos.FilterOperators.FilterOperator;
+
 public class Filter {
 	// Denotes the absolute path of the subject
 	private String path;
@@ -8,7 +10,7 @@ public class Filter {
 	private String property;
 
 	// The operator
-	private FilterOperators operator;
+	private FilterOperator operator;
 
 	// The value that needs to be searched
 	private Object value;
@@ -47,7 +49,7 @@ public class Filter {
 		this.path = path;
 	}
 
-	public FilterOperators getOperator() { return this.operator;}
+	public FilterOperator getOperator() { return this.operator;}
 
-	public void setOperator(FilterOperators operator) { this.operator = operator; }
+	public void setOperator(FilterOperator filterO) { this.operator = filterO; }
 }

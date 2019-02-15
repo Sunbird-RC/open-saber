@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.opensaber.pojos.Filter;
-import io.opensaber.pojos.FilterOperators;
+import io.opensaber.pojos.FilterOperators.FilterOperator;
 import io.opensaber.pojos.SearchQuery;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.util.ReadConfigurator;
@@ -35,16 +35,32 @@ public class SearchDaoImpl implements SearchDao {
 			for (Filter filter : filterList) {
 				String property = filter.getProperty();
 				Object genericValue = filter.getValue();
-				FilterOperators operator = filter.getOperator();
+				FilterOperator operator = filter.getOperator();
 				String path = filter.getPath();
 
 				//List valueList = getValueList(value);
 
-				// Defaulting to "equals" operation
-				if (operator == null || operator == FilterOperators.eq) {
-					resultGraphTraversal = resultGraphTraversal.has(property,
-							P.eq(genericValue));
-				}
+				switch (operator) {
+                case eq:
+                    resultGraphTraversal = resultGraphTraversal.has(property, P.eq(genericValue));
+                    break;
+                case gt:
+                    resultGraphTraversal = resultGraphTraversal.has(property, P.gt(genericValue));
+                    break;
+                case lt:
+                    resultGraphTraversal = resultGraphTraversal.has(property, P.lt(genericValue));
+                    break;
+                case gte:
+                    resultGraphTraversal = resultGraphTraversal.has(property, P.gte(genericValue));
+                    break;
+                case lte:
+                    resultGraphTraversal = resultGraphTraversal.has(property, P.gte(genericValue));
+                    break;
+                default:
+                    resultGraphTraversal = resultGraphTraversal.has(property, P.eq(genericValue));
+                    break;
+                }
+								
 				if (path != null) {
 					if (resultGraphTraversal.asAdmin().clone().hasNext()) {
 						resultGraphTraversal = resultGraphTraversal.asAdmin().clone().outE(path).outV();

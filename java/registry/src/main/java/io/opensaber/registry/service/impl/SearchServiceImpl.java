@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.Filter;
-import io.opensaber.pojos.FilterOperators;
+import io.opensaber.pojos.FilterOperators.FilterOperator;
 import io.opensaber.pojos.SearchQuery;
 import io.opensaber.registry.dao.IRegistryDao;
 import io.opensaber.registry.dao.RegistryDaoImpl;
@@ -72,23 +72,30 @@ public class SearchServiceImpl implements SearchService {
 	 * @param inputQueryNode
 	 * @return
 	 */
-	private void addToFilterList(String path, JsonNode inputQueryNode, List<Filter> filterList) {
-		Iterator<Map.Entry<String, JsonNode>> searchFields = inputQueryNode.fields();
-		// Iterate and get the fields.
-		while (searchFields.hasNext()) {
-			Map.Entry<String, JsonNode> entry = searchFields.next();
-			JsonNode entryVal = entry.getValue();
-			if (entryVal.isObject()) {
-				addToFilterList(entry.getKey(), entryVal, filterList);
-			} else if (entryVal.isValueNode()){
-				Filter filter = new Filter(path);
-				filter.setProperty(entry.getKey());
-				filter.setOperator(FilterOperators.eq);
-				filter.setValue(ValueType.getValue(entryVal));
-				filterList.add(filter);
-			}
-		}
-	}
+    private void addToFilterList(String path, JsonNode inputQueryNode, List<Filter> filterList) {
+        Iterator<Map.Entry<String, JsonNode>> searchFields = inputQueryNode.fields();
+        // Iterate and get the fields.
+        while (searchFields.hasNext()) {
+            Map.Entry<String, JsonNode> entry = searchFields.next();
+            JsonNode entryVal = entry.getValue();
+            if (entryVal.isObject() && (entryVal.fields().hasNext())) {
+                Map.Entry<String, JsonNode> json = entryVal.fields().next();
+                if (json.getValue().isValueNode()) {
+                    String operator = json.getKey();
+                    Filter filter = new Filter(path);
+                    String property = entry.getKey();
+                    filter.setProperty(property);
+                    filter.setValue(ValueType.getValue(json.getValue()));
+                    filter.setOperator(FilterOperator.valueOf(operator));
+                    filterList.add(filter);
+
+                } else if (json.getValue().isObject()) {
+                    addToFilterList(entry.getKey(), entryVal, filterList);
+                }
+
+            }
+        }
+    }
 
 	@Override
 	public JsonNode search(JsonNode inputQueryNode) {
