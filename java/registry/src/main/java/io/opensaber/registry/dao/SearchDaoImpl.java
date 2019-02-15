@@ -16,6 +16,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+
 public class SearchDaoImpl implements SearchDao {
     private IRegistryDao registryDao;
 
