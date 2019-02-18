@@ -11,6 +11,7 @@ import io.opensaber.registry.util.ReadConfigurator;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.TextP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -60,6 +61,24 @@ public class SearchDaoImpl implements SearchDao {
                     List<Object> objects = (List<Object>) genericValue;
                     resultGraphTraversal = resultGraphTraversal.has(property, P.between(objects.get(0), objects.get(objects.size() - 1)));
                     break;
+                case contains:
+                    resultGraphTraversal = resultGraphTraversal.has(property, TextP.containing(genericValue.toString()));
+                    break; 
+                case startsWith:
+                    resultGraphTraversal = resultGraphTraversal.has(property, TextP.startingWith(genericValue.toString()));
+                    break; 
+                case endsWith:
+                    resultGraphTraversal = resultGraphTraversal.has(property, TextP.endingWith(genericValue.toString()));
+                    break;
+                case notContains:
+                    resultGraphTraversal = resultGraphTraversal.has(property, TextP.notContaining(genericValue.toString()));
+                    break; 
+                case notStartsWith:
+                    resultGraphTraversal = resultGraphTraversal.has(property, TextP.notEndingWith(genericValue.toString()));
+                    break; 
+                case notEndsWith:
+                    resultGraphTraversal = resultGraphTraversal.has(property, TextP.notEndingWith(genericValue.toString()));
+                    break;    
                 default:
                     resultGraphTraversal = resultGraphTraversal.has(property, P.eq(genericValue));
                     break;
