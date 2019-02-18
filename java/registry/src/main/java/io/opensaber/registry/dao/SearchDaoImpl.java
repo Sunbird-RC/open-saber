@@ -45,6 +45,10 @@ public class SearchDaoImpl implements SearchDao {
                 case eq:
                     resultGraphTraversal = resultGraphTraversal.has(property, P.eq(genericValue));
                     break;
+                case or:
+                    List<Object> values = (List<Object>) genericValue;
+                    resultGraphTraversal = resultGraphTraversal.has(property, P.within(values));
+                    break;     
                 case gt:
                     resultGraphTraversal = resultGraphTraversal.has(property, P.gt(genericValue));
                     break;
@@ -78,7 +82,7 @@ public class SearchDaoImpl implements SearchDao {
                     break; 
                 case notEndsWith:
                     resultGraphTraversal = resultGraphTraversal.has(property, TextP.notEndingWith(genericValue.toString()));
-                    break;    
+                    break;      
                 default:
                     resultGraphTraversal = resultGraphTraversal.has(property, P.eq(genericValue));
                     break;

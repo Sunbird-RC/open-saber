@@ -15,8 +15,8 @@ public enum FilterOperators {
     }
     
     public enum FilterOperator{
-        eq, // for number or strings
-        lt, gt, gte, lte, between,  //for number values
-        contains, startsWith, endsWith, notContains, notStartsWith, notEndsWith // for Strings value
+        eq, or,                                                                    // for object
+        lt, gt, gte, lte, between,                                                 // for object
+        contains, startsWith, endsWith, notContains, notStartsWith, notEndsWith    // for Strings value
     }
 }
