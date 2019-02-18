@@ -1,7 +1,5 @@
 package io.opensaber.pojos;
 
-import io.opensaber.pojos.FilterOperators.FilterOperator;
-
 public class Filter {
 	// Denotes the absolute path of the subject
 	private String path;
@@ -31,10 +29,6 @@ public class Filter {
 		return property;
 	}
 
-	/*public String getOperator() {
-		return operator;
-	}*/
-
 	public Object getValue() {
 		return value;
 	}
@@ -51,5 +45,5 @@ public class Filter {
 
 	public FilterOperator getOperator() { return this.operator;}
 
-	public void setOperator(FilterOperator filterO) { this.operator = filterO; }
+	public void setOperator(FilterOperator filterOperator) { this.operator = filterOperator; }
 }

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.Filter;
-import io.opensaber.pojos.FilterOperators.FilterOperator;
+import io.opensaber.pojos.FilterOperator;
 import io.opensaber.pojos.SearchQuery;
 import io.opensaber.registry.dao.IRegistryDao;
 import io.opensaber.registry.dao.RegistryDaoImpl;
@@ -67,7 +67,7 @@ public class SearchServiceImpl implements SearchService {
             searchQuery.setLimit(rootNode.get("limit").asInt());
             searchQuery.setOffset(rootNode.get("offset").asInt());
         } catch (Exception e) {
-            logger.error("Populates SearchQuery : {}", e.getMessage());
+            logger.error("Populates SearchQuery for limit/offset: {}", e.getMessage());
         }
 
 		searchQuery.setFilters(filterList);
@@ -85,9 +85,6 @@ public class SearchServiceImpl implements SearchService {
         // Iterate and get the fields.
         while (searchFields.hasNext()) {
             Map.Entry<String, JsonNode> entry = searchFields.next();
-            // check entry key == limit || offset 
-            String limit = entry.getKey() == "limit" ?  entry.getKey() : "";
-            
             JsonNode entryVal = entry.getValue();
             if (entryVal.isObject() && (entryVal.fields().hasNext())) {
                 Map.Entry<String, JsonNode> json = entryVal.fields().next();
