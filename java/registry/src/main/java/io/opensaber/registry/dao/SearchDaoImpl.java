@@ -28,7 +28,8 @@ public class SearchDaoImpl implements SearchDao {
 
 		GraphTraversalSource dbGraphTraversalSource = graphFromStore.traversal().clone();
 		List<Filter> filterList = searchQuery.getFilters();
-		GraphTraversal<Vertex, Vertex> resultGraphTraversal = dbGraphTraversalSource.clone().V().hasLabel(searchQuery.getRootLabel());
+		GraphTraversal<Vertex, Vertex> resultGraphTraversal = dbGraphTraversalSource.clone().V().hasLabel(searchQuery.getRootLabel())
+		        .range(searchQuery.getOffset(), 100).limit(searchQuery.getLimit()); //range max value is kept to 100(equal to default limit)
 
 		List<P> predicates = new ArrayList<>();
 		// Ensure the root label is correct
@@ -45,10 +46,7 @@ public class SearchDaoImpl implements SearchDao {
                 case eq:
                     resultGraphTraversal = resultGraphTraversal.has(property, P.eq(genericValue));
                     break;
-                case or:
-                    List<Object> values = (List<Object>) genericValue;
-                    resultGraphTraversal = resultGraphTraversal.has(property, P.within(values));
-                    break;     
+                    
                 case gt:
                     resultGraphTraversal = resultGraphTraversal.has(property, P.gt(genericValue));
                     break;
@@ -59,7 +57,7 @@ public class SearchDaoImpl implements SearchDao {
                     resultGraphTraversal = resultGraphTraversal.has(property, P.gte(genericValue));
                     break;
                 case lte:
-                    resultGraphTraversal = resultGraphTraversal.has(property, P.gte(genericValue));
+                    resultGraphTraversal = resultGraphTraversal.has(property, P.lte(genericValue));
                     break;
                 case between:
                     List<Object> objects = (List<Object>) genericValue;

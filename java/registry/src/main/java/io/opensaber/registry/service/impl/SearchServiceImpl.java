@@ -58,9 +58,17 @@ public class SearchServiceImpl implements SearchService {
 
 		SearchQuery searchQuery = new SearchQuery(rootLabel);
 		List<Filter> filterList = new ArrayList<>();
+		JsonNode rootNode = inputQueryNode.get(rootLabel);
 		if (rootLabel != null && !rootLabel.isEmpty()) {
-			addToFilterList(null, inputQueryNode.get(rootLabel), filterList);
+			addToFilterList(null, rootNode, filterList);
 		}
+		//populates limit & offset
+		try {
+            searchQuery.setLimit(rootNode.get("limit").asInt());
+            searchQuery.setOffset(rootNode.get("offset").asInt());
+        } catch (Exception e) {
+            logger.error("Populates SearchQuery : {}", e.getMessage());
+        }
 
 		searchQuery.setFilters(filterList);
 		return searchQuery;
@@ -77,6 +85,9 @@ public class SearchServiceImpl implements SearchService {
         // Iterate and get the fields.
         while (searchFields.hasNext()) {
             Map.Entry<String, JsonNode> entry = searchFields.next();
+            // check entry key == limit || offset 
+            String limit = entry.getKey() == "limit" ?  entry.getKey() : "";
+            
             JsonNode entryVal = entry.getValue();
             if (entryVal.isObject() && (entryVal.fields().hasNext())) {
                 Map.Entry<String, JsonNode> json = entryVal.fields().next();
