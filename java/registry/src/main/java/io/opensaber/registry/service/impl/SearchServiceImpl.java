@@ -62,8 +62,8 @@ public class SearchServiceImpl implements SearchService {
 		if (rootLabel != null && !rootLabel.isEmpty()) {
 			addToFilterList(null, rootNode, filterList);
 		}
-		//populates limit & offset
-		try {
+        // populates limit & offset
+        try {
             searchQuery.setLimit(rootNode.get("limit").asInt());
             searchQuery.setOffset(rootNode.get("offset").asInt());
         } catch (Exception e) {

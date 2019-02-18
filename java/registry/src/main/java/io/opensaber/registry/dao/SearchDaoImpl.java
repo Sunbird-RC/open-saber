@@ -28,8 +28,9 @@ public class SearchDaoImpl implements SearchDao {
 
 		GraphTraversalSource dbGraphTraversalSource = graphFromStore.traversal().clone();
 		List<Filter> filterList = searchQuery.getFilters();
+		int offset = searchQuery.getOffset();
 		GraphTraversal<Vertex, Vertex> resultGraphTraversal = dbGraphTraversalSource.clone().V().hasLabel(searchQuery.getRootLabel())
-		        .range(searchQuery.getOffset(), 100).limit(searchQuery.getLimit()); //range max value is equal to default limit(100)
+		        .range(offset, offset + 100).limit(searchQuery.getLimit()); //range max value is equal to default limit(100)
 
 		// Ensure the root label is correct
 		if (filterList != null) {
@@ -42,7 +43,7 @@ public class SearchDaoImpl implements SearchDao {
                 switch (operator) {
                 case eq:
                     resultGraphTraversal = resultGraphTraversal.has(property, P.eq(genericValue));
-                    break;                   
+                    break;
                 case gt:
                     resultGraphTraversal = resultGraphTraversal.has(property, P.gt(genericValue));
                     break;
@@ -57,26 +58,33 @@ public class SearchDaoImpl implements SearchDao {
                     break;
                 case between:
                     List<Object> objects = (List<Object>) genericValue;
-                    resultGraphTraversal = resultGraphTraversal.has(property, P.between(objects.get(0), objects.get(objects.size() - 1)));
+                    resultGraphTraversal = resultGraphTraversal.has(property,
+                            P.between(objects.get(0), objects.get(objects.size() - 1)));
                     break;
                 case contains:
-                    resultGraphTraversal = resultGraphTraversal.has(property, TextP.containing(genericValue.toString()));
-                    break; 
+                    resultGraphTraversal = resultGraphTraversal.has(property,
+                            TextP.containing(genericValue.toString()));
+                    break;
                 case startsWith:
-                    resultGraphTraversal = resultGraphTraversal.has(property, TextP.startingWith(genericValue.toString()));
-                    break; 
+                    resultGraphTraversal = resultGraphTraversal.has(property,
+                            TextP.startingWith(genericValue.toString()));
+                    break;
                 case endsWith:
-                    resultGraphTraversal = resultGraphTraversal.has(property, TextP.endingWith(genericValue.toString()));
+                    resultGraphTraversal = resultGraphTraversal.has(property,
+                            TextP.endingWith(genericValue.toString()));
                     break;
                 case notContains:
-                    resultGraphTraversal = resultGraphTraversal.has(property, TextP.notContaining(genericValue.toString()));
-                    break; 
+                    resultGraphTraversal = resultGraphTraversal.has(property,
+                            TextP.notContaining(genericValue.toString()));
+                    break;
                 case notStartsWith:
-                    resultGraphTraversal = resultGraphTraversal.has(property, TextP.notEndingWith(genericValue.toString()));
-                    break; 
+                    resultGraphTraversal = resultGraphTraversal.has(property,
+                            TextP.notEndingWith(genericValue.toString()));
+                    break;
                 case notEndsWith:
-                    resultGraphTraversal = resultGraphTraversal.has(property, TextP.notEndingWith(genericValue.toString()));
-                    break;      
+                    resultGraphTraversal = resultGraphTraversal.has(property,
+                            TextP.notEndingWith(genericValue.toString()));
+                    break;
                 default:
                     resultGraphTraversal = resultGraphTraversal.has(property, P.eq(genericValue));
                     break;
