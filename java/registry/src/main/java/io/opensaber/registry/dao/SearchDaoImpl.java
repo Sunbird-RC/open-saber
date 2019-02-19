@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.opensaber.pojos.Filter;
-import io.opensaber.pojos.FilterOperators.FilterOperator;
+import io.opensaber.pojos.FilterOperators;
 import io.opensaber.pojos.SearchQuery;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.util.ReadConfigurator;
@@ -35,7 +35,7 @@ public class SearchDaoImpl implements SearchDao {
 			for (Filter filter : filterList) {
 				String property = filter.getProperty();
 				Object genericValue = filter.getValue();
-				FilterOperator operator = filter.getOperator();
+				FilterOperators operator = filter.getOperator();
 				String path = filter.getPath();
 
 				//List valueList = getValueList(value);

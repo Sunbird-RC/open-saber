@@ -1,8 +1,9 @@
 package io.opensaber.pojos;
 
 public enum FilterOperators {
-    gte("gte"), lte("lte"), contains("contains"), equals("eq"),
-    gt(">"), lt("<"), eq("=");
+    gte(">="), lte("<="), contains("contains"),
+    gt(">"), lt("<"), eq("="),
+    between("bet");
 
     private String name;
 
@@ -12,9 +13,5 @@ public enum FilterOperators {
 
     public String getName() {
         return name;
-    }
-    
-    public enum FilterOperator{
-        eq, lt, gt, gte, lte, between
     }
 }
