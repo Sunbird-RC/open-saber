@@ -78,51 +78,42 @@ public class SearchServiceImpl implements SearchService {
         // Iterate and get the fields.
         while (searchFields.hasNext()) {
             Map.Entry<String, JsonNode> entry = searchFields.next();
+            String property = entry.getKey();
             JsonNode entryVal = entry.getValue();
             if (entryVal.isObject() && (entryVal.fields().hasNext())) {
                 Map.Entry<String, JsonNode> entryValMap = entryVal.fields().next();
                 String operatorStr = entryValMap.getKey();
-                String property = entry.getKey();
-
-                if (entryValMap.getValue().isArray()) {
-                    List<Object> values = getRange(entryValMap.getValue());
-                    Filter filter = getFilter(property, operatorStr, values, path);
-                    filterList.add(filter);
-
-                } else if (entryValMap.getValue().isValueNode()) {
-                    Object value = ValueType.getValue(entryValMap.getValue());
-                    Filter filter = getFilter(property, operatorStr, value, path);
-                    filterList.add(filter);
-
-                } else if (entryValMap.getValue().isObject()) {
+                
+                if (entryValMap.getValue().isObject()) {
                     addToFilterList(entry.getKey(), entryVal, filterList);
+                } else {
+                    Object value = null;
+                    if (entryValMap.getValue().isArray()) {
+                        value = getRange(entryValMap.getValue());
+
+                    } else if (entryValMap.getValue().isValueNode()) {
+                        value = ValueType.getValue(entryValMap.getValue());
+                    }
+                    FilterOperators operator = FilterOperators.get(operatorStr);
+                    Filter filter = new Filter(property, operator, value);
+                    filter.setPath(path);
+                    filterList.add(filter);
                 }
-
             }
         }
     }
-
-    private Filter getFilter(String property, String operatorStr, Object value, String path){
-        FilterOperators operator = getOperator(operatorStr);
-        Filter filter = new Filter(property, operator, value);
-        filter.setPath(path);
-        return filter;
-
-    }
-    
-    private FilterOperators getOperator(String name) {
-        FilterOperators[] operators = FilterOperators.values();
-        FilterOperators operator = null;
-        for (FilterOperators op : operators) {
-            if (op.getName().equalsIgnoreCase(name) || op.name().equalsIgnoreCase(name)) {
-                operator = op;
-                break;
-            }
-        }
-        return operator;
-    }
-
+    /**
+     * Return 2 values always
+     * First value = min
+     * Second value = max
+     * 
+     * @param node
+     * @return
+     */
     private List<Object> getRange(JsonNode node) {
+        if(node.size() != 2)
+            throw new IllegalArgumentException("Range must have 2 values(min and max) only");
+            
         List<Object> rangeValues = new ArrayList<>();
         for (int i = 0; i < node.size(); i++) {
             JsonNode entryVal = node.get(i);
