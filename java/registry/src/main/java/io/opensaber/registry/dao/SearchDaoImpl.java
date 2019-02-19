@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.opensaber.pojos.Filter;
-import io.opensaber.pojos.FilterOperator;
+import io.opensaber.pojos.FilterOperators;
 import io.opensaber.pojos.SearchQuery;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.util.ReadConfigurator;
@@ -32,12 +32,14 @@ public class SearchDaoImpl implements SearchDao {
 		GraphTraversal<Vertex, Vertex> resultGraphTraversal = dbGraphTraversalSource.clone().V().hasLabel(searchQuery.getRootLabel())
 		        .range(offset, offset + searchQuery.getLimit()).limit(searchQuery.getLimit()); 
 
+		List<P> predicates = new ArrayList<>();
 		// Ensure the root label is correct
 		if (filterList != null) {
 			for (Filter filter : filterList) {
 				String property = filter.getProperty();
 				Object genericValue = filter.getValue();
-				FilterOperator operator = filter.getOperator();
+
+				FilterOperators operator = filter.getOperator();
 				String path = filter.getPath();
 
                 switch (operator) {
