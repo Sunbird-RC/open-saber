@@ -64,8 +64,8 @@ public class SearchServiceImpl implements SearchService {
 		}
         // populates limit & offset
         try {
-            searchQuery.setLimit(rootNode.get("limit").asInt());
-            searchQuery.setOffset(rootNode.get("offset").asInt());
+            searchQuery.setLimit(inputQueryNode.get("limit").asInt());
+            searchQuery.setOffset(inputQueryNode.get("offset").asInt());
         } catch (Exception e) {
             logger.error("Populates SearchQuery for limit/offset: {}", e.getMessage());
         }

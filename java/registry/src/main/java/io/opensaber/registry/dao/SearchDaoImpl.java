@@ -30,7 +30,7 @@ public class SearchDaoImpl implements SearchDao {
 		List<Filter> filterList = searchQuery.getFilters();
 		int offset = searchQuery.getOffset();
 		GraphTraversal<Vertex, Vertex> resultGraphTraversal = dbGraphTraversalSource.clone().V().hasLabel(searchQuery.getRootLabel())
-		        .range(offset, offset + 100).limit(searchQuery.getLimit()); //range max value is equal to default limit(100)
+		        .range(offset, offset + searchQuery.getLimit()).limit(searchQuery.getLimit()); 
 
 		// Ensure the root label is correct
 		if (filterList != null) {

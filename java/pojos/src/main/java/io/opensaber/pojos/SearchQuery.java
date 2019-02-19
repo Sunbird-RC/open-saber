@@ -6,8 +6,8 @@ public class SearchQuery {
 
 	private List<Filter> filters;
 
-	// default limit of 100 records at a time
-	private int limit = 100;
+	// default limit of 1000 records at a time
+	private int limit = 1000;
 	private int offset;
 	private List<String> fields;
 	private String rootLabel;
@@ -29,7 +29,9 @@ public class SearchQuery {
 	}
 
 	public void setLimit(int limit) {
-		this.limit = limit;
+	    if(limit <= 1000){
+	        this.limit = limit; 
+	    }
 	}
 
 	public int getOffset() {
