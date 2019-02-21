@@ -27,7 +27,7 @@ public class SearchQuery {
 	public int getLimit() {
 		return limit;
 	}
-
+	//limit value must not proceed the default(max) limit value  
 	public void setLimit(int limit) {
 	    if(limit <= this.limit){
 	        this.limit = limit; 
