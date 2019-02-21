@@ -5,15 +5,15 @@ import java.util.List;
 public class SearchQuery {
 
 	private List<Filter> filters;
-
-	// default limit of 1000 records at a time
-	private int limit = 1000;
+	private int limit;
 	private int offset;
 	private List<String> fields;
 	private String rootLabel;
 
-	public SearchQuery(String rootLabel) {
+	public SearchQuery(String rootLabel, int offset, int limit) {
 		this.rootLabel = rootLabel;
+		this.offset = offset;
+		this.limit = limit;
 	}
 
 	public List<Filter> getFilters() {
@@ -29,7 +29,7 @@ public class SearchQuery {
 	}
 
 	public void setLimit(int limit) {
-	    if(limit <= 1000){
+	    if(limit <= this.limit){
 	        this.limit = limit; 
 	    }
 	}

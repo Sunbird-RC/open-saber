@@ -52,11 +52,17 @@ public class SearchServiceImpl implements SearchService {
 
 	@Value("${database.uuidPropertyName}")
 	public String uuidPropertyName;
-
+	
+	@Value("${search.offset}")
+	private int offset;
+	
+	@Value("${search.limit}")
+	private int limit;
+	
 	private SearchQuery getSearchQuery(JsonNode inputQueryNode) {
 		String rootLabel = inputQueryNode.fieldNames().next();
 
-		SearchQuery searchQuery = new SearchQuery(rootLabel);
+		SearchQuery searchQuery = new SearchQuery(rootLabel, offset, limit);
 		List<Filter> filterList = new ArrayList<>();
 		JsonNode rootNode = inputQueryNode.get(rootLabel);
 		if (rootLabel != null && !rootLabel.isEmpty()) {

@@ -52,7 +52,7 @@ public class SearchDaoImplTest extends RegistryTestBase {
 
 	@Test
 	public void test_search_no_response() throws AuditFailedException, EncryptionException, RecordNotFoundException {
-		SearchQuery searchQuery = new SearchQuery("");
+		SearchQuery searchQuery = new SearchQuery("",0,0);
 		JsonNode result = searchDao.search(graph, searchQuery);
 		assertTrue(result.get("").asText().isEmpty());
 	}
