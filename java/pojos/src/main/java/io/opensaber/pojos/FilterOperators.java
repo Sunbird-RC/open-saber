@@ -2,7 +2,7 @@ package io.opensaber.pojos;
 
 public enum FilterOperators {
     gte(">="), lte("<="), contains("contains"),
-    gt(">"), lt("<"), eq("="),
+    gt(">"), lt("<"), eq("="), neq("!="),
     between("range"), or("or"),
     startsWith("startsWith"), endsWith("endsWith"), 
     notContains("notContains"), notStartsWith("notStartsWith"), notEndsWith("notEndsWith");
