@@ -59,15 +59,15 @@ public class SearchServiceImpl implements SearchService {
 	@Value("${search.limit}")
 	private int limit;
 	
-	private SearchQuery getSearchQuery(JsonNode inputQueryNode) {
-		String rootLabel = inputQueryNode.fieldNames().next();
+    private SearchQuery getSearchQuery(JsonNode inputQueryNode) {
+        String rootLabel = inputQueryNode.fieldNames().next();
 
-		SearchQuery searchQuery = new SearchQuery(rootLabel, offset, limit);
-		List<Filter> filterList = new ArrayList<>();
-		JsonNode rootNode = inputQueryNode.get(rootLabel);
-		if (rootLabel != null && !rootLabel.isEmpty()) {
-			addToFilterList(null, rootNode, filterList);
-		}
+        SearchQuery searchQuery = new SearchQuery(rootLabel, offset, limit);
+        List<Filter> filterList = new ArrayList<>();
+        JsonNode rootNode = inputQueryNode.get(rootLabel);
+        if (rootLabel != null && !rootLabel.isEmpty()) {
+            addToFilterList(null, rootNode, filterList);
+        }
         // populates limit & offset
         try {
             searchQuery.setLimit(inputQueryNode.get("limit").asInt());
@@ -76,9 +76,9 @@ public class SearchServiceImpl implements SearchService {
             logger.error("Populates SearchQuery for limit/offset: {}", e.getMessage());
         }
 
-		searchQuery.setFilters(filterList);
-		return searchQuery;
-	}
+        searchQuery.setFilters(filterList);
+        return searchQuery;
+    }
 
 	/**
 	 * For a given path filter, iterate through the fields given and set the filterList
