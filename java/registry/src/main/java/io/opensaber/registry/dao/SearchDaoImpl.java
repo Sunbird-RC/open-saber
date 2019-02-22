@@ -41,6 +41,12 @@ public class SearchDaoImpl implements SearchDao {
 
 				FilterOperators operator = filter.getOperator();
 				String path = filter.getPath();
+                if (path != null) {
+                    if (resultGraphTraversal.asAdmin().clone().hasNext()) {
+                        resultGraphTraversal = resultGraphTraversal.asAdmin().clone().outE(path).outV();
+                       
+                    }
+                }
 
                 switch (operator) {
                 case eq:
@@ -101,11 +107,7 @@ public class SearchDaoImpl implements SearchDao {
                     break;
                 }
 
-				if (path != null) {
-					if (resultGraphTraversal.asAdmin().clone().hasNext()) {
-						resultGraphTraversal = resultGraphTraversal.asAdmin().clone().outE(path).outV();
-					}
-				}
+
 			}
 		}
 
@@ -152,4 +154,23 @@ public class SearchDaoImpl implements SearchDao {
 		}
 		return result;
 	}
+	
+	   private JsonNode getVertexResult (Graph graph, Vertex v) {
+           JsonNode answer = null;
+
+            if ((!v.property(Constants.STATUS_KEYWORD).isPresent() ||
+                    Constants.STATUS_ACTIVE.equals(v.value(Constants.STATUS_KEYWORD)))) {
+
+                    ReadConfigurator configurator = new ReadConfigurator();
+                    configurator.setIncludeSignatures(false);
+                    configurator.setIncludeTypeAttributes(false);
+
+                    try {
+                        answer = registryDao.getEntity(graph, v, configurator);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+	        return answer;
+	    }
 }
