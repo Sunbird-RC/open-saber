@@ -32,6 +32,7 @@ public class SearchDaoImpl implements SearchDao {
         GraphTraversal<Vertex, Vertex> resultGraphTraversal = dbGraphTraversalSource.clone().V()
                 .hasLabel(searchQuery.getRootLabel()).range(offset, offset + searchQuery.getLimit())
                 .limit(searchQuery.getLimit());
+        GraphTraversal<Vertex, Vertex> parentTraversal = resultGraphTraversal.asAdmin().clone();
 
         BiPredicate<String, String> condition = null;
         // Ensure the root label is correct
@@ -43,10 +44,7 @@ public class SearchDaoImpl implements SearchDao {
                 FilterOperators operator = filter.getOperator();
                 String path = filter.getPath();
                 if (path != null) {
-                    if (resultGraphTraversal.asAdmin().clone().hasNext()) {
-                        resultGraphTraversal = resultGraphTraversal.asAdmin().clone().outE(path).outV();
-
-                    }
+                    resultGraphTraversal = resultGraphTraversal.outE(path).inV();
                 }
 
                 switch (operator) {
@@ -111,7 +109,7 @@ public class SearchDaoImpl implements SearchDao {
             }
         }
 
-        return getResult(graphFromStore, resultGraphTraversal);
+        return getResult(graphFromStore, resultGraphTraversal, parentTraversal);
     }
 
 	private void updateValueList(Object value, List valueList) {
@@ -130,9 +128,10 @@ public class SearchDaoImpl implements SearchDao {
 		return valueList;
 	}
 
-	private JsonNode getResult (Graph graph, GraphTraversal resultTraversal) {
+	private JsonNode getResult (Graph graph, GraphTraversal resultTraversal, GraphTraversal parentTraversal) {
 		ArrayNode result = JsonNodeFactory.instance.arrayNode();
 		if (resultTraversal != null) {
+            //parentTraversal.map(resultTraversal);
 			while (resultTraversal.hasNext()) {
 				Vertex v = (Vertex) resultTraversal.next();
 				if ((!v.property(Constants.STATUS_KEYWORD).isPresent() ||
