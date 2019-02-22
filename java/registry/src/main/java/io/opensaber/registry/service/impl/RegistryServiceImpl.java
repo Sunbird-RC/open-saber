@@ -3,6 +3,7 @@ package io.opensaber.registry.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.ComponentHealthInfo;
 import io.opensaber.pojos.HealthCheckResponse;
@@ -88,7 +89,6 @@ public class RegistryServiceImpl implements RegistryService {
 
     public HealthCheckResponse health() throws Exception {
         HealthCheckResponse healthCheck;
-        // TODO
         boolean databaseServiceup = shard.getDatabaseProvider().isDatabaseServiceUp();
         boolean overallHealthStatus = databaseServiceup;
         List<ComponentHealthInfo> checks = new ArrayList<>();
@@ -229,6 +229,7 @@ public class RegistryServiceImpl implements RegistryService {
                 // Here we don't know the parent entity type
                 readNode = vr.read(readNode.findPath(Constants.ROOT_KEYWORD).textValue());
             } else {
+                logger.debug("Updating the parent record {}", rootId);
                 // Update is for the parent entity.
                 // Nothing to do as the record has been already read.
             }
@@ -316,8 +317,15 @@ public class RegistryServiceImpl implements RegistryService {
         // Simple object - just update that object (new uuid will not be issued)
         // Simple NEW object - need to update the root
         // Array object - need to delete and then add new one
-        String parentOsid = userInputNode.get(uuidPropertyName).textValue();
-        Vertex existingVertex = uuidVertexMap.getOrDefault(parentOsid, null);
+        JsonNode parentOsidNode = userInputNode.get(uuidPropertyName);
+        Vertex existingVertex = null;
+        try {
+            String parentOsid = (parentOsidNode == null) ? "" : parentOsidNode.textValue();
+            existingVertex = uuidVertexMap.getOrDefault(parentOsid, null);
+        } catch (IllegalStateException propException) {
+            logger.debug("Root vertex {} doesn't have any property named {}",
+                    shard.getDatabaseProvider().getId(rootVertex), uuidPropertyName);
+        }
 
         if (existingVertex != null) {
             // Existing vertex - just add/update properties
@@ -332,13 +340,21 @@ public class RegistryServiceImpl implements RegistryService {
                     if (oneElementNode.isArray()) {
                         // Arrays are treated specially - we create a blank node and then
                         // individual items
-                        String arrayRefId = RefLabelHelper.getArrayLabel(oneElement.getKey(), uuidPropertyName);
-                        Vertex existArrayVertex = uuidVertexMap.getOrDefault(rootVertex.value(arrayRefId), null);
+                        String arrayRefLabel = RefLabelHelper.getArrayLabel(oneElement.getKey(), uuidPropertyName);
+                        Vertex existArrayVertex = null;
+                        try {
+                            existArrayVertex = uuidVertexMap.getOrDefault(rootVertex.value(arrayRefLabel), null);
+                        } catch (IllegalStateException propException) {
+                            logger.debug("Root vertex {} doesn't have any property named {}",
+                                    shard.getDatabaseProvider().getId(rootVertex), arrayRefLabel);
+                        }
+
                         if (null != existArrayVertex) {
                             // updateArrayItems one by one
                             doUpdateArray(graph, registryDao, vr, existArrayVertex, (ArrayNode) oneElementNode);
                         } else {
-                            // New array - Imagine optional array
+                            VertexWriter vertexWriter = new VertexWriter(graph, shard.getDatabaseProvider(), uuidPropertyName);
+                            vertexWriter.createArrayNode(rootVertex, oneElement.getKey(), (ArrayNode) oneElementNode);
                         }
                         registryDao.updateVertex(graph, existArrayVertex, oneElementNode);
                     } else {
@@ -346,12 +362,15 @@ public class RegistryServiceImpl implements RegistryService {
                     }
                 } else if (oneElementNode.isObject()) {
                     logger.info("Object node {}", oneElement.toString());
-                    doUpdate(graph, registryDao, vr, oneElementNode);
+                    JsonNode entireObject = JsonNodeFactory.instance.objectNode();
+                    ((ObjectNode) entireObject).set(oneElement.getKey(), oneElementNode);
+                    doUpdate(graph, registryDao, vr, entireObject);
                 }
             }
         } else {
             // Likely a new addition
             logger.info("Adding a new node to existing one");
+            registryDao.updateVertex(graph, rootVertex, userInputNode);
         }
     }
 
@@ -373,7 +392,15 @@ public class RegistryServiceImpl implements RegistryService {
         return result;
     }
 
-    private void merge(String entityType, ObjectNode result, ObjectNode inputNode) {
+    private ObjectNode getNode(ObjectNode inputNode, String key) {
+        JsonNode result = inputNode.at(key);
+        if (result.isMissingNode()) {
+            return getNode(inputNode, key.substring(0, key.lastIndexOf("/")));
+        }
+        return (ObjectNode) result;
+    }
+
+    private void merge(String entityTypeJsonPtr, ObjectNode result, ObjectNode inputNode) {
         inputNode.fields().forEachRemaining(prop -> {
             String propKey = prop.getKey();
             JsonNode propValue = prop.getValue();
@@ -382,9 +409,13 @@ public class RegistryServiceImpl implements RegistryService {
                 propValue.isArray()) {
                 // Must be a value node and not a uuidPropertyName key pair
                 //((ObjectNode)result.get(entityType)).set(propKey, propValue);
-                ((ObjectNode)result.at(entityType)).set(propKey, propValue);
+                getNode(result, entityTypeJsonPtr).set(propKey, propValue);
             } else if (propValue.isObject()) {
-                merge(entityType + "/" + propKey, result, (ObjectNode) propValue);
+                if (result.at(entityTypeJsonPtr + "/" + propKey).isMissingNode()) {
+                    ((ObjectNode) result.at(entityTypeJsonPtr)).set(propKey, (ObjectNode) propValue);
+                } else {
+                    merge(entityTypeJsonPtr + "/" + propKey, result, (ObjectNode) propValue);
+                }
             }
         });
     }
