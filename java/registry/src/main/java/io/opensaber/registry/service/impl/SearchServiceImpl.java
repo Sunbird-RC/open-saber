@@ -103,30 +103,31 @@ public class SearchServiceImpl implements SearchService {
                 } else {
                     Object value = null;
                     if (entryValMap.getValue().isArray()) {
-                        value = getRange(entryValMap.getValue());
+                        value = getObjects(entryValMap.getValue());
 
                     } else if (entryValMap.getValue().isValueNode()) {
                         value = ValueType.getValue(entryValMap.getValue());
                     }
                     FilterOperators operator = FilterOperators.get(operatorStr);
+                    if(operator == null)
+                        throw new IllegalArgumentException("Search query cannot perform without operator!");
+
                     Filter filter = new Filter(property, operator, value);
                     filter.setPath(path);
                     filterList.add(filter);
                 }
+            } else {
+                 throw new IllegalArgumentException("Search query is invalid!");
             }
         }
     }
     /**
-     * Return 2 values always
-     * First value = min
-     * Second value = max
+     * Return all values
      * 
      * @param node
      * @return
      */
-    private List<Object> getRange(JsonNode node) {
-        if(node.size() != 2)
-            throw new IllegalArgumentException("Range must have 2 values(min and max) only");
+    private List<Object> getObjects(JsonNode node) {
             
         List<Object> rangeValues = new ArrayList<>();
         for (int i = 0; i < node.size(); i++) {

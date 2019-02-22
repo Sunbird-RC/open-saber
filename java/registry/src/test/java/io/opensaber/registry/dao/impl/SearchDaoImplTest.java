@@ -51,6 +51,10 @@ public class SearchDaoImplTest {
     private DBProviderFactory dbProviderFactory;
     @Autowired
     private DBConnectionInfoMgr dbConnectionInfoMgr;
+    
+    private final static String VALUE_NOT_PRESENT = "valueNotPresent";
+    private final static int offset = 0;
+    private final static int limit = 1;
 
     @Before
     public void initializeGraph() throws IOException {
@@ -95,6 +99,17 @@ public class SearchDaoImplTest {
         JsonNode result = searchDao.search(graph, searchQuery);
         assertTrue(result.size() == 2);
     }
+    
+    @Test
+    public void testOrOperator() {
+        List<Object> values = new ArrayList<>();
+        values.add("marko");
+        values.add("vedas");
+        values.add(VALUE_NOT_PRESENT); 
+        SearchQuery searchQuery = getSearchQuery("Teacher", "teacherName", values, FilterOperators.or);
+        JsonNode result = searchDao.search(graph, searchQuery);
+        assertTrue(result.size() == 2);
+    }
 
     @Test
     public void testStartsWithOperator() {
@@ -136,7 +151,7 @@ public class SearchDaoImplTest {
 
     @Test
     public void testResponseLimit() {
-        SearchQuery searchQuery = new SearchQuery("Teacher", 0, 1);
+        SearchQuery searchQuery = new SearchQuery("Teacher", offset, limit);
         JsonNode result = searchDao.search(graph, searchQuery);
         assertTrue(result.size() == 1);
     }
