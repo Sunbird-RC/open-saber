@@ -24,27 +24,28 @@ public class SearchDaoImpl implements SearchDao {
         registryDao = registryDaoImpl;
     }
 
-	public JsonNode search(Graph graphFromStore, SearchQuery searchQuery) {
+    public JsonNode search(Graph graphFromStore, SearchQuery searchQuery) {
 
-		GraphTraversalSource dbGraphTraversalSource = graphFromStore.traversal().clone();
-		List<Filter> filterList = searchQuery.getFilters();
-		int offset = searchQuery.getOffset();
-		GraphTraversal<Vertex, Vertex> resultGraphTraversal = dbGraphTraversalSource.clone().V().hasLabel(searchQuery.getRootLabel())
-		        .range(offset, offset + searchQuery.getLimit()).limit(searchQuery.getLimit()); 
+        GraphTraversalSource dbGraphTraversalSource = graphFromStore.traversal().clone();
+        List<Filter> filterList = searchQuery.getFilters();
+        int offset = searchQuery.getOffset();
+        GraphTraversal<Vertex, Vertex> resultGraphTraversal = dbGraphTraversalSource.clone().V()
+                .hasLabel(searchQuery.getRootLabel()).range(offset, offset + searchQuery.getLimit())
+                .limit(searchQuery.getLimit());
 
-		BiPredicate<String, String> condition = null;
-		// Ensure the root label is correct
-		if (filterList != null) {
-			for (Filter filter : filterList) {
-				String property = filter.getProperty();
-				Object genericValue = filter.getValue();
+        BiPredicate<String, String> condition = null;
+        // Ensure the root label is correct
+        if (filterList != null) {
+            for (Filter filter : filterList) {
+                String property = filter.getProperty();
+                Object genericValue = filter.getValue();
 
-				FilterOperators operator = filter.getOperator();
-				String path = filter.getPath();
+                FilterOperators operator = filter.getOperator();
+                String path = filter.getPath();
                 if (path != null) {
                     if (resultGraphTraversal.asAdmin().clone().hasNext()) {
                         resultGraphTraversal = resultGraphTraversal.asAdmin().clone().outE(path).outV();
-                       
+
                     }
                 }
 
@@ -54,7 +55,7 @@ public class SearchDaoImpl implements SearchDao {
                     break;
                 case neq:
                     resultGraphTraversal = resultGraphTraversal.has(property, P.neq(genericValue));
-                    break;    
+                    break;
                 case gt:
                     resultGraphTraversal = resultGraphTraversal.has(property, P.gt(genericValue));
                     break;
@@ -107,12 +108,11 @@ public class SearchDaoImpl implements SearchDao {
                     break;
                 }
 
+            }
+        }
 
-			}
-		}
-
-		return getResult(graphFromStore, resultGraphTraversal);
-	}
+        return getResult(graphFromStore, resultGraphTraversal);
+    }
 
 	private void updateValueList(Object value, List valueList) {
 		valueList.add(value);
@@ -154,23 +154,5 @@ public class SearchDaoImpl implements SearchDao {
 		}
 		return result;
 	}
-	
-	   private JsonNode getVertexResult (Graph graph, Vertex v) {
-           JsonNode answer = null;
 
-            if ((!v.property(Constants.STATUS_KEYWORD).isPresent() ||
-                    Constants.STATUS_ACTIVE.equals(v.value(Constants.STATUS_KEYWORD)))) {
-
-                    ReadConfigurator configurator = new ReadConfigurator();
-                    configurator.setIncludeSignatures(false);
-                    configurator.setIncludeTypeAttributes(false);
-
-                    try {
-                        answer = registryDao.getEntity(graph, v, configurator);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-	        return answer;
-	    }
 }
