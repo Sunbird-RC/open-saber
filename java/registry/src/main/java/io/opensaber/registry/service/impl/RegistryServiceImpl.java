@@ -384,39 +384,14 @@ public class RegistryServiceImpl implements RegistryService {
      * @return
      */
     private ObjectNode mergeWrapper(String entityType, ObjectNode databaseNode, ObjectNode inputNode) {
+        List<String> ignoredProps = new ArrayList<String>() {
+        };
+        ignoredProps.add(uuidPropertyName);
         // We know the user is likely to update less fields and so iterate over it.
         ObjectNode result = databaseNode.deepCopy();
         inputNode.fields().forEachRemaining(prop -> {
-            merge(entityType, result, (ObjectNode) prop.getValue());
+            JSONUtil.merge(entityType, result, (ObjectNode) prop.getValue(), ignoredProps);
         });
         return result;
-    }
-
-    private ObjectNode getNode(ObjectNode inputNode, String key) {
-        JsonNode result = inputNode.at(key);
-        if (result.isMissingNode()) {
-            return getNode(inputNode, key.substring(0, key.lastIndexOf("/")));
-        }
-        return (ObjectNode) result;
-    }
-
-    private void merge(String entityTypeJsonPtr, ObjectNode result, ObjectNode inputNode) {
-        inputNode.fields().forEachRemaining(prop -> {
-            String propKey = prop.getKey();
-            JsonNode propValue = prop.getValue();
-
-            if ((propValue.isValueNode() && !uuidPropertyName.equalsIgnoreCase(propKey)) ||
-                propValue.isArray()) {
-                // Must be a value node and not a uuidPropertyName key pair
-                //((ObjectNode)result.get(entityType)).set(propKey, propValue);
-                getNode(result, entityTypeJsonPtr).set(propKey, propValue);
-            } else if (propValue.isObject()) {
-                if (result.at(entityTypeJsonPtr + "/" + propKey).isMissingNode()) {
-                    ((ObjectNode) result.at(entityTypeJsonPtr)).set(propKey, (ObjectNode) propValue);
-                } else {
-                    merge(entityTypeJsonPtr + "/" + propKey, result, (ObjectNode) propValue);
-                }
-            }
-        });
     }
 }
