@@ -117,9 +117,9 @@ public class ArrayHelperTest {
         ArrayNode arrayNode = ArrayHelper.constructArrayNode("\"a\", \"b\", \"c\"");
         arrayNode.forEach( item -> {
             String val = item.asText();
-            assertTrue(val.equals("a") ||
-                    val.equals("b") ||
-                    val.equals("c"));
+            assertTrue("a".equals(val) ||
+                    "b".equals(val) ||
+                    "c".equals(val));
         });
     }
 
@@ -133,7 +133,6 @@ public class ArrayHelperTest {
     @Test
     public void unquoteStringWithoutQuotes() {
         String qStr = "a";
-        String expected = "a";
         String actual = ArrayHelper.unquoteString(qStr);
         assertTrue(actual == null);
     }
