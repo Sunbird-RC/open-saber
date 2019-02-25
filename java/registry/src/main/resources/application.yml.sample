@@ -31,8 +31,8 @@ registry:
 # offset: search result starts from value provided as default        
 # limits: search result to value provided as default 
 search:
-  offset: 0
-  limit: 100
+  offset: ${search_offset:0}
+  limit: ${search_limit:100}
         
 database:
   # This property is internal and not to be confused with the schema definition.
