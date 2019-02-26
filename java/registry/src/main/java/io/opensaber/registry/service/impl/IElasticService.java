@@ -1,6 +1,7 @@
 package io.opensaber.registry.service.impl;
 
 import io.opensaber.pojos.SearchQuery;
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -13,7 +14,7 @@ public interface IElasticService {
      * @param inputEntity - input document for adding
      * @return
      */
-    public boolean addEntity(String index, Map<String, Object> inputEntity);
+    public boolean addEntity(String index, Map<String, Object> inputEntity) throws IOException;
 
     /** Reads document with respect to input osid from ES
      * @param index - ElasticSearch Index

@@ -64,6 +64,8 @@ public class RegistryServiceImpl implements RegistryService {
     private SignatureHelper signatureHelper;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private IElasticService elasticService;
     @Value("${encryption.enabled}")
     private boolean encryptionEnabled;
 
@@ -159,7 +161,7 @@ public class RegistryServiceImpl implements RegistryService {
         if (persistenceEnabled) {
             String vertexLabel = null;
             DatabaseProvider dbProvider = shard.getDatabaseProvider();
-            IRegistryDao registryDao = new RegistryDaoImpl(dbProvider, definitionsManager, uuidPropertyName);
+            IRegistryDao registryDao = new RegistryDaoImpl(dbProvider, definitionsManager, uuidPropertyName, elasticService);
             try (OSGraph osGraph = dbProvider.getOSGraph()) {
                 Graph graph = osGraph.getGraphStore();
                 Transaction tx = dbProvider.startTransaction(graph);
@@ -174,6 +176,7 @@ public class RegistryServiceImpl implements RegistryService {
             Vertex parentVertex = entityParenter.getKnownParentVertex(vertexLabel, shardId);
             Definition definition = definitionsManager.getDefinition(vertexLabel);
             entityParenter.ensureIndexExists(dbProvider, parentVertex, definition, shardId);
+
         }
 
         return entityId;
