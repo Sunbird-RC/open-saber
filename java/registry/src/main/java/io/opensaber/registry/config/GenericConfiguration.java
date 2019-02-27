@@ -110,6 +110,9 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Value("${elastic.search.index}")
 	private String elasticIndex;
 
+    @Value("${elastic.search.type}")
+    private String elasticSearchType;
+
 	@Value("${elastic.search.connection_url}")
 	private String elasticConnInfo;
 	
@@ -333,6 +336,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		ElasticServiceImpl elasticService = new ElasticServiceImpl();
 		elasticService.setConnectionInfo(elasticConnInfo);
 		elasticService.setSearchIndex(elasticIndex);
+        elasticService.setType(elasticSearchType);
 		elasticService.init();
 		return elasticService;
 	}

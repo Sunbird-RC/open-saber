@@ -170,6 +170,16 @@ taskExecutor:
     # Set the capacity for the ThreadPoolExecutor's BlockingQueue.
     queueCapacity: ${taskExecutor_index_queueCapacity:3}
 
+# elastic-search configuration details
+elastic:
+  search:
+    # elastic-search index name
+    index: ${elastic_search_index:os-teacher}
+    # elastic-search document type
+    type: ${elastic_search_type:_doc}
+    # elastic-search connection info
+    connection_url: ${elastic_search_connection_url:localhost:9200}
+
 ---
 ##################################################################
 #                      TEST PROFILE                              #
@@ -290,3 +300,13 @@ taskExecutor:
     maxPoolSize: ${taskExecutor_index_maxPoolSize:2}
     # Set the capacity for the ThreadPoolExecutor's BlockingQueue.
     queueCapacity: ${taskExecutor_index_queueCapacity:3}
+
+# elastic-search configuration details
+elastic:
+  search:
+    # elastic-search index name
+    index: ${elastic_search_index:os-teacher}
+    # elastic-search document type
+    type: ${elastic_search_type:_doc}
+    # elastic-search connection info
+    connection_url: ${elastic_search_connection_url:localhost:9200}
