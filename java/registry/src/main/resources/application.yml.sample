@@ -33,6 +33,11 @@ registry:
 search:
   offset: ${search_offset:0}
   limit: ${search_limit:100}
+  # This property is instruction to use the search advisor.
+  # Values could be SearchServiceImpl(a native search service), ElasticSearchService(a ES search service)
+  # If this property not provided, advisor is set to SearchServiceImpl
+  advisor: SearchServiceImpl
+  
         
 database:
   # This property is internal and not to be confused with the schema definition.

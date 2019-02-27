@@ -14,7 +14,7 @@ import io.opensaber.registry.dao.ValueType;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.model.DBConnectionInfo;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
-import io.opensaber.registry.service.SearchService;
+import io.opensaber.registry.service.ISearchService;
 import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.sink.shard.ShardManager;
@@ -34,7 +34,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class SearchServiceImpl implements SearchService {
+public class SearchServiceImpl implements ISearchService {
 
 	private static Logger logger = LoggerFactory.getLogger(SearchServiceImpl.class);
 
