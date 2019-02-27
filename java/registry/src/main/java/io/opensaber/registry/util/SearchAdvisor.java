@@ -3,26 +3,21 @@ package io.opensaber.registry.util;
 import io.opensaber.registry.service.ISearchService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
-@Component
 public class SearchAdvisor {
-    private static Logger logger = LoggerFactory.getLogger(SearchAdvisor.class);
+    private static Logger logger = LoggerFactory.getLogger(SearchAdvisor.class);    
+    private static final String DEFAULT_SEARCH_ADVISOR = "SearchServiceImpl"; 
 
-    @Value("${search.advisor}")
-    public String advisorClassName;
+    public ISearchService getInstance(String advisorClassName) {
 
-    public ISearchService getInstance() {
-
-        ISearchService advisor = null;
+        ISearchService searchService = null;
         try {
             if (advisorClassName == null) {
-                //default is set to native search service
-                advisorClassName = "SearchServiceImpl";
+                // default is set to native search service
+                advisorClassName = DEFAULT_SEARCH_ADVISOR;
             }
             Class<?> advisorClass = Class.forName(advisorClassName);
-            advisor = (ISearchService) advisorClass.newInstance();
+            searchService = (ISearchService) advisorClass.newInstance();
             logger.info("Invoked search advisor class with classname: " + advisorClassName);
 
         } catch (ClassNotFoundException | SecurityException | InstantiationException | IllegalAccessException
@@ -30,7 +25,7 @@ public class SearchAdvisor {
             logger.error("Search advisor class {} cannot be instantiate with exception:", advisorClassName, e);
         }
 
-        return advisor;
+        return searchService;
     }
 
 }
