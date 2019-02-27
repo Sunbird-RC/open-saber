@@ -35,9 +35,9 @@ search:
   limit: ${search_limit:100}
   # This property is instruction to use the search advisor.
   # Values could be NativeSearchService, ElasticSearchService
-  # NativeSearchService: This hits the native database not optimised perfomance for search operation 
+  # NativeSearchService: This hits the native database not optimise performance for search operation 
   # ElasticSearchService: This hits ES database for search operations
-  # If this property not provided, advisor is set to SearchServiceImpl
+  # If this property not provided, advisor is set to NativeSearchService
   advisor: io.opensaber.registry.service.impl.NativeSearchService  
         
 database:
