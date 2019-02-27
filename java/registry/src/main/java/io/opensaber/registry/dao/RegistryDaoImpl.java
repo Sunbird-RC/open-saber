@@ -64,12 +64,7 @@ public class RegistryDaoImpl implements IRegistryDao {
     public String addEntity(Graph graph, JsonNode rootNode) {
         VertexWriter vertexWriter = new VertexWriter(graph, getDatabaseProvider(), uuidPropertyName);
         String entityId = vertexWriter.writeNodeEntity(rootNode);
-        try {
-            elasticService.addEntity("os-teacher",JSONUtil.convertObjectJsonMap(rootNode));
-        } catch (IOException e) {
-            //
-            e.printStackTrace();
-        }
+        elasticService.addEntity("os-teacher", entityId, JSONUtil.convertJsonNodeToMap(rootNode));
         return entityId;
     }
 

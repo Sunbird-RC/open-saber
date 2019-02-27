@@ -3,6 +3,7 @@ package io.opensaber.registry.service.impl;
 import io.opensaber.pojos.SearchQuery;
 import java.io.IOException;
 import java.util.Map;
+import org.elasticsearch.rest.RestStatus;
 
 /**
  * This interface contains unimplemented abstract methods with respect to ElasticSearch
@@ -11,10 +12,11 @@ public interface IElasticService {
 
     /** Saves document into ES(ElasticSearch)
      * @param index - ElasticSearch Index
+     * @param id - document id
      * @param inputEntity - input document for adding
      * @return
      */
-    public boolean addEntity(String index, Map<String, Object> inputEntity) throws IOException;
+    public RestStatus addEntity(String index, String id, Map<String, Object> inputEntity);
 
     /** Reads document with respect to input osid from ES
      * @param index - ElasticSearch Index
