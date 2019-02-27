@@ -1,4 +1,4 @@
-package io.opensaber.registry.service.impl;
+package io.opensaber.elastic;
 
 import io.opensaber.pojos.SearchQuery;
 import java.io.IOException;
@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
@@ -17,15 +16,10 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.rest.RestStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
-@Component
 public class ElasticServiceImpl implements IElasticService{
     private static Map<String, RestHighLevelClient> esClient = new HashMap<String, RestHighLevelClient>();
     private static Logger logger = LoggerFactory.getLogger(ElasticServiceImpl.class);
@@ -33,17 +27,15 @@ public class ElasticServiceImpl implements IElasticService{
     private static String searchIndex;
     private static String connectionInfo;
 
-    @Value("${elastic.search.index}")
     public void setSearchIndex(String index){
         searchIndex = index;
     }
-    @Value("${elastic.search.connection_url}")
+
     public void setConnectionInfo(String connection){
         connectionInfo = connection;
     }
 
-    @PostConstruct
-    void init() throws IOException {
+    public static void init() throws IOException {
         addIndex(searchIndex,"_doc");
     }
 

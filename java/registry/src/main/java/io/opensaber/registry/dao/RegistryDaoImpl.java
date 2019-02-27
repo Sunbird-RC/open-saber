@@ -2,15 +2,14 @@ package io.opensaber.registry.dao;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.opensaber.elastic.IElasticService;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
-import io.opensaber.registry.service.impl.IElasticService;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.RefLabelHelper;
-import java.io.IOException;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -48,6 +47,7 @@ public class RegistryDaoImpl implements IRegistryDao {
         databaseProvider = dbProvider;
         definitionsManager = defnManager;
         uuidPropertyName = uuidPropName;
+
         this.elasticService =  elasticService;
     }
 

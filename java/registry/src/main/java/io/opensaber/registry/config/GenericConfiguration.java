@@ -3,6 +3,8 @@ package io.opensaber.registry.config;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import io.opensaber.elastic.ElasticServiceImpl;
+import io.opensaber.elastic.IElasticService;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.pojos.Response;
 import io.opensaber.registry.authorization.AuthorizationFilter;
@@ -30,6 +32,10 @@ import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.validators.IValidate;
 import io.opensaber.validators.ValidationFilter;
 import io.opensaber.validators.json.jsonschema.JsonValidationServiceImpl;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -52,11 +58,6 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.PathResourceResolver;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 @Configuration
 @EnableRetry
@@ -105,6 +106,12 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Value("${taskExecutor.index.queueCapacity}")
 	private int indexQueueCapacity;
+
+	@Value("${elastic.search.index}")
+	private String elasticIndex;
+
+	@Value("${elastic.search.connection_url}")
+	private String elasticConnInfo;
 	
 	@Autowired
 	private DBConnectionInfoMgr dbConnectionInfoMgr;
@@ -319,5 +326,14 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		executor.setThreadNamePrefix(indexThreadName);
 		executor.initialize();
 		return executor;
+	}
+
+	@Bean
+	public IElasticService elasticService() throws IOException {
+		ElasticServiceImpl elasticService = new ElasticServiceImpl();
+		elasticService.setConnectionInfo(elasticConnInfo);
+		elasticService.setSearchIndex(elasticIndex);
+		elasticService.init();
+		return elasticService;
 	}
 }
