@@ -34,10 +34,11 @@ search:
   offset: ${search_offset:0}
   limit: ${search_limit:100}
   # This property is instruction to use the search advisor.
-  # Values could be SearchServiceImpl(a native search service), ElasticSearchService(a ES search service)
+  # Values could be NativeSearchService, ElasticSearchService
+  # NativeSearchService: This hits the native database not optimised perfomance for search operation 
+  # ElasticSearchService: This hits ES database for search operations
   # If this property not provided, advisor is set to SearchServiceImpl
-  advisor: SearchServiceImpl
-  
+  advisor: io.opensaber.registry.service.impl.NativeSearchService  
         
 database:
   # This property is internal and not to be confused with the schema definition.

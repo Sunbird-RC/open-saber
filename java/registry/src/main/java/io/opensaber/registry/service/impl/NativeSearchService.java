@@ -32,11 +32,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
+/**
+ * This class provides native search which hits the native database
+ * Hence, this have performance in-efficiency on search operations    
+ * 
+ */
 @Component
-public class SearchServiceImpl implements ISearchService {
+public class NativeSearchService implements ISearchService {
 
-	private static Logger logger = LoggerFactory.getLogger(SearchServiceImpl.class);
+	private static Logger logger = LoggerFactory.getLogger(NativeSearchService.class);
 
 	@Autowired
 	private DBConnectionInfoMgr dbConnectionInfoMgr;

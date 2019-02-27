@@ -29,7 +29,7 @@ import java.io.IOException;
 		GenericConfiguration.class })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @ActiveProfiles(Constants.TEST_ENVIRONMENT)
-public class SearchServiceImplTest extends RegistryTestBase {
+public class NativeSearchServiceTest extends RegistryTestBase {
 
 	private static final String BASE_SEARCH_JSONLD = "base_search_context.jsonld";
 	private static final String CONTEXT_NAMESPACE = "http://example.com/voc/teacher/1.0.0/";
