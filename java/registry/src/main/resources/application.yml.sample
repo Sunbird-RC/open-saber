@@ -173,10 +173,6 @@ taskExecutor:
 # elastic-search configuration details
 elastic:
   search:
-    # elastic-search index name
-    index: ${elastic_search_index:os-teacher}
-    # elastic-search document type
-    type: ${elastic_search_type:_doc}
     # elastic-search connection info
     connection_url: ${elastic_search_connection_url:localhost:9200}
 
@@ -304,9 +300,5 @@ taskExecutor:
 # elastic-search configuration details
 elastic:
   search:
-    # elastic-search index name
-    index: ${elastic_search_index:os-teacher}
-    # elastic-search document type
-    type: ${elastic_search_type:_doc}
     # elastic-search connection info
     connection_url: ${elastic_search_connection_url:localhost:9200}
