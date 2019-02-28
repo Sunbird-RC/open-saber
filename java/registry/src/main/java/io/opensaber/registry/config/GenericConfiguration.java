@@ -107,12 +107,6 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Value("${taskExecutor.index.queueCapacity}")
 	private int indexQueueCapacity;
 
-	@Value("${elastic.search.index}")
-	private String elasticIndex;
-
-    @Value("${elastic.search.type}")
-    private String elasticSearchType;
-
 	@Value("${elastic.search.connection_url}")
 	private String elasticConnInfo;
 	
@@ -331,13 +325,16 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		return executor;
 	}
 
+	/** creates elastic-service bean and instanstiates the indices
+	 * @return - IElasticService
+	 * @throws IOException
+	 */
 	@Bean
 	public IElasticService elasticService() throws IOException {
 		ElasticServiceImpl elasticService = new ElasticServiceImpl();
+		elasticService.setType(Constants.ES_DOC_TYPE);
 		elasticService.setConnectionInfo(elasticConnInfo);
-		elasticService.setSearchIndex(elasticIndex);
-        elasticService.setType(elasticSearchType);
-		elasticService.init();
+        elasticService.init(definitionsManager.getAllKnownDefinitions());
 		return elasticService;
 	}
 }

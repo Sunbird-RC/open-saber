@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.lang3.StringUtils;
+import java.util.Set;
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
@@ -25,13 +25,8 @@ public class ElasticServiceImpl implements IElasticService {
     private static Map<String, RestHighLevelClient> esClient = new HashMap<String, RestHighLevelClient>();
     private static Logger logger = LoggerFactory.getLogger(ElasticServiceImpl.class);
 
-    private static String searchIndex;
     private static String connectionInfo;
     private static String searchType;
-
-    public void setSearchIndex(String index) {
-        searchIndex = index;
-    }
 
     public void setConnectionInfo(String connection) {
         connectionInfo = connection;
@@ -41,8 +36,18 @@ public class ElasticServiceImpl implements IElasticService {
         searchType = type;
     }
 
-    public static void init() throws IOException {
-        addIndex(searchIndex, searchType);
+    /** This method runs when the application is started in order to add all the indcies to the elastic search
+     * @param indices
+     * @throws RuntimeException
+     */
+    public static void init(Set<String> indices) throws RuntimeException {
+        indices.iterator().forEachRemaining(index -> {
+            try {
+                addIndex(index.toLowerCase(), searchType);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     /**
@@ -76,8 +81,6 @@ public class ElasticServiceImpl implements IElasticService {
      */
     private static RestHighLevelClient getClient(String indexName) {
         logger.info("connection info: index:{} connectioninfo:{}", indexName, connectionInfo);
-        if (StringUtils.isBlank(indexName))
-            indexName = searchIndex;
         if (null == esClient.get(indexName)) {
             createClient(indexName, connectionInfo);
         }

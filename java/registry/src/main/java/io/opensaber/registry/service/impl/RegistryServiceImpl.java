@@ -162,7 +162,7 @@ public class RegistryServiceImpl implements RegistryService {
         if (persistenceEnabled) {
             String vertexLabel = null;
             DatabaseProvider dbProvider = shard.getDatabaseProvider();
-            IRegistryDao registryDao = new RegistryDaoImpl(dbProvider, definitionsManager, uuidPropertyName, elasticService);
+            IRegistryDao registryDao = new RegistryDaoImpl(dbProvider, definitionsManager, uuidPropertyName);
             try (OSGraph osGraph = dbProvider.getOSGraph()) {
                 Graph graph = osGraph.getGraphStore();
                 Transaction tx = dbProvider.startTransaction(graph);
@@ -177,7 +177,8 @@ public class RegistryServiceImpl implements RegistryService {
             Vertex parentVertex = entityParenter.getKnownParentVertex(vertexLabel, shardId);
             Definition definition = definitionsManager.getDefinition(vertexLabel);
             entityParenter.ensureIndexExists(dbProvider, parentVertex, definition, shardId);
-
+            //call to elastic search
+            elasticService.addEntity(vertexLabel.toLowerCase(), entityId, JSONUtil.convertJsonNodeToMap(rootNode));
         }
 
         return entityId;

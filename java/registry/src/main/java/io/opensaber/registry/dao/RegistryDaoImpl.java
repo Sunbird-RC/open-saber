@@ -2,10 +2,8 @@ package io.opensaber.registry.dao;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.opensaber.elastic.IElasticService;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.ReadConfigurator;
@@ -23,7 +21,6 @@ public class RegistryDaoImpl implements IRegistryDao {
     private DefinitionsManager definitionsManager;
     private DatabaseProvider databaseProvider;
     private List<String> privatePropertyList;
-    private IElasticService elasticService;
 
     private Logger logger = LoggerFactory.getLogger(RegistryDaoImpl.class);
 
@@ -43,14 +40,6 @@ public class RegistryDaoImpl implements IRegistryDao {
         uuidPropertyName = uuidPropName;
     }
 
-    public RegistryDaoImpl(DatabaseProvider dbProvider, DefinitionsManager defnManager, String uuidPropName, IElasticService elasticService) {
-        databaseProvider = dbProvider;
-        definitionsManager = defnManager;
-        uuidPropertyName = uuidPropName;
-
-        this.elasticService =  elasticService;
-    }
-
     public DatabaseProvider getDatabaseProvider() {
         return this.databaseProvider;
     }
@@ -64,7 +53,6 @@ public class RegistryDaoImpl implements IRegistryDao {
     public String addEntity(Graph graph, JsonNode rootNode) {
         VertexWriter vertexWriter = new VertexWriter(graph, getDatabaseProvider(), uuidPropertyName);
         String entityId = vertexWriter.writeNodeEntity(rootNode);
-        elasticService.addEntity("os-teacher", entityId, JSONUtil.convertJsonNodeToMap(rootNode));
         return entityId;
     }
 
