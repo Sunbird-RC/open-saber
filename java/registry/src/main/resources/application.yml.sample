@@ -33,11 +33,10 @@ registry:
 search:
   offset: ${search_offset:0}
   limit: ${search_limit:100}
-  # This property is instruction to use the search advisor.
-  # Values could be NativeSearchService, ElasticSearchService
-  # NativeSearchService: This hits the native database not optimise performance for search operation 
-  # ElasticSearchService: This hits ES database for search operations
-  # If this property not provided, advisor is set to NativeSearchService
+  # The search mechanism to use. Values could be either NativeSearchService or ElasticSearchService
+  #   If NativeSearchService, then every search API uses the same database as the writes. May 
+  # not offer high speed reads. This is the default search service, if this config is not provided.
+  #   If ElasticSearchService, then Elastic search is used.
   advisor: io.opensaber.registry.service.impl.NativeSearchService  
         
 database:
