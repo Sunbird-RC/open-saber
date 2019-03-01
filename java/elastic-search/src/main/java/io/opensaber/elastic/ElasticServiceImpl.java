@@ -249,10 +249,11 @@ public class ElasticServiceImpl implements IElasticService {
 
         try {
             SearchResponse searchResponse = getClient(index).search(searchRequest, RequestOptions.DEFAULT);
-            for (SearchHit hit : searchResponse.getHits()) {                
-                JsonNode node = mapper.readTree(mapper.writeValueAsString(hit.getSourceAsMap()));
+            for (SearchHit hit : searchResponse.getHits()) {
+                JsonNode node = mapper.readValue(hit.getSourceAsString(), JsonNode.class);
                 resultArray.add(node);
             }
+            logger.info("Total search recordds found " + resultArray.size());
         } catch (IOException e) {
             logger.error("Elastic search operation - {}", e);
         }
