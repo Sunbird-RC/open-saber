@@ -112,7 +112,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Value("${elastic.search.connection_url}")
 	private String elasticConnInfo;
 	
-    @Value("${search.provider}")
+    @Value("${search.providerName}")
     private String searchProviderName;	
 	
 	@Autowired

@@ -34,12 +34,11 @@ public interface ISearchService {
         if (rootLabel != null && !rootLabel.isEmpty()) {
             addToFilterList(null, rootNode, filterList);
         }
-        // populates limit & offset
         try {
             searchQuery.setLimit(inputQueryNode.get("limit").asInt());
             searchQuery.setOffset(inputQueryNode.get("offset").asInt());
         } catch (Exception e) {
-            logger.error("Populates SearchQuery for limit/offset: {}", e.getMessage());
+            logger.error("Populates SearchQuery for limit/offset(optional): {}", e.getMessage());
         }
 
         searchQuery.setFilters(filterList);

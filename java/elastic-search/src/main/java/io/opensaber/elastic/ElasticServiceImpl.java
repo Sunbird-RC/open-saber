@@ -1,5 +1,9 @@
 package io.opensaber.elastic;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.opensaber.pojos.Filter;
 import io.opensaber.pojos.FilterOperators;
 import io.opensaber.pojos.SearchQuery;
@@ -177,7 +181,7 @@ public class ElasticServiceImpl implements IElasticService {
     }
 
     @Override
-    public Map<String, Object> search(String index, SearchQuery searchQuery) {
+    public JsonNode search(String index, SearchQuery searchQuery) {
         List<Filter> filters = searchQuery.getFilters();
         BoolQueryBuilder query = QueryBuilders.boolQuery();
 
@@ -240,21 +244,20 @@ public class ElasticServiceImpl implements IElasticService {
         }
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder().query(query);
         SearchRequest searchRequest = new SearchRequest(index).source(sourceBuilder);
-        Map<String, Object> hitResults = new HashMap<>();
+        ArrayNode resultArray = JsonNodeFactory.instance.arrayNode();
+        ObjectMapper mapper = new ObjectMapper();
 
         try {
             SearchResponse searchResponse = getClient(index).search(searchRequest, RequestOptions.DEFAULT);
-            for (SearchHit hit : searchResponse.getHits()) {
-                logger.info("Search hit id {}, sourceMap {}: ", hit.getId(), hit.getSourceAsMap());
-                hitResults.put(hit.getId(), hit.getSourceAsMap());
-
+            for (SearchHit hit : searchResponse.getHits()) {                
+                JsonNode node = mapper.readTree(mapper.writeValueAsString(hit.getSourceAsMap()));
+                resultArray.add(node);
             }
         } catch (IOException e) {
-            e.printStackTrace();
             logger.error("Elastic search operation - {}", e);
         }
 
-        return hitResults;
+        return resultArray;
 
     }
 

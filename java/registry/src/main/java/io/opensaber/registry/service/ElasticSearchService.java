@@ -1,13 +1,8 @@
 package io.opensaber.registry.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.elastic.IElasticService;
 import io.opensaber.pojos.SearchQuery;
-import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -29,33 +24,14 @@ public class ElasticSearchService implements ISearchService {
     @Value("${search.limit}")
     private int limit;
 
-    @Value("${database.uuidPropertyName}")
-    public String uuidPropertyName;
 
     @Override
     public JsonNode search(JsonNode inputQueryNode) {
         // calls the Elastic search
         SearchQuery searchQuery = getSearchQuery(inputQueryNode, offset, limit);
         String indexName = inputQueryNode.fieldNames().next().toLowerCase();
-        Map<String, Object> result = elasticService.search(indexName, searchQuery);
+        return elasticService.search(indexName, searchQuery);
 
-        // build the response
-        ArrayNode resultArray = JsonNodeFactory.instance.arrayNode();
-        result.forEach((key, value) -> {
-            logger.info(key + ":" + value);
-            try {
-                ObjectMapper mapper = new ObjectMapper();
-                ObjectNode node = (ObjectNode) mapper.readTree(mapper.writeValueAsString(value));
-                node.put(uuidPropertyName, key);
-                resultArray.add(node);
-
-            } catch (Exception e) {
-                logger.error("Failed to create node for {}, {}", value, e);
-            }
-
-        });
-
-        return resultArray;
     }
 
 }
