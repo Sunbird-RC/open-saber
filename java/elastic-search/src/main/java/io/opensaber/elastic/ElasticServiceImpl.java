@@ -44,7 +44,10 @@ public class ElasticServiceImpl implements IElasticService {
         searchType = type;
     }
 
-    /** This method runs when the application is started in order to add all the indcies to the elastic search
+    /**
+     * This method runs when the application is started in order to add all the
+     * indcies to the elastic search
+     * 
      * @param indices
      * @throws RuntimeException
      */
@@ -59,10 +62,13 @@ public class ElasticServiceImpl implements IElasticService {
     }
 
     /**
-     * This method creates the high-level-client w.r.to index, if client is not created. for every index one client object is created
+     * This method creates the high-level-client w.r.to index, if client is not
+     * created. for every index one client object is created
      *
-     * @param indexName      for ElasticSearch
-     * @param connectionInfo of ElasticSearch
+     * @param indexName
+     *            for ElasticSearch
+     * @param connectionInfo
+     *            of ElasticSearch
      */
     private static void createClient(String indexName, String connectionInfo) {
         if (!esClient.containsKey(indexName)) {
@@ -84,7 +90,8 @@ public class ElasticServiceImpl implements IElasticService {
     /**
      * Get client details from map
      *
-     * @param indexName of ElasticSearch
+     * @param indexName
+     *            of ElasticSearch
      * @return
      */
     private static RestHighLevelClient getClient(String indexName) {
@@ -99,24 +106,35 @@ public class ElasticServiceImpl implements IElasticService {
     /**
      * creates index for elastic-search
      *
-     * @param indexName    of ElasticSearch
-     * @param documentType of ElasticSearch
+     * @param indexName
+     *            of ElasticSearch
+     * @param documentType
+     *            of ElasticSearch
      * @return
      * @throws IOException
      */
     public static boolean addIndex(String indexName, String documentType) throws IOException {
         boolean response = false;
-        //To do need to analysis regarding settings and analysis and modify this code later
-        /*String settings = "{\"analysis\": {       \"analyzer\": {         \"doc_index_analyzer\": {           \"type\": \"custom\",           \"tokenizer\": \"standard\",           \"filter\": [             \"lowercase\",             \"mynGram\"           ]         },         \"doc_search_analyzer\": {           \"type\": \"custom\",           \"tokenizer\": \"standard\",           \"filter\": [             \"standard\",             \"lowercase\"           ]         },         \"keylower\": {           \"tokenizer\": \"keyword\",           \"filter\": \"lowercase\"         }       },       \"filter\": {         \"mynGram\": {           \"type\": \"nGram\",           \"min_gram\": 1,           \"max_gram\": 20,           \"token_chars\": [             \"letter\",             \"digit\",             \"whitespace\",             \"punctuation\",             \"symbol\"           ]         }       }     }   }";
-        String mappings = "{\"dynamic_templates\":[{\"longs\":{\"match_mapping_type\":\"long\",\"mapping\":{\"type\":\"long\",\"fields\":{\"raw\":{\"type\":\"long\"}}}}},{\"booleans\":{\"match_mapping_type\":\"boolean\",\"mapping\":{\"type\":\"boolean\",\"fields\":{\"raw\":{\"type\":\"boolean\"}}}}},{\"doubles\":{\"match_mapping_type\":\"double\",\"mapping\":{\"type\":\"double\",\"fields\":{\"raw\":{\"type\":\"double\"}}}}},{\"dates\":{\"match_mapping_type\":\"date\",\"mapping\":{\"type\":\"date\",\"fields\":{\"raw\":{\"type\":\"date\"}}}}},{\"strings\":{\"match_mapping_type\":\"string\",\"mapping\":{\"type\":\"text\",\"copy_to\":\"all_fields\",\"analyzer\":\"doc_index_analyzer\",\"search_analyzer\":\"doc_search_analyzer\",\"fields\":{\"raw\":{\"type\":\"text\",\"analyzer\":\"keylower\"}}}}}],\"properties\":{\"all_fields\":{\"type\":\"text\",\"analyzer\":\"doc_index_analyzer\",\"search_analyzer\":\"doc_search_analyzer\",\"fields\":{\"raw\":{\"type\":\"text\",\"analyzer\":\"keylower\"}}}}}";*/
+        // To do need to analysis regarding settings and analysis and modify
+        // this code later
+        /*
+         * String settings =
+         * "{\"analysis\": {       \"analyzer\": {         \"doc_index_analyzer\": {           \"type\": \"custom\",           \"tokenizer\": \"standard\",           \"filter\": [             \"lowercase\",             \"mynGram\"           ]         },         \"doc_search_analyzer\": {           \"type\": \"custom\",           \"tokenizer\": \"standard\",           \"filter\": [             \"standard\",             \"lowercase\"           ]         },         \"keylower\": {           \"tokenizer\": \"keyword\",           \"filter\": \"lowercase\"         }       },       \"filter\": {         \"mynGram\": {           \"type\": \"nGram\",           \"min_gram\": 1,           \"max_gram\": 20,           \"token_chars\": [             \"letter\",             \"digit\",             \"whitespace\",             \"punctuation\",             \"symbol\"           ]         }       }     }   }"
+         * ; String mappings =
+         * "{\"dynamic_templates\":[{\"longs\":{\"match_mapping_type\":\"long\",\"mapping\":{\"type\":\"long\",\"fields\":{\"raw\":{\"type\":\"long\"}}}}},{\"booleans\":{\"match_mapping_type\":\"boolean\",\"mapping\":{\"type\":\"boolean\",\"fields\":{\"raw\":{\"type\":\"boolean\"}}}}},{\"doubles\":{\"match_mapping_type\":\"double\",\"mapping\":{\"type\":\"double\",\"fields\":{\"raw\":{\"type\":\"double\"}}}}},{\"dates\":{\"match_mapping_type\":\"date\",\"mapping\":{\"type\":\"date\",\"fields\":{\"raw\":{\"type\":\"date\"}}}}},{\"strings\":{\"match_mapping_type\":\"string\",\"mapping\":{\"type\":\"text\",\"copy_to\":\"all_fields\",\"analyzer\":\"doc_index_analyzer\",\"search_analyzer\":\"doc_search_analyzer\",\"fields\":{\"raw\":{\"type\":\"text\",\"analyzer\":\"keylower\"}}}}}],\"properties\":{\"all_fields\":{\"type\":\"text\",\"analyzer\":\"doc_index_analyzer\",\"search_analyzer\":\"doc_search_analyzer\",\"fields\":{\"raw\":{\"type\":\"text\",\"analyzer\":\"keylower\"}}}}}";
+         */
         RestHighLevelClient client = getClient(indexName);
         if (!isIndexExists(indexName)) {
             CreateIndexRequest createRequest = new CreateIndexRequest(indexName);
 
-            /*if (StringUtils.isNotBlank(settings))
-               createRequest.settings(Settings.builder().loadFromSource(settings, XContentType.JSON));
-            if (StringUtils.isNotBlank(documentType) && StringUtils.isNotBlank(mappings))
-                createRequest.mapping(documentType, mappings, XContentType.JSON);*/
+            /*
+             * if (StringUtils.isNotBlank(settings))
+             * createRequest.settings(Settings.builder().loadFromSource(
+             * settings, XContentType.JSON)); if
+             * (StringUtils.isNotBlank(documentType) &&
+             * StringUtils.isNotBlank(mappings))
+             * createRequest.mapping(documentType, mappings, XContentType.JSON);
+             */
             CreateIndexResponse createIndexResponse = client.indices().create(createRequest, RequestOptions.DEFAULT);
 
             response = createIndexResponse.isAcknowledged();
@@ -127,7 +145,8 @@ public class ElasticServiceImpl implements IElasticService {
     /**
      * checks whether input index exists in the elastic-search
      *
-     * @param indexName of elastic-search
+     * @param indexName
+     *            of elastic-search
      * @return
      */
     public static boolean isIndexExists(String indexName) {
@@ -144,9 +163,12 @@ public class ElasticServiceImpl implements IElasticService {
     /**
      * Adds input as document into elastic-search
      *
-     * @param index       - ElasticSearch Index
-     * @param entityId    - entity id as document id
-     * @param inputEntity - input document for adding
+     * @param index
+     *            - ElasticSearch Index
+     * @param entityId
+     *            - entity id as document id
+     * @param inputEntity
+     *            - input document for adding
      * @return
      */
     @Override
@@ -154,7 +176,8 @@ public class ElasticServiceImpl implements IElasticService {
         logger.debug("addEntity starts with index {} and entityId {}", index, entityId);
         IndexResponse response = null;
         try {
-            response = getClient(index).index(new IndexRequest(index, searchType, entityId).source(inputEntity), RequestOptions.DEFAULT);
+            response = getClient(index).index(new IndexRequest(index, searchType, entityId).source(inputEntity),
+                    RequestOptions.DEFAULT);
         } catch (IOException e) {
             logger.error("Exception in adding record to ElasticSearch", e);
         }
@@ -178,8 +201,9 @@ public class ElasticServiceImpl implements IElasticService {
 
     @Override
     public Map<String, Object> search(String index, SearchQuery searchQuery) {
-        BoolQueryBuilder query = QueryBuilders.boolQuery();
         List<Filter> filters = searchQuery.getFilters();
+        BoolQueryBuilder query = QueryBuilders.boolQuery();
+
         for (Filter filter : filters) {
             String field = filter.getProperty();
             Object value = filter.getValue();
@@ -210,24 +234,24 @@ public class ElasticServiceImpl implements IElasticService {
                         .must(QueryBuilders.rangeQuery(field).from(objects.get(0)).to(objects.get(objects.size() - 1)));
                 break;
             case or:
-                // SpanQueryBuilder clause = SpanOrQueryBuilder.
-                // query = query.must(QueryBuilders.spanOrQuery());
+                List<Object> values = (List<Object>) value;
+                query = query.must(QueryBuilders.termsQuery(field, values));
                 break;
 
             case contains:
-                query = query.must(QueryBuilders.termQuery(field, value));
+                query = query.must(QueryBuilders.matchPhraseQuery(field, value));
                 break;
             case startsWith:
-                query = query.must(QueryBuilders.prefixQuery(field, value.toString()));
+                query = query.must(QueryBuilders.matchPhrasePrefixQuery(field, value.toString()));
                 break;
             case endsWith:
                 query = query.must(QueryBuilders.wildcardQuery(field, "*" + value));
                 break;
             case notContains:
-                query = query.mustNot(QueryBuilders.termQuery(field, value));
+                query = query.mustNot(QueryBuilders.matchPhraseQuery(field, value));
                 break;
             case notStartsWith:
-                query = query.mustNot(QueryBuilders.prefixQuery(field, value.toString()));
+                query = query.mustNot(QueryBuilders.matchPhrasePrefixQuery(field, value.toString()));
                 break;
             case notEndsWith:
                 query = query.mustNot(QueryBuilders.wildcardQuery(field, "*" + value));

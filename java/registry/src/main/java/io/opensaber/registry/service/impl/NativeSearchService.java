@@ -4,13 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.opensaber.pojos.Filter;
-import io.opensaber.pojos.FilterOperators;
 import io.opensaber.pojos.SearchQuery;
 import io.opensaber.registry.dao.IRegistryDao;
 import io.opensaber.registry.dao.RegistryDaoImpl;
 import io.opensaber.registry.dao.SearchDaoImpl;
-import io.opensaber.registry.dao.ValueType;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.model.DBConnectionInfo;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
@@ -22,9 +19,6 @@ import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.RecordIdentifier;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.slf4j.Logger;
@@ -62,90 +56,11 @@ public class NativeSearchService implements ISearchService {
 	
 	@Value("${search.limit}")
 	private int limit;
-	
-    private SearchQuery getSearchQuery(JsonNode inputQueryNode) {
-        String rootLabel = inputQueryNode.fieldNames().next();
-
-        SearchQuery searchQuery = new SearchQuery(rootLabel, offset, limit);
-        List<Filter> filterList = new ArrayList<>();
-        JsonNode rootNode = inputQueryNode.get(rootLabel);
-        if (rootLabel != null && !rootLabel.isEmpty()) {
-            addToFilterList(null, rootNode, filterList);
-        }
-        // populates limit & offset
-        try {
-            searchQuery.setLimit(inputQueryNode.get("limit").asInt());
-            searchQuery.setOffset(inputQueryNode.get("offset").asInt());
-        } catch (Exception e) {
-            logger.error("Populates SearchQuery for limit/offset: {}", e.getMessage());
-        }
-
-        searchQuery.setFilters(filterList);
-        return searchQuery;
-    }
-
-	/**
-	 * For a given path filter, iterate through the fields given and set the filterList
-	 * @param path
-	 * @param inputQueryNode
-	 * @return
-	 */
-    private void addToFilterList(String path, JsonNode inputQueryNode, List<Filter> filterList) {
-        Iterator<Map.Entry<String, JsonNode>> searchFields = inputQueryNode.fields();
-     
-        // Iterate and get the fields.
-        while (searchFields.hasNext()) {
-            Map.Entry<String, JsonNode> entry = searchFields.next();
-            String property = entry.getKey();
-            JsonNode entryVal = entry.getValue();
-            if (entryVal.isObject() && (entryVal.fields().hasNext())) {
-                Map.Entry<String, JsonNode> entryValMap = entryVal.fields().next();
-                String operatorStr = entryValMap.getKey();
-                
-                if (entryValMap.getValue().isObject()) {
-                    addToFilterList(entry.getKey(), entryVal, filterList);
-                } else {
-                    Object value = null;
-                    if (entryValMap.getValue().isArray()) {
-                        value = getObjects(entryValMap.getValue());
-
-                    } else if (entryValMap.getValue().isValueNode()) {
-                        value = ValueType.getValue(entryValMap.getValue());
-                    }
-                    FilterOperators operator = FilterOperators.get(operatorStr);
-                    if(operator == null)
-                        throw new IllegalArgumentException("Search query cannot perform without operator!");
-
-                    Filter filter = new Filter(property, operator, value);
-                    filter.setPath(path);
-                    filterList.add(filter);
-                }
-            } else {
-                 throw new IllegalArgumentException("Search query is invalid!");
-            }
-        }
-    }
-    /**
-     * Return all values
-     * 
-     * @param node
-     * @return
-     */
-    private List<Object> getObjects(JsonNode node) {
-            
-        List<Object> rangeValues = new ArrayList<>();
-        for (int i = 0; i < node.size(); i++) {
-            JsonNode entryVal = node.get(i);
-            if (entryVal.isValueNode())
-                rangeValues.add(ValueType.getValue(entryVal));
-        }
-        return rangeValues;
-    }
 
 	@Override
 	public JsonNode search(JsonNode inputQueryNode) {
 		ArrayNode result = JsonNodeFactory.instance.arrayNode();
-		SearchQuery searchQuery = getSearchQuery(inputQueryNode);
+		SearchQuery searchQuery = getSearchQuery(inputQueryNode, offset, limit);
 
 		// Now, search across all shards and return the results.
 		for (DBConnectionInfo dbConnection : dbConnectionInfoMgr.getConnectionInfo()) {
@@ -169,7 +84,7 @@ public class NativeSearchService implements ISearchService {
 					}
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error("search operation failed: {}", e);
 			}
 		}
 
