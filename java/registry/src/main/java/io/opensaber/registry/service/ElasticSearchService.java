@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.elastic.IElasticService;
 import io.opensaber.pojos.SearchQuery;
-import io.opensaber.registry.service.ISearchService;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,8 +35,8 @@ public class ElasticSearchService implements ISearchService {
     @Override
     public JsonNode search(JsonNode inputQueryNode) {
         // calls the Elastic search
-        String indexName = inputQueryNode.fieldNames().next().toLowerCase();
         SearchQuery searchQuery = getSearchQuery(inputQueryNode, offset, limit);
+        String indexName = inputQueryNode.fieldNames().next().toLowerCase();
         Map<String, Object> result = elasticService.search(indexName, searchQuery);
 
         // build the response
