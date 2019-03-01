@@ -29,15 +29,6 @@ import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.ReadConfiguratorFactory;
 import io.opensaber.registry.util.RecordIdentifier;
 import io.opensaber.registry.util.RefLabelHelper;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -46,6 +37,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 @Component
 public class RegistryServiceImpl implements RegistryService {
@@ -184,25 +183,39 @@ public class RegistryServiceImpl implements RegistryService {
         return entityId;
     }
 
+    /**
+     * This method interacts with the Elasticsearch and reads the record, if the record not found call is shifted to native db
+     *
+     * @param id           - osid
+     * @param entityType   - elastic-search index
+     * @param configurator
+     * @return
+     * @throws Exception
+     */
     @Override
-    public JsonNode getEntity(String id, ReadConfigurator configurator) throws Exception {
-        DatabaseProvider dbProvider = shard.getDatabaseProvider();
-        IRegistryDao registryDao = new RegistryDaoImpl(dbProvider, definitionsManager, uuidPropertyName);
-        try (OSGraph osGraph = dbProvider.getOSGraph()) {
-            Graph graph = osGraph.getGraphStore();
-            Transaction tx = dbProvider.startTransaction(graph);
-            JsonNode result = registryDao.getEntity(graph, id, configurator);
+    public JsonNode getEntity(String id, String entityType, ReadConfigurator configurator) throws Exception {
+        JsonNode result = null;
+        Map<String, Object> response = elasticService.readEntity(entityType.toLowerCase(), id);
+        result = response != null ? objectMapper.convertValue(response, JsonNode.class) : null;
+        if (result == null) {
+            DatabaseProvider dbProvider = shard.getDatabaseProvider();
+            IRegistryDao registryDao = new RegistryDaoImpl(dbProvider, definitionsManager, uuidPropertyName);
+            try (OSGraph osGraph = dbProvider.getOSGraph()) {
+                Graph graph = osGraph.getGraphStore();
+                Transaction tx = dbProvider.startTransaction(graph);
+                result = registryDao.getEntity(graph, id, configurator);
 
-            if (!shard.getShardLabel().isEmpty()) {
-                // Replace osid with shard details
-                String prefix = shard.getShardLabel() + RecordIdentifier.getSeparator();
-                JSONUtil.addPrefix((ObjectNode) result, prefix, new ArrayList<String>(Arrays.asList(uuidPropertyName)));
+                if (!shard.getShardLabel().isEmpty()) {
+                    // Replace osid with shard details
+                    String prefix = shard.getShardLabel() + RecordIdentifier.getSeparator();
+                    JSONUtil.addPrefix((ObjectNode) result, prefix, new ArrayList<String>(Arrays.asList(uuidPropertyName)));
+                }
+
+                shard.getDatabaseProvider().commitTransaction(graph, tx);
+                dbProvider.commitTransaction(graph, tx);
             }
-
-            shard.getDatabaseProvider().commitTransaction(graph, tx);
-            dbProvider.commitTransaction(graph, tx);
-            return result;
         }
+        return result;
     }
 
     @Override
