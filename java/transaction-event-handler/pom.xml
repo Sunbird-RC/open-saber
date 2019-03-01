@@ -40,23 +40,6 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.neo4j</groupId>
-				<artifactId>neo4j</artifactId>
-				<version>${neo4j.version}</version>
-
-				<configuration>
-					<excludes>
-						<exclude>
-
-							<groupId>org.neo4j</groupId>
-							<artifactId>neo4j-lucene-index</artifactId>
-
-						</exclude>
-					</excludes>
-				</configuration>
-
-			</plugin>
-			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>${jacoco.version}</version>
