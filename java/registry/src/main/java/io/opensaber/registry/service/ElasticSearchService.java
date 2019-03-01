@@ -1,4 +1,4 @@
-package io.opensaber.registry.service.impl;
+package io.opensaber.registry.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,7 +51,6 @@ public class ElasticSearchService implements ISearchService {
                 resultArray.add(node);
 
             } catch (Exception e) {
-                e.printStackTrace();
                 logger.error("Failed to create node for {}, {}", value, e);
             }
 

@@ -1,4 +1,4 @@
-package io.opensaber.registry.service.impl;
+package io.opensaber.registry.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
