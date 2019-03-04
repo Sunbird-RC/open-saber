@@ -31,7 +31,7 @@ public interface IElasticService {
      * @param osid - which maps to document
      * @return
      */
-    boolean updateEntity(String index, Map<String, Object> inputEntity, String osid);
+    RestStatus updateEntity(String index, String osid, JsonNode inputEntity);
 
     /** deletes document with respect to input osid from ES
      * @param index - ElasticSearch Index

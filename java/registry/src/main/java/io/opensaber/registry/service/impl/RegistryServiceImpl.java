@@ -178,7 +178,7 @@ public class RegistryServiceImpl implements RegistryService {
             entityParenter.ensureIndexExists(dbProvider, parentVertex, definition, shardId);
             //call to elastic search
             JsonNode node = rootNode.get(vertexLabel);
-            elasticService.addEntity(vertexLabel.toLowerCase(), entityId, JSONUtil.convertJsonNodeToMap(node));
+            elasticService.addEntity(vertexLabel.toLowerCase(), entityId, JSONUtil.convertJsonNodeToMap(rootNode));
         }
 
         return entityId;
@@ -273,6 +273,9 @@ public class RegistryServiceImpl implements RegistryService {
             doUpdate(graph, registryDao, vr, inputNode.get(entityType));
 
             databaseProvider.commitTransaction(graph, tx);
+            // elastic-search updation starts here
+            logger.info("updating node {} " ,mergedNode);
+            elasticService.updateEntity(parentEntityType,rootId,mergedNode);
         }
     }
 

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.opensaber.pojos.Filter;
 import io.opensaber.pojos.FilterOperators;
 import io.opensaber.pojos.SearchQuery;
+import io.opensaber.registry.middleware.util.JSONUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +21,8 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Request;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.Response;
@@ -171,8 +174,16 @@ public class ElasticServiceImpl implements IElasticService {
     }
 
     @Override
-    public boolean updateEntity(String index, Map<String, Object> inputEntity, String osid) {
-        return false;
+    public RestStatus updateEntity(String index, String osid, JsonNode inputEntity) {
+        logger.debug("updateEntity starts with index {} and entityId {}", index, osid);
+        UpdateResponse response = null;
+        try{
+            Map<String, Object> inputMap = JSONUtil.convertJsonNodeToMap(inputEntity);
+            response = getClient(index.toLowerCase()).update(new UpdateRequest(index.toLowerCase(), searchType, osid).doc(inputMap), RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            logger.error("Exception in updating a record to ElasticSearch", e);
+        }
+        return response.status();
     }
 
     @Override
