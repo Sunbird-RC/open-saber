@@ -257,7 +257,7 @@ public class ElasticServiceImpl implements IElasticService {
                 JsonNode node = mapper.readValue(hit.getSourceAsString(), JsonNode.class);
                 resultArray.add(node);
             }
-            logger.info("Total search recordds found " + resultArray.size());
+            logger.debug("Total search records found " + resultArray.size());
         } catch (IOException e) {
             logger.error("Elastic search operation - {}", e);
         }

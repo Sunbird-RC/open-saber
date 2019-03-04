@@ -10,17 +10,18 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class ElasticServiceImplTest {
 
-    private String indexName = "test";
-    private String typeName = "doc";
-    private ElasticServiceImpl elasticService = new ElasticServiceImpl();
+    private static String indexName = "test";
+    private static String typeName = "doc";
+    private static ElasticServiceImpl elasticService = new ElasticServiceImpl();
     
-    @Before
-    public void init() throws IOException{
+    @BeforeClass
+    public static void init() throws IOException{
+        System.out.println("test before method");
         elasticService.setType(typeName);
         elasticService.setConnectionInfo("localhost:9200");
         if(!elasticService.isIndexExists(indexName))
@@ -29,7 +30,7 @@ public class ElasticServiceImplTest {
         populateEntity(); // gets updated from 2nd time
     }
          
-    private void populateEntity() throws IOException {
+    private static void populateEntity() throws IOException {
 
         //first entity added
         HashMap<String, Object> inputEntity =  new HashMap<String, Object>();
@@ -141,7 +142,6 @@ public class ElasticServiceImplTest {
     public void testSearchNotStartsWithOperator(){
         SearchQuery searchQuery = getSearchQuery("", "name", "Fi", FilterOperators.notStartsWith);
         JsonNode result = elasticService.search(indexName, searchQuery);
-        System.out.println("nsw result = "+result);
         assertTrue(result.get(0).get("name").asText().equalsIgnoreCase("Second"));        
     }
     @Test
