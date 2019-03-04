@@ -70,14 +70,12 @@ public class ElasticServiceImplTest {
     public void testSearchEqOperator(){
         SearchQuery searchQuery = getSearchQuery("", "gender", "GenderTypeCode-FEMALE", FilterOperators.eq);
         JsonNode result = elasticService.search(indexName, searchQuery);
-        System.out.println(" result F= "+result);
         assertTrue(result.size()==1);        
     }
     @Test
     public void testSearchNeqOperator(){
         SearchQuery searchQuery = getSearchQuery("", "gender", "GenderTypeCode-FEMALE", FilterOperators.neq);
         JsonNode result = elasticService.search(indexName, searchQuery);
-        System.out.println(" result M= "+result);
         assertTrue(result.size()==1);        
     }
     @Test
