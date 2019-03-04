@@ -188,7 +188,7 @@ public class ElasticServiceImpl implements IElasticService {
         logger.debug("updateEntity starts with index {} and entityId {}", index, osid);
         UpdateResponse response = null;
         try{
-            response = getClient(index).update(new UpdateRequest(index, searchType, osid), RequestOptions.DEFAULT);
+            response = getClient(index).update(new UpdateRequest(index, searchType, osid).doc(inputEntity), RequestOptions.DEFAULT);
         } catch (IOException e) {
             logger.error("Exception in updating a record to ElasticSearch", e);
         }
