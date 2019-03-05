@@ -371,9 +371,7 @@ public class RegistryServiceImpl implements RegistryService {
                     }
                 } else if (oneElementNode.isObject()) {
                     logger.info("Object node {}", oneElement.toString());
-                    JsonNode entireObject = JsonNodeFactory.instance.objectNode();
-                    ((ObjectNode) entireObject).set(oneElement.getKey(), oneElementNode);
-                    doUpdate(graph, registryDao, vr, entireObject);
+                    doUpdate(graph, registryDao, vr, oneElementNode);
                 }
             }
         } else {
