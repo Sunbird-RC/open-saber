@@ -176,7 +176,7 @@ public class RegistryServiceImpl implements RegistryService {
             Definition definition = definitionsManager.getDefinition(vertexLabel);
             entityParenter.ensureIndexExists(dbProvider, parentVertex, definition, shardId);
             //call to elastic search
-            elasticService.addEntity(vertexLabel.toLowerCase(), entityId, JSONUtil.convertJsonNodeToMap(rootNode));
+            elasticService.addEntity(vertexLabel.toLowerCase(), entityId, rootNode);
         }
 
         return entityId;

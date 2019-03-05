@@ -161,11 +161,12 @@ public class ElasticServiceImpl implements IElasticService {
      * @return
      */
     @Override
-    public RestStatus addEntity(String index, String entityId, Map<String, Object> inputEntity) {
+    public RestStatus addEntity(String index, String entityId, JsonNode inputEntity) {
         logger.debug("addEntity starts with index {} and entityId {}", index, entityId);
         IndexResponse response = null;
         try {
-            response = getClient(index).index(new IndexRequest(index, searchType, entityId).source(inputEntity), RequestOptions.DEFAULT);
+            Map<String, Object> inputMap = JSONUtil.convertJsonNodeToMap(inputEntity);
+            response = getClient(index).index(new IndexRequest(index, searchType, entityId).source(inputMap), RequestOptions.DEFAULT);
         } catch (IOException e) {
             logger.error("Exception in adding record to ElasticSearch", e);
         }
