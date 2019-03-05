@@ -138,9 +138,11 @@ public class RegistryServiceImpl implements RegistryService {
             if (!(vertex.property(Constants.STATUS_KEYWORD).isPresent()
                     && vertex.property(Constants.STATUS_KEYWORD).value().equals(Constants.STATUS_INACTIVE))) {
                 registryDao.deleteEntity(vertex);
+                databaseProvider.commitTransaction(graph, tx);
+                String index = vertex.property(Constants.TYPE_STR_JSON_LD).isPresent() ? (String) vertex.property(Constants.TYPE_STR_JSON_LD).value() : null;
+                elasticService.deleteEntity(index, uuid);
             }
             logger.info("Entity {} marked deleted", uuid);
-            databaseProvider.commitTransaction(graph, tx);
         }
     }
 
