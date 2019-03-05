@@ -17,6 +17,10 @@ import java.util.Set;
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.delete.DeleteResponse;
+import org.elasticsearch.action.get.GetRequest;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequest;
@@ -170,7 +174,14 @@ public class ElasticServiceImpl implements IElasticService {
 
     @Override
     public Map<String, Object> readEntity(String index, String osid) {
-        return null;
+        logger.debug("readEntity starts with index {} and entityId {}", index, osid);
+        GetResponse response = null;
+        try{
+            response = getClient(index).get(new GetRequest(index, searchType, osid), RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            logger.error("Exception in reading a record from ElasticSearch", e);
+        }
+        return response.getSourceAsMap();
     }
 
     @Override
@@ -187,8 +198,14 @@ public class ElasticServiceImpl implements IElasticService {
     }
 
     @Override
-    public void deleteEntity(String index, String osid) {
-
+    public RestStatus deleteEntity(String index, String osid) {
+        DeleteResponse response = null;
+        try{
+            response = getClient(index).delete(new DeleteRequest(index, searchType, osid), RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            logger.error("Exception in delete a record from ElasticSearch", e);
+        }
+        return response.status();
     }
 
     @Override
