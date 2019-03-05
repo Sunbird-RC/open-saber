@@ -173,6 +173,11 @@ public class ElasticServiceImpl implements IElasticService {
         return response.status();
     }
 
+    /**
+     * @param index - ElasticSearch Index
+     * @param osid  - which maps to document
+     * @return
+     */
     @Override
     public Map<String, Object> readEntity(String index, String osid) {
         logger.debug("readEntity starts with index {} and entityId {}", index, osid);
@@ -185,6 +190,12 @@ public class ElasticServiceImpl implements IElasticService {
         return response.getSourceAsMap();
     }
 
+    /**
+     * @param index       - ElasticSearch Index
+     * @param osid        - which maps to document
+     * @param inputEntity - input json document for updating
+     * @return
+     */
     @Override
     public RestStatus updateEntity(String index, String osid, JsonNode inputEntity) {
         logger.debug("updateEntity starts with index {} and entityId {}", index, osid);
