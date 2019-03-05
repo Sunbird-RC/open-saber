@@ -7,6 +7,7 @@ import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.ReadConfigurator;
+import javax.json.Json;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
@@ -90,7 +91,13 @@ public class RegistryDaoImpl implements IRegistryDao {
     public void updateVertex(Graph graph, Vertex vertex, JsonNode inputJsonNode) {
         if (inputJsonNode.isObject()) {
             String objectName = inputJsonNode.fields().next().getKey();
-            if (vertex.property(objectName).isPresent()) {
+            logger.debug("Going to update objectName {}", objectName);
+            JsonNode osidJsonNode = inputJsonNode.get(uuidPropertyName);
+            String osidVal = "";
+            if (osidJsonNode != null) {
+                osidVal = osidJsonNode.textValue();
+            }
+            if (databaseProvider.getId(vertex).equals(osidVal)) {
                 updateObject(graph, vertex, (ObjectNode) inputJsonNode);
             } else {
                 VertexWriter vertexWriter = new VertexWriter(graph, getDatabaseProvider(), uuidPropertyName);

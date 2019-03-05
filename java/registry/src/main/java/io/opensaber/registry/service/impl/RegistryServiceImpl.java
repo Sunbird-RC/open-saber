@@ -250,6 +250,7 @@ public class RegistryServiceImpl implements RegistryService {
                 logger.debug("Removing earlier signature and adding new one");
                 String entitySignUUID = signatureHelper.removeEntitySignature(parentEntityType, (ObjectNode) mergedNode);
                 JsonNode newSignature = signatureHelper.signJson(mergedNode);
+                ((ObjectNode) newSignature).put(uuidPropertyName, entitySignUUID);
                 Vertex oldEntitySignatureVertex = uuidVertexMap.get(entitySignUUID);
 
                 registryDao.updateVertex(graph, oldEntitySignatureVertex, newSignature);
