@@ -36,18 +36,15 @@ public class AuditServiceImpl implements IAuditService {
 		if (!auditRecord.getAction().equalsIgnoreCase("READ")) {
 			JsonNode differenceJson = JSONUtil.diff(auditRecord.getExistingNode(), auditRecord.getLatestNode());
 			auditItemDetails = Arrays.asList(objectMapper.treeToValue(differenceJson, AuditItemDetails[].class));
-			//auditRecord.setItemDetails(auditItemDetails);
 		} else {
 			auditItemDetails = auditRecord.getItemDetails();
 		}
 		logger.debug("audit record printed");
 
 		auditItemDetails.forEach(auditItem -> {
-			logger.info("Action: {} Transaction: {} UserID: {} Operation: {} Path: {}",
-					auditRecord.getAction(), auditRecord.getTransactionId(), auditRecord.getUserId(),
+			logger.info("Action: {} Transaction: {} ID: {} UserID: {} Operation: {} Path: {}",
+					auditRecord.getAction(), auditRecord.getTransactionId(), auditRecord.getId(), auditRecord.getUserId(),
 					auditItem.getOp(), auditItem.getPath());
 		});
-
-		logger.info("audit info {}", auditRecord);
 	}
 }

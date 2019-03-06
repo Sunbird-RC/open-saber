@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.registry.dao.IRegistryDao;
 import io.opensaber.registry.dao.RegistryDaoImpl;
 import io.opensaber.registry.middleware.util.JSONUtil;
+import io.opensaber.registry.model.AuditItemDetails;
+import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.sink.shard.Shard;
@@ -37,6 +39,12 @@ public class NativeReadService implements IReadService {
 	@Autowired
 	private Shard shard;
 
+	@Autowired
+	private AuditRecord auditRecord;
+
+	@Autowired
+	private IAuditService auditService;
+
 	@Value("${database.uuidPropertyName}")
 	public String uuidPropertyName;
 
@@ -66,6 +74,16 @@ public class NativeReadService implements IReadService {
 
 			shard.getDatabaseProvider().commitTransaction(graph, tx);
 			dbProvider.commitTransaction(graph, tx);
+			auditRecord.setAction("READ");
+			auditRecord.setId(id);
+			auditRecord.setTransactionId(tx.hashCode());
+			auditRecord.setLatestNode(result);
+			auditRecord.setExistingNode(result);
+			AuditItemDetails auditItemDetails = new AuditItemDetails();
+			auditItemDetails.setOp("READ");
+			auditItemDetails.setPath(entityType);
+			auditRecord.setItemDetails(Arrays.asList(auditItemDetails));
+			auditService.audit(auditRecord);
 			return result;
 		}
 	}

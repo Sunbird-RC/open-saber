@@ -185,7 +185,7 @@ public class RegistryServiceImpl implements RegistryService {
             entityParenter.ensureIndexExists(dbProvider, parentVertex, definition, shardId);
             //call to elastic search
             elasticService.addEntity(vertexLabel.toLowerCase(), entityId, rootNode);
-            auditRecord.setAction("ADD-RECORD");
+            auditRecord.setAction("ADD");
             auditRecord.setExistingNode(rootNode);
             auditRecord.setTransactionId(tx.hashCode());
             auditServiceImpl.audit(auditRecord);
@@ -226,7 +226,6 @@ public class RegistryServiceImpl implements RegistryService {
                 dbProvider.commitTransaction(graph, tx);
             }
         }
-        auditServiceImpl.audit(new AuditRecord());
         return result;
     }
 
@@ -302,6 +301,11 @@ public class RegistryServiceImpl implements RegistryService {
             // elastic-search updation starts here
             logger.info("updating node {} " ,mergedNode);
             elasticService.updateEntity(parentEntityType,rootId,mergedNode);
+            auditRecord.setAction("UPDATE");
+            auditRecord.setExistingNode(readNode);
+            auditRecord.setLatestNode(mergedNode);
+            auditRecord.setTransactionId(tx.hashCode());
+            auditServiceImpl.audit(auditRecord);
         }
     }
 

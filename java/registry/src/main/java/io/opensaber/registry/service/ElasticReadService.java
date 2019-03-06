@@ -68,11 +68,12 @@ public class ElasticReadService implements IReadService {
             JSONUtil.removeNode((ObjectNode) result, Constants.SIGNATURES_STR);
         }
         auditRecord.setAction("READ");
+        auditRecord.setId(id);
         auditRecord.setLatestNode(result);
         auditRecord.setExistingNode(result);
         AuditItemDetails auditItemDetails = new AuditItemDetails();
         auditItemDetails.setOp("READ");
-        auditItemDetails.setPath(id);
+        auditItemDetails.setPath(entityType);
         auditRecord.setItemDetails(Arrays.asList(auditItemDetails));
         auditServiceImpl.audit(auditRecord);
         return result;

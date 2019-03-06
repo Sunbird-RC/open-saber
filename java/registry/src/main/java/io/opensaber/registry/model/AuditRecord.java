@@ -22,6 +22,7 @@ public class AuditRecord {
 	private JsonNode latestNode;
 	private String action;
 	private int transactionId;
+	private String id;
 	private String userId;
 	private List<AuditItemDetails> itemDetails;
 
@@ -71,6 +72,14 @@ public class AuditRecord {
 
     public void setItemDetails(List<AuditItemDetails> itemDetails) {
         this.itemDetails = itemDetails;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
 
