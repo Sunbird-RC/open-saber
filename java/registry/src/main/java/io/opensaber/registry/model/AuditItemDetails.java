@@ -3,7 +3,7 @@ package io.opensaber.registry.model;
 public class AuditItemDetails {
     private String op;
     private String path;
-    private String value;
+    private Object value;
 
     public String getOp() {
         return op;
@@ -21,11 +21,11 @@ public class AuditItemDetails {
         this.path = path;
     }
 
-    public String getValue() {
+    public Object getValue() {
         return value;
     }
 
-    public void setValue(String value) {
+    public void setValue(Object value) {
         this.value = value;
     }
 

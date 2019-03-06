@@ -186,8 +186,9 @@ public class RegistryServiceImpl implements RegistryService {
             //call to elastic search
             elasticService.addEntity(vertexLabel.toLowerCase(), entityId, rootNode);
             auditRecord.setAction("ADD");
-            auditRecord.setExistingNode(rootNode);
+            auditRecord.setLatestNode(rootNode);
             auditRecord.setTransactionId(tx.hashCode());
+            auditRecord.setId(entityId);
             auditServiceImpl.audit(auditRecord);
         }
 

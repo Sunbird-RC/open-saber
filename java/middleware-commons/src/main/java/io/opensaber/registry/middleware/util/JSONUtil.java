@@ -327,6 +327,9 @@ public class JSONUtil {
 		/*JsonNode beforeNode = jackson.readTree(existingNode);
 		JsonNode afterNode = jackson.readTree(latestNode);*/
 		//existingNode.isNull();
+		if(existingNode == null) {
+			existingNode = objectMapper.createObjectNode();
+		}
 		if(latestNode == null) {
 			latestNode = objectMapper.createObjectNode();
 		}
