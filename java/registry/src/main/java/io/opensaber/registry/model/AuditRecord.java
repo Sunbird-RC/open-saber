@@ -1,5 +1,6 @@
 package io.opensaber.registry.model;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.Gson;
 import io.opensaber.registry.authorization.pojos.AuthInfo;
 import io.opensaber.registry.exception.AuditFailedException;
@@ -15,15 +16,66 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.UUID;
 
-@Component
 public class AuditRecord {
-	private String subject;
-	private String predicate;
-	private Object oldObject;
-	private Object newObject;
-	private String readOnlyAuthInfo;
 
-	@Value("${registry.system.base}")
+	private JsonNode existingNode;
+	private JsonNode latestNode;
+	private String action;
+	private int transactionId;
+	private String userId;
+	private List<AuditItemDetails> itemDetails;
+
+	public JsonNode getExistingNode() {
+		return existingNode;
+	}
+
+	public void setExistingNode(JsonNode existingNode) {
+		this.existingNode = existingNode;
+	}
+
+	public JsonNode getLatestNode() {
+		return latestNode;
+	}
+
+	public void setLatestNode(JsonNode latestNode) {
+		this.latestNode = latestNode;
+	}
+
+	public String getAction() {
+		return action;
+	}
+
+	public void setAction(String action) {
+		this.action = action;
+	}
+
+    public int getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(int transactionId) {
+        this.transactionId = transactionId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public List<AuditItemDetails> getItemDetails() {
+        return itemDetails;
+    }
+
+    public void setItemDetails(List<AuditItemDetails> itemDetails) {
+        this.itemDetails = itemDetails;
+    }
+
+
+
+	/*@Value("${registry.system.base}")
 	private String registrySystemContext;
 
 	@Value("${authentication.enabled}")
@@ -72,11 +124,11 @@ public class AuditRecord {
 		boolean rootNodeExists = _source.V().hasLabel(subject).hasNext();
 		Vertex rootVertex;
 		if (!rootNodeExists) {
-			/*** "AUDIT ROOT NOT FOUND - CREATING" ***/
+			*//*** "AUDIT ROOT NOT FOUND - CREATING" ***//*
 			rootVertex = _source.addV(subject).next();
 			updateUserInfo(rootVertex);
 		} else {
-			/*** AUDIT ROOT FOUND - NOT CREATING" **/
+			*//*** AUDIT ROOT FOUND - NOT CREATING" **//*
 			rootVertex = _source.V().hasLabel(subject).next();
 			rootVertex.property(Constants.AUDIT_KEYWORD, "true");
 		}
@@ -130,6 +182,6 @@ public class AuditRecord {
 
 	public void readOnlyAuthInfo(String authInfo) {
 		this.readOnlyAuthInfo = authInfo;
-	}
+	}*/
 
 }

@@ -10,6 +10,9 @@ import io.opensaber.registry.dao.RegistryDaoImpl;
 import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
+import io.opensaber.registry.model.AuditItemDetails;
+import io.opensaber.registry.model.AuditRecord;
+import io.opensaber.registry.service.impl.AuditServiceImpl;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.util.ReadConfigurator;
@@ -21,6 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
@@ -36,6 +40,12 @@ public class ElasticReadService implements IReadService {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private AuditServiceImpl auditServiceImpl;
+
+    @Autowired
+    private AuditRecord auditRecord;
 
     /**
      * This method interacts with the Elasticsearch and reads the record
@@ -57,6 +67,14 @@ public class ElasticReadService implements IReadService {
         if(!configurator.isIncludeSignatures()) {
             JSONUtil.removeNode((ObjectNode) result, Constants.SIGNATURES_STR);
         }
+        auditRecord.setAction("READ");
+        auditRecord.setLatestNode(result);
+        auditRecord.setExistingNode(result);
+        AuditItemDetails auditItemDetails = new AuditItemDetails();
+        auditItemDetails.setOp("READ");
+        auditItemDetails.setPath(id);
+        auditRecord.setItemDetails(Arrays.asList(auditItemDetails));
+        auditServiceImpl.audit(auditRecord);
         return result;
     }
 

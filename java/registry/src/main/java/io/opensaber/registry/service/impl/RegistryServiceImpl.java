@@ -13,6 +13,7 @@ import io.opensaber.registry.dao.VertexReader;
 import io.opensaber.registry.dao.VertexWriter;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
+import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.service.EncryptionHelper;
 import io.opensaber.registry.service.EncryptionService;
 import io.opensaber.registry.service.RegistryService;
@@ -66,6 +67,10 @@ public class RegistryServiceImpl implements RegistryService {
     private ObjectMapper objectMapper;
     @Autowired
     private IElasticService elasticService;
+    @Autowired
+    private AuditServiceImpl auditServiceImpl;
+    @Autowired
+    private AuditRecord auditRecord;
     @Value("${encryption.enabled}")
     private boolean encryptionEnabled;
 
@@ -147,6 +152,7 @@ public class RegistryServiceImpl implements RegistryService {
     }
 
     public String addEntity(String jsonString) throws Exception {
+        Transaction tx = null;
         String entityId = "entityPlaceholderId";
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(jsonString);
@@ -165,7 +171,7 @@ public class RegistryServiceImpl implements RegistryService {
             IRegistryDao registryDao = new RegistryDaoImpl(dbProvider, definitionsManager, uuidPropertyName);
             try (OSGraph osGraph = dbProvider.getOSGraph()) {
                 Graph graph = osGraph.getGraphStore();
-                Transaction tx = dbProvider.startTransaction(graph);
+                tx = dbProvider.startTransaction(graph);
                 entityId = registryDao.addEntity(graph, rootNode);
                 shard.getDatabaseProvider().commitTransaction(graph, tx);
                 dbProvider.commitTransaction(graph, tx);
@@ -179,6 +185,10 @@ public class RegistryServiceImpl implements RegistryService {
             entityParenter.ensureIndexExists(dbProvider, parentVertex, definition, shardId);
             //call to elastic search
             elasticService.addEntity(vertexLabel.toLowerCase(), entityId, rootNode);
+            auditRecord.setAction("ADD-RECORD");
+            auditRecord.setExistingNode(rootNode);
+            auditRecord.setTransactionId(tx.hashCode());
+            auditServiceImpl.audit(auditRecord);
         }
 
         return entityId;
@@ -216,6 +226,7 @@ public class RegistryServiceImpl implements RegistryService {
                 dbProvider.commitTransaction(graph, tx);
             }
         }
+        auditServiceImpl.audit(new AuditRecord());
         return result;
     }
 

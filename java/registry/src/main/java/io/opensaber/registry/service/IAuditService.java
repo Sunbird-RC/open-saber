@@ -1,6 +1,9 @@
 package io.opensaber.registry.service;
 
-public interface RegistryAuditService {
+import io.opensaber.registry.model.AuditRecord;
+import java.io.IOException;
+
+public interface IAuditService {
 
 //	public String frameAuditEntity(org.eclipse.rdf4j.model.Model entityModel) throws IOException;
 //
@@ -9,4 +12,5 @@ public interface RegistryAuditService {
 //
 //	public String getAuditNodeFramed(String id) throws IOException, NoSuchElementException, RecordNotFoundException,
 //			EncryptionException, AuditFailedException, IOException, MultipleEntityException, EntityCreationException;
+    void audit(AuditRecord auditRecord) throws IOException;
 }

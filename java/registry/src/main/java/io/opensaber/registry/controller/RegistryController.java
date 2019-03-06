@@ -8,9 +8,10 @@ import io.opensaber.pojos.Response;
 import io.opensaber.pojos.ResponseParams;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
+import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.service.IReadService;
-import io.opensaber.registry.service.RegistryAuditService;
+import io.opensaber.registry.service.IAuditService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.ISearchService;
 import io.opensaber.registry.sink.shard.Shard;
@@ -50,7 +51,7 @@ public class RegistryController {
     @Autowired
     private RegistryService registryService;
     @Autowired
-    private RegistryAuditService registryAuditService;
+    private IAuditService iAuditService;
     @Autowired
     private ISearchService searchService;
     @Autowired
@@ -59,6 +60,8 @@ public class RegistryController {
     private APIMessage apiMessage;
     @Autowired
     private DBConnectionInfoMgr dbConnectionInfoMgr;
+    @Autowired
+    private AuditRecord auditRecord;
 
     @Value("${audit.enabled}")
     private boolean auditEnabled;
@@ -230,6 +233,7 @@ public class RegistryController {
         configurator.setIncludeTypeAttributes(requireLDResponse);
 
         try {
+            auditRecord.setUserId("1111");
             JsonNode resultNode = readService.getEntity(recordId.getUuid(), entityType, configurator);
             // Transformation based on the mediaType
             Data<Object> data = new Data<>(resultNode);

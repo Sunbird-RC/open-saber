@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.flipkart.zjsonpatch.JsonDiff;
 import com.github.jsonldjava.core.JsonLdError;
 import com.github.jsonldjava.core.JsonLdOptions;
 import com.github.jsonldjava.core.JsonLdProcessor;
@@ -315,5 +316,24 @@ public class JSONUtil {
 				}
 			}
 		});
+	}
+
+	public static JsonNode diff(JsonNode existingNode, JsonNode latestNode) throws IOException {
+		ObjectMapper objectMapper = new ObjectMapper();
+		/*String beforeJsonStr = "{\"a\":{\"b1\":\"c\"}}";
+		String afterJsonStr = "{\"a\":{\"b1\":\"d\",\"b2\":\"d\"}}";
+		JsonNode beforeNode = jackson.readTree(beforeJsonStr);
+		JsonNode afterNode = jackson.readTree(afterJsonStr);*/
+		/*JsonNode beforeNode = jackson.readTree(existingNode);
+		JsonNode afterNode = jackson.readTree(latestNode);*/
+		//existingNode.isNull();
+		if(latestNode == null) {
+			latestNode = objectMapper.createObjectNode();
+		}
+		JsonNode patchNode = JsonDiff.asJson(existingNode, latestNode);
+		String diff = patchNode.toString();
+		System.out.println("diff is : "+ diff);
+		//System.out.println("src is "+ beforeNode.at("/a/b1").textValue());
+		return patchNode;
 	}
 }
