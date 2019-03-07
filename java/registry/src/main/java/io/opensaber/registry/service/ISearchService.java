@@ -1,6 +1,7 @@
 package io.opensaber.registry.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.opensaber.pojos.Filter;
 import io.opensaber.pojos.FilterOperators;
 import io.opensaber.pojos.SearchQuery;
@@ -26,13 +27,28 @@ public interface ISearchService {
      * @return
      */
     default SearchQuery getSearchQuery(JsonNode inputQueryNode, int offset, int limit) {
-        String rootLabel = inputQueryNode.fieldNames().next();
+        //get entityType array values
+        JsonNode typeNode = inputQueryNode.get("entityType");
+        if(!typeNode.isArray())
+            throw new IllegalArgumentException("entityType invalid!");
 
-        SearchQuery searchQuery = new SearchQuery(rootLabel, offset, limit);
+        ArrayNode types = typeNode.isArray()? (ArrayNode)typeNode : null;
+        List<String> entites = new ArrayList<>();
+        for(JsonNode node:types){
+           entites.add(node.asText()); 
+        }        
+        SearchQuery searchQuery = new SearchQuery(entites, offset, limit);
+
         List<Filter> filterList = new ArrayList<>();
-        JsonNode rootNode = inputQueryNode.get(rootLabel);
-        if (rootLabel != null && !rootLabel.isEmpty()) {
-            addToFilterList(null, rootNode, filterList);
+        //get common filter/queries to apply 
+        JsonNode rootNode = inputQueryNode.get("filters");
+        //TODO: JsonNode freeNode = inputQueryNode.get("queries"); //not be supported by native queries 
+
+        if(rootNode ==  null)
+            throw new IllegalArgumentException("filters is missing from search request!");
+
+        if (entites.size() != 0) {
+            addToFilterList(null, rootNode, filterList);// for filter
         }
         try {
             searchQuery.setLimit(inputQueryNode.get("limit").asInt());

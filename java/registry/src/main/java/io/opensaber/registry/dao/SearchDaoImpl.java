@@ -3,6 +3,7 @@ package io.opensaber.registry.dao;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.Filter;
 import io.opensaber.pojos.FilterOperators;
 import io.opensaber.pojos.SearchQuery;
@@ -29,93 +30,96 @@ public class SearchDaoImpl implements SearchDao {
         GraphTraversalSource dbGraphTraversalSource = graphFromStore.traversal().clone();
         List<Filter> filterList = searchQuery.getFilters();
         int offset = searchQuery.getOffset();
-        GraphTraversal<Vertex, Vertex> resultGraphTraversal = dbGraphTraversalSource.clone().V()
-                .hasLabel(searchQuery.getRootLabel()).range(offset, offset + searchQuery.getLimit())
-                .limit(searchQuery.getLimit());
-        GraphTraversal<Vertex, Vertex> parentTraversal = resultGraphTraversal.asAdmin().clone();
+        ObjectNode resultNode = JsonNodeFactory.instance.objectNode();
+        for (String entity : searchQuery.getEntityTypes()) {
+            GraphTraversal<Vertex, Vertex> resultGraphTraversal = dbGraphTraversalSource.clone().V().hasLabel(entity)
+                    .range(offset, offset + searchQuery.getLimit()).limit(searchQuery.getLimit());
+            GraphTraversal<Vertex, Vertex> parentTraversal = resultGraphTraversal.asAdmin().clone();
 
-        BiPredicate<String, String> condition = null;
-        // Ensure the root label is correct
-        if (filterList != null) {
-            for (Filter filter : filterList) {
-                String property = filter.getProperty();
-                Object genericValue = filter.getValue();
+            BiPredicate<String, String> condition = null;
+            // Ensure the root label is correct
+            if (filterList != null) {
+                for (Filter filter : filterList) {
+                    String property = filter.getProperty();
+                    Object genericValue = filter.getValue();
 
-                FilterOperators operator = filter.getOperator();
-                String path = filter.getPath();
-                if (path != null) {
-                    resultGraphTraversal = resultGraphTraversal.outE(path).inV();
+                    FilterOperators operator = filter.getOperator();
+                    String path = filter.getPath();
+                    if (path != null) {
+                        resultGraphTraversal = resultGraphTraversal.outE(path).inV();
+                    }
+
+                    switch (operator) {
+                    case eq:
+                        resultGraphTraversal = resultGraphTraversal.has(property, P.eq(genericValue));
+                        break;
+                    case neq:
+                        resultGraphTraversal = resultGraphTraversal.has(property, P.neq(genericValue));
+                        break;
+                    case gt:
+                        resultGraphTraversal = resultGraphTraversal.has(property, P.gt(genericValue));
+                        break;
+                    case lt:
+                        resultGraphTraversal = resultGraphTraversal.has(property, P.lt(genericValue));
+                        break;
+                    case gte:
+                        resultGraphTraversal = resultGraphTraversal.has(property, P.gte(genericValue));
+                        break;
+                    case lte:
+                        resultGraphTraversal = resultGraphTraversal.has(property, P.lte(genericValue));
+                        break;
+                    case between:
+                        List<Object> objects = (List<Object>) genericValue;
+                        resultGraphTraversal = resultGraphTraversal.has(property,
+                                P.between(objects.get(0), objects.get(objects.size() - 1)));
+                        break;
+                    case or:
+                        List<Object> values = (List<Object>) genericValue;
+                        resultGraphTraversal = resultGraphTraversal.has(property, P.within(values));
+                        break;
+
+                    case contains:
+                        condition = (s1, s2) -> (s1.contains(s2));
+                        resultGraphTraversal = resultGraphTraversal.has(property,
+                                new P<String>(condition, genericValue.toString()));
+                        break;
+                    case startsWith:
+                        condition = (s1, s2) -> (s1.startsWith(s2));
+                        resultGraphTraversal = resultGraphTraversal.has(property,
+                                new P<String>(condition, genericValue.toString()));
+                        break;
+                    case endsWith:
+                        condition = (s1, s2) -> (s1.endsWith(s2));
+                        resultGraphTraversal = resultGraphTraversal.has(property,
+                                new P<String>(condition, genericValue.toString()));
+                        break;
+                    case notContains:
+                        condition = (s1, s2) -> (s1.contains(s2));
+                        resultGraphTraversal = resultGraphTraversal.has(property,
+                                new P<String>(condition, genericValue.toString()));
+                        break;
+                    case notStartsWith:
+                        condition = (s1, s2) -> (!s1.startsWith(s2));
+                        resultGraphTraversal = resultGraphTraversal.has(property,
+                                new P<String>(condition, genericValue.toString()));
+                        break;
+                    case notEndsWith:
+                        condition = (s1, s2) -> (!s1.endsWith(s2));
+                        resultGraphTraversal = resultGraphTraversal.has(property,
+                                new P<String>(condition, genericValue.toString()));
+                        break;
+                    default:
+                        resultGraphTraversal = resultGraphTraversal.has(property, P.eq(genericValue));
+                        break;
+                    }
+
                 }
-
-                switch (operator) {
-                case eq:
-                    resultGraphTraversal = resultGraphTraversal.has(property, P.eq(genericValue));
-                    break;
-                case neq:
-                    resultGraphTraversal = resultGraphTraversal.has(property, P.neq(genericValue));
-                    break;
-                case gt:
-                    resultGraphTraversal = resultGraphTraversal.has(property, P.gt(genericValue));
-                    break;
-                case lt:
-                    resultGraphTraversal = resultGraphTraversal.has(property, P.lt(genericValue));
-                    break;
-                case gte:
-                    resultGraphTraversal = resultGraphTraversal.has(property, P.gte(genericValue));
-                    break;
-                case lte:
-                    resultGraphTraversal = resultGraphTraversal.has(property, P.lte(genericValue));
-                    break;
-                case between:
-                    List<Object> objects = (List<Object>) genericValue;
-                    resultGraphTraversal = resultGraphTraversal.has(property,
-                            P.between(objects.get(0), objects.get(objects.size() - 1)));
-                    break;
-                case or:
-                    List<Object> values = (List<Object>) genericValue;
-                    resultGraphTraversal = resultGraphTraversal.has(property,
-                            P.within(values));
-                    break;
-
-                case contains:
-                    condition = (s1, s2) -> (s1.contains(s2));
-                    resultGraphTraversal = resultGraphTraversal.has(property,
-                            new P<String>(condition, genericValue.toString()));
-                    break;
-                case startsWith:
-                    condition = (s1, s2) -> (s1.startsWith(s2));
-                    resultGraphTraversal = resultGraphTraversal.has(property,
-                            new P<String>(condition, genericValue.toString()));
-                    break;
-                case endsWith:
-                    condition = (s1, s2) -> (s1.endsWith(s2));
-                    resultGraphTraversal = resultGraphTraversal.has(property,
-                            new P<String>(condition, genericValue.toString()));
-                    break;
-                case notContains:
-                    condition = (s1, s2) -> (s1.contains(s2));
-                    resultGraphTraversal = resultGraphTraversal.has(property,
-                            new P<String>(condition, genericValue.toString()));
-                    break;
-                case notStartsWith:
-                    condition = (s1, s2) -> (!s1.startsWith(s2));
-                    resultGraphTraversal = resultGraphTraversal.has(property,
-                            new P<String>(condition, genericValue.toString()));
-                    break;
-                case notEndsWith:
-                    condition = (s1, s2) -> (!s1.endsWith(s2));
-                    resultGraphTraversal = resultGraphTraversal.has(property,
-                            new P<String>(condition, genericValue.toString()));
-                    break;
-                default:
-                    resultGraphTraversal = resultGraphTraversal.has(property, P.eq(genericValue));
-                    break;
-                }
-
             }
+            JsonNode result = getResult(graphFromStore, resultGraphTraversal, parentTraversal);
+            resultNode.set(entity, result);
         }
 
-        return getResult(graphFromStore, resultGraphTraversal, parentTraversal);
+        return resultNode;
     }
 
 	private void updateValueList(Object value, List valueList) {

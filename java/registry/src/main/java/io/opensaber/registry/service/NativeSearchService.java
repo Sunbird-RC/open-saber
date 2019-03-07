@@ -11,7 +11,6 @@ import io.opensaber.registry.dao.SearchDaoImpl;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.model.DBConnectionInfo;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
-import io.opensaber.registry.service.ISearchService;
 import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.sink.shard.ShardManager;
@@ -72,16 +71,13 @@ public class NativeSearchService implements ISearchService {
 			try (OSGraph osGraph = shard.getDatabaseProvider().getOSGraph()) {
 				Graph graph = osGraph.getGraphStore();
 				try (Transaction tx = shard.getDatabaseProvider().startTransaction(graph)) {
-					ArrayNode oneShardResult = (ArrayNode) searchDao.search(graph, searchQuery);
-					for (JsonNode jsonNode: oneShardResult) {
-						if (!shard.getShardLabel().isEmpty()) {
-							// Replace osid with shard details
-							String prefix = shard.getShardLabel() + RecordIdentifier.getSeparator();
-							JSONUtil.addPrefix((ObjectNode) jsonNode, prefix, new ArrayList<>(Arrays.asList(uuidPropertyName)));
-						}
-
-						result.add(jsonNode);
-					}
+                    ObjectNode shardResult = (ObjectNode) searchDao.search(graph, searchQuery);
+                    if (!shard.getShardLabel().isEmpty()) {
+                        // Replace osid with shard details
+                        String prefix = shard.getShardLabel() + RecordIdentifier.getSeparator();
+                        JSONUtil.addPrefix((ObjectNode) shardResult, prefix, new ArrayList<>(Arrays.asList(uuidPropertyName)));
+                    }
+                    result.add(shardResult);
 				}
 			} catch (Exception e) {
 				logger.error("search operation failed: {}", e);
