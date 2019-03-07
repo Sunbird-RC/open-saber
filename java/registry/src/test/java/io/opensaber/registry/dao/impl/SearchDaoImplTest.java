@@ -28,6 +28,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -35,7 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-
+@Ignore
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { DefinitionsManager.class, DefinitionsReader.class, DBProviderFactory.class, DBConnectionInfoMgr.class })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
