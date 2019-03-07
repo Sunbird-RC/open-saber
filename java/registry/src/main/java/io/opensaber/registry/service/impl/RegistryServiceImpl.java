@@ -130,7 +130,7 @@ public class RegistryServiceImpl implements RegistryService {
     }
 
     /**
-     * delete the vertex and changing the status
+     * delete the vertex and changes the status
      *
      * @param uuid
      * @throws Exception
@@ -151,6 +151,9 @@ public class RegistryServiceImpl implements RegistryService {
                 databaseProvider.commitTransaction(graph, tx);
                 String index = vertex.property(Constants.TYPE_STR_JSON_LD).isPresent() ? (String) vertex.property(Constants.TYPE_STR_JSON_LD).value() : null;
                 elasticService.deleteEntity(index, uuid);
+                auditRecord = new AuditRecord();
+                auditRecord.setAction(Constants.AUDIT_ACTION_DELETE).setUserId(apiMessage.getUserID()).setTransactionId(tx.hashCode()).
+                        setId(uuid);
             }
             logger.info("Entity {} marked deleted", uuid);
         }
