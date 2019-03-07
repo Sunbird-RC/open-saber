@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.opensaber.pojos.FilterOperators;
 import io.opensaber.pojos.SearchQuery;
 import io.opensaber.registry.dao.IRegistryDao;
 import io.opensaber.registry.dao.RegistryDaoImpl;
@@ -60,6 +61,9 @@ public class NativeSearchService implements ISearchService {
 	public JsonNode search(JsonNode inputQueryNode) {
 		ArrayNode result = JsonNodeFactory.instance.arrayNode();
 		SearchQuery searchQuery = getSearchQuery(inputQueryNode, offset, limit);
+
+		if(searchQuery.getFilters().size() == 1 && searchQuery.getFilters().get(0).getOperator() == FilterOperators.freeText)
+            throw new IllegalArgumentException("free-text queries not supported for native search!");
 
 		// Now, search across all shards and return the results.
 		for (DBConnectionInfo dbConnection : dbConnectionInfoMgr.getConnectionInfo()) {

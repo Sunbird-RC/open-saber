@@ -27,32 +27,35 @@ public interface ISearchService {
      * @return
      */
     default SearchQuery getSearchQuery(JsonNode inputQueryNode, int offset, int limit) {
-        //get entityType array values
+        // get entityType array values
         JsonNode typeNode = inputQueryNode.get("entityType");
-        if(!typeNode.isArray())
+        if (!typeNode.isArray() || typeNode.size() == 0)
             throw new IllegalArgumentException("entityType invalid!");
 
-        ArrayNode types = (ArrayNode)typeNode;
+        ArrayNode types = (ArrayNode) typeNode;
         List<String> entites = new ArrayList<>();
-        for(JsonNode node:types){
-           entites.add(node.asText()); 
-        }        
+        for (JsonNode node : types) {
+            entites.add(node.asText());
+        }
         SearchQuery searchQuery = new SearchQuery(entites, offset, limit);
 
         List<Filter> filterList = new ArrayList<>();
-        //get common filter/queries to apply 
-        JsonNode rootNode = inputQueryNode.get("filters");
-        JsonNode freeText = inputQueryNode.get("queries"); 
+        // get common filter/queries to apply
+        JsonNode queryNode = inputQueryNode.has("filters") ? inputQueryNode.get("filters")
+                : inputQueryNode.get("queries");
 
-        if(rootNode ==  null && freeText == null)
-            throw new IllegalArgumentException("filters is missing from search request!");
+        if (queryNode == null) {
+            throw new IllegalArgumentException("filters or queries missing from search request!");
 
-        if (entites.size() != 0) {
-            addToFilterList(null, rootNode, filterList);
+        } else if (queryNode.isObject()) {
+            addToFilterList(null, queryNode, filterList);
+
+        } else if (queryNode.isTextual()) {
             // adding queries free text as filter
-            Filter freeTextFilter = new Filter("*", FilterOperators.freeText, freeText.asText());
+            Filter freeTextFilter = new Filter("*", FilterOperators.freeText, queryNode.asText());
             filterList.add(freeTextFilter);
         }
+
         try {
             searchQuery.setLimit(inputQueryNode.get("limit").asInt());
             searchQuery.setOffset(inputQueryNode.get("offset").asInt());
