@@ -108,6 +108,8 @@ public class SearchDaoImpl implements SearchDao {
                         resultGraphTraversal = resultGraphTraversal.has(property,
                                 new P<String>(condition, genericValue.toString()));
                         break;
+                    case freeText:
+                        throw new IllegalArgumentException("free-text queries not supported for native search!");
                     default:
                         resultGraphTraversal = resultGraphTraversal.has(property, P.eq(genericValue));
                         break;

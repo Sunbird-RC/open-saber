@@ -32,7 +32,7 @@ public interface ISearchService {
         if(!typeNode.isArray())
             throw new IllegalArgumentException("entityType invalid!");
 
-        ArrayNode types = typeNode.isArray()? (ArrayNode)typeNode : null;
+        ArrayNode types = (ArrayNode)typeNode;
         List<String> entites = new ArrayList<>();
         for(JsonNode node:types){
            entites.add(node.asText()); 
@@ -42,13 +42,16 @@ public interface ISearchService {
         List<Filter> filterList = new ArrayList<>();
         //get common filter/queries to apply 
         JsonNode rootNode = inputQueryNode.get("filters");
-        //TODO: JsonNode freeNode = inputQueryNode.get("queries"); //not be supported by native queries 
+        JsonNode freeText = inputQueryNode.get("queries"); 
 
-        if(rootNode ==  null)
+        if(rootNode ==  null && freeText == null)
             throw new IllegalArgumentException("filters is missing from search request!");
 
         if (entites.size() != 0) {
-            addToFilterList(null, rootNode, filterList);// for filter
+            addToFilterList(null, rootNode, filterList);
+            // adding queries free text as filter
+            Filter freeTextFilter = new Filter("*", FilterOperators.freeText, freeText.asText());
+            filterList.add(freeTextFilter);
         }
         try {
             searchQuery.setLimit(inputQueryNode.get("limit").asInt());
