@@ -233,7 +233,6 @@ public class RegistryController {
         configurator.setIncludeTypeAttributes(requireLDResponse);
 
         try {
-            auditRecord.setUserId("1111");
             JsonNode resultNode = readService.getEntity(recordId.getUuid(), entityType, configurator);
             // Transformation based on the mediaType
             Data<Object> data = new Data<>(resultNode);

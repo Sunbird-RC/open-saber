@@ -2,10 +2,12 @@ package io.opensaber.registry.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.opensaber.pojos.APIMessage;
 import io.opensaber.registry.dao.IRegistryDao;
 import io.opensaber.registry.dao.RegistryDaoImpl;
+import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
-import io.opensaber.registry.model.AuditItemDetails;
+import io.opensaber.registry.model.AuditInfo;
 import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.OSGraph;
@@ -40,10 +42,10 @@ public class NativeReadService implements IReadService {
 	private Shard shard;
 
 	@Autowired
-	private AuditRecord auditRecord;
-
-	@Autowired
 	private IAuditService auditService;
+
+    @Autowired
+    private APIMessage apiMessage;
 
 	@Value("${database.uuidPropertyName}")
 	public String uuidPropertyName;
@@ -59,6 +61,7 @@ public class NativeReadService implements IReadService {
 	 */
 	@Override
 	public JsonNode getEntity(String id, String entityType, ReadConfigurator configurator) throws Exception {
+        AuditRecord auditRecord = null;
 		DatabaseProvider dbProvider = shard.getDatabaseProvider();
 		IRegistryDao registryDao = new RegistryDaoImpl(dbProvider, definitionsManager, uuidPropertyName);
 		try (OSGraph osGraph = dbProvider.getOSGraph()) {
@@ -74,15 +77,12 @@ public class NativeReadService implements IReadService {
 
 			shard.getDatabaseProvider().commitTransaction(graph, tx);
 			dbProvider.commitTransaction(graph, tx);
-			auditRecord.setAction("READ");
-			auditRecord.setId(id);
-			auditRecord.setTransactionId(tx.hashCode());
-			auditRecord.setLatestNode(result);
-			auditRecord.setExistingNode(result);
-			AuditItemDetails auditItemDetails = new AuditItemDetails();
-			auditItemDetails.setOp("READ");
-			auditItemDetails.setPath(entityType);
-			auditRecord.setItemDetails(Arrays.asList(auditItemDetails));
+            auditRecord =  new AuditRecord();
+            auditRecord.setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_READ).setId(id).setTransactionId(tx.hashCode()).setLatestNode(result).setExistingNode(result);
+			AuditInfo auditInfo = new AuditInfo();
+			auditInfo.setOp(Constants.AUDIT_ACTION_READ);
+			auditInfo.setPath(entityType);
+			auditRecord.setAuditInfo(Arrays.asList(auditInfo));
 			auditService.audit(auditRecord);
 			return result;
 		}

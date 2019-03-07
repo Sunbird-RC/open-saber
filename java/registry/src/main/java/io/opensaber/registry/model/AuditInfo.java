@@ -1,6 +1,8 @@
 package io.opensaber.registry.model;
 
-public class AuditItemDetails {
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+public class AuditInfo {
     private String op;
     private String path;
     private Object value;
@@ -21,6 +23,7 @@ public class AuditItemDetails {
         this.path = path;
     }
 
+    @JsonIgnore
     public Object getValue() {
         return value;
     }

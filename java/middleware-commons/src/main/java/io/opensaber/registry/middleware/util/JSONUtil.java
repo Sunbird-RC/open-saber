@@ -318,15 +318,14 @@ public class JSONUtil {
 		});
 	}
 
-	public static JsonNode diff(JsonNode existingNode, JsonNode latestNode) throws IOException {
+	/** This method checks difference between 2 json-nodes and filter out patch as json node
+	 *
+	 * @param existingNode
+	 * @param latestNode
+	 * @return
+	 */
+	public static JsonNode diffJsonNode(JsonNode existingNode, JsonNode latestNode) {
 		ObjectMapper objectMapper = new ObjectMapper();
-		/*String beforeJsonStr = "{\"a\":{\"b1\":\"c\"}}";
-		String afterJsonStr = "{\"a\":{\"b1\":\"d\",\"b2\":\"d\"}}";
-		JsonNode beforeNode = jackson.readTree(beforeJsonStr);
-		JsonNode afterNode = jackson.readTree(afterJsonStr);*/
-		/*JsonNode beforeNode = jackson.readTree(existingNode);
-		JsonNode afterNode = jackson.readTree(latestNode);*/
-		//existingNode.isNull();
 		if(existingNode == null) {
 			existingNode = objectMapper.createObjectNode();
 		}
@@ -334,9 +333,7 @@ public class JSONUtil {
 			latestNode = objectMapper.createObjectNode();
 		}
 		JsonNode patchNode = JsonDiff.asJson(existingNode, latestNode);
-		String diff = patchNode.toString();
-		System.out.println("diff is : "+ diff);
-		//System.out.println("src is "+ beforeNode.at("/a/b1").textValue());
+		logger.debug("diffJsonNode is : "+ patchNode.toString());
 		return patchNode;
 	}
 }

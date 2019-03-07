@@ -73,6 +73,11 @@ public class Constants {
 	//elastic search document type
 	public static final String ES_DOC_TYPE = "_doc";
 
+	public static final String AUDIT_ACTION_READ = "READ";
+	public static final String AUDIT_ACTION_ADD = "ADD";
+	public static final String AUDIT_ACTION_UPDATE = "UPDATE";
+	public static final String AUDIT_ACTION_SEARCH = "SEARCH";
+	public static final String AUDIT_ACTION_DELETE = "DELETE";
 
 	public enum GraphDatabaseProvider {
 		NEO4J("NEO4J"), ORIENTDB("ORIENTDB"), SQLG("SQLG"), CASSANDRA("CASSANDRA"), TINKERGRAPH("TINKERGRAPH");

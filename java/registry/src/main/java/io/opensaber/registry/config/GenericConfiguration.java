@@ -50,12 +50,14 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -109,6 +111,18 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Value("${taskExecutor.index.queueCapacity}")
 	private int indexQueueCapacity;
+
+	@Value("${auditTaskExecutor.threadPoolName}")
+	private String auditThreadName;
+
+	@Value("${auditTaskExecutor.corePoolSize}")
+	private int auditCorePoolSize;
+
+	@Value("${auditTaskExecutor.maxPoolSize}")
+	private int auditMaxPoolSize;
+
+	@Value("${auditTaskExecutor.queueCapacity}")
+	private int auditQueueCapacity;
 
 	@Value("${elastic.search.connection_url}")
 	private String elasticConnInfo;
@@ -221,7 +235,8 @@ public class GenericConfiguration implements WebMvcConfigurer {
     }
     
 	@Bean
-	@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+	@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE,
+			proxyMode = ScopedProxyMode.TARGET_CLASS)
 	public AuditRecord auditRecord() {
 		return new AuditRecord();
 	}
@@ -345,6 +360,22 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		executor.setMaxPoolSize(indexMaxPoolSize);
 		executor.setQueueCapacity(indexQueueCapacity);
 		executor.setThreadNamePrefix(indexThreadName);
+		executor.initialize();
+		return executor;
+	}
+
+	/**
+	 * This method creates ThreadPool task-executor for audit
+	 *
+	 * @return - TaskExecutor
+	 */
+	@Bean(name = "auditExecutor")
+	public TaskExecutor auditTaskExecutor() {
+		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+		executor.setCorePoolSize(auditCorePoolSize);
+		executor.setMaxPoolSize(auditMaxPoolSize);
+		executor.setQueueCapacity(auditQueueCapacity);
+		executor.setThreadNamePrefix(auditThreadName);
 		executor.initialize();
 		return executor;
 	}

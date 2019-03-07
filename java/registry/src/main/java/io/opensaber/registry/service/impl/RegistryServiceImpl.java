@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.elastic.IElasticService;
+import io.opensaber.pojos.APIMessage;
 import io.opensaber.pojos.ComponentHealthInfo;
 import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.registry.dao.IRegistryDao;
@@ -16,6 +17,7 @@ import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.service.EncryptionHelper;
 import io.opensaber.registry.service.EncryptionService;
+import io.opensaber.registry.service.IAuditService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SignatureHelper;
 import io.opensaber.registry.service.SignatureService;
@@ -37,6 +39,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.json.Json;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -68,9 +71,9 @@ public class RegistryServiceImpl implements RegistryService {
     @Autowired
     private IElasticService elasticService;
     @Autowired
-    private AuditServiceImpl auditServiceImpl;
+    private IAuditService auditService;
     @Autowired
-    private AuditRecord auditRecord;
+    private APIMessage apiMessage;
     @Value("${encryption.enabled}")
     private boolean encryptionEnabled;
 
@@ -88,6 +91,8 @@ public class RegistryServiceImpl implements RegistryService {
 
     @Autowired
     private EntityParenter entityParenter;
+
+    private AuditRecord auditRecord;
 
     public void setShard(Shard shard) {
         this.shard = shard;
@@ -151,6 +156,13 @@ public class RegistryServiceImpl implements RegistryService {
         }
     }
 
+    /**
+     * This method adds the entity into db, calls elastic and audit asynchronously
+     *
+     * @param jsonString - input value as string
+     * @return
+     * @throws Exception
+     */
     public String addEntity(String jsonString) throws Exception {
         Transaction tx = null;
         String entityId = "entityPlaceholderId";
@@ -185,11 +197,10 @@ public class RegistryServiceImpl implements RegistryService {
             entityParenter.ensureIndexExists(dbProvider, parentVertex, definition, shardId);
             //call to elastic search
             elasticService.addEntity(vertexLabel.toLowerCase(), entityId, rootNode);
-            auditRecord.setAction("ADD");
-            auditRecord.setLatestNode(rootNode);
-            auditRecord.setTransactionId(tx.hashCode());
-            auditRecord.setId(entityId);
-            auditServiceImpl.audit(auditRecord);
+            auditRecord = new AuditRecord();
+            auditRecord.setAction(Constants.AUDIT_ACTION_ADD).setUserId(apiMessage.getUserID()).setLatestNode(rootNode).setTransactionId(tx.hashCode()).
+                    setId(entityId);
+            auditService.audit(auditRecord);
         }
 
         return entityId;
@@ -302,11 +313,10 @@ public class RegistryServiceImpl implements RegistryService {
             // elastic-search updation starts here
             logger.info("updating node {} " ,mergedNode);
             elasticService.updateEntity(parentEntityType,rootId,mergedNode);
-            auditRecord.setAction("UPDATE");
-            auditRecord.setExistingNode(readNode);
-            auditRecord.setLatestNode(mergedNode);
-            auditRecord.setTransactionId(tx.hashCode());
-            auditServiceImpl.audit(auditRecord);
+            auditRecord = new AuditRecord();
+            auditRecord.setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_UPDATE).setExistingNode(readNode)
+                    .setLatestNode(mergedNode).setTransactionId(tx.hashCode()).setUserId(id);
+            auditService.audit(auditRecord);
         }
     }
 

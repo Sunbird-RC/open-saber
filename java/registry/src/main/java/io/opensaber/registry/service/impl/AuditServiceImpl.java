@@ -2,9 +2,8 @@ package io.opensaber.registry.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.opensaber.registry.dao.IRegistryDao;
 import io.opensaber.registry.middleware.util.JSONUtil;
-import io.opensaber.registry.model.AuditItemDetails;
+import io.opensaber.registry.model.AuditInfo;
 import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.service.IAuditService;
 import java.io.IOException;
@@ -13,38 +12,26 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AuditServiceImpl implements IAuditService {
 
 	private static Logger logger = LoggerFactory.getLogger(AuditServiceImpl.class);
-
 	@Autowired
 	private ObjectMapper objectMapper;
 
-	// TODO - how audit happens and where it is written to needs some thought
-	private IRegistryDao registryDao;
-
-	@Value("${audit.frame.file}")
-	private String auditFrameFile;
-
 	@Override
+	@Async("auditExecutor")
 	public void audit(AuditRecord auditRecord) throws IOException {
-		List<AuditItemDetails> auditItemDetails = null;
+		List<AuditInfo> auditItemDetails = null;
 		if (!auditRecord.getAction().equalsIgnoreCase("READ")) {
-			JsonNode differenceJson = JSONUtil.diff(auditRecord.getExistingNode(), auditRecord.getLatestNode());
-			auditItemDetails = Arrays.asList(objectMapper.treeToValue(differenceJson, AuditItemDetails[].class));
-		} else {
-			auditItemDetails = auditRecord.getItemDetails();
+			JsonNode differenceJson = JSONUtil.diffJsonNode(auditRecord.getExistingNode(), auditRecord.getLatestNode());
+			auditItemDetails = Arrays.asList(objectMapper.treeToValue(differenceJson, AuditInfo[].class));
+			auditRecord.setAuditInfo(auditItemDetails);
 		}
-		logger.debug("audit record printed");
-
-		auditItemDetails.forEach(auditItem -> {
-			logger.info("Action: {} Transaction: {} ID: {} UserID: {} Operation: {} Path: {}",
-					auditRecord.getAction(), auditRecord.getTransactionId(), auditRecord.getId(), auditRecord.getUserId(),
-					auditItem.getOp(), auditItem.getPath());
-		});
+		String auditString  = objectMapper.writeValueAsString(auditRecord);
+		logger.info("{}", auditString);
 	}
 }
