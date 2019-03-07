@@ -78,6 +78,8 @@ public class Constants {
 	public static final String AUDIT_ACTION_UPDATE = "UPDATE";
 	public static final String AUDIT_ACTION_SEARCH = "SEARCH";
 	public static final String AUDIT_ACTION_DELETE = "DELETE";
+	public static final String AUDIT_ACTION_REMOVE_OP = "remove";
+	public static final String AUDIT_ACTION_READ_OP = "read";
 
 	public enum GraphDatabaseProvider {
 		NEO4J("NEO4J"), ORIENTDB("ORIENTDB"), SQLG("SQLG"), CASSANDRA("CASSANDRA"), TINKERGRAPH("TINKERGRAPH");

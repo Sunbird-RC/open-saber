@@ -14,6 +14,7 @@ import io.opensaber.registry.dao.VertexReader;
 import io.opensaber.registry.dao.VertexWriter;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
+import io.opensaber.registry.model.AuditInfo;
 import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.service.EncryptionHelper;
 import io.opensaber.registry.service.EncryptionService;
@@ -152,8 +153,12 @@ public class RegistryServiceImpl implements RegistryService {
                 String index = vertex.property(Constants.TYPE_STR_JSON_LD).isPresent() ? (String) vertex.property(Constants.TYPE_STR_JSON_LD).value() : null;
                 elasticService.deleteEntity(index, uuid);
                 auditRecord = new AuditRecord();
+                AuditInfo auditInfo = new AuditInfo();
+                auditInfo.setOp(Constants.AUDIT_ACTION_REMOVE_OP);
+                auditInfo.setPath("/"+vertex.label());
                 auditRecord.setAction(Constants.AUDIT_ACTION_DELETE).setUserId(apiMessage.getUserID()).setTransactionId(tx.hashCode()).
-                        setId(uuid);
+                        setId(uuid).setAuditInfo(Arrays.asList(auditInfo));
+                auditService.audit(auditRecord);
             }
             logger.info("Entity {} marked deleted", uuid);
         }

@@ -59,8 +59,8 @@ public class ElasticReadService implements IReadService {
         auditRecord = new AuditRecord();
         auditRecord.setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_READ).setId(id).setLatestNode(result).setExistingNode(result);
         AuditInfo auditInfo = new AuditInfo();
-        auditInfo.setOp(Constants.AUDIT_ACTION_READ);
-        auditInfo.setPath(entityType);
+        auditInfo.setOp(Constants.AUDIT_ACTION_READ_OP);
+        auditInfo.setPath("/"+entityType);
         auditRecord.setAuditInfo(Arrays.asList(auditInfo));
         auditService.audit(auditRecord);
         return result;
