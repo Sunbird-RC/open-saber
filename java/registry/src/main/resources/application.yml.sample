@@ -53,7 +53,7 @@ database:
 
   # Providers available are NEO4J, SQLG, CASSANDRA, ORIENTDB, TINKERGRAPH (in-memory).
   # NOTE: Values given against 'shardId' must be unique
-  provider: ${database_provider:NEO4J}
+  provider: ${database_provider:CASSANDRA}
 
   # Choose "none" as the propertyName if you don't want any shards. Otherwise
   # implement IShardAdvisor interface in your own ways. An example, SerialNumShardAdvisor
@@ -100,14 +100,14 @@ database:
 ##################################################################################
 # Uncomment the following section to use Cassandra as backend store              #
 ##################################################################################
-#  janus_cassandra:
-#    graphFactory: org.janusgraph.core.JanusGraphFactory
-#    storage.backend: "cassandrathrift"
-#    storage.hostname: ${cassandra_host:localhost}
-#    storage.keyspace: ${cassandra_keyspace:registry_db}
-#    db.cache.size: ${cassandra_db_cache_size:0.25}
-#    # wait time in milliseconds to clean the cache
-#    db.cache.clean.wait: ${cassandra_db_cache_clean_wait:60}
+janus_cassandra:
+    graphFactory: org.janusgraph.core.JanusGraphFactory
+    storage.backend: "cassandrathrift"
+    storage.hostname: ${cassandra_host:localhost}
+    storage.keyspace: ${cassandra_keyspace:registry_db}
+    db.cache.size: ${cassandra_db_cache_size:0.25}
+    # wait time in milliseconds to clean the cache
+    db.cache.clean.wait: ${cassandra_db_cache_clean_wait:60}
 #    index:
 #      storage.backend: ${cassandr_index_storage:elasticsearch}
 #      hostname: ${cassandra_index_hostname:localhost}
