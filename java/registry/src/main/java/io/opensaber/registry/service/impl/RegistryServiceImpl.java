@@ -323,7 +323,7 @@ public class RegistryServiceImpl implements RegistryService {
             elasticService.updateEntity(parentEntityType,rootId,mergedNode);
             auditRecord = new AuditRecord();
             auditRecord.setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_UPDATE).setExistingNode(readNode)
-                    .setLatestNode(mergedNode).setTransactionId(tx.hashCode()).setUserId(id);
+                    .setLatestNode(mergedNode).setTransactionId(tx.hashCode()).setId(id);
             auditService.audit(auditRecord);
         }
     }
