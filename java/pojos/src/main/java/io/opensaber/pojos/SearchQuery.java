@@ -18,7 +18,6 @@ public class SearchQuery {
 	}
 	
    public SearchQuery(List<String> entityTypes, int offset, int limit) {
-        //this.entityTypes.addAll(entityTypes);
         this.entityTypes = entityTypes;
         this.offset = offset;
         this.limit = limit;
