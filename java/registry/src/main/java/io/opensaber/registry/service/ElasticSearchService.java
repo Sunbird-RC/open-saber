@@ -36,7 +36,7 @@ public class ElasticSearchService implements ISearchService {
         SearchQuery searchQuery = getSearchQuery(inputQueryNode, offset, limit);
         ObjectNode resultNode = JsonNodeFactory.instance.objectNode();
         for(String indexName : searchQuery.getEntityTypes()){
-            JsonNode node = elasticService.search(indexName, searchQuery);
+            JsonNode node = elasticService.search(indexName.toLowerCase(), searchQuery);
             resultNode.set(indexName, node);
         }
         return resultNode;
