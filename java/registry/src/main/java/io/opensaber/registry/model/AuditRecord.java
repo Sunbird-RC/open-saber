@@ -1,7 +1,6 @@
 package io.opensaber.registry.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.List;

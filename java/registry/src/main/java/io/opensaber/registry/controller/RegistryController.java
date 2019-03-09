@@ -51,8 +51,6 @@ public class RegistryController {
     @Autowired
     private RegistryService registryService;
     @Autowired
-    private IAuditService iAuditService;
-    @Autowired
     private ISearchService searchService;
     @Autowired
     private IReadService readService;
@@ -60,8 +58,6 @@ public class RegistryController {
     private APIMessage apiMessage;
     @Autowired
     private DBConnectionInfoMgr dbConnectionInfoMgr;
-    @Autowired
-    private AuditRecord auditRecord;
 
     @Value("${audit.enabled}")
     private boolean auditEnabled;
