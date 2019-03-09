@@ -333,7 +333,7 @@ public class JSONUtil {
 			latestNode = objectMapper.createObjectNode();
 		}
 		JsonNode patchNode = JsonDiff.asJson(existingNode, latestNode);
-		logger.debug("diffJsonNode is : "+ patchNode.toString());
+		logger.info("diffJsonNode is : "+ patchNode.toString());
 		return patchNode;
 	}
 }

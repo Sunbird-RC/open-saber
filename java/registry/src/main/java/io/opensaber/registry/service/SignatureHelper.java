@@ -38,9 +38,15 @@ public class SignatureHelper {
      */
     public JsonNode signJson(JsonNode rootNode) throws SignatureException.UnreachableException, SignatureException.CreationException {
         String entityType = rootNode.fieldNames().next();
-
         Map signRes = generateSignature(rootNode);
-        JsonNode newSignatureNode = convertMapToNode(entityType, signRes);
+
+        ObjectNode newSignatureNode = convertMapToNode(entityType, signRes);
+        if(null != rootNode.get(entityType).get(uuidPropertyName)){
+            String rootOsid = rootNode.get(entityType).get(uuidPropertyName).asText();
+            newSignatureNode.put(Constants.ROOT_KEYWORD, rootOsid);
+            newSignatureNode.remove(Constants.TYPE_STR_JSON_LD);
+        }
+
         addSignature(rootNode, entityType, newSignatureNode);
 
         return newSignatureNode;
@@ -74,7 +80,7 @@ public class SignatureHelper {
      * @param signMap    The response got from signature service
      * @return
      */
-    private JsonNode convertMapToNode(String entityType, Map<String, Object> signMap) {
+    private ObjectNode convertMapToNode(String entityType, Map<String, Object> signMap) {
         Map<String, Object> entitySignMap = new HashMap<>();
         entitySignMap.put(Constants.SIGN_SIGNATURE_VALUE, signMap.get(Constants.SIGN_SIGNATURE_VALUE));
         entitySignMap.put(Constants.SIGN_CREATOR, signatureKeyURl + signMap.get("keyId"));
@@ -82,7 +88,7 @@ public class SignatureHelper {
         entitySignMap.put(Constants.TYPE_STR_JSON_LD, "RSASignature2018");
         entitySignMap.put(Constants.SIGN_CREATED_TIMESTAMP, Instant.now().toString());
         entitySignMap.put(Constants.SIGN_NONCE, "");
-        JsonNode entitySignNode = objectMapper.convertValue(entitySignMap, JsonNode.class);
+        ObjectNode entitySignNode = objectMapper.convertValue(entitySignMap, ObjectNode.class);
         return entitySignNode;
     }
 
