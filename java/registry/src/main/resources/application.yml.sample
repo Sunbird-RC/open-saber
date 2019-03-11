@@ -108,9 +108,9 @@ janus_cassandra:
     db.cache.size: ${cassandra_db_cache_size:0.25}
     # wait time in milliseconds to clean the cache
     db.cache.clean.wait: ${cassandra_db_cache_clean_wait:60}
-#    index:
-#      storage.backend: ${cassandr_index_storage:elasticsearch}
-#      hostname: ${cassandra_index_hostname:localhost}
+    index:
+      storage.backend: ${cassandr_index_storage:elasticsearch}
+      hostname: ${cassandra_index_hostname:localhost}
     
 # File for framing the entity while reading
 frame:

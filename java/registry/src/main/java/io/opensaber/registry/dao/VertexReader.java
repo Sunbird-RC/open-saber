@@ -366,6 +366,9 @@ public class VertexReader {
                     itrV = graph.traversal().clone().V().has(uuidPropertyName, osid);
                 }
                 break;
+            case CASSANDRA:
+                graph.traversal().clone().V().has(uuidPropertyName, osid[0]);
+                break;
             default:
                 itrV = graph.vertices(osid);
                 break;

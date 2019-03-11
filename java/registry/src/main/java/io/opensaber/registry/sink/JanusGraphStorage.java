@@ -1,5 +1,6 @@
 package io.opensaber.registry.sink;
 
+import io.opensaber.registry.middleware.util.Constants;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.janusgraph.core.JanusGraph;
@@ -26,6 +27,7 @@ public class JanusGraphStorage extends DatabaseProvider {
 		String dbCacheCleanUpWaitTime = environment.getProperty("database.janus_cassandra.db.cache.clean.wait");
 		String searchIndex = environment.getProperty("database.janus_cassandra.index.storage.backend");
 		String searchHostname = environment.getProperty("database.janus_cassandra.index.hostname");
+		setProvider(Constants.GraphDatabaseProvider.CASSANDRA);
 
 		Configuration config = new BaseConfiguration();
 		config.setProperty("gremlin.graph", graphFactory);
