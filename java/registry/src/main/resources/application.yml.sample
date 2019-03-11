@@ -84,9 +84,11 @@ database:
       #     * 2. Relational databases (Postgresql, HSQLDB, H2, MariaDB, MySQL, MSSQLServer)
       #     ** http://sqlg.org/docs/2.0.0-SNAPSHOT/
       #     ** Example - Postgres - jdbc:postgresql://localhost:5432/yourdb
-      uri: ${connectionInfo_uri:bolt://localhost:7687}
+      #     * 3. NoSQL  databases (Cassandra)
+      #     ** Example - cassandra - jdbc:cassandra://localhost:9160/yourdb
+      uri: ${connectionInfo_uri:jdbc:cassandra://localhost:9160/registry_db}
 
-      username: ${connectionInfo_username:neo4j}
+      username: ${connectionInfo_username:}
       password: ${connectionInfo_password:}
 
       # Any other shard information follows...
