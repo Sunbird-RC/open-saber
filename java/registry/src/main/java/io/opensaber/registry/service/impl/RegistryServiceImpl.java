@@ -290,8 +290,9 @@ public class RegistryServiceImpl implements RegistryService {
 
             databaseProvider.commitTransaction(graph, tx);
             // elastic-search updation starts here
-            logger.info("updating node {} " ,mergedNode);
-            elasticService.updateEntity(parentEntityType,rootId,mergedNode);
+            JsonNode updateNode = mergedNode.get(parentEntityType);
+            logger.info("updating node {} " ,updateNode);
+            elasticService.updateEntity(parentEntityType,rootId,updateNode);
         }
     }
 
