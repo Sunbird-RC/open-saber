@@ -6,7 +6,7 @@ public enum FilterOperators {
     between("range"), or("or"),
     startsWith("startsWith"), endsWith("endsWith"), 
     notContains("notContains"), notStartsWith("notStartsWith"), notEndsWith("notEndsWith"),
-    freeText("freeText");
+    queryString("queryString");
     
 
     private String value;

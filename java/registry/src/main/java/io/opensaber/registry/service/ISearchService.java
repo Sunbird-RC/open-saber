@@ -52,7 +52,7 @@ public interface ISearchService {
 
         } else if (queryNode.isTextual()) {
             // adding queries free text as filter
-            Filter freeTextFilter = new Filter("*", FilterOperators.freeText, queryNode.asText());
+            Filter freeTextFilter = new Filter("*", FilterOperators.queryString, queryNode.asText());
             filterList.add(freeTextFilter);
         }
 
