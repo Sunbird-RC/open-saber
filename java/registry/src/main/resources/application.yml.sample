@@ -201,6 +201,8 @@ auditTaskExecutor:
 # elastic-search configuration details
 elastic:
   search:
+    # elastic-search can be enable and disable through this flag
+    enabled: ${elastic_search_enabled:true}
     # elastic-search connection info
     connection_url: ${elastic_search_connection_url:localhost:9200}
 
@@ -344,5 +346,7 @@ auditTaskExecutor:
 # elastic-search configuration details
 elastic:
   search:
+    # elastic-search can be enable and disable through this flag
+    enabled: ${elastic_search_enabled:true}
     # elastic-search connection info
     connection_url: ${elastic_search_connection_url:localhost:9200}
