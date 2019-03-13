@@ -7,12 +7,14 @@ import io.opensaber.elastic.IElasticService;
 import io.opensaber.pojos.APIMessage;
 import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.DateUtil;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.model.AuditInfo;
 import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.util.ReadConfigurator;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -57,7 +59,8 @@ public class ElasticReadService implements IReadService {
             JSONUtil.removeNode((ObjectNode) result, Constants.SIGNATURES_STR);
         }
         auditRecord = new AuditRecord();
-        auditRecord.setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_READ).setId(id).setLatestNode(result).setExistingNode(result);
+        auditRecord.setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_READ).setRecordId(id).setLatestNode(result).setExistingNode(result).
+                setAuditId(UUID.randomUUID().toString()).setTimeStamp(DateUtil.getTimeStamp());
         AuditInfo auditInfo = new AuditInfo();
         auditInfo.setOp(Constants.AUDIT_ACTION_READ_OP);
         auditInfo.setPath("/"+entityType);

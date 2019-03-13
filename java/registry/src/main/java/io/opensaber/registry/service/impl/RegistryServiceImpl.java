@@ -13,6 +13,7 @@ import io.opensaber.registry.dao.RegistryDaoImpl;
 import io.opensaber.registry.dao.VertexReader;
 import io.opensaber.registry.dao.VertexWriter;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.DateUtil;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.model.AuditInfo;
 import io.opensaber.registry.model.AuditRecord;
@@ -40,6 +41,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -156,7 +158,8 @@ public class RegistryServiceImpl implements RegistryService {
                 auditInfo.setOp(Constants.AUDIT_ACTION_REMOVE_OP);
                 auditInfo.setPath("/"+vertex.label());
                 auditRecord.setAction(Constants.AUDIT_ACTION_DELETE).setUserId(apiMessage.getUserID()).setTransactionId(tx.hashCode()).
-                        setId(uuid).setAuditInfo(Arrays.asList(auditInfo));
+                        setRecordId(uuid).setAuditInfo(Arrays.asList(auditInfo)).setAuditId(UUID.randomUUID().toString()).
+                        setTimeStamp(DateUtil.getTimeStamp());
                 auditService.audit(auditRecord);
             }
             logger.info("Entity {} marked deleted", uuid);
@@ -206,7 +209,7 @@ public class RegistryServiceImpl implements RegistryService {
             elasticService.addEntity(vertexLabel.toLowerCase(), entityId, rootNode);
             auditRecord = new AuditRecord();
             auditRecord.setAction(Constants.AUDIT_ACTION_ADD).setUserId(apiMessage.getUserID()).setLatestNode(rootNode).setTransactionId(tx.hashCode()).
-                    setId(entityId);
+                    setRecordId(entityId).setAuditId(UUID.randomUUID().toString()).setTimeStamp(DateUtil.getTimeStamp());
             auditService.audit(auditRecord);
         }
 
@@ -322,7 +325,8 @@ public class RegistryServiceImpl implements RegistryService {
             elasticService.updateEntity(parentEntityType,rootId,mergedNode);
             auditRecord = new AuditRecord();
             auditRecord.setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_UPDATE).setExistingNode(readNode)
-                    .setLatestNode(mergedNode).setTransactionId(tx.hashCode()).setId(id);
+                    .setLatestNode(mergedNode).setTransactionId(tx.hashCode()).setRecordId(id).setAuditId(UUID.randomUUID().toString()).
+                    setTimeStamp(DateUtil.getTimeStamp());
             auditService.audit(auditRecord);
         }
     }

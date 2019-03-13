@@ -6,6 +6,7 @@ import io.opensaber.pojos.APIMessage;
 import io.opensaber.registry.dao.IRegistryDao;
 import io.opensaber.registry.dao.RegistryDaoImpl;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.DateUtil;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.model.AuditInfo;
 import io.opensaber.registry.model.AuditRecord;
@@ -15,8 +16,10 @@ import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.RecordIdentifier;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.UUID;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.slf4j.Logger;
@@ -78,7 +81,8 @@ public class NativeReadService implements IReadService {
 			shard.getDatabaseProvider().commitTransaction(graph, tx);
 			dbProvider.commitTransaction(graph, tx);
             auditRecord =  new AuditRecord();
-            auditRecord.setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_READ).setId(id).setTransactionId(tx.hashCode()).setLatestNode(result).setExistingNode(result);
+            auditRecord.setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_READ).setRecordId(id).setTransactionId(tx.hashCode()).setLatestNode(result).
+                    setExistingNode(result).setAuditId(UUID.randomUUID().toString()).setTimeStamp(DateUtil.getTimeStamp());
 			AuditInfo auditInfo = new AuditInfo();
 			auditInfo.setOp(Constants.AUDIT_ACTION_READ_OP);
 			auditInfo.setPath("/"+entityType);

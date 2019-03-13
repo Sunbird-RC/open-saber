@@ -3,6 +3,7 @@ package io.opensaber.registry.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 public class AuditRecord {
@@ -11,8 +12,10 @@ public class AuditRecord {
 	private JsonNode latestNode;
 	private String action;
 	private int transactionId;
-	private String id;
+	private String recordId;
 	private String userId;
+	private String auditId;
+	private String timeStamp;
 	private List<AuditInfo> auditInfo;
 
     @JsonIgnore
@@ -70,12 +73,30 @@ public class AuditRecord {
         return this;
     }
 
-    public String getId() {
-        return id;
+    public String getRecordId() {
+        return recordId;
     }
 
-    public AuditRecord setId(String id) {
-        this.id = id;
+    public AuditRecord setRecordId(String recordId) {
+        this.recordId = recordId;
+        return this;
+    }
+
+    public String getAuditId() {
+        return auditId;
+    }
+
+    public AuditRecord setAuditId(String auditId) {
+        this.auditId = auditId;
+        return this;
+    }
+
+    public String getTimeStamp() {
+        return timeStamp;
+    }
+
+    public AuditRecord setTimeStamp(String timeStamp) {
+        this.timeStamp = timeStamp;
         return this;
     }
 }
