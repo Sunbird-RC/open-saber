@@ -89,6 +89,9 @@ public class RegistryServiceImpl implements RegistryService {
     @Value("${persistence.enabled}")
     private boolean persistenceEnabled;
 
+    @Value("${elastic.search.enabled}")
+    private boolean elasticSearchEnabled;
+
     @Autowired
     private Shard shard;
 
@@ -153,7 +156,9 @@ public class RegistryServiceImpl implements RegistryService {
                 registryDao.deleteEntity(vertex);
                 databaseProvider.commitTransaction(graph, tx);
                 String index = vertex.property(Constants.TYPE_STR_JSON_LD).isPresent() ? (String) vertex.property(Constants.TYPE_STR_JSON_LD).value() : null;
-                elasticService.deleteEntity(index, uuid);
+                if(elasticSearchEnabled) {
+                    elasticService.deleteEntity(index, uuid);
+                }
                 auditRecord = new AuditRecord();
                 AuditInfo auditInfo = new AuditInfo();
                 auditInfo.setOp(Constants.AUDIT_ACTION_REMOVE_OP);
@@ -207,7 +212,9 @@ public class RegistryServiceImpl implements RegistryService {
             Definition definition = definitionsManager.getDefinition(vertexLabel);
             entityParenter.ensureIndexExists(dbProvider, parentVertex, definition, shardId);
             //call to elastic search
-            elasticService.addEntity(vertexLabel.toLowerCase(), entityId, rootNode);
+            if(elasticSearchEnabled) {
+                elasticService.addEntity(vertexLabel.toLowerCase(), entityId, rootNode);
+            }
             auditRecord = new AuditRecord();
             auditRecord.setAction(Constants.AUDIT_ACTION_ADD).setUserId(apiMessage.getUserID()).setLatestNode(rootNode).setTransactionId(new LinkedList<>(Arrays.asList(tx.hashCode()))).
                     setRecordId(entityId).setAuditId(UUID.randomUUID().toString()).setTimeStamp(DateUtil.getTimeStamp());
@@ -323,7 +330,9 @@ public class RegistryServiceImpl implements RegistryService {
             databaseProvider.commitTransaction(graph, tx);
             // elastic-search updation starts here
             logger.info("updating node {} " ,mergedNode);
-            elasticService.updateEntity(parentEntityType,rootId,mergedNode);
+            if(elasticSearchEnabled) {
+                elasticService.updateEntity(parentEntityType,rootId,mergedNode);
+            }
             auditRecord = new AuditRecord();
             auditRecord.setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_UPDATE).setExistingNode(readNode)
                     .setLatestNode(mergedNode).setTransactionId(new LinkedList<>(Arrays.asList(tx.hashCode()))).setUserId(id).setRecordId(id).

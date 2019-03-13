@@ -131,6 +131,9 @@ public class GenericConfiguration implements WebMvcConfigurer {
 
 	@Value("${read.providerName}")
 	private String readProviderName;
+
+	@Value("${elastic.search.enabled}")
+	private boolean elasticSearchEnabled;
 	
 	@Autowired
 	private DBConnectionInfoMgr dbConnectionInfoMgr;
@@ -263,7 +266,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
     @Bean
     public ISearchService searchService() {       
         ServiceProvider searchProvider = new ServiceProvider();
-        return searchProvider.getSearchInstance(searchProviderName);
+        return searchProvider.getSearchInstance(searchProviderName, elasticSearchEnabled);
     }
 
 	/** This method creates read provider implementation bean
@@ -272,7 +275,7 @@ public class GenericConfiguration implements WebMvcConfigurer {
 	@Bean
 	public IReadService readService() {
 		ServiceProvider searchProvider = new ServiceProvider();
-		return searchProvider.getReadInstance(readProviderName);
+		return searchProvider.getReadInstance(readProviderName, elasticSearchEnabled);
 	}
 	
 
