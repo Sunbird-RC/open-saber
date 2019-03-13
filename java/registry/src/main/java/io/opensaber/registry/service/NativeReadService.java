@@ -16,10 +16,10 @@ import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.RecordIdentifier;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
+import java.util.LinkedList;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.slf4j.Logger;
@@ -81,7 +81,7 @@ public class NativeReadService implements IReadService {
 			shard.getDatabaseProvider().commitTransaction(graph, tx);
 			dbProvider.commitTransaction(graph, tx);
             auditRecord =  new AuditRecord();
-            auditRecord.setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_READ).setRecordId(id).setTransactionId(tx.hashCode()).setLatestNode(result).
+            auditRecord.setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_READ).setRecordId(id).setTransactionId(new LinkedList<>(Arrays.asList(tx.hashCode()))).setLatestNode(result).
                     setExistingNode(result).setAuditId(UUID.randomUUID().toString()).setTimeStamp(DateUtil.getTimeStamp());
 			AuditInfo auditInfo = new AuditInfo();
 			auditInfo.setOp(Constants.AUDIT_ACTION_READ_OP);

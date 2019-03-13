@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -157,7 +158,7 @@ public class RegistryServiceImpl implements RegistryService {
                 AuditInfo auditInfo = new AuditInfo();
                 auditInfo.setOp(Constants.AUDIT_ACTION_REMOVE_OP);
                 auditInfo.setPath("/"+vertex.label());
-                auditRecord.setAction(Constants.AUDIT_ACTION_DELETE).setUserId(apiMessage.getUserID()).setTransactionId(tx.hashCode()).
+                auditRecord.setAction(Constants.AUDIT_ACTION_DELETE).setUserId(apiMessage.getUserID()).setTransactionId(new LinkedList<>(Arrays.asList(tx.hashCode()))).
                         setRecordId(uuid).setAuditInfo(Arrays.asList(auditInfo)).setAuditId(UUID.randomUUID().toString()).
                         setTimeStamp(DateUtil.getTimeStamp());
                 auditService.audit(auditRecord);
@@ -208,7 +209,7 @@ public class RegistryServiceImpl implements RegistryService {
             //call to elastic search
             elasticService.addEntity(vertexLabel.toLowerCase(), entityId, rootNode);
             auditRecord = new AuditRecord();
-            auditRecord.setAction(Constants.AUDIT_ACTION_ADD).setUserId(apiMessage.getUserID()).setLatestNode(rootNode).setTransactionId(tx.hashCode()).
+            auditRecord.setAction(Constants.AUDIT_ACTION_ADD).setUserId(apiMessage.getUserID()).setLatestNode(rootNode).setTransactionId(new LinkedList<>(Arrays.asList(tx.hashCode()))).
                     setRecordId(entityId).setAuditId(UUID.randomUUID().toString()).setTimeStamp(DateUtil.getTimeStamp());
             auditService.audit(auditRecord);
         }
@@ -325,8 +326,8 @@ public class RegistryServiceImpl implements RegistryService {
             elasticService.updateEntity(parentEntityType,rootId,mergedNode);
             auditRecord = new AuditRecord();
             auditRecord.setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_UPDATE).setExistingNode(readNode)
-                    .setLatestNode(mergedNode).setTransactionId(tx.hashCode()).setRecordId(id).setAuditId(UUID.randomUUID().toString()).
-                    setTimeStamp(DateUtil.getTimeStamp());
+                    .setLatestNode(mergedNode).setTransactionId(new LinkedList<>(Arrays.asList(tx.hashCode()))).setUserId(id).setRecordId(id).
+                    setAuditId(UUID.randomUUID().toString()).setTimeStamp(DateUtil.getTimeStamp());
             auditService.audit(auditRecord);
         }
     }

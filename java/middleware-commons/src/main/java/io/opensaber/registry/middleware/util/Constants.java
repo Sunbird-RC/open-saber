@@ -76,6 +76,7 @@ public class Constants {
 	public static final String AUDIT_ACTION_READ = "READ";
 	public static final String AUDIT_ACTION_ADD = "ADD";
 	public static final String AUDIT_ACTION_UPDATE = "UPDATE";
+	public static final String AUDIT_ACTION_SEARCH_OP = "search";
 	public static final String AUDIT_ACTION_SEARCH = "SEARCH";
 	public static final String AUDIT_ACTION_DELETE = "DELETE";
 	public static final String AUDIT_ACTION_REMOVE_OP = "remove";
