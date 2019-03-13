@@ -7,17 +7,17 @@ import io.opensaber.elastic.IElasticService;
 import io.opensaber.pojos.APIMessage;
 import io.opensaber.pojos.SearchQuery;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.middleware.util.DateUtil;
 import io.opensaber.registry.model.AuditInfo;
 import io.opensaber.registry.model.AuditRecord;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 /**
@@ -61,8 +61,8 @@ public class ElasticSearchService implements ISearchService {
                 auditInfoLst.add(auditInfo);
             }
         }
-        auditRecord.setAuditInfo(auditInfoLst);
-        auditRecord.setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_SEARCH);
+        auditRecord.setAuditInfo(auditInfoLst).setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_SEARCH).
+                setAuditId(UUID.randomUUID().toString()).setTimeStamp(DateUtil.getTimeStamp());
         auditService.audit(auditRecord);
         return resultNode;
 
