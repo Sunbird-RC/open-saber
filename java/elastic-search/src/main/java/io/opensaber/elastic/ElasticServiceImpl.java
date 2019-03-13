@@ -171,7 +171,7 @@ public class ElasticServiceImpl implements IElasticService {
     }
 
     @Override
-    public boolean updateEntity(String index, Map<String, Object> inputEntity, String osid) {
+    public boolean updateEntity(String index, String osid, Map<String, Object> inputEntity) {
         return false;
     }
 

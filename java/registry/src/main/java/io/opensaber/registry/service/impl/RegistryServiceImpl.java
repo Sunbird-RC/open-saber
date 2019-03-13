@@ -171,11 +171,13 @@ public class RegistryServiceImpl implements RegistryService {
 
                 vertexLabel = rootNode.fieldNames().next();
             }
+
             //Add indices: executes only once.
             String shardId = shard.getShardId();
             Vertex parentVertex = entityParenter.getKnownParentVertex(vertexLabel, shardId);
             Definition definition = definitionsManager.getDefinition(vertexLabel);
             entityParenter.ensureIndexExists(dbProvider, parentVertex, definition, shardId);
+
             //call to elastic search
             JsonNode node = rootNode.get(vertexLabel);
             elasticService.addEntity(vertexLabel.toLowerCase(), entityId, JSONUtil.convertJsonNodeToMap(node));
