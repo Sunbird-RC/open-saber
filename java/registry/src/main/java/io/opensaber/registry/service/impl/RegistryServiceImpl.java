@@ -304,7 +304,10 @@ public class RegistryServiceImpl implements RegistryService {
                 logger.debug("Removing earlier signature and adding new one");
                 String entitySignUUID = signatureHelper.removeEntitySignature(parentEntityType, (ObjectNode) mergedNode);
                 JsonNode newSignature = signatureHelper.signJson(mergedNode);
-                ((ObjectNode) newSignature).put(uuidPropertyName, entitySignUUID);
+                String rootOsid = mergedNode.get(entityType).get(uuidPropertyName).asText();
+                ObjectNode objectSignNode = (ObjectNode) newSignature;
+                objectSignNode.put(uuidPropertyName, entitySignUUID);
+                objectSignNode.put(Constants.ROOT_KEYWORD, rootOsid);
                 Vertex oldEntitySignatureVertex = uuidVertexMap.get(entitySignUUID);
 
                 registryDao.updateVertex(graph, oldEntitySignatureVertex, newSignature);
@@ -312,7 +315,10 @@ public class RegistryServiceImpl implements RegistryService {
 
             // TODO - Validate before update
             JsonNode validationNode = mergedNode.deepCopy();
-            JSONUtil.removeNode((ObjectNode) validationNode, uuidPropertyName);
+            List<String> removeKeys = new LinkedList<>();
+            removeKeys.add(uuidPropertyName);
+            removeKeys.add(Constants.TYPE_STR_JSON_LD);
+            JSONUtil.removeNodes((ObjectNode) validationNode, removeKeys);
 //            iValidate.validate(entityNodeType, mergedNode.toString());
 //            logger.debug("Validated payload before update");
 
