@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import io.opensaber.elastic.ESMessage;
 import io.opensaber.elastic.IElasticService;
 import io.opensaber.pojos.ComponentHealthInfo;
 import io.opensaber.pojos.HealthCheckResponse;
@@ -16,6 +19,7 @@ import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.service.EncryptionHelper;
 import io.opensaber.registry.service.EncryptionService;
+import io.opensaber.registry.service.MessageFactory;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SignatureHelper;
 import io.opensaber.registry.service.SignatureService;
@@ -45,6 +49,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.sunbird.akka.core.ActorCache;
+import org.sunbird.akka.core.MessageProtos;
+import org.sunbird.akka.core.Router;
+import org.sunbird.akka.core.SunbirdActorFactory;
 
 @Component
 public class RegistryServiceImpl implements RegistryService {
@@ -172,15 +180,17 @@ public class RegistryServiceImpl implements RegistryService {
                 vertexLabel = rootNode.fieldNames().next();
             }
 
-            //Add indices: executes only once.
+            // Add indices: executes only once.
             String shardId = shard.getShardId();
             Vertex parentVertex = entityParenter.getKnownParentVertex(vertexLabel, shardId);
             Definition definition = definitionsManager.getDefinition(vertexLabel);
             entityParenter.ensureIndexExists(dbProvider, parentVertex, definition, shardId);
 
-            //call to elastic search
-            JsonNode node = rootNode.get(vertexLabel);
-            elasticService.addEntity(vertexLabel.toLowerCase(), entityId, JSONUtil.convertJsonNodeToMap(node));
+            // Call to elastic search, audit
+            MessageProtos.Message message = MessageFactory.instance().createElasticSearchMessage(
+                                    "add",vertexLabel.toLowerCase(),
+                                        entityId, rootNode.get(vertexLabel));
+            ActorCache.instance().get(Router.ROUTER_NAME).tell(message, null);
         }
 
         return entityId;

@@ -38,7 +38,7 @@ public abstract class BaseActor extends UntypedAbstractActor {
      * @param request
      * @return
      */
-    public void tellToSource(MessageProtos.Message request) {
+    public final void tellToSource(MessageProtos.Message request) {
         logger.info("REPLY ok to Source actor {}", sender().path().toSerializationFormat());
         sender().tell(request, getSelf());
     }
@@ -136,7 +136,7 @@ public abstract class BaseActor extends UntypedAbstractActor {
      * @param request
      * @return
      */
-    public MessageProtos.Message.Builder setSourceActorName(MessageProtos.Message request) {
+    public final MessageProtos.Message.Builder setSourceActorName(MessageProtos.Message request) {
         MessageProtos.Message.Builder result = null;
         String simpleName = getSourceActorName(request);
         if (simpleName != null && simpleName.isEmpty()) {
@@ -156,7 +156,7 @@ public abstract class BaseActor extends UntypedAbstractActor {
      * @param request
      * @return
      */
-    public String getSourceActorName(MessageProtos.Message request) {
+    public final String getSourceActorName(MessageProtos.Message request) {
         String simpleName = request.getSourceActorName();
         return simpleName;
     }

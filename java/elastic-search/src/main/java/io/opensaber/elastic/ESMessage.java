@@ -1,11 +1,19 @@
 package io.opensaber.elastic;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+@JsonSerialize
 public class ESMessage {
     String indexName;
     String osid;
     JsonNode input;
+
+    public ESMessage(String indexName, String osid, JsonNode input) {
+        setIndexName(indexName);
+        setOsid(osid);
+        setInput(input);
+    }
 
     public String getIndexName() {
         return indexName;
