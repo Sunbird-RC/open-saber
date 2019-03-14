@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
@@ -205,23 +206,24 @@ public class JSONUtil {
 	 * @param childKey      field key
 	 * @param child         field value
 	 */
-    public static void addField(ObjectNode parent, String childKey, String child) {
-        parent.fields().forEachRemaining(entry -> {
+    public static void addField(ObjectNode parent, String firstFieldName, String childKey, String child) {
+        Iterator<Entry<String, JsonNode>> list = parent.fields();
+        list.forEachRemaining(entry -> {
             JsonNode entryValue = entry.getValue();
             if (entryValue.isObject()) {
-                addField((ObjectNode) entry.getValue(), childKey, child);
+                addField((ObjectNode) entry.getValue(), firstFieldName, childKey, child);
             }
             if (entryValue.isArray()) {
                 for (int i = 0; i < entryValue.size(); i++) {
                     if (entry.getValue().get(i).isObject())
-                        addField((ObjectNode) entry.getValue().get(i), childKey, child);
+                        addField((ObjectNode) entry.getValue().get(i), firstFieldName, childKey, child);
                 }
             }
-
         });
         if (childKey == null || childKey.isEmpty())
             throw new IllegalArgumentException(KEY_NULL_ERROR);
-        parent.put(childKey, child);
+        if(!parent.fieldNames().next().equalsIgnoreCase(firstFieldName))
+            parent.put(childKey, child);
 
     }
 

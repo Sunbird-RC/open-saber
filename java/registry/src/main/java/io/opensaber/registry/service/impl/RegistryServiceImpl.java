@@ -12,6 +12,7 @@ import io.opensaber.registry.dao.IRegistryDao;
 import io.opensaber.registry.dao.RegistryDaoImpl;
 import io.opensaber.registry.dao.VertexReader;
 import io.opensaber.registry.dao.VertexWriter;
+import io.opensaber.registry.middleware.util.AuditFields;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.DateUtil;
 import io.opensaber.registry.middleware.util.JSONUtil;
@@ -184,6 +185,9 @@ public class RegistryServiceImpl implements RegistryService {
         String entityId = "entityPlaceholderId";
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(jsonString);
+        
+        ensureCreateAuditFields(rootNode);
+        System.out.println("audited rootNode "+rootNode);
 
         if (encryptionEnabled) {
             rootNode = encryptionHelper.getEncryptedJson(rootNode);
@@ -263,6 +267,8 @@ public class RegistryServiceImpl implements RegistryService {
     public void updateEntity(String id, String jsonString) throws Exception {
         JsonNode inputNode = objectMapper.readTree(jsonString);
         String entityType = inputNode.fields().next().getKey();
+        
+        ensureUpdateAuditFields(inputNode);
 
         if (encryptionEnabled) {
             inputNode = encryptionHelper.getEncryptedJson(inputNode);
@@ -467,5 +473,47 @@ public class RegistryServiceImpl implements RegistryService {
             JSONUtil.merge(entityType, result, (ObjectNode) prop.getValue(), ignoredProps);
         });
         return result;
+    }
+    /**
+     * ensure the audit fields(createdAt, createdBy) at time of adding a fresh record/node
+     * @param node
+     */
+    private void ensureCreateAuditFields(JsonNode node) {
+        Definition def = definitionsManager.getDefinition(node.fieldNames().next());
+        List<String> auditFields = def != null ? def.getOsSchemaConfiguration().getAuditFields() : new ArrayList<>();
+        
+        for(String field: auditFields){
+            
+            switch(AuditFields.getByValue(field)){
+            case oscreatedat:
+                AuditFields.oscreatedat.createdAt(node);
+                break;
+                
+            case oscreatedby:
+                AuditFields.oscreatedby.createdBy(node, apiMessage.getUserID());
+                break;
+            
+            }           
+        }
+    }
+
+    /**
+     * ensure the audit fields(updatedAt, updatedBy) at time of updating a record/node
+     * @param node
+     */
+    private void ensureUpdateAuditFields(JsonNode node) {
+        Definition def = definitionsManager.getDefinition(node.fieldNames().next());
+        List<String> auditFields = def != null ? def.getOsSchemaConfiguration().getAuditFields() : new ArrayList<>();
+        for(String field: auditFields){            
+            switch(AuditFields.getByValue(field)){
+            case osupdatedat:
+                AuditFields.osupdatedat.updatedAt(node);
+                break;
+            case osupdatedby:
+                AuditFields.osupdatedby.updatedBy(node, apiMessage.getUserID());
+                break;
+
+            }           
+        }
     }
 }
