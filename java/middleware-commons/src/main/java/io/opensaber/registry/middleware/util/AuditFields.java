@@ -1,6 +1,7 @@
 package io.opensaber.registry.middleware.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -18,7 +19,7 @@ public enum AuditFields {
 
         @Override
         public void createdAt(JsonNode node) {
-            // TODO Auto-generated method stub
+            JSONUtil.addField((ObjectNode)node, "createdAt", currentTimeStamp());
         }
 
         @Override
@@ -41,7 +42,7 @@ public enum AuditFields {
 
         @Override
         public void updatedAt(JsonNode node) {
-            // TODO Auto-generated method stub
+            JSONUtil.addField((ObjectNode)node, "updatedAt", currentTimeStamp());
         }
 
     },
@@ -49,7 +50,7 @@ public enum AuditFields {
 
         @Override
         public void createdBy(JsonNode node, String userId) {
-            // TODO Auto-generated method stub
+            JSONUtil.addField((ObjectNode)node, "createdBy", userId);
         }
 
         @Override
