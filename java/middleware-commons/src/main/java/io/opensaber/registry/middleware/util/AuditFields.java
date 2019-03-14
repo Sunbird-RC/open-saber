@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 public enum AuditFields {
 
     oscreatedat {
-
         @Override
         public void createdBy(JsonNode node, String userId) {
             // No implements
@@ -21,7 +20,7 @@ public enum AuditFields {
         @Override
         public void createdAt(JsonNode node) {
             String firstFieldName = node.fieldNames().next();
-            JSONUtil.addField((ObjectNode)node, firstFieldName, "createdAt", currentTimeStamp());
+            JSONUtil.addField((ObjectNode) node, firstFieldName, "createdAt", currentTimeStamp());
         }
 
         @Override
@@ -32,12 +31,9 @@ public enum AuditFields {
         @Override
         public void updatedBy(JsonNode node, String userId) {
             // No implements
-            
         }
-
     },
     osupdatedat {
-
         @Override
         public void createdBy(JsonNode node, String userId) {
             // No implements
@@ -51,22 +47,19 @@ public enum AuditFields {
         @Override
         public void updatedAt(JsonNode node) {
             String firstFieldName = node.fieldNames().next();
-            JSONUtil.addField((ObjectNode)node, firstFieldName, "updatedAt", currentTimeStamp());
+            JSONUtil.addField((ObjectNode) node, firstFieldName, "updatedAt", currentTimeStamp());
         }
 
         @Override
         public void updatedBy(JsonNode node, String userId) {
             // No implements
-            
         }
-
     },
     oscreatedby {
-
         @Override
         public void createdBy(JsonNode node, String userId) {
             String firstFieldName = node.fieldNames().next();
-            JSONUtil.addField((ObjectNode)node, firstFieldName, "createdBy", userId!=null?userId:"");
+            JSONUtil.addField((ObjectNode) node, firstFieldName, "createdBy", userId != null ? userId : "");
         }
 
         @Override
@@ -82,11 +75,9 @@ public enum AuditFields {
         @Override
         public void updatedBy(JsonNode node, String userId) {
             // No implements
-            
         }
     },
     osupdatedby {
-
         @Override
         public void createdBy(JsonNode node, String userId) {
             // No implements
@@ -105,16 +96,16 @@ public enum AuditFields {
         @Override
         public void updatedBy(JsonNode node, String userId) {
             String firstFieldName = node.fieldNames().next();
-            JSONUtil.addField((ObjectNode)node, firstFieldName, "updatedBy", userId!=null?userId:"");            
+            JSONUtil.addField((ObjectNode) node, firstFieldName, "updatedBy", userId != null ? userId : "");
         }
     };
 
     static Logger logger = LoggerFactory.getLogger(AuditFields.class);
-    static final String dateformat = "yyyy-MM-ddTHH:mm:ssZ";
+    static final String dateformat = "yyyy-MM-dd'T'HH:mm:ssX";
     static final String timezone = "UTC";
 
     public abstract void createdBy(JsonNode node, String userId);
-    
+
     public abstract void updatedBy(JsonNode node, String userId);
 
     public abstract void createdAt(JsonNode node);
@@ -126,8 +117,8 @@ public enum AuditFields {
         sdf.setTimeZone(TimeZone.getTimeZone(timezone));
         return sdf.format(new Date());
     }
-    
-    public static AuditFields getByValue(String value){
+
+    public static AuditFields getByValue(String value) {
         for (final AuditFields element : EnumSet.allOf(AuditFields.class)) {
             if (element.toString().equals(value)) {
                 return element;

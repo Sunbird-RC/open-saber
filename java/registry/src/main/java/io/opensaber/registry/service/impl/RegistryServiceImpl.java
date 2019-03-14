@@ -187,7 +187,6 @@ public class RegistryServiceImpl implements RegistryService {
         JsonNode rootNode = mapper.readTree(jsonString);
         
         ensureCreateAuditFields(rootNode);
-        System.out.println("audited rootNode "+rootNode);
 
         if (encryptionEnabled) {
             rootNode = encryptionHelper.getEncryptedJson(rootNode);
@@ -481,19 +480,19 @@ public class RegistryServiceImpl implements RegistryService {
     private void ensureCreateAuditFields(JsonNode node) {
         Definition def = definitionsManager.getDefinition(node.fieldNames().next());
         List<String> auditFields = def != null ? def.getOsSchemaConfiguration().getAuditFields() : new ArrayList<>();
-        
         for(String field: auditFields){
-            
-            switch(AuditFields.getByValue(field)){
-            case oscreatedat:
-                AuditFields.oscreatedat.createdAt(node);
-                break;
-                
-            case oscreatedby:
-                AuditFields.oscreatedby.createdBy(node, apiMessage.getUserID());
-                break;
-            
-            }           
+            try {
+                switch(AuditFields.getByValue(field)){
+                case oscreatedat:
+                    AuditFields.oscreatedat.createdAt(node);
+                    break;
+                case oscreatedby:
+                    AuditFields.oscreatedby.createdBy(node, apiMessage.getUserID());
+                    break;
+                }
+            } catch (Exception e) {
+                logger.error("Audit field - {} not valid!", field);
+            }
         }
     }
 
@@ -504,16 +503,19 @@ public class RegistryServiceImpl implements RegistryService {
     private void ensureUpdateAuditFields(JsonNode node) {
         Definition def = definitionsManager.getDefinition(node.fieldNames().next());
         List<String> auditFields = def != null ? def.getOsSchemaConfiguration().getAuditFields() : new ArrayList<>();
-        for(String field: auditFields){            
-            switch(AuditFields.getByValue(field)){
-            case osupdatedat:
-                AuditFields.osupdatedat.updatedAt(node);
-                break;
-            case osupdatedby:
-                AuditFields.osupdatedby.updatedBy(node, apiMessage.getUserID());
-                break;
-
-            }           
+        for(String field: auditFields){
+            try {
+                switch(AuditFields.getByValue(field)){
+                case osupdatedat:
+                    AuditFields.osupdatedat.updatedAt(node);
+                    break;
+                case osupdatedby:
+                    AuditFields.osupdatedby.updatedBy(node, apiMessage.getUserID());
+                    break;
+                }
+            } catch (Exception e) {
+                logger.error("Audit field - {} not valid!", field);
+            }
         }
     }
 }
