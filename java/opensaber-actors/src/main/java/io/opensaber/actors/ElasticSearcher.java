@@ -1,21 +1,29 @@
 package io.opensaber.actors;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.opensaber.elastic.ESMessage;
+import io.opensaber.elastic.ElasticServiceImpl;
 import io.opensaber.elastic.IElasticService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.sunbird.akka.core.BaseActor;
 import org.sunbird.akka.core.MessageProtos;
 
 public class ElasticSearcher extends BaseActor {
-    @Autowired
     public IElasticService elasticSearch;
+    public ObjectMapper objectMapper;
 
     @Override
     public void onReceive(MessageProtos.Message request) throws Throwable {
         logger.debug("Received a message to ElasticSearch Actor {}", request.getPerformOperation());
-
+        MessageProtos.Message.Builder msgBuilder = MessageProtos.Message.newBuilder();
+        elasticSearch = new ElasticServiceImpl();
+        objectMapper = new ObjectMapper();
+        ESMessage esMessage = objectMapper.readValue(request.getPayload().getStringValue(), ESMessage.class);
+        //ESMessage es =  objectMapper.writeValue(request.getPayload(), ESMessage.class);
         switch (request.getPerformOperation()) {
             case "add":
+                elasticSearch.addEntity(esMessage.getIndexName(), esMessage.getOsid(), esMessage.getInput());
                 break;
             case "update":
                 break;
@@ -24,8 +32,6 @@ public class ElasticSearcher extends BaseActor {
             case "read":
                 break;
         }
-
-
     }
 
     @Override

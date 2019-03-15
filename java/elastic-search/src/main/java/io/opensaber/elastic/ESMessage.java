@@ -9,11 +9,14 @@ public class ESMessage {
     String osid;
     JsonNode input;
 
-    public ESMessage(String indexName, String osid, JsonNode input) {
+    public ESMessage() {
+    }
+
+    /*public ESMessage(String indexName, String osid, JsonNode input) {
         setIndexName(indexName);
         setOsid(osid);
         setInput(input);
-    }
+    }*/
 
     public String getIndexName() {
         return indexName;
