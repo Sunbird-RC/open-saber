@@ -349,7 +349,10 @@ public class RegistryServiceImpl implements RegistryService {
             // elastic-search updation starts here
             logger.info("updating node {} " ,mergedNode);
             if(elasticSearchEnabled) {
-                elasticService.updateEntity(parentEntityType,rootId,mergedNode);
+                MessageProtos.Message message = MessageFactory.instance().createElasticSearchMessage(
+                        "update", parentEntityType,
+                        rootId, mergedNode);
+                ActorCache.instance().get(Router.ROUTER_NAME).tell(message, null);
             }
             auditRecord = new AuditRecord();
             auditRecord.setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_UPDATE).setExistingNode(readNode)
