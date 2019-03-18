@@ -1,4 +1,4 @@
-package io.opensaber.registry.service;
+package io.opensaber.audit;
 
 import io.opensaber.pojos.AuditRecord;
 import java.io.IOException;
@@ -11,5 +11,5 @@ public interface IAuditService {
      * @param auditRecord - input audit details
      * @throws IOException
      */
-    void audit(AuditRecord auditRecord) throws IOException;
+    public void audit(AuditRecord auditRecord) throws IOException;
 }

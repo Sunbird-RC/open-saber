@@ -4,11 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-import io.opensaber.elastic.ESMessage;
+import io.opensaber.actors.factory.MessageFactory;
 import io.opensaber.elastic.IElasticService;
 import io.opensaber.pojos.APIMessage;
+import io.opensaber.pojos.AuditInfo;
+import io.opensaber.pojos.AuditRecord;
 import io.opensaber.pojos.ComponentHealthInfo;
 import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.registry.dao.IRegistryDao;
@@ -18,12 +18,9 @@ import io.opensaber.registry.dao.VertexWriter;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.DateUtil;
 import io.opensaber.registry.middleware.util.JSONUtil;
-import io.opensaber.registry.model.AuditInfo;
-import io.opensaber.registry.model.AuditRecord;
 import io.opensaber.registry.service.EncryptionHelper;
 import io.opensaber.registry.service.EncryptionService;
 import io.opensaber.registry.service.IAuditService;
-import io.opensaber.registry.service.MessageFactory;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SignatureHelper;
 import io.opensaber.registry.service.SignatureService;
@@ -58,7 +55,6 @@ import org.springframework.stereotype.Component;
 import org.sunbird.akka.core.ActorCache;
 import org.sunbird.akka.core.MessageProtos;
 import org.sunbird.akka.core.Router;
-import org.sunbird.akka.core.SunbirdActorFactory;
 
 @Component
 public class RegistryServiceImpl implements RegistryService {
@@ -221,7 +217,7 @@ public class RegistryServiceImpl implements RegistryService {
             Definition definition = definitionsManager.getDefinition(vertexLabel);
             entityParenter.ensureIndexExists(dbProvider, parentVertex, definition, shardId);
             //call to elastic search
-            if(elasticSearchEnabled) {
+            /*if(elasticSearchEnabled) {
                 MessageProtos.Message message = MessageFactory.instance().createElasticSearchMessage(
                         "add", vertexLabel.toLowerCase(),
                         entityId, rootNode.get(vertexLabel));
@@ -230,7 +226,7 @@ public class RegistryServiceImpl implements RegistryService {
             auditRecord = new AuditRecord();
             auditRecord.setAction(Constants.AUDIT_ACTION_ADD).setUserId(apiMessage.getUserID()).setLatestNode(rootNode).setTransactionId(new LinkedList<>(Arrays.asList(tx.hashCode()))).
                     setRecordId(entityId).setAuditId(UUID.randomUUID().toString()).setTimeStamp(DateUtil.getTimeStamp());
-            auditService.audit(auditRecord);
+            auditService.audit(auditRecord);*/
         }
 
         return entityId;
@@ -348,17 +344,18 @@ public class RegistryServiceImpl implements RegistryService {
             databaseProvider.commitTransaction(graph, tx);
             // elastic-search updation starts here
             logger.info("updating node {} " ,mergedNode);
-            if(elasticSearchEnabled) {
+            /*if(elasticSearchEnabled) {
                 MessageProtos.Message message = MessageFactory.instance().createElasticSearchMessage(
                         "update", parentEntityType,
                         rootId, mergedNode);
                 ActorCache.instance().get(Router.ROUTER_NAME).tell(message, null);
-            }
+            }*/
             auditRecord = new AuditRecord();
             auditRecord.setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_UPDATE).setExistingNode(readNode)
                     .setLatestNode(mergedNode).setTransactionId(new LinkedList<>(Arrays.asList(tx.hashCode()))).setUserId(id).setRecordId(id).
                     setAuditId(UUID.randomUUID().toString()).setTimeStamp(DateUtil.getTimeStamp());
-            auditService.audit(auditRecord);
+            MessageProtos.Message message = MessageFactory.instance().createOSActor(elasticSearchEnabled,"update", parentEntityType, rootId, mergedNode, auditRecord);
+            ActorCache.instance().get(Router.ROUTER_NAME).tell(message, null);
         }
     }
 

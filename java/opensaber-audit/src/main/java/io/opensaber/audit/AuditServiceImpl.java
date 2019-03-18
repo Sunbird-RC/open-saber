@@ -1,4 +1,4 @@
-package io.opensaber.registry.service.impl;
+package io.opensaber.audit;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,7 +6,6 @@ import io.opensaber.pojos.AuditInfo;
 import io.opensaber.pojos.AuditRecord;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
-import io.opensaber.registry.service.IAuditService;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -36,6 +35,7 @@ public class AuditServiceImpl implements IAuditService {
 	@Async("auditExecutor")
 	public void audit(AuditRecord auditRecord) throws IOException {
 		List<AuditInfo> auditItemDetails = null;
+		objectMapper = new ObjectMapper();
 		if (!(auditRecord.getAction().equalsIgnoreCase(Constants.AUDIT_ACTION_READ) || auditRecord.getAction().equalsIgnoreCase(Constants.AUDIT_ACTION_DELETE))) {
 			JsonNode differenceJson = JSONUtil.diffJsonNode(auditRecord.getExistingNode(), auditRecord.getLatestNode());
 			auditItemDetails = Arrays.asList(objectMapper.treeToValue(differenceJson, AuditInfo[].class));

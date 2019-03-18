@@ -1,8 +1,7 @@
-package io.opensaber.registry.model;
+package io.opensaber.pojos;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
-
 import java.util.List;
 
 public class AuditRecord {
@@ -17,7 +16,6 @@ public class AuditRecord {
 	private String timeStamp;
 	private List<AuditInfo> auditInfo;
 
-    @JsonIgnore
 	public JsonNode getExistingNode() {
 		return existingNode;
 	}
@@ -26,7 +24,6 @@ public class AuditRecord {
 		this.existingNode = existingNode;
 		return this;
 	}
-    @JsonIgnore
 	public JsonNode getLatestNode() {
 		return latestNode;
 	}
