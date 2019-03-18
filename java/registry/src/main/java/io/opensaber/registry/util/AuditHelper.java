@@ -76,7 +76,7 @@ public class AuditHelper {
 
     public List<String> systemFields(String definitionName) {
         Definition def = definitionsManager.getDefinition(definitionName);
-        return def != null ? def.getOsSchemaConfiguration().getAuditFields() : new ArrayList<>();
+        return def != null ? def.getOsSchemaConfiguration().getSystemFields() : new ArrayList<>();
 
     }
 

@@ -28,7 +28,7 @@ public class OSSchemaConfiguration {
     /**
      * Holds fields name(s) to be used for auditing
      */
-    private List<String> auditFields =  new ArrayList<>();
+    private List<String> systemFields =  new ArrayList<>();
 
     public List<String> getPrivateFields() {
         return privateFields;
@@ -62,12 +62,11 @@ public class OSSchemaConfiguration {
         this.uniqueIndexFields = uniqueIndexFields;
     }
 
-    public List<String> getAuditFields() {
-        return auditFields;
+    public List<String> getSystemFields() {
+        return systemFields;
     }
 
-    public void setAuditFields(List<String> auditFields) {
-        this.auditFields = auditFields;
+    public void setSystemFields(List<String> systemFields) {
+        this.systemFields = systemFields;
     }
-    
 }

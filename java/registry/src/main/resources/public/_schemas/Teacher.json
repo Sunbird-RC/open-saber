@@ -150,6 +150,6 @@
          "signedFields": ["serialNum"],
          "indexFields": ["(serialNum, teacherCode)","teacherName"],
          "uniqueIndexFields": ["serialNum", "teacherCode"],
-         "auditFields": ["_osCreatedAt", "_osUpdatedAt", "_osCreatedBy"]
+         "systemFields": ["_osCreatedAt", "_osUpdatedAt", "_osCreatedBy"]
   }
 }
