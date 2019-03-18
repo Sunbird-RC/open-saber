@@ -9,114 +9,48 @@ import java.util.TimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * System fields for created, updated time and userId appended to the json node.
+ */
 public enum AuditFields {
 
-    oscreatedat {
+    _osCreatedAt {
         @Override
-        public void createdBy(JsonNode node, String userId) {
-            // No implements
-        }
-
-        @Override
-        public void createdAt(JsonNode node) {
+        public void createdAt(JsonNode node, String timeStamp) {
             String firstFieldName = node.fieldNames().next();
-            JSONUtil.addField((ObjectNode) node, firstFieldName, "createdAt", currentTimeStamp());
-        }
-
-        @Override
-        public void updatedAt(JsonNode node) {
-            // No implements
-        }
-
-        @Override
-        public void updatedBy(JsonNode node, String userId) {
-            // No implements
+            JSONUtil.addField((ObjectNode) node, firstFieldName, _osCreatedAt.toString(), timeStamp);
         }
     },
-    osupdatedat {
+    _osUpdatedAt {
+        @Override
+        public void updatedAt(JsonNode node, String timeStamp) {
+            String firstFieldName = node.fieldNames().next();
+            JSONUtil.addField((ObjectNode) node, firstFieldName, _osUpdatedAt.toString(), timeStamp);
+        }
+
+    },
+    _osCreatedBy {
         @Override
         public void createdBy(JsonNode node, String userId) {
-            // No implements
-        }
-
-        @Override
-        public void createdAt(JsonNode node) {
-            // No implements
-        }
-
-        @Override
-        public void updatedAt(JsonNode node) {
             String firstFieldName = node.fieldNames().next();
-            JSONUtil.addField((ObjectNode) node, firstFieldName, "updatedAt", currentTimeStamp());
-        }
-
-        @Override
-        public void updatedBy(JsonNode node, String userId) {
-            // No implements
+            JSONUtil.addField((ObjectNode) node, firstFieldName, _osCreatedBy.toString(), userId != null ? userId : "");
         }
     },
-    oscreatedby {
-        @Override
-        public void createdBy(JsonNode node, String userId) {
-            String firstFieldName = node.fieldNames().next();
-            JSONUtil.addField((ObjectNode) node, firstFieldName, "createdBy", userId != null ? userId : "");
-        }
-
-        @Override
-        public void createdAt(JsonNode node) {
-            // No implements
-        }
-
-        @Override
-        public void updatedAt(JsonNode node) {
-            // No implements
-        }
-
-        @Override
-        public void updatedBy(JsonNode node, String userId) {
-            // No implements
-        }
-    },
-    osupdatedby {
-        @Override
-        public void createdBy(JsonNode node, String userId) {
-            // No implements
-        }
-
-        @Override
-        public void createdAt(JsonNode node) {
-            // No implements
-        }
-
-        @Override
-        public void updatedAt(JsonNode node) {
-            // No implements
-        }
-
+    _osUdatedBy {
         @Override
         public void updatedBy(JsonNode node, String userId) {
             String firstFieldName = node.fieldNames().next();
-            JSONUtil.addField((ObjectNode) node, firstFieldName, "updatedBy", userId != null ? userId : "");
+            JSONUtil.addField((ObjectNode) node, firstFieldName, _osUdatedBy.toString(), userId != null ? userId : "");
         }
     };
 
-    static Logger logger = LoggerFactory.getLogger(AuditFields.class);
-    static final String dateformat = "yyyy-MM-dd'T'HH:mm:ssX";
-    static final String timezone = "UTC";
+    public void createdBy(JsonNode node, String userId){};
 
-    public abstract void createdBy(JsonNode node, String userId);
+    public void updatedBy(JsonNode node, String userId){};
 
-    public abstract void updatedBy(JsonNode node, String userId);
+    public void createdAt(JsonNode node, String timeStamp){};
 
-    public abstract void createdAt(JsonNode node);
-
-    public abstract void updatedAt(JsonNode node);
-
-    public String currentTimeStamp() {
-        SimpleDateFormat sdf = new SimpleDateFormat(dateformat);
-        sdf.setTimeZone(TimeZone.getTimeZone(timezone));
-        return sdf.format(new Date());
-    }
+    public void updatedAt(JsonNode node, String timeStamp){};
 
     public static AuditFields getByValue(String value) {
         for (final AuditFields element : EnumSet.allOf(AuditFields.class)) {

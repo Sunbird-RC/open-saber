@@ -12,7 +12,6 @@ import io.opensaber.registry.dao.IRegistryDao;
 import io.opensaber.registry.dao.RegistryDaoImpl;
 import io.opensaber.registry.dao.VertexReader;
 import io.opensaber.registry.dao.VertexWriter;
-import io.opensaber.registry.middleware.util.AuditFields;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.DateUtil;
 import io.opensaber.registry.middleware.util.JSONUtil;
@@ -27,6 +26,7 @@ import io.opensaber.registry.service.SignatureService;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.sink.shard.Shard;
+import io.opensaber.registry.util.AuditHelper;
 import io.opensaber.registry.util.Definition;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.EntityParenter;
@@ -98,6 +98,9 @@ public class RegistryServiceImpl implements RegistryService {
 
     @Autowired
     private EntityParenter entityParenter;
+
+    @Autowired
+    private AuditHelper auditHelper;
 
     private AuditRecord auditRecord;
 
@@ -186,7 +189,7 @@ public class RegistryServiceImpl implements RegistryService {
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(jsonString);
         
-        ensureCreateAuditFields(rootNode);
+        auditHelper.ensureCreateAuditFields(rootNode, apiMessage.getUserID());
 
         if (encryptionEnabled) {
             rootNode = encryptionHelper.getEncryptedJson(rootNode);
@@ -266,8 +269,8 @@ public class RegistryServiceImpl implements RegistryService {
     public void updateEntity(String id, String jsonString) throws Exception {
         JsonNode inputNode = objectMapper.readTree(jsonString);
         String entityType = inputNode.fields().next().getKey();
-        
-        ensureUpdateAuditFields(inputNode);
+
+        auditHelper.ensureUpdateAuditFields(inputNode, apiMessage.getUserID());
 
         if (encryptionEnabled) {
             inputNode = encryptionHelper.getEncryptedJson(inputNode);
@@ -473,49 +476,5 @@ public class RegistryServiceImpl implements RegistryService {
         });
         return result;
     }
-    /**
-     * ensure the audit fields(createdAt, createdBy) at time of adding a fresh record/node
-     * @param node
-     */
-    private void ensureCreateAuditFields(JsonNode node) {
-        Definition def = definitionsManager.getDefinition(node.fieldNames().next());
-        List<String> auditFields = def != null ? def.getOsSchemaConfiguration().getAuditFields() : new ArrayList<>();
-        for(String field: auditFields){
-            try {
-                switch(AuditFields.getByValue(field)){
-                case oscreatedat:
-                    AuditFields.oscreatedat.createdAt(node);
-                    break;
-                case oscreatedby:
-                    AuditFields.oscreatedby.createdBy(node, apiMessage.getUserID());
-                    break;
-                }
-            } catch (Exception e) {
-                logger.error("Audit field - {} not valid!", field);
-            }
-        }
-    }
 
-    /**
-     * ensure the audit fields(updatedAt, updatedBy) at time of updating a record/node
-     * @param node
-     */
-    private void ensureUpdateAuditFields(JsonNode node) {
-        Definition def = definitionsManager.getDefinition(node.fieldNames().next());
-        List<String> auditFields = def != null ? def.getOsSchemaConfiguration().getAuditFields() : new ArrayList<>();
-        for(String field: auditFields){
-            try {
-                switch(AuditFields.getByValue(field)){
-                case osupdatedat:
-                    AuditFields.osupdatedat.updatedAt(node);
-                    break;
-                case osupdatedby:
-                    AuditFields.osupdatedby.updatedBy(node, apiMessage.getUserID());
-                    break;
-                }
-            } catch (Exception e) {
-                logger.error("Audit field - {} not valid!", field);
-            }
-        }
-    }
 }
