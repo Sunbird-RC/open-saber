@@ -6,7 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.Value;
 import io.opensaber.elastic.ESMessage;
 import io.opensaber.pojos.AuditRecord;
-import io.opensaber.pojos.OSGenericMessage;
+import io.opensaber.pojos.OSActorEvent;
+import io.opensaber.registry.middleware.util.Constants;
 import java.util.HashMap;
 import java.util.Map;
 import org.sunbird.akka.core.MessageProtos;
@@ -21,7 +22,7 @@ public class MessageFactory {
     public MessageProtos.Message createElasticSearchMessage(String operation, ESMessage esMessage) throws JsonProcessingException {
         MessageProtos.Message.Builder msgBuilder = MessageProtos.Message.newBuilder();
         msgBuilder.setPerformOperation(operation);
-        msgBuilder.setTargetActorName("ElasticSearcher");
+        msgBuilder.setTargetActorName(Constants.ELASTIC_SEARCH_ACTOR);
         Value.Builder payloadBuilder = msgBuilder.getPayloadBuilder();
         ObjectMapper objectMapper = new ObjectMapper();
         payloadBuilder.setStringValue(objectMapper.writeValueAsString(esMessage));
@@ -31,7 +32,7 @@ public class MessageFactory {
 
     public MessageProtos.Message createAuditMessage(AuditRecord auditRecord) throws JsonProcessingException {
         MessageProtos.Message.Builder msgBuilder = MessageProtos.Message.newBuilder();
-        msgBuilder.setTargetActorName("AuditActor");
+        msgBuilder.setTargetActorName(Constants.AUDIT_ACTOR);
         Value.Builder payloadBuilder = msgBuilder.getPayloadBuilder();
         ObjectMapper objectMapper = new ObjectMapper();
         payloadBuilder.setStringValue(objectMapper.writeValueAsString(auditRecord));
@@ -39,24 +40,24 @@ public class MessageFactory {
         return msgBuilder.build();
     }
 
-    public MessageProtos.Message createOSActor(boolean esEnabled, String operation, String index, String osid, JsonNode latestNode,
-                                                AuditRecord auditRecord) throws JsonProcessingException {
+    public MessageProtos.Message createOSActorMessage(boolean esEnabled, String operation, String index, String osid, JsonNode latestNode,
+                                                      AuditRecord auditRecord) throws JsonProcessingException {
         MessageProtos.Message.Builder msgBuilder = MessageProtos.Message.newBuilder();
         msgBuilder.setPerformOperation(operation);
-        msgBuilder.setTargetActorName("OSActor");
+        msgBuilder.setTargetActorName(Constants.OS_ACTOR);
         Value.Builder payloadBuilder = msgBuilder.getPayloadBuilder();
         ESMessage esMessage = new ESMessage();
         esMessage.setIndexName(index);
         esMessage.setOsid(osid);
         esMessage.setInput(latestNode);
         ObjectMapper objectMapper = new ObjectMapper();
-        OSGenericMessage osGenericMessage = new OSGenericMessage();
+        OSActorEvent osActorEvent = new OSActorEvent();
         Map<String, Object> osMsg = new HashMap<>();
         osMsg.put("esEnabled",esEnabled);
         osMsg.put("esMessage",esMessage);
         osMsg.put("auditMessage",auditRecord);
-        osGenericMessage.setOsMap(osMsg);
-        payloadBuilder.setStringValue(objectMapper.writeValueAsString(osGenericMessage));
+        osActorEvent.setOsMap(osMsg);
+        payloadBuilder.setStringValue(objectMapper.writeValueAsString(osActorEvent));
         msgBuilder.setPayload(payloadBuilder.build());
         return msgBuilder.build();
     }

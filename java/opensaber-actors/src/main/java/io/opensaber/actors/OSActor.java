@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opensaber.actors.factory.MessageFactory;
 import io.opensaber.elastic.ESMessage;
 import io.opensaber.pojos.AuditRecord;
-import io.opensaber.pojos.OSGenericMessage;
+import io.opensaber.pojos.OSActorEvent;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.sunbird.akka.core.ActorCache;
@@ -13,7 +13,6 @@ import org.sunbird.akka.core.MessageProtos;
 import org.sunbird.akka.core.Router;
 
 public class OSActor extends BaseActor {
-    @Value("${elastic.search.enabled}")
     private boolean elasticSearchEnabled;
     public ObjectMapper objectMapper;
     @Override
@@ -21,8 +20,8 @@ public class OSActor extends BaseActor {
         objectMapper = new ObjectMapper();
         ESMessage esMessage = null;
         AuditRecord auditRecord = null;
-        OSGenericMessage osGenericMessage = objectMapper.readValue(message.getPayload().getStringValue(), OSGenericMessage.class);
-        Map<String, Object> osMap = osGenericMessage.getOsMap();
+        OSActorEvent osActorEvent = objectMapper.readValue(message.getPayload().getStringValue(), OSActorEvent.class);
+        Map<String, Object> osMap = osActorEvent.getOsMap();
         elasticSearchEnabled = (boolean) osMap.get("esEnabled");
         if(null != osMap.get("esMessage")) {
             esMessage = objectMapper.convertValue(osMap.get("esMessage"),ESMessage.class);

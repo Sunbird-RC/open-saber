@@ -2,7 +2,7 @@ package io.opensaber.pojos;
 
 import java.util.Map;
 
-public class OSGenericMessage {
+public class OSActorEvent {
 
     public Map<String, Object> osMap;
 

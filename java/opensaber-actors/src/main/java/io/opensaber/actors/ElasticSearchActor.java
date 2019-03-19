@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.sunbird.akka.core.BaseActor;
 import org.sunbird.akka.core.MessageProtos;
 
-public class ElasticSearcher extends BaseActor {
+public class ElasticSearchActor extends BaseActor {
     public IElasticService elasticSearch;
     public ObjectMapper objectMapper;
 
