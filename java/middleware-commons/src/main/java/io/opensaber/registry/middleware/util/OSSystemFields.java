@@ -28,10 +28,10 @@ public enum OSSystemFields {
             JSONUtil.addField((ObjectNode) node, _osCreatedBy.toString(), userId != null ? userId : "");
         }
     },
-    _osUdatedBy {
+    _osUpdatedBy {
         @Override
         public void updatedBy(JsonNode node, String userId) {
-            JSONUtil.addField((ObjectNode) node, _osUdatedBy.toString(), userId != null ? userId : "");
+            JSONUtil.addField((ObjectNode) node, _osUpdatedBy.toString(), userId != null ? userId : "");
         }
     };
 

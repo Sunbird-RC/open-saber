@@ -69,8 +69,8 @@ public class OSSystemFieldsHelper {
                 case _osUpdatedAt:
                     OSSystemFields._osUpdatedAt.updatedAt(node, timeStamp);
                     break;
-                case _osUdatedBy:
-                    OSSystemFields._osUdatedBy.updatedBy(node, userId);
+                case _osUpdatedBy:
+                    OSSystemFields._osUpdatedBy.updatedBy(node, userId);
                     break;
             }
         } catch (Exception e) {
