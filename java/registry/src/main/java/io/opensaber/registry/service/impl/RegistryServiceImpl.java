@@ -21,7 +21,6 @@ import io.opensaber.registry.middleware.util.DateUtil;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.service.EncryptionHelper;
 import io.opensaber.registry.service.EncryptionService;
-import io.opensaber.registry.service.IAuditService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.SignatureHelper;
 import io.opensaber.registry.service.SignatureService;
@@ -79,8 +78,6 @@ public class RegistryServiceImpl implements RegistryService {
     private ObjectMapper objectMapper;
     @Autowired
     private IElasticService elasticService;
-    @Autowired
-    private IAuditService auditService;
     @Autowired
     private APIMessage apiMessage;
     @Value("${encryption.enabled}")

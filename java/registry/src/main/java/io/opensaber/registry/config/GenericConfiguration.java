@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import io.opensaber.audit.AuditServiceImpl;
+import io.opensaber.audit.IAuditService;
 import io.opensaber.elastic.ElasticServiceImpl;
 import io.opensaber.elastic.IElasticService;
 import io.opensaber.pojos.AuditRecord;
@@ -404,5 +406,15 @@ public class GenericConfiguration implements WebMvcConfigurer {
 		elasticService.setConnectionInfo(elasticConnInfo);
         elasticService.init(definitionsManager.getAllKnownDefinitions());
 		return elasticService;
+	}
+
+	/** creates elastic-service bean and instanstiates the indices
+	 * @return - IElasticService
+	 * @throws IOException
+	 */
+	@Bean
+	public IAuditService auditService() throws IOException {
+		IAuditService auditService = new AuditServiceImpl();
+		return auditService;
 	}
 }

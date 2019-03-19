@@ -3,6 +3,7 @@ package io.opensaber.registry.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.opensaber.audit.IAuditService;
 import io.opensaber.elastic.IElasticService;
 import io.opensaber.pojos.APIMessage;
 import io.opensaber.pojos.AuditInfo;
