@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
@@ -203,28 +202,25 @@ public class JSONUtil {
 	 * Adding field(key, value) to Parent's hierarchy 
 	 * 
 	 * @param parent
-	 * @param firstFieldName
 	 * @param childKey      field key
 	 * @param child         field value
 	 */
-    public static void addField(ObjectNode parent, String firstFieldName, String childKey, String child) {
-        Iterator<Entry<String, JsonNode>> list = parent.fields();
-        list.forEachRemaining(entry -> {
+    public static void addField(ObjectNode parent, String childKey, String child) {
+        parent.fields().forEachRemaining(entry -> {
             JsonNode entryValue = entry.getValue();
             if (entryValue.isObject()) {
-                addField((ObjectNode) entry.getValue(), firstFieldName, childKey, child);
+                addField((ObjectNode) entry.getValue(), childKey, child);
             }
             if (entryValue.isArray()) {
                 for (int i = 0; i < entryValue.size(); i++) {
                     if (entry.getValue().get(i).isObject())
-                        addField((ObjectNode) entry.getValue().get(i), firstFieldName, childKey, child);
+                        addField((ObjectNode) entry.getValue().get(i), childKey, child);
                 }
             }
         });
         if (childKey == null || childKey.isEmpty())
             throw new IllegalArgumentException(KEY_NULL_ERROR);
-        if(!parent.fieldNames().next().equalsIgnoreCase(firstFieldName))
-            parent.put(childKey, child);
+        parent.put(childKey, child);
 
     }
 

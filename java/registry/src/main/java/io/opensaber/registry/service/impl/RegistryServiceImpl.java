@@ -26,7 +26,6 @@ import io.opensaber.registry.service.SignatureService;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.sink.shard.Shard;
-import io.opensaber.registry.util.AuditHelper;
 import io.opensaber.registry.util.Definition;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.EntityParenter;
@@ -34,6 +33,7 @@ import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.ReadConfiguratorFactory;
 import io.opensaber.registry.util.RecordIdentifier;
 import io.opensaber.registry.util.RefLabelHelper;
+import io.opensaber.registry.util.OSSystemFieldsHelper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -100,7 +100,7 @@ public class RegistryServiceImpl implements RegistryService {
     private EntityParenter entityParenter;
 
     @Autowired
-    private AuditHelper auditHelper;
+    private OSSystemFieldsHelper systemFieldsHelper;
 
     private AuditRecord auditRecord;
 
@@ -188,8 +188,9 @@ public class RegistryServiceImpl implements RegistryService {
         String entityId = "entityPlaceholderId";
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(jsonString);
+        String vertexLabel = rootNode.fieldNames().next();
         
-        auditHelper.ensureCreateAuditFields(rootNode, apiMessage.getUserID());
+        systemFieldsHelper.ensureCreateAuditFields(vertexLabel, rootNode.get(vertexLabel), apiMessage.getUserID());
 
         if (encryptionEnabled) {
             rootNode = encryptionHelper.getEncryptedJson(rootNode);
@@ -200,7 +201,6 @@ public class RegistryServiceImpl implements RegistryService {
         }
 
         if (persistenceEnabled) {
-            String vertexLabel = null;
             DatabaseProvider dbProvider = shard.getDatabaseProvider();
             IRegistryDao registryDao = new RegistryDaoImpl(dbProvider, definitionsManager, uuidPropertyName);
             try (OSGraph osGraph = dbProvider.getOSGraph()) {
@@ -210,7 +210,6 @@ public class RegistryServiceImpl implements RegistryService {
                 shard.getDatabaseProvider().commitTransaction(graph, tx);
                 dbProvider.commitTransaction(graph, tx);
 
-                vertexLabel = rootNode.fieldNames().next();
             }
             //Add indices: executes only once.
             String shardId = shard.getShardId();
@@ -270,7 +269,7 @@ public class RegistryServiceImpl implements RegistryService {
         JsonNode inputNode = objectMapper.readTree(jsonString);
         String entityType = inputNode.fields().next().getKey();
 
-        auditHelper.ensureUpdateAuditFields(inputNode, apiMessage.getUserID());
+        systemFieldsHelper.ensureUpdateAuditFields(entityType, inputNode.get(entityType), apiMessage.getUserID());
 
         if (encryptionEnabled) {
             inputNode = encryptionHelper.getEncryptedJson(inputNode);
