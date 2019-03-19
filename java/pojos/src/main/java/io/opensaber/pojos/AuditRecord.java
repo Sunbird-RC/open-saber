@@ -6,8 +6,8 @@ import java.util.List;
 
 public class AuditRecord {
 
-	private JsonNode existingNode;
-	private JsonNode latestNode;
+	/*private JsonNode existingNode;
+	private JsonNode latestNode;*/
 	private String action;
 	private String recordId;
 	private List<Integer> transactionId;
@@ -16,7 +16,7 @@ public class AuditRecord {
 	private String timeStamp;
 	private List<AuditInfo> auditInfo;
 
-	public JsonNode getExistingNode() {
+	/*public JsonNode getExistingNode() {
 		return existingNode;
 	}
 
@@ -31,7 +31,7 @@ public class AuditRecord {
 	public AuditRecord setLatestNode(JsonNode latestNode) {
 		this.latestNode = latestNode;
 		return this;
-	}
+	}*/
 
 	public String getAction() {
 		return action;

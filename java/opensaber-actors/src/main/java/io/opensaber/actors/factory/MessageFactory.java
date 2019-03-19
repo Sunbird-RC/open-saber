@@ -39,8 +39,8 @@ public class MessageFactory {
         return msgBuilder.build();
     }
 
-    public MessageProtos.Message createOSActor(boolean esEnabled, String operation, String index, String osid, JsonNode input,
-                                               AuditRecord auditRecord) throws JsonProcessingException {
+    public MessageProtos.Message createOSActor(boolean esEnabled, String operation, String index, String osid, JsonNode latestNode,
+                                                AuditRecord auditRecord) throws JsonProcessingException {
         MessageProtos.Message.Builder msgBuilder = MessageProtos.Message.newBuilder();
         msgBuilder.setPerformOperation(operation);
         msgBuilder.setTargetActorName("OSActor");
@@ -48,7 +48,7 @@ public class MessageFactory {
         ESMessage esMessage = new ESMessage();
         esMessage.setIndexName(index);
         esMessage.setOsid(osid);
-        esMessage.setInput(input);
+        esMessage.setInput(latestNode);
         ObjectMapper objectMapper = new ObjectMapper();
         OSGenericMessage osGenericMessage = new OSGenericMessage();
         Map<String, Object> osMsg = new HashMap<>();

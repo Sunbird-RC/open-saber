@@ -36,11 +36,11 @@ public class AuditServiceImpl implements IAuditService {
 	public void audit(AuditRecord auditRecord) throws IOException {
 		List<AuditInfo> auditItemDetails = null;
 		objectMapper = new ObjectMapper();
-		if (!(auditRecord.getAction().equalsIgnoreCase(Constants.AUDIT_ACTION_READ) || auditRecord.getAction().equalsIgnoreCase(Constants.AUDIT_ACTION_DELETE))) {
+		/*if (!(auditRecord.getAction().equalsIgnoreCase(Constants.AUDIT_ACTION_READ) || auditRecord.getAction().equalsIgnoreCase(Constants.AUDIT_ACTION_DELETE))) {
 			JsonNode differenceJson = JSONUtil.diffJsonNode(auditRecord.getExistingNode(), auditRecord.getLatestNode());
 			auditItemDetails = Arrays.asList(objectMapper.treeToValue(differenceJson, AuditInfo[].class));
 			auditRecord.setAuditInfo(auditItemDetails);
-		}
+		}*/
 		String auditString = objectMapper.writeValueAsString(auditRecord);
 		logger.info("{}", auditString);
 	}

@@ -81,8 +81,8 @@ public class NativeReadService implements IReadService {
 			shard.getDatabaseProvider().commitTransaction(graph, tx);
 			dbProvider.commitTransaction(graph, tx);
             auditRecord =  new AuditRecord();
-            auditRecord.setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_READ).setRecordId(id).setTransactionId(new LinkedList<>(Arrays.asList(tx.hashCode()))).setLatestNode(result).
-                    setExistingNode(result).setAuditId(UUID.randomUUID().toString()).setTimeStamp(DateUtil.getTimeStamp());
+            /*auditRecord.setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_READ).setRecordId(id).setTransactionId(new LinkedList<>(Arrays.asList(tx.hashCode()))).setLatestNode(result).
+                    setExistingNode(result).setAuditId(UUID.randomUUID().toString()).setTimeStamp(DateUtil.getTimeStamp());*/
 			AuditInfo auditInfo = new AuditInfo();
 			auditInfo.setOp(Constants.AUDIT_ACTION_READ_OP);
 			auditInfo.setPath("/"+entityType);

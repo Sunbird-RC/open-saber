@@ -1,5 +1,6 @@
 package io.opensaber.registry.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -51,6 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.sunbird.akka.core.ActorCache;
 import org.sunbird.akka.core.MessageProtos;
@@ -160,17 +162,7 @@ public class RegistryServiceImpl implements RegistryService {
                 registryDao.deleteEntity(vertex);
                 databaseProvider.commitTransaction(graph, tx);
                 String index = vertex.property(Constants.TYPE_STR_JSON_LD).isPresent() ? (String) vertex.property(Constants.TYPE_STR_JSON_LD).value() : null;
-                if(elasticSearchEnabled) {
-                    elasticService.deleteEntity(index, uuid);
-                }
-                auditRecord = new AuditRecord();
-                AuditInfo auditInfo = new AuditInfo();
-                auditInfo.setOp(Constants.AUDIT_ACTION_REMOVE_OP);
-                auditInfo.setPath("/"+vertex.label());
-                auditRecord.setAction(Constants.AUDIT_ACTION_DELETE).setUserId(apiMessage.getUserID()).setTransactionId(new LinkedList<>(Arrays.asList(tx.hashCode()))).
-                        setRecordId(uuid).setAuditInfo(Arrays.asList(auditInfo)).setAuditId(UUID.randomUUID().toString()).
-                        setTimeStamp(DateUtil.getTimeStamp());
-                auditService.audit(auditRecord);
+                callAuditESActors(null,null,"delete", Constants.AUDIT_ACTION_DELETE,uuid,index,uuid,tx);
             }
             logger.info("Entity {} marked deleted", uuid);
         }
@@ -216,17 +208,7 @@ public class RegistryServiceImpl implements RegistryService {
             Vertex parentVertex = entityParenter.getKnownParentVertex(vertexLabel, shardId);
             Definition definition = definitionsManager.getDefinition(vertexLabel);
             entityParenter.ensureIndexExists(dbProvider, parentVertex, definition, shardId);
-            //call to elastic search
-            /*if(elasticSearchEnabled) {
-                MessageProtos.Message message = MessageFactory.instance().createElasticSearchMessage(
-                        "add", vertexLabel.toLowerCase(),
-                        entityId, rootNode.get(vertexLabel));
-                ActorCache.instance().get(Router.ROUTER_NAME).tell(message, null);
-            }
-            auditRecord = new AuditRecord();
-            auditRecord.setAction(Constants.AUDIT_ACTION_ADD).setUserId(apiMessage.getUserID()).setLatestNode(rootNode).setTransactionId(new LinkedList<>(Arrays.asList(tx.hashCode()))).
-                    setRecordId(entityId).setAuditId(UUID.randomUUID().toString()).setTimeStamp(DateUtil.getTimeStamp());
-            auditService.audit(auditRecord);*/
+            callAuditESActors(null,rootNode,"add", Constants.AUDIT_ACTION_ADD,entityId,vertexLabel.toLowerCase(),entityId,tx);
         }
 
         return entityId;
@@ -342,21 +324,33 @@ public class RegistryServiceImpl implements RegistryService {
             doUpdate(graph, registryDao, vr, inputNode.get(entityType));
 
             databaseProvider.commitTransaction(graph, tx);
-            // elastic-search updation starts here
-            logger.info("updating node {} " ,mergedNode);
-            /*if(elasticSearchEnabled) {
-                MessageProtos.Message message = MessageFactory.instance().createElasticSearchMessage(
-                        "update", parentEntityType,
-                        rootId, mergedNode);
-                ActorCache.instance().get(Router.ROUTER_NAME).tell(message, null);
-            }*/
-            auditRecord = new AuditRecord();
-            auditRecord.setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_UPDATE).setExistingNode(readNode)
-                    .setLatestNode(mergedNode).setTransactionId(new LinkedList<>(Arrays.asList(tx.hashCode()))).setUserId(id).setRecordId(id).
-                    setAuditId(UUID.randomUUID().toString()).setTimeStamp(DateUtil.getTimeStamp());
-            MessageProtos.Message message = MessageFactory.instance().createOSActor(elasticSearchEnabled,"update", parentEntityType, rootId, mergedNode, auditRecord);
-            ActorCache.instance().get(Router.ROUTER_NAME).tell(message, null);
+            // elastic-search and audit akka calls starts here
+            callAuditESActors(readNode,mergedNode,"update",Constants.AUDIT_ACTION_UPDATE,id,entityType,rootId,tx);
         }
+    }
+
+    @Async("auditExecutor")
+    public void callAuditESActors(JsonNode readNode, JsonNode mergedNode, String operation, String auditAction, String id, String parentEntityType, String entityRootId, Transaction tx) throws JsonProcessingException {
+        logger.info("callAuditESActors started");
+        List<AuditInfo> auditItemDetails = null;
+        auditRecord = new AuditRecord();
+        auditRecord.setUserId(apiMessage.getUserID()).setAction(auditAction)
+                .setTransactionId(new LinkedList<>(Arrays.asList(tx.hashCode()))).setRecordId(id).
+                setAuditId(UUID.randomUUID().toString()).setTimeStamp(DateUtil.getTimeStamp());
+        JsonNode differenceJson = JSONUtil.diffJsonNode(readNode, mergedNode);
+        if (auditAction.equalsIgnoreCase(Constants.AUDIT_ACTION_DELETE)) {
+            auditItemDetails = new ArrayList<>();
+            AuditInfo auditInfo = new AuditInfo();
+            auditInfo.setOp(Constants.AUDIT_ACTION_REMOVE_OP);
+            auditInfo.setPath("/"+parentEntityType);
+            auditItemDetails.add(auditInfo);
+        } else {
+            auditItemDetails = Arrays.asList(objectMapper.treeToValue(differenceJson, AuditInfo[].class));
+        }
+        auditRecord.setAuditInfo(auditItemDetails);
+        MessageProtos.Message message = MessageFactory.instance().createOSActor(elasticSearchEnabled,operation, parentEntityType, entityRootId, mergedNode, auditRecord);
+        ActorCache.instance().get(Router.ROUTER_NAME).tell(message, null);
+        logger.info("callAuditESActors ends");
     }
 
     private void doUpdateArray(Graph graph, IRegistryDao registryDao, VertexReader vr, Vertex blankArrVertex, ArrayNode arrayNode) {

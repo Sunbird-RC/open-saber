@@ -29,6 +29,7 @@ public class ElasticSearcher extends BaseActor {
                 elasticSearch.updateEntity(esMessage.getIndexName(), esMessage.getOsid(), esMessage.getInput());
                 break;
             case "delete":
+                elasticSearch.deleteEntity(esMessage.getIndexName(), esMessage.getOsid());
                 break;
             case "read":
                 break;
