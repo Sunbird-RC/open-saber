@@ -4,9 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opensaber.actors.factory.MessageFactory;
 import io.opensaber.elastic.ESMessage;
 import io.opensaber.pojos.AuditRecord;
-import io.opensaber.pojos.OSActorEvent;
+import io.opensaber.pojos.OSEvent;
 import java.util.Map;
-import org.springframework.beans.factory.annotation.Value;
 import org.sunbird.akka.core.ActorCache;
 import org.sunbird.akka.core.BaseActor;
 import org.sunbird.akka.core.MessageProtos;
@@ -20,8 +19,8 @@ public class OSActor extends BaseActor {
         objectMapper = new ObjectMapper();
         ESMessage esMessage = null;
         AuditRecord auditRecord = null;
-        OSActorEvent osActorEvent = objectMapper.readValue(message.getPayload().getStringValue(), OSActorEvent.class);
-        Map<String, Object> osMap = osActorEvent.getOsMap();
+        OSEvent osEvent = objectMapper.readValue(message.getPayload().getStringValue(), OSEvent.class);
+        Map<String, Object> osMap = osEvent.getOsMap();
         elasticSearchEnabled = (boolean) osMap.get("esEnabled");
         if(null != osMap.get("esMessage")) {
             esMessage = objectMapper.convertValue(osMap.get("esMessage"),ESMessage.class);

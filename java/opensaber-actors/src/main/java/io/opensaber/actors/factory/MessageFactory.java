@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.Value;
 import io.opensaber.elastic.ESMessage;
 import io.opensaber.pojos.AuditRecord;
-import io.opensaber.pojos.OSActorEvent;
+import io.opensaber.pojos.OSEvent;
 import io.opensaber.registry.middleware.util.Constants;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,13 +51,13 @@ public class MessageFactory {
         esMessage.setOsid(osid);
         esMessage.setInput(latestNode);
         ObjectMapper objectMapper = new ObjectMapper();
-        OSActorEvent osActorEvent = new OSActorEvent();
+        OSEvent osEvent = new OSEvent();
         Map<String, Object> osMsg = new HashMap<>();
         osMsg.put("esEnabled",esEnabled);
         osMsg.put("esMessage",esMessage);
         osMsg.put("auditMessage",auditRecord);
-        osActorEvent.setOsMap(osMsg);
-        payloadBuilder.setStringValue(objectMapper.writeValueAsString(osActorEvent));
+        osEvent.setOsMap(osMsg);
+        payloadBuilder.setStringValue(objectMapper.writeValueAsString(osEvent));
         msgBuilder.setPayload(payloadBuilder.build());
         return msgBuilder.build();
     }
