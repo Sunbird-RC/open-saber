@@ -169,7 +169,7 @@ public class VertexReader {
             try {
                 Iterator<Vertex> signatureArrayIter = currVertex.vertices(Direction.IN, Constants.SIGNATURES_STR);
                 Vertex signatureArrayV = signatureArrayIter.next();
-                Iterator<Vertex> signatureVertices = signatureArrayV.vertices(Direction.OUT, Constants.SIGNATURE_FOR);
+                Iterator<Vertex> signatureVertices = signatureArrayV.vertices(Direction.OUT, Constants.SIGNATURE_FOR+Constants.ARRAY_ITEM);
 
                 signatures = JsonNodeFactory.instance.arrayNode();
                 while (signatureVertices.hasNext()) {
@@ -361,10 +361,13 @@ public class VertexReader {
                 break;
             case SQLG:
                 if (null != entityType) {
-                    itrV = graph.traversal().clone().V().hasLabel(entityType).has(uuidPropertyName, osid);
+                    itrV = graph.traversal().clone().V().hasLabel(entityType).has(uuidPropertyName, osid[0]);
                 } else {
-                    itrV = graph.traversal().clone().V().has(uuidPropertyName, osid);
+                    itrV = graph.traversal().clone().V().has(uuidPropertyName, osid[0]);
                 }
+                break;
+            case CASSANDRA:
+                itrV = graph.traversal().clone().V().has(uuidPropertyName, osid[0]);
                 break;
             default:
                 itrV = graph.vertices(osid);
