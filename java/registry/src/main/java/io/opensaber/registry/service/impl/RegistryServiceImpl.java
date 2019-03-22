@@ -93,7 +93,7 @@ public class RegistryServiceImpl implements RegistryService {
     @Value("${persistence.enabled}")
     private boolean persistenceEnabled;
 
-    @Value("${commit.enabled}")
+    @Value("${commit.enabled:false}")
     private boolean commitEnabled;
 
     @Value("${elastic.search.enabled}")

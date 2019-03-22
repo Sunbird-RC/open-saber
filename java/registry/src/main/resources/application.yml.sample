@@ -19,6 +19,9 @@ perf:
 persistence:
   enabled: ${persistence_enabled:true}
 
+commit:
+  enabled: ${persistence_enabled:true}
+
 registry:
   context:
     base: ${registry_context_base:http://localhost:8080/}
@@ -225,6 +228,9 @@ perf:
     enabled: false
 
 persistence:
+  enabled: ${persistence_enabled:true}
+
+commit:
   enabled: ${persistence_enabled:true}
 
 registry:
