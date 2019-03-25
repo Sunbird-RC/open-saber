@@ -90,10 +90,10 @@ public class RegistryServiceImpl implements RegistryService {
     @Value("${signature.enabled}")
     private boolean signatureEnabled;
 
-    @Value("${persistence.enabled}")
+    @Value("${persistence.enabled:true}")
     private boolean persistenceEnabled;
 
-    @Value("${commit.enabled:false}")
+    @Value("${persistence.commit.enabled:true}")
     private boolean commitEnabled;
 
     @Value("${elastic.search.enabled}")
