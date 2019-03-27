@@ -22,6 +22,8 @@ public class EvaluatorFactory {
         } else if (functiondef.getProvider() != null) {
             function = getFieldFunction(functiondef.getProvider(), actualValues);
             evaluator = new ProviderEvaluator(function);
+        } else if (functiondef.getReference() != null) {
+            //TODO: implementation for reference evaluator 
         }
 
         return evaluator;
