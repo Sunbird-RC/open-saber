@@ -37,7 +37,8 @@
         <module>transaction-event-handler</module>
         <module>registry</module>
         <module>elastic-search</module>
-        <module>opensaber-actors</module>
+	<module>opensaber-actors</module>
+	<module>view-templates</module>
     </modules>
 
     <build>
