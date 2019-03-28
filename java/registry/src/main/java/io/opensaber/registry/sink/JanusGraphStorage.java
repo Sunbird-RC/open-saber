@@ -8,12 +8,16 @@ import org.janusgraph.core.JanusGraph;
 import org.janusgraph.core.JanusGraphFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 public class JanusGraphStorage extends DatabaseProvider {
+
+	@Autowired
+	Environment environment;
 
 	private Logger logger = LoggerFactory.getLogger(JanusGraphStorage.class);
 	private JanusGraph graph;
@@ -25,6 +29,10 @@ public class JanusGraphStorage extends DatabaseProvider {
 		config.setProperty("jdbc.username", connectionInfo.getUsername());
 		config.setProperty("jdbc.password", connectionInfo.getPassword());
 		config.setProperty("storage.backend", "cassandrathrift");
+		config.setProperty("query.batch", true);
+
+		//String host = environment.getProperty("cassandra.hostname");
+		config.setProperty("storage.hostname", "18.0.0.4");
 
 		setProvider(Constants.GraphDatabaseProvider.CASSANDRA);
 		setUuidPropertyName(uuidPropertyName);
@@ -52,6 +60,7 @@ public class JanusGraphStorage extends DatabaseProvider {
 		config.setProperty("index.search.hostname", searchHostname);
 		config.setProperty("cache.db-cache-size", Float.parseFloat(dbCacheSize));
 		config.setProperty("cache.db-cache-clean-wait", Integer.parseInt(dbCacheCleanUpWaitTime));
+
 		graph = JanusGraphFactory.open(config);
 		osGraph = new OSGraph(graph, false);
 	}

@@ -33,7 +33,7 @@ public class ElasticReadService implements IReadService {
     private static Logger logger = LoggerFactory.getLogger(ElasticReadService.class);
 
     @Autowired
-    private IElasticService elasticService;
+    private ISearchService searchService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -57,11 +57,12 @@ public class ElasticReadService implements IReadService {
         JsonNode result = null;
         AuditRecord auditRecord = null;
         Map<String, Object> response = null;
-        try{
-            response = elasticService.readEntity(entityType.toLowerCase(), id);
-        } catch (IOException e) {
-            logger.error("Exception in reading a record to ElasticSearch", e);
-        }
+        // TODO - URGENT - Fix this error
+//        try{
+//            response = elasticService.readEntity(entityType.toLowerCase(), id);
+//        } catch (IOException e) {
+//            logger.error("Exception in reading a record to ElasticSearch", e);
+//        }
         if(response == null) {
             throw new RecordNotFoundException("Record with " +id+ " not found");
         }

@@ -44,7 +44,6 @@ public class ElasticSearchService implements ISearchService {
     @Value("${search.limit}")
     private int limit;
 
-
     @Override
     public JsonNode search(JsonNode inputQueryNode) throws IOException {
         logger.debug("search request body = " + inputQueryNode);
