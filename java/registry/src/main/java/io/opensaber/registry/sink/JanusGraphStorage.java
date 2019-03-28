@@ -25,14 +25,10 @@ public class JanusGraphStorage extends DatabaseProvider {
 
 	public JanusGraphStorage(DBConnectionInfo connectionInfo, String uuidPropertyName) {
 		Configuration config = new BaseConfiguration();
-		config.setProperty("jdbc.url", connectionInfo.getUri());
-		config.setProperty("jdbc.username", connectionInfo.getUsername());
-		config.setProperty("jdbc.password", connectionInfo.getPassword());
-		config.setProperty("storage.backend", "cassandrathrift");
-		config.setProperty("query.batch", true);
 
-		//String host = environment.getProperty("cassandra.hostname");
-		config.setProperty("storage.hostname", "18.0.0.4");
+		config.setProperty("storage.backend", "cql");
+		config.setProperty("query.batch", true);
+		config.setProperty("storage.hostname", "127.0.0.1");
 
 		setProvider(Constants.GraphDatabaseProvider.CASSANDRA);
 		setUuidPropertyName(uuidPropertyName);
