@@ -1,6 +1,7 @@
 package io.opensaber.registry.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.APIMessage;
 import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.pojos.OpenSaberInstrumentation;
@@ -10,8 +11,8 @@ import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.service.IReadService;
-import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.ISearchService;
+import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.sink.shard.ShardManager;
 import io.opensaber.registry.transform.Configuration;
@@ -22,6 +23,11 @@ import io.opensaber.registry.transform.Transformer;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.ReadConfiguratorFactory;
 import io.opensaber.registry.util.RecordIdentifier;
+import io.opensaber.registry.util.ViewTemplateManager;
+import io.opensaber.views.ViewTemplate;
+import io.opensaber.views.ViewTransformer;
+import java.util.HashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,9 +41,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 public class RegistryController {
@@ -66,6 +69,9 @@ public class RegistryController {
 
     @Autowired
     private ShardManager shardManager;
+    
+    @Autowired
+    private ViewTemplateManager viewTemplateManager;
 
     /**
      * Note: Only one mime type is supported at a time. Pick up the first mime
@@ -228,8 +234,14 @@ public class RegistryController {
 
         try {
             JsonNode resultNode = readService.getEntity(recordId.getUuid(), entityType, configurator);
+            
+            // applying view-templates to response  
+            ViewTemplate viewTemplate = viewTemplateManager.getViewTemplate(apiMessage);            
+            ViewTransformer vTransformer = new ViewTransformer();
+            JsonNode transformedNode = vTransformer.transform(viewTemplate, (ObjectNode)resultNode);
+                        
             // Transformation based on the mediaType
-            Data<Object> data = new Data<>(resultNode);
+            Data<Object> data = new Data<>(transformedNode);
             Configuration config = configurationHelper.getResponseConfiguration(requireLDResponse);
             logger.info("config : " + config);
             ITransformer<Object> responseTransformer = transformer.getInstance(config);

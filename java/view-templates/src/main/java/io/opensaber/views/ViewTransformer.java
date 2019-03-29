@@ -8,9 +8,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Transformer {
+public class ViewTransformer {
     
-    private static Logger logger = LoggerFactory.getLogger(Transformer.class);
+    private static Logger logger = LoggerFactory.getLogger(ViewTransformer.class);
 
     /**
      * transforms a given JsonNode to representation of view templates
@@ -21,7 +21,7 @@ public class Transformer {
      * @return
      */
     public JsonNode transform(ViewTemplate viewTemplate, ObjectNode node) {
-        logger.debug("transformation on input node " + node);
+        logger.debug("transformation on input node " + node);  
         ObjectNode result = JsonNodeFactory.instance.objectNode();
         String subjectType = node.fieldNames().next();
         ObjectNode nodeAttrs = (ObjectNode) node.get(subjectType);

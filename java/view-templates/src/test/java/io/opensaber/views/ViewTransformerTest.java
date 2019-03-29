@@ -13,9 +13,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import org.junit.Test;
 
-public class TransformerTest {
+public class ViewTransformerTest {
 
-    private Transformer transformer = new Transformer();
+    private ViewTransformer transformer = new ViewTransformer();
   
     @Test
     public void testTransformForPersonFunction() throws JsonProcessingException, IOException{
@@ -64,7 +64,7 @@ public class TransformerTest {
     private static String readFileContent(String fileName) {
         InputStream in;
         try {
-            in = Transformer.class.getClassLoader().getResourceAsStream(fileName);
+            in = ViewTransformer.class.getClassLoader().getResourceAsStream(fileName);
             ByteArrayOutputStream result = new ByteArrayOutputStream();
             byte[] buffer = new byte[1024];
             int length;
