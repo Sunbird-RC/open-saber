@@ -18,7 +18,7 @@ public class ViewTransformerTest {
     private ViewTransformer transformer = new ViewTransformer();
   
     @Test
-    public void testTransformForPersonFunction() throws JsonProcessingException, IOException{
+    public void testTransformForPersonFunction() throws Exception{
 
         ObjectNode personNode = getPerson();
         ViewTemplate viewTemplate = getViewTemplatePerson("person_vt.json");
@@ -31,7 +31,7 @@ public class ViewTransformerTest {
     }
 
     @Test
-    public void testTransformForMathVT() throws JsonProcessingException, IOException{
+    public void testTransformForMathVT() throws Exception{
         String mathProblem = "{\"Math\": " +
                 "               {\"a\": 5," +
                 "                \"b\": 2 }}";

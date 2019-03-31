@@ -62,9 +62,12 @@ public class ElasticSearchService implements ISearchService {
                 auditInfoLst.add(auditInfo);
             }
         }
-        auditRecord.setAuditInfo(auditInfoLst).setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_SEARCH).
-                setAuditId(UUID.randomUUID().toString()).setTimeStamp(DateUtil.getTimeStamp());
-        auditService.audit(auditRecord);
+		/*
+		 * auditRecord.setAuditInfo(auditInfoLst).setUserId(apiMessage.getUserID()).
+		 * setAction(Constants.AUDIT_ACTION_SEARCH).
+		 * setAuditId(UUID.randomUUID().toString()).setTimeStamp(DateUtil.getTimeStamp()
+		 * ); auditService.audit(auditRecord);
+		 */
         return resultNode;
 
     }

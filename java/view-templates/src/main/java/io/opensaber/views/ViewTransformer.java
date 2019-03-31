@@ -21,27 +21,30 @@ public class ViewTransformer {
      * @param node
      * @return
      */
-    public JsonNode transform(ViewTemplate viewTemplate, JsonNode node) {
+    public JsonNode transform(ViewTemplate viewTemplate, JsonNode node) throws Exception {
         logger.debug("transformation on input node " + node);
-        System.out.println("transformation on input node " + node);
+        
+        String subjectType = node.fieldNames().next();
+        JsonNode nodeAttrs = node.get(subjectType);
+        
         JsonNode resultNode = JsonNodeFactory.instance.objectNode();
-        if (node.isArray()) {
-            System.out.println("transformation on input node is array " + node);
+        if (nodeAttrs.isArray()) {
+            ArrayNode resultArray = JsonNodeFactory.instance.arrayNode();
 
-            for (int i = 0; i < node.size(); i++) {
-                JsonNode tNode = tranformNode(viewTemplate, node.get(i));
-                ArrayNode resultArray = JsonNodeFactory.instance.arrayNode();
-
-                resultArray = resultArray.add(tNode);
+            for (int i = 0; i < nodeAttrs.size(); i++) {
+                JsonNode tNode = tranformNode(viewTemplate, nodeAttrs.get(i));
+                resultArray.add(tNode);
 
             }
-        } else if (node.isObject()) {
-            resultNode = tranformNode(viewTemplate, node);
+            resultNode = resultArray;
+
+        } else if (nodeAttrs.isObject()) {
+            resultNode = tranformNode(viewTemplate, nodeAttrs);
 
         } else {
             logger.error("Not a valid node for transformation, must be a object node or array node");
         }
-        return resultNode;
+        return JsonNodeFactory.instance.objectNode().set(subjectType, resultNode);
     }
     /**
      * Transforms a single node for given view template
@@ -50,11 +53,8 @@ public class ViewTransformer {
      * @param node
      * @return
      */
-    private JsonNode tranformNode(ViewTemplate viewTemplate, JsonNode node){
-        System.out.println("print single node "+node);
+    private JsonNode tranformNode(ViewTemplate viewTemplate, JsonNode nodeAttrs) throws Exception {
         ObjectNode result = JsonNodeFactory.instance.objectNode();
-        String subjectType = node.fieldNames().next();
-        ObjectNode nodeAttrs = (ObjectNode) node.get(subjectType);
 
         for (Field field : viewTemplate.getFields()) {
 
@@ -85,7 +85,7 @@ public class ViewTransformer {
 
         }
         logger.debug("Node transformation result: " + result);
-        return JsonNodeFactory.instance.objectNode().set(subjectType, result);
+        return result;
 
     }
     
