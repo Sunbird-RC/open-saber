@@ -1,6 +1,7 @@
 package io.opensaber.views;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.ArrayList;
@@ -20,8 +21,37 @@ public class ViewTransformer {
      * @param node
      * @return
      */
-    public JsonNode transform(ViewTemplate viewTemplate, ObjectNode node) {
-        logger.debug("transformation on input node " + node);  
+    public JsonNode transform(ViewTemplate viewTemplate, JsonNode node) {
+        logger.debug("transformation on input node " + node);
+        System.out.println("transformation on input node " + node);
+        JsonNode resultNode = JsonNodeFactory.instance.objectNode();
+        if (node.isArray()) {
+            System.out.println("transformation on input node is array " + node);
+
+            for (int i = 0; i < node.size(); i++) {
+                JsonNode tNode = tranformNode(viewTemplate, node.get(i));
+                ArrayNode resultArray = JsonNodeFactory.instance.arrayNode();
+
+                resultArray = resultArray.add(tNode);
+
+            }
+        } else if (node.isObject()) {
+            resultNode = tranformNode(viewTemplate, node);
+
+        } else {
+            logger.error("Not a valid node for transformation, must be a object node or array node");
+        }
+        return resultNode;
+    }
+    /**
+     * Transforms a single node for given view template
+     * 
+     * @param viewTemplate
+     * @param node
+     * @return
+     */
+    private JsonNode tranformNode(ViewTemplate viewTemplate, JsonNode node){
+        System.out.println("print single node "+node);
         ObjectNode result = JsonNodeFactory.instance.objectNode();
         String subjectType = node.fieldNames().next();
         ObjectNode nodeAttrs = (ObjectNode) node.get(subjectType);
@@ -56,6 +86,7 @@ public class ViewTransformer {
         }
         logger.debug("Node transformation result: " + result);
         return JsonNodeFactory.instance.objectNode().set(subjectType, result);
+
     }
     
 

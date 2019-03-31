@@ -94,11 +94,17 @@ public class RegistryController {
 
             watch.start("RegistryController.searchEntity");
             JsonNode result = searchService.search(payload);
+            
+            // applying view-templates to response  
+/*            ViewTemplate viewTemplate = viewTemplateManager.getViewTemplate(apiMessage);            
+            ViewTransformer vTransformer = new ViewTransformer();
+            JsonNode transformedNode = vTransformer.transform(viewTemplate, result);*/
 
             // Search is tricky to support LD. Needs a revisit here.
 
             response.setResult(result);
             responseParams.setStatus(Response.Status.SUCCESSFUL);
+            
             watch.stop("RegistryController.searchEntity");
         } catch (Exception e) {
             logger.error("Exception in controller while searching entities !",
@@ -235,13 +241,13 @@ public class RegistryController {
         try {
             JsonNode resultNode = readService.getEntity(recordId.getUuid(), entityType, configurator);
             
-            // applying view-templates to response  
+            // applying view-templates to response //TODO: ignore when view template not in request
             ViewTemplate viewTemplate = viewTemplateManager.getViewTemplate(apiMessage);            
             ViewTransformer vTransformer = new ViewTransformer();
             JsonNode transformedNode = vTransformer.transform(viewTemplate, (ObjectNode)resultNode);
                         
             // Transformation based on the mediaType
-            Data<Object> data = new Data<>(transformedNode);
+            Data<Object> data = new Data<>(resultNode);
             Configuration config = configurationHelper.getResponseConfiguration(requireLDResponse);
             logger.info("config : " + config);
             ITransformer<Object> responseTransformer = transformer.getInstance(config);
