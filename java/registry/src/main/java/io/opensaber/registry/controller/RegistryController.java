@@ -80,22 +80,20 @@ public class RegistryController {
      * @return
      */
     @RequestMapping(value = "/search", method = RequestMethod.POST)
-	public ResponseEntity<Response> searchEntity(@RequestHeader HttpHeaders header) {
+    public ResponseEntity<Response> searchEntity(@RequestHeader HttpHeaders header) {
 
-		ResponseParams responseParams = new ResponseParams();
-		Response response = new Response(Response.API_ID.SEARCH, "OK", responseParams);
-		JsonNode payload = apiMessage.getRequest().getRequestMapNode();
+        ResponseParams responseParams = new ResponseParams();
+        Response response = new Response(Response.API_ID.SEARCH, "OK", responseParams);
+        JsonNode payload = apiMessage.getRequest().getRequestMapNode();
 
-		response.setResult("API to be supported soon");
-		responseParams.setStatus(Response.Status.SUCCESSFUL);
+        response.setResult("API to be supported soon");
+        responseParams.setStatus(Response.Status.SUCCESSFUL);
 
-		try {
-			shardManager.activateShard(null);
+        try {
+            shardManager.activateShard(null);
 
-			watch.start("RegistryController.searchEntity");
-			JsonNode result = searchService.search(payload);
-
-			// Search is tricky to support LD. Needs a revisit here.
+            watch.start("RegistryController.searchEntity");
+            JsonNode result = searchService.search(payload);
 
 			// applying view-templates to response
 			ViewTemplate viewTemplate = viewTemplateManager.getViewTemplate(apiMessage);
@@ -103,18 +101,20 @@ public class RegistryController {
 				ViewTransformer vTransformer = new ViewTransformer();
 				result = vTransformer.transform(viewTemplate, result);
 			}
+            // Search is tricky to support LD. Needs a revisit here.
 
-			response.setResult(result);
-			responseParams.setStatus(Response.Status.SUCCESSFUL);
-			watch.stop("RegistryController.searchEntity");
-		} catch (Exception e) {
-			logger.error("Exception in controller while searching entities !", e);
-			response.setResult("");
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-			responseParams.setErrmsg(e.getMessage());
-		}
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
+            response.setResult(result);
+            responseParams.setStatus(Response.Status.SUCCESSFUL);
+            watch.stop("RegistryController.searchEntity");
+        } catch (Exception e) {
+            logger.error("Exception in controller while searching entities !",
+                    e);
+            response.setResult("");
+            responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+            responseParams.setErrmsg(e.getMessage());
+        }
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
     @RequestMapping(value = "/health", method = RequestMethod.GET)
     public ResponseEntity<Response> health() {
@@ -219,27 +219,25 @@ public class RegistryController {
      * @return
      */
     @RequestMapping(value = "/read", method = RequestMethod.POST)
-	public ResponseEntity<Response> readEntity(@RequestHeader HttpHeaders header) {
-		boolean requireLDResponse = header.getAccept().contains(Constants.LD_JSON_MEDIA_TYPE);
+    public ResponseEntity<Response> readEntity(@RequestHeader HttpHeaders header) {
+        boolean requireLDResponse = header.getAccept().contains(Constants.LD_JSON_MEDIA_TYPE);
 
-		ResponseParams responseParams = new ResponseParams();
-		Response response = new Response(Response.API_ID.READ, "OK", responseParams);
-		String entityType = apiMessage.getRequest().getEntityType();
-		String label = apiMessage.getRequest().getRequestMapNode().get(entityType)
-				.get(dbConnectionInfoMgr.getUuidPropertyName()).asText();
-		RecordIdentifier recordId = RecordIdentifier.parse(label);
-		String shardId = dbConnectionInfoMgr.getShardId(recordId.getShardLabel());
-		shardManager.activateShard(shardId);
-		logger.info("Read Api: shard id: " + recordId.getShardLabel() + " for label: " + label);
+        ResponseParams responseParams = new ResponseParams();
+        Response response = new Response(Response.API_ID.READ, "OK", responseParams);
+        String entityType = apiMessage.getRequest().getEntityType();
+        String label = apiMessage.getRequest().getRequestMapNode().get(entityType).get(dbConnectionInfoMgr.getUuidPropertyName()).asText();
+        RecordIdentifier recordId = RecordIdentifier.parse(label);
+        String shardId = dbConnectionInfoMgr.getShardId(recordId.getShardLabel());
+        shardManager.activateShard(shardId);
+        logger.info("Read Api: shard id: " + recordId.getShardLabel() + " for label: " + label);
 
-		boolean includeSignatures = (boolean) apiMessage.getRequest().getRequestMap().getOrDefault("includeSignatures",
-				false);
-		ReadConfigurator configurator = ReadConfiguratorFactory.getOne(includeSignatures);
-		configurator.setIncludeTypeAttributes(requireLDResponse);
+        boolean includeSignatures = (boolean) apiMessage.getRequest().getRequestMap().getOrDefault("includeSignatures",
+                false);
+        ReadConfigurator configurator = ReadConfiguratorFactory.getOne(includeSignatures);
+        configurator.setIncludeTypeAttributes(requireLDResponse);
 
-		try {
-			JsonNode resultNode = readService.getEntity(recordId.getUuid(), entityType, configurator);
-
+        try {
+            JsonNode resultNode = readService.getEntity(recordId.getUuid(), entityType, configurator);
 			// applying view-templates to response
 			ViewTemplate viewTemplate = viewTemplateManager.getViewTemplate(apiMessage);
 			if (viewTemplate != null) {
@@ -247,22 +245,22 @@ public class RegistryController {
 				resultNode = vTransformer.transform(viewTemplate, resultNode);
 			}
 
-			// Transformation based on the mediaType
-			Data<Object> data = new Data<>(resultNode);
-			Configuration config = configurationHelper.getResponseConfiguration(requireLDResponse);
+            // Transformation based on the mediaType
+            Data<Object> data = new Data<>(resultNode);
+            Configuration config = configurationHelper.getResponseConfiguration(requireLDResponse);
 
-			ITransformer<Object> responseTransformer = transformer.getInstance(config);
-			Data<Object> resultContent = responseTransformer.transform(data);
-			response.setResult(resultContent.getData());
-			logger.info("ReadEntity,{},{}", recordId.getUuid(), config);
-		} catch (Exception e) {
-			logger.error("Read Api Exception occurred ", e);
-			responseParams.setErrmsg(e.getMessage());
-			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
-		}
+            ITransformer<Object> responseTransformer = transformer.getInstance(config);
+            Data<Object> resultContent = responseTransformer.transform(data);
+            response.setResult(resultContent.getData());
+            logger.info("ReadEntity,{},{}", recordId.getUuid(), config);
+        } catch (Exception e) {
+            logger.error("Read Api Exception occurred ", e);
+            responseParams.setErrmsg(e.getMessage());
+            responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+        }
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
     @ResponseBody
     @RequestMapping(value = "/update", method = RequestMethod.POST)
