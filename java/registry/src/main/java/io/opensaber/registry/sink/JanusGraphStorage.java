@@ -12,37 +12,28 @@ import org.janusgraph.core.PropertyKey;
 import org.janusgraph.core.VertexLabel;
 import org.janusgraph.core.schema.JanusGraphIndex;
 import org.janusgraph.core.schema.JanusGraphManagement;
-import org.janusgraph.core.schema.SchemaAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 public class JanusGraphStorage extends DatabaseProvider {
-
-	@Autowired
-	Environment environment;
 
 	private Logger logger = LoggerFactory.getLogger(JanusGraphStorage.class);
 	private JanusGraph graph;
 	private OSGraph osGraph;
 
-	public JanusGraphStorage(DBConnectionInfo connectionInfo, String uuidPropertyName) {
+	public JanusGraphStorage(Environment environment,DBConnectionInfo connectionInfo, String uuidPropertyName) {
 		Configuration config = new BaseConfiguration();
-		/*config.setProperty("jdbc.url", connectionInfo.getUri());
-		config.setProperty("jdbc.username", connectionInfo.getUsername());
-		config.setProperty("jdbc.password", connectionInfo.getPassword());*/
 		config.setProperty("storage.backend", "cql");
-		//config.setProperty("query.batch", true);
+		config.setProperty("query.batch", true);
 
-		//String host = environment.getProperty("cassandra.hostname");
-		config.setProperty("storage.hostname", "127.0.0.1");
+		String host = environment.getProperty("janus_cassandra.storage.hostname");
+		config.setProperty("storage.hostname", host);
 		config.setProperty("storage.cql.keyspace", "registry_db");
 		config.setProperty("storage.cql.compact-storage",false);
 		config.setProperty("storage.cql.compression",false);
@@ -51,7 +42,6 @@ public class JanusGraphStorage extends DatabaseProvider {
 		setUuidPropertyName(uuidPropertyName);
 		graph = JanusGraphFactory.open(config);
 		JanusGraphManagement mgmt = graph.openManagement();
-		mgmt.get("cache.db-cache");
 		osGraph = new OSGraph(graph, false);
 	}
 
@@ -92,8 +82,6 @@ public class JanusGraphStorage extends DatabaseProvider {
 			graphIndexList.add(graphIndex);
 		});
 		janusGraphManagement.commit();
-		//Reindex the existing data
-		//updateIndexToExistingRecords(graph,graphIndexList);
 	}
 
 	@Override
@@ -108,25 +96,11 @@ public class JanusGraphStorage extends DatabaseProvider {
 			graphIndexList.add(graphIndex);
 		});
 		janusGraphManagement.commit();
-		//Reindex the existing data
-		//updateIndexToExistingRecords(graph, graphIndexList);
 	}
 
 	@Override
 	public void createCompositeIndex(Graph graph, String label, List<String> propertyNames) {
 		createIndex(graph, label, propertyNames);
-	}
-
-	private void updateIndexToExistingRecords(Graph graph, List<JanusGraphIndex> graphIndexList) {
-		JanusGraphManagement janusGraphMgmt = ((JanusGraph) graph).openManagement();
-		graphIndexList.forEach(graphIndex -> {
-			try {
-				janusGraphMgmt.updateIndex(graphIndex, SchemaAction.REINDEX).get();
-			} catch (InterruptedException | ExecutionException e) {
-				logger.error("Exception in creating index {}", graphIndex);
-			}
-			janusGraphMgmt.commit();
-		});
 	}
 
 
