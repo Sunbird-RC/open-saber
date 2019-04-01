@@ -41,13 +41,6 @@ read:
   # The read mechanism to use, values could be either NativeReadService or ElasticReadService
   providerName: io.opensaber.registry.service.NativeReadService
 
-# This property is to used for view-templates applicable for READ and SEARCH Api 
-# Keys to have declare in requests are viewTemplate or viewTemplateId
-# viewTemplateId: must specify the view template file name which is local to application.
-# viewTemplate: must contains the view template json  
-viewTemplate:
-  enabled: ${viewtemplate_enabled:false}
-
 database:
   # This property is internal and not to be confused with the schema definition.
   # Clients use this property to perform read/update operation.

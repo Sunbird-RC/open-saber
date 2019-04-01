@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.support.ResourcePatternUtils;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -17,20 +19,34 @@ public class OSResourceLoader {
 
     private static Logger logger = LoggerFactory.getLogger(OSResourceLoader.class);
     private Map<String, String> jsonNodeMap = new HashMap<>();
-
+    private ResourceLoader resourceLoader;
+ 
     @Autowired
-    private DefinitionsReader definitionsReader;
-
-    public void loadResource(String path) throws Exception {
-        Resource[] resources = definitionsReader.getResources(path);
-
-        for (Resource resource : resources) {
-            String jsonContent = getContent(resource);
-            jsonNodeMap.put(resource.getFilename(), jsonContent);
-        }
-        logger.info("size of resources loaded " + jsonNodeMap.size());
-
+    public OSResourceLoader(ResourceLoader resourceLoader) {
+        this.resourceLoader = resourceLoader;
     }
+
+    /**
+     * Loads the resources with a given pattern
+     * @param pattern "Example: *.json to load all json files"
+     * @return
+     * @throws IOException
+     */
+    public Resource[] getResources(String pattern) throws IOException {
+        Resource[] resources = ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources(pattern);
+        return resources;
+    }
+
+	public void loadResource(String path) throws Exception {
+		Resource[] resources = getResources(path);
+
+		for (Resource resource : resources) {
+			String jsonContent = getContent(resource);
+			jsonNodeMap.put(resource.getFilename(), jsonContent);
+		}
+		logger.info("size of resources loaded " + jsonNodeMap.size());
+
+	}
 
     public Map<String, String> getJsonNodes() {
         return jsonNodeMap;
