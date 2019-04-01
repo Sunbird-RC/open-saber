@@ -99,7 +99,7 @@ database:
 ##################################################################################
 # Uncomment the following section to use Cassandra as backend store              #
 ##################################################################################
-janus_cassandra:
+cassandra:
     graphFactory: org.janusgraph.core.JanusGraphFactory
     storage.backend: "cassandrathrift"
     storage.hostname: ${cassandra_host:localhost}
@@ -226,8 +226,6 @@ registry:
     base: http://example.com/voc/teacher/1.0.0/
   system:
     base: http://example.com/voc/opensaber/
-  rootEntity:
-            type: ${registry_rootentity_type:Teacher}
 
 # This property is to be used for read request
 read:
@@ -235,9 +233,8 @@ read:
   providerName: io.opensaber.registry.service.NativeReadService
 
 database:
-  # This property is internal and not to be confused with the schema definition.
-  # Clients use this property to perform read/update operation.
-  # NOTE: Once a name is chosen it must not be changed, unless you're ready to let go the
+  # This property is internal. Clients use this property to perform read/update operation.
+  # NOTE: Once a uuidPropertyName is chosen it must not be changed, unless you're ready to let go the
   #       existing data in the database.
   uuidPropertyName: ${database_uuidPropertyName:osid}
 
