@@ -215,7 +215,7 @@ public class RegistryServiceImpl implements RegistryService {
             Definition definition = definitionsManager.getDefinition(vertexLabel);
             entityParenter.ensureIndexExists(dbProvider, parentVertex, definition, shardId);
 
-            callAuditESActors(null,rootNode.get(vertexLabel),"add", Constants.AUDIT_ACTION_ADD,entityId,vertexLabel.toLowerCase(),entityId,tx);
+            callAuditESActors(null,rootNode,"add", Constants.AUDIT_ACTION_ADD,entityId,vertexLabel.toLowerCase(),entityId,tx);
 
         }
         return entityId;
@@ -299,7 +299,7 @@ public class RegistryServiceImpl implements RegistryService {
 
             databaseProvider.commitTransaction(graph, tx);
             // elastic-search and audit akka calls starts here
-            callAuditESActors(readNode,mergedNode.get(entityType),"update",Constants.AUDIT_ACTION_UPDATE,id,entityType,rootId,tx);
+            callAuditESActors(readNode,mergedNode,"update",Constants.AUDIT_ACTION_UPDATE,id,entityType,rootId,tx);
         }
     }
 
@@ -322,7 +322,7 @@ public class RegistryServiceImpl implements RegistryService {
             auditItemDetails = Arrays.asList(objectMapper.treeToValue(differenceJson, AuditInfo[].class));
         }
         auditRecord.setAuditInfo(auditItemDetails);
-        MessageProtos.Message message = MessageFactory.instance().createOSActorMessage(elasticSearchEnabled,operation, parentEntityType, entityRootId, mergedNode, auditRecord);
+        MessageProtos.Message message = MessageFactory.instance().createOSActorMessage(elasticSearchEnabled,operation, parentEntityType, entityRootId, mergedNode.get(parentEntityType), auditRecord);
         ActorCache.instance().get(Router.ROUTER_NAME).tell(message, null);
         logger.info("callAuditESActors ends");
     }
