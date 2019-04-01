@@ -41,7 +41,6 @@ public class JanusGraphStorage extends DatabaseProvider {
 		setProvider(Constants.GraphDatabaseProvider.CASSANDRA);
 		setUuidPropertyName(uuidPropertyName);
 		graph = JanusGraphFactory.open(config);
-		JanusGraphManagement mgmt = graph.openManagement();
 		osGraph = new OSGraph(graph, false);
 	}
 
