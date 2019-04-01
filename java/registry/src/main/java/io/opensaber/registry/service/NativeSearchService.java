@@ -129,7 +129,7 @@ public class NativeSearchService implements ISearchService {
 	 */
 	private ArrayNode getEntityAttibute(String entity, ArrayNode allShardResult) {
 		ArrayNode resultArray = JsonNodeFactory.instance.arrayNode();
-		for(int i=0; i<allShardResult.size(); i++) {
+		for (int i = 0; i < allShardResult.size(); i++) {
 			resultArray.addAll((ArrayNode) allShardResult.get(i).get(entity));
 		}
 		return resultArray;
@@ -141,11 +141,11 @@ public class NativeSearchService implements ISearchService {
 	 * @return
 	 */
 	private JsonNode buildResultNode(SearchQuery searchQuery, ArrayNode allShardResult) {
-        ObjectNode resultNode = JsonNodeFactory.instance.objectNode();
-        for (String entity : searchQuery.getEntityTypes()) { 
-        	ArrayNode entityResult = getEntityAttibute(entity, allShardResult);
-        	resultNode.set(entity, entityResult);
-        } 
-		return resultNode;		
+		ObjectNode resultNode = JsonNodeFactory.instance.objectNode();
+		for (String entity : searchQuery.getEntityTypes()) {
+			ArrayNode entityResult = getEntityAttibute(entity, allShardResult);
+			resultNode.set(entity, entityResult);
+		}
+		return resultNode;
 	}
 }
