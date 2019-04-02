@@ -96,7 +96,7 @@ public class RegistryController {
             JsonNode result = searchService.search(payload);
 
 			// applying view-templates to response
-			ViewTemplate viewTemplate = viewTemplateManager.getViewTemplate(apiMessage);
+			ViewTemplate viewTemplate = viewTemplateManager.getViewTemplate(apiMessage.getRequest().getRequestMapNode());
 			if (viewTemplate != null) {
 				ViewTransformer vTransformer = new ViewTransformer();
 				result = vTransformer.transform(viewTemplate, result);
@@ -239,7 +239,8 @@ public class RegistryController {
         try {
             JsonNode resultNode = readService.getEntity(recordId.getUuid(), entityType, configurator);
 			// applying view-templates to response
-			ViewTemplate viewTemplate = viewTemplateManager.getViewTemplate(apiMessage);
+			ViewTemplate viewTemplate = viewTemplateManager.getViewTemplate(apiMessage.getRequest().getRequestMapNode());
+			
 			if (viewTemplate != null) {
 				ViewTransformer vTransformer = new ViewTransformer();
 				resultNode = vTransformer.transform(viewTemplate, resultNode);

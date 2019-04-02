@@ -19,7 +19,6 @@ import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.sink.DBProviderFactory;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.util.DefinitionsManager;
-import io.opensaber.registry.util.DefinitionsReader;
 import io.opensaber.registry.util.OSResourceLoader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,7 +37,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { DefinitionsManager.class, DefinitionsReader.class, DBProviderFactory.class, DBConnectionInfoMgr.class, OSResourceLoader.class })
+@SpringBootTest(classes = { DefinitionsManager.class, DBProviderFactory.class, DBConnectionInfoMgr.class, OSResourceLoader.class })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @ActiveProfiles(Constants.TEST_ENVIRONMENT)
 public class SearchDaoImplTest {

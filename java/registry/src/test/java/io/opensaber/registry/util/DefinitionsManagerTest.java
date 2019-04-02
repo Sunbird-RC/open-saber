@@ -12,7 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {DefinitionsReader.class, DefinitionsManager.class, OSResourceLoader.class})
+@SpringBootTest(classes = {DefinitionsManager.class, OSResourceLoader.class})
 @ActiveProfiles(Constants.TEST_ENVIRONMENT)
 public class DefinitionsManagerTest {
 
@@ -20,14 +20,14 @@ public class DefinitionsManagerTest {
     private DefinitionsManager definitionsManager;
 
     @Autowired
-    private DefinitionsReader definitionsReader;
+    private OSResourceLoader osResourceLoader;
 
     @Test
     public void testIfResourcesCountMatchesFileDefinitions() {
         boolean flag = false;
         try {
             int nDefinitions = definitionsManager.getAllKnownDefinitions().size();
-            int nResources = definitionsReader.getResources(Constants.RESOURCE_LOCATION).length;
+            int nResources = osResourceLoader.getResources(Constants.RESOURCE_LOCATION).length;
             flag = (2*nDefinitions == nResources);
         } catch (IOException ioe) {
 

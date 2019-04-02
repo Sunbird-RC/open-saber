@@ -5,13 +5,12 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.opensaber.pojos.APIMessage;
-import io.opensaber.registry.service.NativeSearchService;
-import io.opensaber.registry.service.impl.RegistryServiceImpl;
 import io.opensaber.views.ViewTemplate;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
@@ -33,48 +32,55 @@ public class ViewTemplateManager {
     private OSResourceLoader osResourceLoader;
     private Map<String, String> jsonNodes = new HashMap<>();    
     private ObjectMapper mapper = new ObjectMapper();
+    private Map<String, ViewTemplate> templates = new HashMap<>();
 
     /**
      * Loads the templates from the views folder
      */
     @PostConstruct
-    public void  loadTemplates() throws Exception{
-        osResourceLoader.loadResource(viewLocation);
-        this.jsonNodes = osResourceLoader.getJsonNodes();
+	public void loadTemplates() throws Exception {
+		osResourceLoader.loadResource(viewLocation);
+		this.jsonNodes = osResourceLoader.getJsonNodes();
+		for (Entry<String, String> jsonNode : jsonNodes.entrySet()) {
+			try {
+				ViewTemplate template = mapper.readValue(jsonNode.getValue(), ViewTemplate.class);
+				templates.put(jsonNode.getKey(), template);
+			} catch (Exception e) {
+				logger.error("ViewTemplate could not be create for {}", jsonNode.getKey());
+			}
+		}
 
-    }
+	}
     
     /**
      * Returns the view template based on the request parameter viewTemplateId, viewTemplate 
      * 
-     * @param apiMessage
+     * @param requestNode
      * @return
      * @throws JsonParseException
      * @throws JsonMappingException
      * @throws IOException
      */
-	public ViewTemplate getViewTemplate(APIMessage apiMessage)
+	public ViewTemplate getViewTemplate(JsonNode requestNode)
 			throws JsonParseException, JsonMappingException, IOException {
 
 		ViewTemplate viewTemp = null;
-		JsonNode requestNode = apiMessage.getRequest().getRequestMapNode();
-
+		String name = null;
 		try {
 			if (requestNode.has(viewTemplateId)) {
-				viewTemp = getViewTemplateByName(requestNode.get(viewTemplateId).asText());
+				name = requestNode.get(viewTemplateId).asText();
+				logger.info("Applying view template {}", name);
+				viewTemp = templates.get(name);
+				if(viewTemp == null)
+					logger.error("view template for {} not found!", name);
 			} else if (requestNode.has(viewTemplate)) {
+				logger.info("Applying passed in view template...");
 				viewTemp = getViewTemplateByContent(requestNode.get(viewTemplate).toString());
 			}
 		} catch (Exception e) {
 			logger.error("Bad request to create a view template, {}", e);
 		}
 		return viewTemp;
-	}
-    
-	private ViewTemplate getViewTemplateByName(String templateName)
-			throws JsonParseException, JsonMappingException, IOException {
-		String templateNodeStr = jsonNodes.get(templateName);
-		return mapper.readValue(templateNodeStr, ViewTemplate.class);
 	}
     
 	private ViewTemplate getViewTemplateByContent(String templateContent)
