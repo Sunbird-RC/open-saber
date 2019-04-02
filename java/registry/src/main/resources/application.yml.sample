@@ -101,7 +101,7 @@ database:
 ##################################################################################
 cassandra:
     graphFactory: org.janusgraph.core.JanusGraphFactory
-    storage.backend: "cassandrathrift"
+    storage.backend: "cql"
     storage.hostname: ${cassandra_host:localhost}
     storage.keyspace: ${cassandra_keyspace:registry_db}
     db.cache.size: ${cassandra_db_cache_size:0.25}
