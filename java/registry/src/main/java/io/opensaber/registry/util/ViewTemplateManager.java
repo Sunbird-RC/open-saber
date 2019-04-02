@@ -16,6 +16,7 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -28,19 +29,22 @@ public class ViewTemplateManager {
     private static final String viewTemplateId = "viewTemplateId";
     private static final String viewTemplate = "viewTemplate";
 
-    @Autowired
     private OSResourceLoader osResourceLoader;
     private Map<String, String> jsonNodes = new HashMap<>();    
     private ObjectMapper mapper = new ObjectMapper();
     private Map<String, ViewTemplate> templates = new HashMap<>();
+    
+    @Autowired
+    private ResourceLoader resourceLoader;
 
     /**
      * Loads the templates from the views folder
      */
     @PostConstruct
 	public void loadTemplates() throws Exception {
+    	osResourceLoader = new OSResourceLoader(resourceLoader);
 		osResourceLoader.loadResource(viewLocation);
-		this.jsonNodes = osResourceLoader.getJsonNodes();
+		this.jsonNodes = osResourceLoader.getNameContent();
 		for (Entry<String, String> jsonNode : jsonNodes.entrySet()) {
 			try {
 				ViewTemplate template = mapper.readValue(jsonNode.getValue(), ViewTemplate.class);

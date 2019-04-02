@@ -13,6 +13,7 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 
 @Component("definitionsManager")
@@ -20,8 +21,11 @@ public class DefinitionsManager {
     private static Logger logger = LoggerFactory.getLogger(DefinitionsManager.class);
 
     private Map<String, Definition> definitionMap = new HashMap<>();
-    @Autowired
+    
     private OSResourceLoader osResourceLoader;
+    
+    @Autowired
+    private ResourceLoader resourceLoader;
 
     /**
      * Loads the definitions from the _schemas folder
@@ -30,9 +34,10 @@ public class DefinitionsManager {
     public void loadDefinition() throws Exception {
         
         final ObjectMapper mapper = new ObjectMapper();
+        osResourceLoader = new OSResourceLoader(resourceLoader);
         osResourceLoader.loadResource(Constants.RESOURCE_LOCATION);
 
-        for(Entry<String, String> entry : osResourceLoader.getJsonNodes().entrySet()){
+        for(Entry<String, String> entry : osResourceLoader.getNameContent().entrySet()){
             JsonNode jsonNode = mapper.readTree(entry.getValue());
             Definition definition = new Definition(jsonNode);
             logger.info("loading resource:" + entry.getKey() + " with private field size:"
