@@ -99,11 +99,11 @@ database:
 ##################################################################################
 # Uncomment the following section to use Cassandra as backend store              #
 ##################################################################################
-janus_cassandra:
+cassandra:
     graphFactory: org.janusgraph.core.JanusGraphFactory
-    storage.backend: "cassandrathrift"
-    storage.hostname: ${cassandra_host:localhost}
-    storage.keyspace: ${cassandra_keyspace:registry_db}
+    backend: "cql"
+    hostname: ${cassandra_host:localhost}
+    keyspace: ${cassandra_keyspace:registry_db}
     db.cache.size: ${cassandra_db_cache_size:0.25}
     # wait time in milliseconds to clean the cache
     db.cache.clean.wait: ${cassandra_db_cache_clean_wait:60}
