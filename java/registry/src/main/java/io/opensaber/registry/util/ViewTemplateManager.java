@@ -30,7 +30,6 @@ public class ViewTemplateManager {
     private static final String viewTemplate = "viewTemplate";
 
     private OSResourceLoader osResourceLoader;
-    private Map<String, String> jsonNodes = new HashMap<>();    
     private ObjectMapper mapper = new ObjectMapper();
     private Map<String, ViewTemplate> templates = new HashMap<>();
     
@@ -44,8 +43,7 @@ public class ViewTemplateManager {
 	public void loadTemplates() throws Exception {
     	osResourceLoader = new OSResourceLoader(resourceLoader);
 		osResourceLoader.loadResource(viewLocation);
-		this.jsonNodes = osResourceLoader.getNameContent();
-		for (Entry<String, String> jsonNode : jsonNodes.entrySet()) {
+		for (Entry<String, String> jsonNode : osResourceLoader.getNameContent().entrySet()) {
 			try {
 				ViewTemplate template = mapper.readValue(jsonNode.getValue(), ViewTemplate.class);
 				templates.put(jsonNode.getKey(), template);

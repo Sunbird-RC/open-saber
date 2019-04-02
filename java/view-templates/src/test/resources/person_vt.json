@@ -12,7 +12,7 @@
     },
     {
         "name": "nationalIdentifier",
-        "title": "AADHAAR number",
+        "title": "OS number",
         "display": false,
         "$comment": "This field is not displayable, but needed for internal referencing"
     },

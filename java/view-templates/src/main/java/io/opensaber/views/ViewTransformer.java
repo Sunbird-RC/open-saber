@@ -24,42 +24,42 @@ public class ViewTransformer {
      * @param node
      * @return
      */
-    public JsonNode transform(ViewTemplate viewTemplate, JsonNode node) throws Exception {
-        logger.debug("transformation on input node " + node);
-        
-        ObjectNode result = JsonNodeFactory.instance.objectNode();
+	public JsonNode transform(ViewTemplate viewTemplate, JsonNode node) throws Exception {
+		logger.debug("transformation on input node " + node);
 
-        //loops for all entityTypes
+		ObjectNode result = JsonNodeFactory.instance.objectNode();
+
+		// loops for all entityTypes
 		Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
 		while (fields.hasNext()) {
 
-	        String subjectType = fields.next().getKey();
-	        JsonNode nodeAttrs = node.get(subjectType);
-	        
-	        JsonNode resultNode = JsonNodeFactory.instance.objectNode();
-	        if (nodeAttrs.isArray()) {
-	            ArrayNode resultArray = JsonNodeFactory.instance.arrayNode();
+			String subjectType = fields.next().getKey();
+			JsonNode nodeAttrs = node.get(subjectType);
 
-	            for (int i = 0; i < nodeAttrs.size(); i++) {
-	                JsonNode tNode = tranformNode(viewTemplate, nodeAttrs.get(i));
-	                resultArray.add(tNode);
+			JsonNode resultNode = JsonNodeFactory.instance.objectNode();
+			if (nodeAttrs.isArray()) {
+				ArrayNode resultArray = JsonNodeFactory.instance.arrayNode();
 
-	            }
-	            resultNode = resultArray;
+				for (int i = 0; i < nodeAttrs.size(); i++) {
+					JsonNode tNode = tranformNode(viewTemplate, nodeAttrs.get(i));
+					resultArray.add(tNode);
 
-	        } else if (nodeAttrs.isObject()) {
-	            resultNode = tranformNode(viewTemplate, nodeAttrs);
+				}
+				resultNode = resultArray;
 
-	        } else {
-	            logger.error("Not a valid node for transformation, must be a object node or array node");
-	        }
-	        
-	        result.set(subjectType, resultNode);
+			} else if (nodeAttrs.isObject()) {
+				resultNode = tranformNode(viewTemplate, nodeAttrs);
+
+			} else {
+				logger.error("Not a valid node for transformation, must be a object node or array node");
+			}
+
+			result.set(subjectType, resultNode);
 		}
 
+		return result;
+	}
 
-        return result;
-    }
     /**
      * Transforms a single node for given view template
      * 
@@ -96,6 +96,7 @@ public class ViewTransformer {
                         result.set(field.getTitle(), JsonNodeFactory.instance.pojoNode(evaluatedValue));
                     }
                 }
+            // if display is set, show up the field in result    
             } else if (field.getDisplay()) {
                 result.set(field.getTitle(), nodeAttrs.get(field.getName()));
             }

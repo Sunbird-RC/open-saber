@@ -1,6 +1,5 @@
 package io.opensaber.views;
 
-import java.util.List;
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlContext;
 import org.apache.commons.jexl2.JexlEngine;
@@ -23,7 +22,7 @@ public class FunctionEvaluator implements IEvaluator<Object>{
     public void setContextArgs() {
         int itr = 1;
         for (Object val : function.getArgValues()) {
-            String arg = "arg" + itr++;
+            String arg = ARG + itr++;
 
             jexlContext.set(arg, val);
         }
@@ -40,14 +39,6 @@ public class FunctionEvaluator implements IEvaluator<Object>{
         Object result = jexlExpression.evaluate(jexlContext);
 
         return result;
-    }
-
-    public String concat(List<String> args) {
-        String res = "";
-        for (String arg : args) {
-            res = res.isEmpty() ? arg : (res + ":" + arg);
-        }
-        return res;
     }
 
 }
