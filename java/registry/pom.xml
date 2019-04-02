@@ -171,6 +171,7 @@
             </exclusions>
         </dependency>
 
+        <!-- Include this dependency for Janusgraph (CASSANDRA) support -->
         <dependency>
             <groupId>org.janusgraph</groupId>
             <artifactId>janusgraph-core</artifactId>
@@ -193,6 +194,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <!-- Refer to https://docs.janusgraph.org/0.3.0/config-ref.html#_storage_cassandra for list
+         of storage backend options -->
+        <!--Include this dependency if you need cql as storage.backend option-->
         <!-- https://mvnrepository.com/artifact/org.janusgraph/janusgraph-cql -->
         <dependency>
             <groupId>org.janusgraph</groupId>
@@ -200,7 +205,7 @@
             <version>${janusgraph.version}</version>
         </dependency>
 
-        <!--Include this dependency if you need cassandra thrift -->
+        <!--Include this dependency if you need cassandra or cassandrathrift as storage.backend option-->
         <!--<dependency>-->
             <!--<groupId>org.janusgraph</groupId>-->
             <!--<artifactId>janusgraph-cassandra</artifactId>-->
@@ -216,6 +221,8 @@
                 <!--</exclusion>-->
             <!--</exclusions>-->
         <!--</dependency>-->
+
+        <!-- Include this dependency for ElasticSearch when using CASSANDRA -->
         <dependency>
             <groupId>org.janusgraph</groupId>
             <artifactId>janusgraph-es</artifactId>
@@ -232,16 +239,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>org.umlg</groupId>
-            <artifactId>sqlg-h2</artifactId>
-            <version>1.5.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.umlg</groupId>
-            <artifactId>sqlg-h2-dialect</artifactId>
-            <version>1.5.0</version>
-        </dependency>
 
         <!-- Include this dependency for Postgres support -->
 		<dependency>
@@ -257,6 +254,7 @@
 		</dependency>
         <!-- End dependency for Postgres support -->
 
+        <!-- Include this dependency for Neo4j support -->
         <dependency>
             <groupId>org.neo4j.driver</groupId>
             <artifactId>neo4j-java-driver</artifactId>
@@ -277,6 +275,7 @@
             <artifactId>transaction-event-handler</artifactId>
             <version>2.0.1</version>
         </dependency>
+        <!-- End dependency for Neo4j support -->
 
 
         <!-- Test Dependencies -->

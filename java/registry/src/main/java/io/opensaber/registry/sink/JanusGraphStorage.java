@@ -33,12 +33,17 @@ public class JanusGraphStorage extends DatabaseProvider {
 
 	public JanusGraphStorage(Environment environment, DBConnectionInfo connectionInfo, String uuidPropertyName) {
 		Configuration config = new BaseConfiguration();
-		config.setProperty("storage.backend", "cql");
+		String backend = environment.getProperty("cassandra.backend");
+		config.setProperty("storage.backend", backend);
 		config.setProperty("query.batch", true);
 
 		String host = environment.getProperty("cassandra.hostname");
 		config.setProperty("storage.hostname", host);
-		config.setProperty("storage.cql.keyspace", "registry_db");
+
+		String keyspaceName = environment.getProperty("cassandra.keyspace");
+		if (keyspaceName != null && !keyspaceName.isEmpty()) {
+			config.setProperty("storage.cql.keyspace", keyspaceName);
+		}
 		config.setProperty("storage.cql.compact-storage", false);
 		config.setProperty("storage.cql.compression", false);
 

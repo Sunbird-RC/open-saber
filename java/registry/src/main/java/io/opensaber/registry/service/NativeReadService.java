@@ -79,7 +79,6 @@ public class NativeReadService implements IReadService {
 				JSONUtil.addPrefix((ObjectNode) result, prefix, new ArrayList<String>(Arrays.asList(uuidPropertyName)));
 			}
 
-			shard.getDatabaseProvider().commitTransaction(graph, tx);
 			dbProvider.commitTransaction(graph, tx);
             auditRecord =  new AuditRecord();
             auditRecord.setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_READ).setRecordId(id).setTransactionId(new LinkedList<>(Arrays.asList(tx.hashCode())))
