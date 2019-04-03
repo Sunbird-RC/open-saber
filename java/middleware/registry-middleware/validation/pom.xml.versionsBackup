@@ -1,36 +1,34 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>io.opensaber</groupId>
-    <artifactId>opensaber-audit</artifactId>
+    <parent>
+        <groupId>io.opensaber</groupId>
+        <artifactId>registry-middleware</artifactId>
+        <version>2.0.1</version>
+    </parent>
+
+    <groupId>io.opensaber.middleware</groupId>
+    <artifactId>validation</artifactId>
     <version>2.0.1</version>
-    <name>Opensaber-Audit</name>
-    <description>Audit for OS</description>
+    <name>Validation</name>
+    <description>Middleware to validate inputs</description>
 
     <properties>
-        <java.version>1.8</java.version>
         <jacoco.version>0.8.1</jacoco.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-
+        <junit.version>4.12</junit.version>
     </properties>
-    <dependencies>
 
-        <dependency>
-            <groupId>io.opensaber</groupId>
-            <artifactId>pojos</artifactId>
-            <version>2.0.2</version>
-        </dependency>
+    <dependencies>
         <dependency>
             <groupId>io.opensaber</groupId>
             <artifactId>middleware-commons</artifactId>
-            <version>2.0.2</version>
+            <version>2.0.1</version>
         </dependency>
-
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.4</version>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -69,15 +67,13 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>8</source>
-                    <target>8</target>
+                    <systemPropertyVariables>
+                        <jacoco-agent.destfile>target/jacoco.exec</jacoco-agent.destfile>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
         </plugins>
     </build>
+
 </project>
