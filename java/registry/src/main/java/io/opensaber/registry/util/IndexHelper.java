@@ -18,69 +18,70 @@ import java.util.stream.Collectors;
 
 @Component
 public class IndexHelper {
-	private static Logger logger = LoggerFactory.getLogger(IndexHelper.class);
+    private static Logger logger = LoggerFactory.getLogger(IndexHelper.class);
 
-	/**
-	 * Holds mapping for each shard & each definitions and its index status key =
-	 * shardId+definitionName value = true/false
-	 */
-	private Map<String, Boolean> definitionIndexMap = new ConcurrentHashMap<String, Boolean>();
+    /**
+     * Holds mapping for each shard & each definitions and its index status 
+     * key = shardId+definitionName value = true/false
+     */
+    private Map<String, Boolean> definitionIndexMap = new ConcurrentHashMap<String, Boolean>();
 
-	public void setDefinitionIndexMap(Map<String, Boolean> definitionIndexMap) {
-		this.definitionIndexMap.putAll(definitionIndexMap);
-	}
+    public void setDefinitionIndexMap(Map<String, Boolean> definitionIndexMap) {
+        this.definitionIndexMap.putAll(definitionIndexMap);
+    }
+    
+    
 
-	public void updateDefinitionIndex(String label, String definitionName, boolean flag) {
-		String key = label + definitionName;
-		definitionIndexMap.put(key, flag);
-	}
+    public void updateDefinitionIndex(String label, String definitionName, boolean flag) {
+        String key = label + definitionName;
+        definitionIndexMap.put(key, flag);
+    }
 
-	/**
-	 * Checks any new index available for index creation
-	 * 
-	 * @param parentVertex
-	 * @param definition
-	 * @return
-	 */
-	public boolean isIndexPresent(Definition definition, String shardId) {
-		String defTitle = definition.getTitle();
-		boolean isIndexPresent = definitionIndexMap.getOrDefault(shardId + defTitle, false);
-		logger.debug("isIndexPresent flag for {}: {}", defTitle, isIndexPresent);
-		return isIndexPresent;
-	}
+    /**
+     * Checks any new index available for index creation
+     * 
+     * @param parentVertex
+     * @param definition
+     * @return
+     */
+    public boolean isIndexPresent(Definition definition, String shardId) {
+        String defTitle = definition.getTitle();
+        boolean isIndexPresent = definitionIndexMap.getOrDefault(shardId + defTitle, false);
+        logger.debug("isIndexPresent flag for {}: {}", defTitle, isIndexPresent);
+        return isIndexPresent;
+    }
 
-	/**
-	 * Identifies new fields for creating index. Parent vertex are always have
-	 * INDEX_FIELDS and UNIQUE_INDEX_FIELDS property
-	 * 
-	 * @param parentVertex
-	 * @param fields
-	 * @param isUnique
-	 */
-	public List<String> getNewFields(Vertex parentVertex, List<String> fields, boolean isUnique) {
-		List<String> newFields = new ArrayList<>();
-		String propertyName = isUnique ? Constants.UNIQUE_INDEX_FIELDS : Constants.INDEX_FIELDS;
-		String values = "";
-		try {
-			values = (String) parentVertex.property(propertyName).value();
-		} catch (java.lang.IllegalStateException ise) {
-			// The property doesn't exist.
-			values = "";
-		}
-		for (String field : fields) {
-			if (!values.contains(field) && !newFields.contains(field))
-				newFields.add(field);
-		}
-		return newFields;
-	}
+    /**
+     * Identifies new fields for creating index. Parent vertex are always have
+     * INDEX_FIELDS and UNIQUE_INDEX_FIELDS property
+     * 
+     * @param parentVertex
+     * @param fields
+     * @param isUnique
+     */
+    public List<String> getNewFields(Vertex parentVertex, List<String> fields, boolean isUnique) {
+        List<String> newFields = new ArrayList<>();
+        String propertyName = isUnique ? Constants.UNIQUE_INDEX_FIELDS : Constants.INDEX_FIELDS;
+        String values = "";
+        try {
+            values = (String) parentVertex.property(propertyName).value();
+        } catch (java.lang.IllegalStateException ise) {
+            // The property doesn't exist.
+            values = "";
+        }
+        for (String field : fields) {
+            if (!values.contains(field) && !newFields.contains(field))
+                newFields.add(field);
+        }
+        return newFields;
+    }
 
-	/**
-	 * extract values between "( values with comma separated )"
-	 * 
-	 * @param fields
-	 * @return
-	 */
-	public static List<String> getCompositeIndexFields(List<String> fields) {
+    /**
+     * extract values between "( values with comma separated )"
+     * @param fields
+     * @return
+     */
+    public static List<String> getCompositeIndexFields(List<String> fields) {
 		List<String> result = new ArrayList<String>();
 		if (fields.size() > 0) {
 
@@ -100,18 +101,17 @@ public class IndexHelper {
 			}
 		}
 		return result;
-	}
 
-	/**
-	 * Remove fields with format = "( values with comma separated )"
-	 * 
-	 * @param fields
-	 * @return
-	 */
-	public static List<String> getSingleIndexFields(List<String> fields) {
+    }
+    /**
+     * Remove fields with format = "( values with comma separated )"
+     * @param fields
+     * @return
+     */
+    public static List<String> getSingleIndexFields(List<String> fields) {
 		List<String> result = new ArrayList<String>();
 		if (fields.size() > 0) {
-			 
+
 			String[] commaSeparatedArr = new String[fields.size()];
 			for (int i = 0; i < fields.size(); i++) {
 				String field = fields.get(i);
@@ -129,6 +129,6 @@ public class IndexHelper {
 		}
 		return result;
 
-	}
+    }
 
 }
