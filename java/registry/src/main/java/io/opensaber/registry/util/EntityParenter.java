@@ -225,7 +225,7 @@ public class EntityParenter {
      * @param parentVertex
      * @param definition
      */
-   // @Async("taskExecutor")
+    @Async("taskExecutor")
     public void ensureIndexExists(DatabaseProvider dbProvider, Vertex parentVertex, Definition definition, String shardId) {
         try {
             if (!indexHelper.isIndexPresent(definition, shardId)) {
