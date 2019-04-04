@@ -69,12 +69,9 @@ public class Indexer {
     public void createIndex(Graph graph, String label) {
 
         if (label != null && !label.isEmpty()) {
-			if (indexUniqueFields.size() > 0)
-				databaseProvider.createUniqueIndex(graph, label, indexUniqueFields);
-			if (singleIndexFields.size() > 0)
-				databaseProvider.createIndex(graph, label, singleIndexFields);
-			if (compositeIndexFields.size() > 0)
-				databaseProvider.createCompositeIndex(graph, label, compositeIndexFields);
+			databaseProvider.createUniqueIndex(graph, label, indexUniqueFields);
+			databaseProvider.createIndex(graph, label, singleIndexFields);
+			databaseProvider.createCompositeIndex(graph, label, compositeIndexFields);
         } else {
             logger.info("label is required for creating indexing");
         }

@@ -111,20 +111,12 @@ public class IndexHelper {
     public static List<String> getSingleIndexFields(List<String> fields) {
 		List<String> result = new ArrayList<String>();
 		if (fields.size() > 0) {
-
-			String[] commaSeparatedArr = new String[fields.size()];
-			for (int i = 0; i < fields.size(); i++) {
-				String field = fields.get(i);
+			for (String field : fields) {
 				boolean containsCompositeValues = (field.indexOf("(") == 0)
 						&& (field.indexOf(")") == field.length() - 1);
 				if (!containsCompositeValues) {
-					commaSeparatedArr[i] = field;
-				} else {
-					commaSeparatedArr[i] = "";
+					result.add(field);
 				}
-			}
-			if (commaSeparatedArr != null) {
-				result = Arrays.stream(commaSeparatedArr).collect(Collectors.toList());
 			}
 		}
 		return result;
