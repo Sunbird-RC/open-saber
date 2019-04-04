@@ -256,11 +256,11 @@ public class EntityParenter {
                 Graph graph = osGraph.getGraphStore();
                 try (Transaction tx = dbProvider.startTransaction(graph)) {
 
-                    Indexer indexer = new Indexer(dbProvider);
-                    indexer.setSingleIndexFields(inxFields.getNewSingleIndexFields());
-                    indexer.setCompositeIndexFields(inxFields.getNewCompositeIndexFields());
+					Indexer indexer = new Indexer(dbProvider);
+					indexer.setSingleIndexFields(inxFields.getNewSingleIndexFields());
+					indexer.setCompositeIndexFields(inxFields.getNewCompositeIndexFields());
 
-                    indexer.setUniqueIndexFields(inxFields.getNewUniqueIndexFields());
+					indexer.setUniqueIndexFields(inxFields.getNewUniqueIndexFields());
                     indexer.createIndex(graph, definition.getTitle());
                     dbProvider.commitTransaction(graph, tx);
 

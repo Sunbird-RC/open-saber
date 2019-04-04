@@ -15,7 +15,6 @@ import org.janusgraph.core.schema.JanusGraphManagement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
-import org.umlg.sqlg.structure.topology.IndexType;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
