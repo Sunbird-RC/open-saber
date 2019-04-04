@@ -75,7 +75,7 @@ public class SqlgProvider extends DatabaseProvider {
 		if (propertyNames.size() > 0) {
 	        ensureCompositeIndex(graph, label, propertyNames);
 		} else {
-			logger.info("Could not create single index for empty properties");
+			logger.info("Could not create composite index for empty properties");
 		}
     }
 
@@ -84,7 +84,7 @@ public class SqlgProvider extends DatabaseProvider {
 		if (propertyNames.size() > 0) {
 	        createIndexByIndexType(graph, IndexType.UNIQUE, label, propertyNames);
 		} else {
-			logger.info("Could not create single index for empty properties");
+			logger.info("Could not create unique index for empty properties");
 		}
     }
 

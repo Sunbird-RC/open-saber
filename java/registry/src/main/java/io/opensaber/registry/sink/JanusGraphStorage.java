@@ -109,16 +109,19 @@ public class JanusGraphStorage extends DatabaseProvider {
 			janusGraphManagement.commit();
 			
 		} else {
-			logger.info("Could not create single/composite index for empty properties");
-		}
-		if(propertyNames.size()>0) {
-
+			logger.info("Could not create single index for empty properties");
 		}
 	}
 
 	@Override
 	public void createCompositeIndex(Graph graph, String label, List<String> propertyNames) {
-		createIndex(graph, label, propertyNames);
+		if (propertyNames.size() > 0) {
+			createIndex(graph, label, propertyNames);
+		} else {
+			logger.info("Could not create composite index for empty properties");
+
+		}
+
 	}
 
 
