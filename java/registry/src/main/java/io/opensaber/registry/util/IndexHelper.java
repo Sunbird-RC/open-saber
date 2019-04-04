@@ -1,6 +1,7 @@
 package io.opensaber.registry.util;
 
 import io.opensaber.registry.middleware.util.Constants;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
@@ -28,6 +29,8 @@ public class IndexHelper {
     public void setDefinitionIndexMap(Map<String, Boolean> definitionIndexMap) {
         this.definitionIndexMap.putAll(definitionIndexMap);
     }
+    
+    
 
     public void updateDefinitionIndex(String label, String definitionName, boolean flag) {
         String key = label + definitionName;
@@ -81,9 +84,15 @@ public class IndexHelper {
     public static List<String> getCompositeIndexFields(List<String> fields) {
         if (fields.size() > 0) {
             StringBuilder list = new StringBuilder(String.join(",", fields));
-            String subString = StringUtils.substringBetween(list.toString(), "(", ")").replaceAll("'", "");
-            String[] commaSeparatedArr = subString.split("\\s*,\\s*");
-            List<String> result = Arrays.stream(commaSeparatedArr).collect(Collectors.toList());
+            List<String> result;
+			try {
+				String subString = StringUtils.substringBetween(list.toString(), "(", ")").replaceAll("'", "");
+				String[] commaSeparatedArr = subString.split("\\s*,\\s*");
+				result = Arrays.stream(commaSeparatedArr).collect(Collectors.toList());
+			} catch (Exception e) {
+				logger.info("Does not contain composite fields! ");
+				result = new ArrayList<>();
+			}
             return result;
         } else {
             return new ArrayList<>();
@@ -99,8 +108,12 @@ public class IndexHelper {
         if (fields.size() > 0) {
             StringBuilder list = new StringBuilder(String.join(",", fields));
             String subString = (StringUtils.substringBetween(list.toString(), "(", ")"));
-            String orginal = list.toString().replaceAll(subString, "").replaceAll(Pattern.quote("()"), "");
-
+            String orginal = "";
+            if(subString != null) {
+                orginal = list.toString().replaceAll(subString, "").replaceAll(Pattern.quote("()"), "");
+            }else {
+            	orginal = list.toString();
+            }
             String[] commaSeparatedArr = orginal.split(",");
             List<String> result = Arrays.stream(commaSeparatedArr).collect(Collectors.toList());
             return result;
