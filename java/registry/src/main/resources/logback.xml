@@ -10,7 +10,7 @@
         <file>logs/app.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <!-- daily rollover -->
-            <fileNamePattern>logs/app.%d{yyyy-MM-dd}_%d{HH-mm-ss}.%i.log</fileNamePattern>
+            <fileNamePattern>logs/app_%d{yyyy-MM-dd}_%d{HH-mm-ss}_%i.log</fileNamePattern>
             <maxFileSize>30MB</maxFileSize>
             <!-- Adopter's specific tags: maxHistory, totalSizeCap disabled by default -->            
             <!-- <maxHistory>10</maxHistory> -->
@@ -28,7 +28,7 @@
             <Pattern>%date %-5level %msg%n</Pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <FileNamePattern>logs/perf.%d{yyyy-MM-dd}_%d{HH-mm-ss}.%i.log</FileNamePattern>
+            <FileNamePattern>logs/perf_%d{yyyy-MM-dd}_%d{HH-mm-ss}_%i.log</FileNamePattern>
             <!-- Adopter's specific tags: maxHistory, totalSizeCap disabled by default -->            
             <!-- <maxHistory>10</maxHistory> -->
             <!-- <totalSizeCap>5GB</totalSizeCap> -->
@@ -44,7 +44,7 @@
     <appender name="AuditFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>audit_logs/audit.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>audit_logs/audit.%d{yyyy-MM-dd}_%d{HH-mm-ss}.%i.log</fileNamePattern>
+            <fileNamePattern>audit_logs/audit_%d{yyyy-MM-dd}_%d{HH-mm-ss}_%i.log</fileNamePattern>
             <!-- Adopter's specific tags: maxHistory, totalSizeCap disabled by default -->            
             <!-- <maxHistory>10</maxHistory> -->
             <!-- <totalSizeCap>5GB</totalSizeCap> -->
