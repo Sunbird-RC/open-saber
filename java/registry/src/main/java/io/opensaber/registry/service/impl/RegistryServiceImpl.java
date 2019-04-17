@@ -12,10 +12,7 @@ import io.opensaber.pojos.AuditInfo;
 import io.opensaber.pojos.AuditRecord;
 import io.opensaber.pojos.ComponentHealthInfo;
 import io.opensaber.pojos.HealthCheckResponse;
-import io.opensaber.registry.dao.IRegistryDao;
-import io.opensaber.registry.dao.RegistryDaoImpl;
-import io.opensaber.registry.dao.VertexReader;
-import io.opensaber.registry.dao.VertexWriter;
+import io.opensaber.registry.dao.*;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.DateUtil;
 import io.opensaber.registry.middleware.util.JSONUtil;
@@ -45,6 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -106,7 +105,11 @@ public class RegistryServiceImpl implements RegistryService {
     @Autowired
     private OSSystemFieldsHelper systemFieldsHelper;
 
+    @Value("${os.entities}")
+    private String[] entitySet;
+
     private AuditRecord auditRecord;
+    private final String auditExecutor = "auditExecutor";
 
     public void setShard(Shard shard) {
         this.shard = shard;
@@ -179,6 +182,7 @@ public class RegistryServiceImpl implements RegistryService {
      */
     public String addEntity(String jsonString) throws Exception {
         Transaction tx = null;
+        boolean cassandraEnabled = true;
         String entityId = "entityPlaceholderId";
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode = mapper.readTree(jsonString);
@@ -195,23 +199,28 @@ public class RegistryServiceImpl implements RegistryService {
         }
 
         if (persistenceEnabled) {
-            DatabaseProvider dbProvider = shard.getDatabaseProvider();
-            IRegistryDao registryDao = new RegistryDaoImpl(dbProvider, definitionsManager, uuidPropertyName);
-            try (OSGraph osGraph = dbProvider.getOSGraph()) {
-                Graph graph = osGraph.getGraphStore();
-                tx = dbProvider.startTransaction(graph);
-                entityId = registryDao.addEntity(graph, rootNode);
-                if (commitEnabled) {
-                    dbProvider.commitTransaction(graph, tx);
+            /*if(cassandraEnabled) {
+                cassandraWriter.addToCassandra(rootNode);
+            } else {*/
+                DatabaseProvider dbProvider = shard.getDatabaseProvider();
+                IRegistryDao registryDao = new RegistryDaoImpl(dbProvider, definitionsManager, uuidPropertyName, Arrays.stream(entitySet).collect(Collectors.toSet()));
+                try (OSGraph osGraph = dbProvider.getOSGraph()) {
+                    Graph graph = osGraph.getGraphStore();
+                    tx = dbProvider.startTransaction(graph);
+                    entityId = registryDao.addEntity(graph, rootNode);
+                    if (commitEnabled) {
+                        dbProvider.commitTransaction(graph, tx);
+                    }
+                } finally {
+                    tx.close();
                 }
-            } finally {
-                tx.close();
-            }
-            // Add indices: executes only once.
-            String shardId = shard.getShardId();
-            Vertex parentVertex = entityParenter.getKnownParentVertex(vertexLabel, shardId);
-            Definition definition = definitionsManager.getDefinition(vertexLabel);
-            entityParenter.ensureIndexExists(dbProvider, parentVertex, definition, shardId);
+                // Add indices: executes only once.
+                String shardId = shard.getShardId();
+                Vertex parentVertex = entityParenter.getKnownParentVertex(vertexLabel, shardId);
+                Definition definition = definitionsManager.getDefinition(vertexLabel);
+                entityParenter.ensureIndexExists(dbProvider, parentVertex, definition, shardId);
+            //}
+
 
             callAuditESActors(null,rootNode,"add", Constants.AUDIT_ACTION_ADD,entityId,vertexLabel,entityId,tx);
 
@@ -301,7 +310,7 @@ public class RegistryServiceImpl implements RegistryService {
         }
     }
 
-    @Async("auditExecutor")
+    @Async(auditExecutor)
     public void callAuditESActors(JsonNode readNode, JsonNode mergedNode, String operation, String auditAction, String id,
                                   String parentEntityType, String entityRootId, Transaction tx) throws JsonProcessingException {
         logger.debug("callAuditESActors started");

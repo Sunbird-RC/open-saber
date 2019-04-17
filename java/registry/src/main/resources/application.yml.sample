@@ -205,6 +205,9 @@ elastic:
     # elastic-search connection info
     connection_url: ${elastic_search_connection_url:localhost:9200}
 
+os:
+  entities: inServiceTeacherTrainingFromBRC,teachingRole,inServiceTeacherTrainingFromCRC,inServiceTeacherTrainingFromDIET,inServiceTeacherTrainingFromOthers,nonTeachingAssignmentsForAcademicCalendar,basicProficiencyLevel
+
 ---
 ##################################################################
 #                      TEST PROFILE                              #
@@ -343,3 +346,6 @@ elastic:
     enabled: ${elastic_search_enabled:true}
     # elastic-search connection info
     connection_url: ${elastic_search_connection_url:localhost:9200}
+
+os:
+  entities: inServiceTeacherTrainingFromBRC,teachingRole,inServiceTeacherTrainingFromCRC,inServiceTeacherTrainingFromDIET,inServiceTeacherTrainingFromOthers,nonTeachingAssignmentsForAcademicCalendar,basicProficiencyLevel

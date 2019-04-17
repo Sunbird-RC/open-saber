@@ -9,16 +9,19 @@ import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.ReadConfigurator;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.janusgraph.core.JanusGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Set;
 
 public class RegistryDaoImpl implements IRegistryDao {
     public String uuidPropertyName;
     private DefinitionsManager definitionsManager;
     private DatabaseProvider databaseProvider;
     private List<String> privatePropertyList;
+    private Set<String> entitySet;
 
     private Logger logger = LoggerFactory.getLogger(RegistryDaoImpl.class);
 
@@ -32,10 +35,25 @@ public class RegistryDaoImpl implements IRegistryDao {
         this.privatePropertyList = privatePropertyList;
     }
 
+    public Set<String> getEntitySet() {
+        return entitySet;
+    }
+
+    public void setEntitySet(Set<String> entitySet) {
+        this.entitySet = entitySet;
+    }
+
     public RegistryDaoImpl(DatabaseProvider dbProvider, DefinitionsManager defnManager, String uuidPropName) {
         databaseProvider = dbProvider;
         definitionsManager = defnManager;
         uuidPropertyName = uuidPropName;
+    }
+
+    public RegistryDaoImpl(DatabaseProvider dbProvider, DefinitionsManager defnManager, String uuidPropName, Set<String> entityList) {
+        databaseProvider = dbProvider;
+        definitionsManager = defnManager;
+        uuidPropertyName = uuidPropName;
+        this.entitySet = entityList;
     }
 
     public DatabaseProvider getDatabaseProvider() {
@@ -49,8 +67,14 @@ public class RegistryDaoImpl implements IRegistryDao {
      * @return
      */
     public String addEntity(Graph graph, JsonNode rootNode) {
-        VertexWriter vertexWriter = new VertexWriter(graph, getDatabaseProvider(), uuidPropertyName);
-        String entityId = vertexWriter.writeNodeEntity(rootNode);
+        String entityId = null;
+        if(graph instanceof JanusGraph) {
+            CassandraWriter cassandraWriter = new CassandraWriter(definitionsManager,"cassos", entitySet);
+            cassandraWriter.addToCassandra(rootNode);
+        } else {
+            VertexWriter vertexWriter = new VertexWriter(graph, getDatabaseProvider(), uuidPropertyName);
+            entityId = vertexWriter.writeNodeEntity(rootNode);
+        }
         return entityId;
     }
 
