@@ -70,7 +70,7 @@ public class RegistryDaoImpl implements IRegistryDao {
         String entityId = null;
         if(graph instanceof JanusGraph) {
             CassandraWriter cassandraWriter = new CassandraWriter(definitionsManager,"cassos", entitySet);
-            cassandraWriter.addToCassandra(rootNode);
+            entityId = cassandraWriter.addToCassandra(rootNode);
         } else {
             VertexWriter vertexWriter = new VertexWriter(graph, getDatabaseProvider(), uuidPropertyName);
             entityId = vertexWriter.writeNodeEntity(rootNode);
@@ -86,10 +86,14 @@ public class RegistryDaoImpl implements IRegistryDao {
      * @return
      */
     public JsonNode getEntity(Graph graph, String entityType, String uuid, ReadConfigurator readConfigurator) throws Exception {
-
-        VertexReader vr = new VertexReader(getDatabaseProvider(), graph, readConfigurator, uuidPropertyName, definitionsManager);
-        JsonNode result = vr.read(entityType, uuid);
-
+        JsonNode result = null;
+        if(graph instanceof JanusGraph) {
+            CassandraReader cassandraReader = new CassandraReader("cassos", entitySet);
+            result = cassandraReader.read(entityType, uuid);
+        } else {
+            VertexReader vr = new VertexReader(getDatabaseProvider(), graph, readConfigurator, uuidPropertyName, definitionsManager);
+            result = vr.read(entityType, uuid);
+        }
         return result;
     }
 

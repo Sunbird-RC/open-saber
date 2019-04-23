@@ -65,7 +65,7 @@ public class CassandraWriter {
     }
 
     public String addToCassandra(JsonNode mapObject) {
-        AtomicReference<String> id = null;
+        AtomicReference<String> id = new AtomicReference<>();
         mapObject.fields().forEachRemaining(entry -> {
             JsonNode entryValue = entry.getValue();
             //logger.debug("Processing {} -> {}", entry.getKey(), entry.getValue());

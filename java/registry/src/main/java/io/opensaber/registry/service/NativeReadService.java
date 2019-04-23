@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
 import java.util.LinkedList;
+import java.util.stream.Collectors;
+
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.slf4j.Logger;
@@ -54,6 +56,9 @@ public class NativeReadService implements IReadService {
 	@Value("${database.uuidPropertyName}")
 	public String uuidPropertyName;
 
+	@Value("${os.entities}")
+	private String[] entitySet;
+
 	/**
 	 * This method interacts with the native db and reads the record
 	 *
@@ -67,7 +72,7 @@ public class NativeReadService implements IReadService {
 	public JsonNode getEntity(String id, String entityType, ReadConfigurator configurator) throws Exception {
         AuditRecord auditRecord = null;
 		DatabaseProvider dbProvider = shard.getDatabaseProvider();
-		IRegistryDao registryDao = new RegistryDaoImpl(dbProvider, definitionsManager, uuidPropertyName);
+		IRegistryDao registryDao = new RegistryDaoImpl(dbProvider, definitionsManager, uuidPropertyName, Arrays.stream(entitySet).collect(Collectors.toSet()));
 		try (OSGraph osGraph = dbProvider.getOSGraph()) {
 			Graph graph = osGraph.getGraphStore();
 			Transaction tx = dbProvider.startTransaction(graph);
