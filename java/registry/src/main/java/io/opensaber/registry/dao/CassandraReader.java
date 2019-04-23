@@ -42,12 +42,21 @@ public class CassandraReader {
         Map<String,Object> entityMap = lst.get(0);
         responseMap.put(entityType,entityMap);
         keySet.forEach(key -> {
-            if(entityMap.containsKey(key.toLowerCase()) &&  null != (String)entityMap.get(key.toLowerCase())) {
-                Response subResponse = cassandraOperation.getRecordById(keySpace,key, (String) entityMap.get(key.toLowerCase()));
-                List<HashMap<String,Object>> sublst = (List<HashMap<String, Object>>) subResponse.getResult().get("response");
-                Map<String,Object> subentityMap = sublst.get(0);
-                entityMap.remove(key.toLowerCase());
-                entityMap.put(key,subentityMap);
+            if(entityMap.containsKey(key.toLowerCase()) &&  null != entityMap.get(key.toLowerCase())) {
+                if(entityMap.get(key.toLowerCase()) instanceof String){
+                    Response subResponse = cassandraOperation.getRecordById(keySpace,key, (String) entityMap.get(key.toLowerCase()));
+                    List<HashMap<String,Object>> sublst = (List<HashMap<String, Object>>) subResponse.getResult().get("response");
+                    Map<String,Object> subentityMap = sublst.get(0);
+                    entityMap.remove(key.toLowerCase());
+                    entityMap.put(key,subentityMap);
+                } else if(entityMap.get(key.toLowerCase()) instanceof List) {
+                    Response subResponse = cassandraOperation.getRecordsByPrimaryKeys(keySpace,key, (List<String>)entityMap.get(key.toLowerCase()), null);
+                    List<HashMap<String,Object>> sublst = (List<HashMap<String, Object>>) subResponse.getResult().get("response");
+                    Map<String,Object> subentityMap = sublst.get(0);
+                    entityMap.remove(key.toLowerCase());
+                    entityMap.put(key,sublst);
+                }
+
             }
         });
         JsonNode jsonNode = new ObjectMapper().convertValue(entityMap,JsonNode.class);

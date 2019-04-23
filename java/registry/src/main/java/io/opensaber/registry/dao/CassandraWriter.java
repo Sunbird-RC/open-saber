@@ -92,8 +92,8 @@ public class CassandraWriter {
                     String subNodeId = writeSingleNode(key1,subNode);
                     subEntity.put(key1,subNodeId);
                 } else if(subNode.isArray()) {
-                    Set<String> subNodeIdSet = writeArrayNode(key1,(ArrayNode)subNode);
-                    subEntity.put(key1,subNodeIdSet);
+                    List<String> subNodeIdList = writeArrayNode(key1,(ArrayNode)subNode);
+                    subEntity.put(key1,subNodeIdList);
                 }
             }
         });
@@ -102,15 +102,15 @@ public class CassandraWriter {
         return id;
     }
 
-    Set<String> writeArrayNode(String entryKey, ArrayNode arrayNode) {
-        Set<String> idSet = new LinkedHashSet<>();
+    List<String> writeArrayNode(String entryKey, ArrayNode arrayNode) {
+        List<String> idList = new ArrayList<>();
         for (JsonNode jsonNode : arrayNode) {
             if (jsonNode.isObject()) {
                 String id = writeSingleNode(entryKey, jsonNode);
-                idSet.add(id);
+                idList.add(id);
             }
         }
-        return idSet;
+        return idList;
     }
 
 }
