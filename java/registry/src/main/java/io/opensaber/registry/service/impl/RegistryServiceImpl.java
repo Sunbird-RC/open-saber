@@ -16,6 +16,8 @@ import io.opensaber.registry.dao.*;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.DateUtil;
 import io.opensaber.registry.middleware.util.JSONUtil;
+import io.opensaber.registry.model.DBConnectionInfo;
+import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.service.EncryptionHelper;
 import io.opensaber.registry.service.EncryptionService;
 import io.opensaber.registry.service.RegistryService;
@@ -69,6 +71,8 @@ public class RegistryServiceImpl implements RegistryService {
     private SignatureService signatureService;
     @Autowired
     private DefinitionsManager definitionsManager;
+    @Autowired
+    private DBConnectionInfoMgr dbConnectionInfoMgr;
 
     @Autowired
     private EncryptionHelper encryptionHelper;
@@ -107,6 +111,9 @@ public class RegistryServiceImpl implements RegistryService {
 
     @Value("${os.entities}")
     private String[] entitySet;
+
+    @Value("${os.cassandraKeyspace}")
+    private String cassandraKeyspace;
 
     private AuditRecord auditRecord;
     private final String auditExecutor = "auditExecutor";
@@ -182,6 +189,7 @@ public class RegistryServiceImpl implements RegistryService {
      */
     public String addEntity(String jsonString) throws Exception {
         Transaction tx = null;
+        IRegistryDao registryDao = null;
         boolean cassandraEnabled = true;
         String entityId = "entityPlaceholderId";
         ObjectMapper mapper = new ObjectMapper();
@@ -203,7 +211,12 @@ public class RegistryServiceImpl implements RegistryService {
                 cassandraWriter.addToCassandra(rootNode);
             } else {*/
                 DatabaseProvider dbProvider = shard.getDatabaseProvider();
-                IRegistryDao registryDao = new RegistryDaoImpl(dbProvider, definitionsManager, uuidPropertyName, Arrays.stream(entitySet).collect(Collectors.toSet()));
+                if(dbProvider.getProvider().name().equalsIgnoreCase("CASSANDRA")){
+                    registryDao = new RegistryDaoImpl(definitionsManager, Arrays.stream(entitySet).collect(Collectors.toSet()), dbConnectionInfoMgr, cassandraKeyspace);
+                } else {
+                    registryDao = new RegistryDaoImpl(dbProvider, definitionsManager, uuidPropertyName);
+                }
+
                 try (OSGraph osGraph = dbProvider.getOSGraph()) {
                     Graph graph = osGraph.getGraphStore();
                     tx = dbProvider.startTransaction(graph);

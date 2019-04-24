@@ -11,6 +11,7 @@ import io.opensaber.registry.dao.RegistryDaoImpl;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.DateUtil;
 import io.opensaber.registry.middleware.util.JSONUtil;
+import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.sink.OSGraph;
 import io.opensaber.registry.sink.shard.Shard;
@@ -53,11 +54,17 @@ public class NativeReadService implements IReadService {
     @Autowired
     private APIMessage apiMessage;
 
+    @Autowired
+	private DBConnectionInfoMgr dbConnectionInfoMgr;
+
 	@Value("${database.uuidPropertyName}")
 	public String uuidPropertyName;
 
 	@Value("${os.entities}")
 	private String[] entitySet;
+
+	@Value("${os.cassandraKeyspace}")
+	private String cassandraKeyspace;
 
 	/**
 	 * This method interacts with the native db and reads the record
@@ -72,7 +79,7 @@ public class NativeReadService implements IReadService {
 	public JsonNode getEntity(String id, String entityType, ReadConfigurator configurator) throws Exception {
         AuditRecord auditRecord = null;
 		DatabaseProvider dbProvider = shard.getDatabaseProvider();
-		IRegistryDao registryDao = new RegistryDaoImpl(dbProvider, definitionsManager, uuidPropertyName, Arrays.stream(entitySet).collect(Collectors.toSet()));
+		IRegistryDao registryDao = new RegistryDaoImpl(definitionsManager, Arrays.stream(entitySet).collect(Collectors.toSet()), dbConnectionInfoMgr, cassandraKeyspace);
 		try (OSGraph osGraph = dbProvider.getOSGraph()) {
 			Graph graph = osGraph.getGraphStore();
 			Transaction tx = dbProvider.startTransaction(graph);

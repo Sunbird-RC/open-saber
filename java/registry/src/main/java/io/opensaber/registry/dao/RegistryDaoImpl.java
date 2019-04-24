@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.middleware.util.Constants;
+import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.sink.DatabaseProvider;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.ReadConfigurator;
@@ -18,10 +19,12 @@ import java.util.Set;
 
 public class RegistryDaoImpl implements IRegistryDao {
     public String uuidPropertyName;
+    private String keySpace;
     private DefinitionsManager definitionsManager;
     private DatabaseProvider databaseProvider;
     private List<String> privatePropertyList;
     private Set<String> entitySet;
+    private DBConnectionInfoMgr dbConnectionInfoMgr;
 
     private Logger logger = LoggerFactory.getLogger(RegistryDaoImpl.class);
 
@@ -49,11 +52,11 @@ public class RegistryDaoImpl implements IRegistryDao {
         uuidPropertyName = uuidPropName;
     }
 
-    public RegistryDaoImpl(DatabaseProvider dbProvider, DefinitionsManager defnManager, String uuidPropName, Set<String> entityList) {
-        databaseProvider = dbProvider;
+    public RegistryDaoImpl(DefinitionsManager defnManager, Set<String> entityList, DBConnectionInfoMgr dbConnectionInfoMgr, String cassandraKeyspace) {
         definitionsManager = defnManager;
-        uuidPropertyName = uuidPropName;
         this.entitySet = entityList;
+        this.dbConnectionInfoMgr = dbConnectionInfoMgr;
+        keySpace = cassandraKeyspace;
     }
 
     public DatabaseProvider getDatabaseProvider() {
@@ -69,7 +72,7 @@ public class RegistryDaoImpl implements IRegistryDao {
     public String addEntity(Graph graph, JsonNode rootNode) {
         String entityId = null;
         if(graph instanceof JanusGraph) {
-            CassandraWriter cassandraWriter = new CassandraWriter(definitionsManager,"cassos", entitySet);
+            CassandraWriter cassandraWriter = new CassandraWriter(keySpace, entitySet, dbConnectionInfoMgr);
             entityId = cassandraWriter.addToCassandra(rootNode);
         } else {
             VertexWriter vertexWriter = new VertexWriter(graph, getDatabaseProvider(), uuidPropertyName);
@@ -88,7 +91,7 @@ public class RegistryDaoImpl implements IRegistryDao {
     public JsonNode getEntity(Graph graph, String entityType, String uuid, ReadConfigurator readConfigurator) throws Exception {
         JsonNode result = null;
         if(graph instanceof JanusGraph) {
-            CassandraReader cassandraReader = new CassandraReader("cassos", entitySet);
+            CassandraReader cassandraReader = new CassandraReader(keySpace, entitySet, dbConnectionInfoMgr);
             result = cassandraReader.read(entityType, uuid);
         } else {
             VertexReader vr = new VertexReader(getDatabaseProvider(), graph, readConfigurator, uuidPropertyName, definitionsManager);

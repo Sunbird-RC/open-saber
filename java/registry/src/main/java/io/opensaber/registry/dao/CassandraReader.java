@@ -1,6 +1,8 @@
 package io.opensaber.registry.dao;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.opensaber.registry.model.DBConnectionInfoMgr;
+import io.opensaber.registry.sink.CassandraDBProvider;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.helper.CassandraConnectionManager;
 import org.sunbird.helper.CassandraConnectionMngrFactory;
@@ -18,26 +20,16 @@ public class CassandraReader {
     CassandraOperation cassandraOperation = null;
     CassandraConnectionManager cassandraConnectionManager = null;
 
-    CassandraReader(String keySpace, Set<String> entitySet) {
+    CassandraReader(String keySpace, Set<String> entitySet, DBConnectionInfoMgr dbConnectionInfoMgr) {
         this.keySpace = keySpace;
         keySet = entitySet;
-        if(null == cassandraConnectionManager) {
-            getConnection();
-        }
-    }
-
-    void getConnection() {
-        cassandraOperation = ServiceFactory.getInstance();
-        cassandraConnectionManager =
-                CassandraConnectionMngrFactory.getObject("standalone");
-        boolean result =
-                cassandraConnectionManager.createConnection("127.0.0.1", "9042", null, null, keySpace);
+        CassandraDBProvider cassandraDBProvider = new CassandraDBProvider();
+        cassandraOperation = cassandraDBProvider.getCassandraOperation(dbConnectionInfoMgr, keySpace);
     }
 
     public JsonNode read(String entityType, String uuid){
         Map<String,Object> responseMap = new HashMap<>();
         Response response = cassandraOperation.getRecordById(keySpace, entityType, uuid);
-        Map<String, Object> result  = response.getResult();
         List<HashMap<String,Object>> lst = (List<HashMap<String, Object>>) response.getResult().get("response");
         Map<String,Object> entityMap = lst.get(0);
         responseMap.put(entityType,entityMap);
@@ -52,7 +44,6 @@ public class CassandraReader {
                 } else if(entityMap.get(key.toLowerCase()) instanceof List) {
                     Response subResponse = cassandraOperation.getRecordsByPrimaryKeys(keySpace,key, (List<String>)entityMap.get(key.toLowerCase()), null);
                     List<HashMap<String,Object>> sublst = (List<HashMap<String, Object>>) subResponse.getResult().get("response");
-                    Map<String,Object> subentityMap = sublst.get(0);
                     entityMap.remove(key.toLowerCase());
                     entityMap.put(key,sublst);
                 }
