@@ -241,14 +241,15 @@
     float: right;
 }
 
-
 .alpaca-form-button 
 {
     box-sizing: border-box;
     display: block;
-    float: left;
     line-height: 20px;
-
+    border-color: #adadad;
+    background-color: #e0e0e0;
+    background-position: 0 -15px;
+    float: left;
 }
 
 /** ************************************** **/
