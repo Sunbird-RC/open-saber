@@ -68,9 +68,11 @@ database:
   shardProperty: ${database_shardProperty:none}
   
   # This property is instruction to use the shard advisor.
-  # Values could be DefaultShardAdvisor, SerialNumberShardAdvisor
+  # Values could be io.opensaber.registry.sink.shard.DefaultShardAdvisor, OR
+  # io.opensaber.registry.sink.shard.SerialNumberShardAdvisor OR
+  # absolute class name of your advisor class.
   # If this property not provided, advisor is set to DefaultShardAdvisor
-  shardAdvisor: io.opensaber.registry.sink.shard.SerialNumberShardAdvisor
+  shardAdvisorClassName: io.opensaber.registry.sink.shard.DefaultShardAdvisor
 
   connectionInfo:
     -
