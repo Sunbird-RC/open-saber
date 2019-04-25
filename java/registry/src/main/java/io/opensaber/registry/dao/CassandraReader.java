@@ -3,6 +3,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.sink.CassandraDBProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sunbird.cassandra.CassandraOperation;
 import org.sunbird.helper.CassandraConnectionManager;
 import org.sunbird.helper.CassandraConnectionMngrFactory;
@@ -14,43 +16,62 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ *
+ * This class provides methods for reading the data from Cassandra
+ */
 public class CassandraReader {
     String keySpace = null;
-    private static Set<String> keySet = null;
+    String uuidPropertyName = null;
     CassandraOperation cassandraOperation = null;
-    CassandraConnectionManager cassandraConnectionManager = null;
 
-    CassandraReader(String keySpace, Set<String> entitySet, DBConnectionInfoMgr dbConnectionInfoMgr) {
+    private Logger logger = LoggerFactory.getLogger(CassandraReader.class);
+
+    CassandraReader(String keySpace, DBConnectionInfoMgr dbConnectionInfoMgr, String uuidPropertyName) {
         this.keySpace = keySpace;
-        keySet = entitySet;
+        this.uuidPropertyName = uuidPropertyName;
         CassandraDBProvider cassandraDBProvider = new CassandraDBProvider();
         cassandraOperation = cassandraDBProvider.getCassandraOperation(dbConnectionInfoMgr, keySpace);
     }
 
-    public JsonNode read(String entityType, String uuid){
-        Map<String,Object> responseMap = new HashMap<>();
-        Response response = cassandraOperation.getRecordById(keySpace, entityType, uuid);
-        List<HashMap<String,Object>> lst = (List<HashMap<String, Object>>) response.getResult().get("response");
-        Map<String,Object> entityMap = lst.get(0);
-        responseMap.put(entityType,entityMap);
-        keySet.forEach(key -> {
-            if(entityMap.containsKey(key.toLowerCase()) &&  null != entityMap.get(key.toLowerCase())) {
-                if(entityMap.get(key.toLowerCase()) instanceof String){
-                    Response subResponse = cassandraOperation.getRecordById(keySpace,key, (String) entityMap.get(key.toLowerCase()));
-                    List<HashMap<String,Object>> sublst = (List<HashMap<String, Object>>) subResponse.getResult().get("response");
-                    Map<String,Object> subentityMap = sublst.get(0);
-                    entityMap.remove(key.toLowerCase());
-                    entityMap.put(key,subentityMap);
-                } else if(entityMap.get(key.toLowerCase()) instanceof List) {
-                    Response subResponse = cassandraOperation.getRecordsByPrimaryKeys(keySpace,key, (List<String>)entityMap.get(key.toLowerCase()), null);
-                    List<HashMap<String,Object>> sublst = (List<HashMap<String, Object>>) subResponse.getResult().get("response");
-                    entityMap.remove(key.toLowerCase());
-                    entityMap.put(key,sublst);
-                }
+    /**
+     * This method reads the data from cassandra with inputs entity-type and osid
+     * @param entityType - table name
+     * @param osid
+     * @return
+     */
+    public JsonNode read(String entityType, String osid) {
+        Map<String, Object> responseMap = new HashMap<>();
+        Response response = cassandraOperation.getRecordById(keySpace, entityType, osid);
+        List<HashMap<String, Object>> lst = (List<HashMap<String, Object>>) response.getResult().get("response");
+        HashMap<String, Object> entityMap = lst.get(0);
+        responseMap.put(entityType, entityMap);
+        try {
+            entityMap.entrySet().stream().
+                    filter(entry -> entry.getKey().contains(uuidPropertyName)).
+                    forEach(entry -> {
+                        String[] newKey = entry.getKey().split("_");
+                        if (null == entityMap.get(entry.getKey())) {
+                            entityMap.remove(entry.getKey());
+                        } else if (entityMap.get(entry.getKey()) instanceof String) {
+                            Response subResponse = cassandraOperation.getRecordById(keySpace, newKey[0], (String) entityMap.get(entry.getKey()));
+                            List<HashMap<String, Object>> sublst = (List<HashMap<String, Object>>) subResponse.getResult().get("response");
+                            Map<String, Object> subentityMap = sublst.get(0);
+                            entityMap.put(newKey[0], subentityMap);
+                            entityMap.remove(entry.getKey());
 
-            }
-        });
-        JsonNode jsonNode = new ObjectMapper().convertValue(entityMap,JsonNode.class);
+                        } else if (entityMap.get(entry.getKey()) instanceof List && ((List) entityMap.get(entry.getKey())).size() > 0) {
+                            Response subResponse = cassandraOperation.getRecordsByPrimaryKeys(keySpace, newKey[0], (List<String>) entityMap.get(entry.getKey()), null);
+                            List<HashMap<String, Object>> sublst = (List<HashMap<String, Object>>) subResponse.getResult().get("response");
+                            entityMap.put(newKey[0], sublst);
+                            entityMap.remove(entry.getKey());
+                        }
+
+                    });
+        } catch (Exception e) {
+            logger.error("exception in read {}",e);
+        }
+        JsonNode jsonNode = new ObjectMapper().convertValue(responseMap, JsonNode.class);
         return jsonNode;
     }
 }

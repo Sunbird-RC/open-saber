@@ -109,9 +109,6 @@ public class RegistryServiceImpl implements RegistryService {
     @Autowired
     private OSSystemFieldsHelper systemFieldsHelper;
 
-    @Value("${os.entities}")
-    private String[] entitySet;
-
     @Value("${os.cassandraKeyspace}")
     private String cassandraKeyspace;
 
@@ -207,35 +204,32 @@ public class RegistryServiceImpl implements RegistryService {
         }
 
         if (persistenceEnabled) {
-            /*if(cassandraEnabled) {
-                cassandraWriter.addToCassandra(rootNode);
-            } else {*/
-                DatabaseProvider dbProvider = shard.getDatabaseProvider();
-                if(dbProvider.getProvider().name().equalsIgnoreCase("CASSANDRA")){
-                    registryDao = new RegistryDaoImpl(definitionsManager, Arrays.stream(entitySet).collect(Collectors.toSet()), dbConnectionInfoMgr, cassandraKeyspace);
-                } else {
-                    registryDao = new RegistryDaoImpl(dbProvider, definitionsManager, uuidPropertyName);
-                }
+            DatabaseProvider dbProvider = shard.getDatabaseProvider();
+            if (dbProvider.getProvider().name().equalsIgnoreCase(Constants.GraphDatabaseProvider.CASSANDRA.getName())) {
+                registryDao = new RegistryDaoImpl(definitionsManager, dbConnectionInfoMgr, uuidPropertyName, cassandraKeyspace);
+            } else {
+                registryDao = new RegistryDaoImpl(dbProvider, definitionsManager, uuidPropertyName);
+            }
 
-                try (OSGraph osGraph = dbProvider.getOSGraph()) {
-                    Graph graph = osGraph.getGraphStore();
-                    tx = dbProvider.startTransaction(graph);
-                    entityId = registryDao.addEntity(graph, rootNode);
-                    if (commitEnabled) {
-                        dbProvider.commitTransaction(graph, tx);
-                    }
-                } finally {
-                    tx.close();
+            try (OSGraph osGraph = dbProvider.getOSGraph()) {
+                Graph graph = osGraph.getGraphStore();
+                tx = dbProvider.startTransaction(graph);
+                entityId = registryDao.addEntity(graph, rootNode);
+                if (commitEnabled) {
+                    dbProvider.commitTransaction(graph, tx);
                 }
-                // Add indices: executes only once.
-                String shardId = shard.getShardId();
-                Vertex parentVertex = entityParenter.getKnownParentVertex(vertexLabel, shardId);
-                Definition definition = definitionsManager.getDefinition(vertexLabel);
-                entityParenter.ensureIndexExists(dbProvider, parentVertex, definition, shardId);
+            } finally {
+                tx.close();
+            }
+            // Add indices: executes only once.
+            String shardId = shard.getShardId();
+            Vertex parentVertex = entityParenter.getKnownParentVertex(vertexLabel, shardId);
+            Definition definition = definitionsManager.getDefinition(vertexLabel);
+            entityParenter.ensureIndexExists(dbProvider, parentVertex, definition, shardId);
             //}
 
 
-            callAuditESActors(null,rootNode,"add", Constants.AUDIT_ACTION_ADD,entityId,vertexLabel,entityId,tx);
+            callAuditESActors(null, rootNode, "add", Constants.AUDIT_ACTION_ADD, entityId, vertexLabel, entityId, tx);
 
         }
         return entityId;

@@ -206,8 +206,7 @@ elastic:
     connection_url: ${elastic_search_connection_url:localhost:9200}
 
 os:
-  entities: inServiceTeacherTrainingFromBRC,teachingRole,inServiceTeacherTrainingFromCRC,inServiceTeacherTrainingFromDIET,inServiceTeacherTrainingFromOthers,nonTeachingAssignmentsForAcademicCalendar,basicProficiencyLevel
-
+  cassandraKeyspace: ${os_cassandraKeyspace:cassos}
 ---
 ##################################################################
 #                      TEST PROFILE                              #
@@ -348,4 +347,4 @@ elastic:
     connection_url: ${elastic_search_connection_url:localhost:9200}
 
 os:
-  entities: inServiceTeacherTrainingFromBRC,teachingRole,inServiceTeacherTrainingFromCRC,inServiceTeacherTrainingFromDIET,inServiceTeacherTrainingFromOthers,nonTeachingAssignmentsForAcademicCalendar,basicProficiencyLevel
+  cassandraKeyspace: ${os_cassandraKeyspace:cassos}

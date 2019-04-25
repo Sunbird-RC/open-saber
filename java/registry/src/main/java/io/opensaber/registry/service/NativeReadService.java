@@ -60,9 +60,6 @@ public class NativeReadService implements IReadService {
 	@Value("${database.uuidPropertyName}")
 	public String uuidPropertyName;
 
-	@Value("${os.entities}")
-	private String[] entitySet;
-
 	@Value("${os.cassandraKeyspace}")
 	private String cassandraKeyspace;
 
@@ -78,8 +75,13 @@ public class NativeReadService implements IReadService {
 	@Override
 	public JsonNode getEntity(String id, String entityType, ReadConfigurator configurator) throws Exception {
         AuditRecord auditRecord = null;
+		IRegistryDao registryDao = null;
 		DatabaseProvider dbProvider = shard.getDatabaseProvider();
-		IRegistryDao registryDao = new RegistryDaoImpl(definitionsManager, Arrays.stream(entitySet).collect(Collectors.toSet()), dbConnectionInfoMgr, cassandraKeyspace);
+		if(dbProvider.getProvider().name().equalsIgnoreCase(Constants.GraphDatabaseProvider.CASSANDRA.getName())){
+			registryDao = new RegistryDaoImpl(definitionsManager, dbConnectionInfoMgr, uuidPropertyName, cassandraKeyspace);
+		} else {
+			registryDao = new RegistryDaoImpl(dbProvider, definitionsManager, uuidPropertyName);
+		}
 		try (OSGraph osGraph = dbProvider.getOSGraph()) {
 			Graph graph = osGraph.getGraphStore();
 			Transaction tx = dbProvider.startTransaction(graph);
