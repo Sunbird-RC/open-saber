@@ -12,9 +12,15 @@ spring:
 name: dev-yaml
 enviroment: development
 
+server:
+  port: 8080
+
+cors:
+  allowedOrigin: ${cors_allowedOrigin:http://localhost:8080}
+
 perf:
   monitoring:
-    enabled: ${perf_monitoring_enabled:true}
+    enabled: ${perf_monitoring_enabled:false}
 
 registry:
   context:
