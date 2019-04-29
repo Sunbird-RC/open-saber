@@ -151,7 +151,7 @@
          "privateFields": ["nationalIdentifier", "teacherCode", "birthDate"],
          "signedFields": ["serialNum"],
          "indexFields": ["(serialNum, teacherCode)","teacherName"],
-         "uniqueIndexFields": ["teacherCode"],
+         "uniqueIndexFields": ["serialNum", "teacherCode"],
          "systemFields": ["_osCreatedAt", "_osUpdatedAt", "_osCreatedBy", "_osUpdatedBy"]
   }
 }
