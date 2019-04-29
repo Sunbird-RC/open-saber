@@ -88,7 +88,7 @@ public class RegistryController {
         responseParams.setStatus(Response.Status.SUCCESSFUL);
 
         try {
-            shardManager.activateShard(null);
+            //shardManager.activateShard(null);
 
             watch.start("RegistryController.searchEntity");
             JsonNode result = searchService.search(payload);
