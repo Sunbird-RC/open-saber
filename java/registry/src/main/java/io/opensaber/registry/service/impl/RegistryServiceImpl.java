@@ -253,6 +253,7 @@ public class RegistryServiceImpl implements RegistryService {
                 logger.debug("Updating the parent record {}", rootId);
                 // Update is for the parent entity.
                 // Nothing to do as the record has been already read.
+                rootId = id;
             }
             String parentEntityType = readNode.fields().next().getKey();
             HashMap<String, Vertex> uuidVertexMap = vr.getUuidVertexMap();
