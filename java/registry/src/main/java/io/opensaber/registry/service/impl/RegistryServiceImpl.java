@@ -323,7 +323,7 @@ public class RegistryServiceImpl implements RegistryService {
         }
         auditRecord.setAuditInfo(auditItemDetails);
 
-        boolean elasticSearchEnabled = (searchProvider.equalsIgnoreCase("io.opensaber.registry.service.ElasticSearchService"));
+        boolean elasticSearchEnabled = (searchProvider.equals("io.opensaber.registry.service.ElasticSearchService"));
         MessageProtos.Message message = MessageFactory.instance().createOSActorMessage(elasticSearchEnabled, operation,
                                 parentEntityType.toLowerCase(), entityRootId, mergedNode.get(parentEntityType), auditRecord);
         ActorCache.instance().get(Router.ROUTER_NAME).tell(message, null);
