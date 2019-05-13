@@ -59,7 +59,7 @@ database:
 
   # Providers available are NEO4J, SQLG, CASSANDRA, ORIENTDB, TINKERGRAPH (in-memory).
   # NOTE: Values given against 'shardId' must be unique
-  provider: ${database_provider:SQLG}
+  provider: ${database_provider:NEO4J}
 
   # Choose "none" as the propertyName if you don't want any shards. Otherwise
   # implement IShardAdvisor interface in your own ways. An example, SerialNumShardAdvisor
@@ -72,7 +72,7 @@ database:
   # io.opensaber.registry.sink.shard.SerialNumberShardAdvisor OR
   # absolute class name of your advisor class.
   # If this property not provided, advisor is set to DefaultShardAdvisor
-  shardAdvisorClassName: io.opensaber.registry.sink.shard.SerialNumberShardAdvisor
+  shardAdvisorClassName: io.opensaber.registry.sink.shard.DefaultShardAdvisor
 
   connectionInfo:
     -
@@ -92,14 +92,12 @@ database:
       #     * 2. Relational databases (Postgresql, HSQLDB, H2, MariaDB, MySQL, MSSQLServer)
       #     ** http://sqlg.org/docs/2.0.0-SNAPSHOT/
       #     ** Example - Postgres - jdbc:postgresql://localhost:5432/yourdb
-      #     * 3. NoSQL  databases (Cassandra-Janusgraph)
+      #     * 3. NoSQL  databases (Cassandra)
       #     ** Example - cassandra - jdbc:cassandra://localhost:9160/yourdb
-      #     * 4 Cassandra
-      #     ** Example - cassandra - 127.0.0.1:9042
-      uri: ${connectionInfo_uri:jdbc:postgresql://localhost:5432/postgres}
+      uri: ${connectionInfo_uri:bolt://localhost:7687}
 
-      username: ${connectionInfo_username:postgres}
-      password: ${connectionInfo_password:postgres}
+      username: ${connectionInfo_username:}
+      password: ${connectionInfo_password:}
 
       # Any other shard information follows...
     #-
@@ -161,9 +159,9 @@ authentication:
 
 keycloak:
   sso:
-    publicKey:  ${sunbird_sso_publickey:}
-    realm:  ${sunbird_sso_realm:}
-    auth_server_url:  ${sunbird_sso_url:}
+    publicKey:  ${sunbird_sso_publickey}
+    realm:  ${sunbird_sso_realm}
+    auth_server_url:  ${sunbird_sso_url}
 
 validation:
   enabled: ${validation_enabled:true}
