@@ -44,6 +44,8 @@ public class ElasticReadService implements IReadService {
     private IAuditService auditService;
     @Autowired
     private APIMessage apiMessage;
+    @Autowired
+    private NativeReadService nativeReadService;
 
     /**
      * This method interacts with the Elasticsearch and reads the record
@@ -66,7 +68,7 @@ public class ElasticReadService implements IReadService {
             logger.error("Exception in reading a record to ElasticSearch", e);
         }
         if (response == null) {
-            throw new RecordNotFoundException("Record with " + id + " not found");
+            return nativeReadService.getEntity(id,entityType,configurator);
         }
         result = objectMapper.convertValue(response, JsonNode.class);
         if (!configurator.isIncludeSignatures()) {
