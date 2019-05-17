@@ -45,13 +45,15 @@ public class ElasticSearchService implements ISearchService {
     @Value("${search.limit}")
     private int limit;
 
+    @Value("${database.uuidPropertyName}")
+    private String uuidPropertyName;
 
     @Override
     public JsonNode search(JsonNode inputQueryNode) throws IOException {
         logger.debug("search request body = " + inputQueryNode);
         AuditRecord auditRecord = new AuditRecord();
         List<AuditInfo> auditInfoLst = new LinkedList<>();
-        SearchQuery searchQuery = getSearchQuery(inputQueryNode, offset, limit);
+        SearchQuery searchQuery = getSearchQuery(inputQueryNode, offset, limit, uuidPropertyName);
         ObjectNode resultNode = JsonNodeFactory.instance.objectNode();
         for(String indexName : searchQuery.getEntityTypes()){
             try{

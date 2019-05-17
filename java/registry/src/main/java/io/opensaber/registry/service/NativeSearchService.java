@@ -78,7 +78,7 @@ public class NativeSearchService implements ISearchService {
 		List<Integer> transaction = new LinkedList<>();
 		List<AuditInfo> auditInfoLst = new LinkedList<>();
 		ArrayNode result = JsonNodeFactory.instance.arrayNode();
-		SearchQuery searchQuery = getSearchQuery(inputQueryNode, offset, limit);
+		SearchQuery searchQuery = getSearchQuery(inputQueryNode, offset, limit, uuidPropertyName);
 
 		if(searchQuery.getFilters().size() == 1 && searchQuery.getFilters().get(0).getOperator() == FilterOperators.queryString)
             throw new IllegalArgumentException("free-text queries not supported for native search!");
