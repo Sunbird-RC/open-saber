@@ -6,10 +6,12 @@ import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.pojos.Response;
 import io.opensaber.pojos.ResponseParams;
+import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.service.IReadService;
+import io.opensaber.registry.service.NativeReadService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.service.ISearchService;
 import io.opensaber.registry.sink.shard.Shard;
@@ -70,6 +72,8 @@ public class RegistryController {
     
     @Autowired
     private ViewTemplateManager viewTemplateManager;
+    @Autowired
+    private NativeReadService nativeReadService;
 
     /**
      * Note: Only one mime type is supported at a time. Pick up the first mime
@@ -235,14 +239,20 @@ public class RegistryController {
         configurator.setIncludeTypeAttributes(requireLDResponse);
 
         try {
-            JsonNode resultNode = readService.getEntity(recordId.getUuid(), entityType, configurator);
-			// applying view-templates to response
-			ViewTemplate viewTemplate = viewTemplateManager.getViewTemplate(apiMessage.getRequest().getRequestMapNode());
-			
-			if (viewTemplate != null) {
-				ViewTransformer vTransformer = new ViewTransformer();
-				resultNode = vTransformer.transform(viewTemplate, resultNode);
-			}
+            JsonNode resultNode = null;
+            try {
+                resultNode = readService.getEntity(recordId.getUuid(), entityType, configurator);
+            } catch (RecordNotFoundException e) {
+                //if record is not found in elasticsearch, route to native db.
+                resultNode = nativeReadService.getEntity(recordId.getUuid(), entityType, configurator);
+            }
+            // applying view-templates to response
+            ViewTemplate viewTemplate = viewTemplateManager.getViewTemplate(apiMessage.getRequest().getRequestMapNode());
+
+            if (viewTemplate != null) {
+                ViewTransformer vTransformer = new ViewTransformer();
+                resultNode = vTransformer.transform(viewTemplate, resultNode);
+            }
 
             // Transformation based on the mediaType
             Data<Object> data = new Data<>(resultNode);
