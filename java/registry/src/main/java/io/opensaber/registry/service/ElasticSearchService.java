@@ -53,7 +53,8 @@ public class ElasticSearchService implements ISearchService {
         logger.debug("search request body = " + inputQueryNode);
         AuditRecord auditRecord = new AuditRecord();
         List<AuditInfo> auditInfoLst = new LinkedList<>();
-        SearchQuery searchQuery = getSearchQuery(inputQueryNode, offset, limit, uuidPropertyName);
+        replaceKeyValue(inputQueryNode,uuidPropertyName);
+        SearchQuery searchQuery = getSearchQuery(inputQueryNode, offset, limit);
         ObjectNode resultNode = JsonNodeFactory.instance.objectNode();
         for(String indexName : searchQuery.getEntityTypes()){
             try{

@@ -1,7 +1,9 @@
 package io.opensaber.registry.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.Filter;
 import io.opensaber.pojos.FilterOperators;
 import io.opensaber.pojos.SearchQuery;
@@ -13,8 +15,11 @@ import java.util.List;
 import java.util.Map;
 
 import io.opensaber.registry.util.RecordIdentifier;
+import org.apache.tinkerpop.shaded.kryo.util.ObjectMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.json.Json;
 
 public interface ISearchService {
 
@@ -29,7 +34,7 @@ public interface ISearchService {
      * @param limit                   size of object search result hold 
      * @return
      */
-    default SearchQuery getSearchQuery(JsonNode inputQueryNode, int offset, int limit, String uuidPropertyName) {
+    default SearchQuery getSearchQuery(JsonNode inputQueryNode, int offset, int limit) {
         // get entityType array values
         JsonNode typeNode = inputQueryNode.get("entityType");
         if (!typeNode.isArray() || typeNode.size() == 0)
@@ -51,7 +56,7 @@ public interface ISearchService {
             throw new IllegalArgumentException("filters or queries missing from search request!");
 
         } else if (queryNode.isObject()) {
-            addToFilterList(null, queryNode, filterList,uuidPropertyName);
+            addToFilterList(null, queryNode, filterList);
 
         } else if (queryNode.isTextual()) {
             // adding queries free text as filter
@@ -76,7 +81,7 @@ public interface ISearchService {
      * @param inputQueryNode
      * @return
      */
-    default void addToFilterList(String path, JsonNode inputQueryNode, List<Filter> filterList, String uuidPropertyName) {
+    default void addToFilterList(String path, JsonNode inputQueryNode, List<Filter> filterList) {
         Iterator<Map.Entry<String, JsonNode>> searchFields = inputQueryNode.fields();
      
         // Iterate and get the fields.
@@ -89,7 +94,7 @@ public interface ISearchService {
                 String operatorStr = entryValMap.getKey();
                 
                 if (entryValMap.getValue().isObject()) {
-                    addToFilterList(entry.getKey(), entryVal, filterList, uuidPropertyName);
+                    addToFilterList(entry.getKey(), entryVal, filterList);
                 } else {
                     Object value = null;
                     if (entryValMap.getValue().isArray()) {
@@ -97,10 +102,6 @@ public interface ISearchService {
 
                     } else if (entryValMap.getValue().isValueNode()) {
                         value = ValueType.getValue(entryValMap.getValue());
-                        if(property.equals(uuidPropertyName)) {
-                            RecordIdentifier recordID = RecordIdentifier.parse(value.toString());
-                            value = recordID.getUuid();
-                        }
                     }
                     FilterOperators operator = FilterOperators.get(operatorStr);
                     if(operator == null)
@@ -130,6 +131,18 @@ public interface ISearchService {
                 rangeValues.add(ValueType.getValue(entryVal));
         }
         return rangeValues;
+    }
+
+    default JsonNode replaceKeyValue(JsonNode jsonNode, String uuidPropertyName) {
+        ObjectNode osidKeyValue = null;
+        if(jsonNode.findPath(uuidPropertyName).isObject()) {
+            osidKeyValue = (ObjectNode)jsonNode.get("filters").get(uuidPropertyName);
+            String nodeKey = osidKeyValue.fields().next().getKey();
+            RecordIdentifier recordID = RecordIdentifier.parse(osidKeyValue.get(nodeKey).asText());
+            ObjectMapper mapper = new ObjectMapper();
+            osidKeyValue.set(nodeKey,mapper.convertValue(recordID.getUuid(),JsonNode.class));
+        }
+        return jsonNode;
     }
 
 
