@@ -1,6 +1,8 @@
 package io.opensaber.registry.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.APIMessage;
 import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.pojos.OpenSaberInstrumentation;
@@ -74,6 +76,8 @@ public class RegistryController {
     private ViewTemplateManager viewTemplateManager;
     @Autowired
     private NativeReadService nativeReadService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     /**
      * Note: Only one mime type is supported at a time. Pick up the first mime
@@ -95,6 +99,13 @@ public class RegistryController {
             //shardManager.activateShard(null);
 
             watch.start("RegistryController.searchEntity");
+            //when osid in the filter list contains shard-id we are removing.
+            if(payload.findPath(uuidPropertyName).isObject()) {
+                ObjectNode osidKeyValue = (ObjectNode)payload.get("filters").get(uuidPropertyName);
+                String nodeKey = osidKeyValue.fields().next().getKey();
+                RecordIdentifier recordID = RecordIdentifier.parse(osidKeyValue.get(nodeKey).asText());
+                osidKeyValue.set(nodeKey,objectMapper.convertValue(recordID.getUuid(),JsonNode.class));
+            }
             JsonNode result = searchService.search(payload);
 
 			// applying view-templates to response

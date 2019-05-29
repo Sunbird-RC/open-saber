@@ -133,18 +133,5 @@ public interface ISearchService {
         return rangeValues;
     }
 
-    default JsonNode replaceKeyValue(JsonNode jsonNode, String uuidPropertyName) {
-        ObjectNode osidKeyValue = null;
-        if(jsonNode.findPath(uuidPropertyName).isObject()) {
-            osidKeyValue = (ObjectNode)jsonNode.get("filters").get(uuidPropertyName);
-            String nodeKey = osidKeyValue.fields().next().getKey();
-            RecordIdentifier recordID = RecordIdentifier.parse(osidKeyValue.get(nodeKey).asText());
-            ObjectMapper mapper = new ObjectMapper();
-            osidKeyValue.set(nodeKey,mapper.convertValue(recordID.getUuid(),JsonNode.class));
-        }
-        return jsonNode;
-    }
-
-
 
 }
