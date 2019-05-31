@@ -25,136 +25,93 @@
       ],
       "properties": {
         "id": {
-
           "type": "string",
           "$comment": "User ID"
         },
         "channel": {
-
           "type": "string",
           "$comment": "User belong to the channel"
         },
         "countryCode": {
-
           "type": "string",
           "$comment": "Country code of user"
         },
-        "createdBy": {
-
-          "type": "string",
-          "$comment": "Created By"
-        },
-        "createdDate": {
-
-          "type": "string",
-          "$comment": "Created Date"
-        },
         "currentLoginTime": {
-
           "type": "string",
           "$comment": "Current login time"
         },
         "dob": {
-
           "type": "string",
           "$comment": "Date of birth"
         },
         "email": {
-
           "type": "string",
           "$comment": "Email id"
         },
         "emailVerified": {
-
           "type": "boolean",
           "$comment": "Email Verified"
         },
         "firstName": {
-
           "type": "string",
           "$comment": "First name of user"
         },
         "lastName": {
-
           "type": "string",
           "$comment": "Last name of user"
         },
         "gender": {
-
           "type": "string",
           "$comment": "Gender of user"
         },
         "isDeleted": {
-
           "type": "boolean",
           "$comment": "User is deleted"
         },
         "lastLoginTime": {
-
           "type": "string",
           "$comment": "Last login time"
         },
         "locationIds": {
-
           "items": {
             "type": "string"
           },
           "$comment": "Location Ids"
         },
         "phone": {
-
           "type": "string",
           "$comment": "Phone number"
         },
         "phoneVerified": {
-
           "type": "boolean",
           "$comment": "Phone Verified"
         },
         "rootOrgId": {
-
           "type": "string",
           "$comment": "Root organisation ID"
         },
         "status": {
-
           "type": "integer",
           "$comment": "Status"
         },
         "tncAcceptedOn": {
-
           "type": "string",
           "format": "date-time",
           "$comment": "Transaction Accepted on"
         },
         "tncAcceptedVersion": {
-
           "type": "string",
-          "$comment": "Transction Accepted Version"
-        },
-        "updatedBy": {
-
-          "type": "string",
-          "$comment": "Updated By"
-        },
-        "updatedDate": {
-
-          "type": "string",
-          "format": "date-time",
-          "$comment": "Updated Date"
+          "$comment": "Transaction Accepted Version"
         },
         "loginId": {
-
           "type": "string",
           "$comment": "Login ID"
         },
         "userName": {
-
           "type": "string",
           "title": "User name"
         },
         "userType": {
-
           "type": "string",
           "title": "User Type"
         },
