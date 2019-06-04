@@ -1,0 +1,103 @@
+/* body {
+    padding-top: 40px;
+    padding-bottom: 40px;
+    background-color: #eee;
+  }
+  
+  .form-signin {
+    max-width: 330px;
+    padding: 15px;
+    margin: 0 auto;
+  }
+  .form-signin .form-signin-heading,
+  .form-signin .checkbox {
+    margin-bottom: 10px;
+  }
+  .form-signin .checkbox {
+    font-weight: normal;
+  }
+  .form-signin .form-control {
+    position: relative;
+    height: auto;
+    -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+    padding: 10px;
+    font-size: 16px;
+  }
+  .form-signin .form-control:focus {
+    z-index: 2;
+  }
+  .form-signin input[type="email"] {
+    margin-bottom: -1px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+  .form-signin input[type="password"] {
+    margin-bottom: 10px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  } */
+
+
+  #addHeight {
+    height: 9rem;
+  }
+  .alpaca-form-buttons-container {
+  text-align: center !important
+  }
+
+  .btn-default {
+    background-color: #007bff;
+    border-color: #007bff;
+    text-shadow: 0 -1px 0 rgba(0,0,0,.2);
+    color: white;
+  }
+
+  .btn-default:hover {
+    color: white;
+    background-color: #007bff;
+    border-color: #007bff;
+  }
+
+  .data {
+    float: right;
+position: relative;
+padding-top: 9.3rem;
+  }
+/* 
+  .form-control {
+    width: 84%;
+  }
+
+  .alpaca-form-buttons-container {
+    margin-top: 5rem !important; 
+  }
+  #fooBar {
+    margin-bottom: -2rem;
+    position: absolute;
+    float: left;
+    margin-left: -29rem;
+    width: 100%;
+    margin-top: 2rem
+
+}
+  #fooBar input {
+    width: 29rem;
+    line-height: normal;
+font-size: 14px;
+line-height: 1.42857143;
+color: #555;
+background-color: #fff;
+background-image: none;
+border: 1px solid #ccc;
+border-radius: 4px;
+-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+-webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+-o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+height: 33px;
+  } */
+
+
+  
