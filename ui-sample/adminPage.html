@@ -36,12 +36,15 @@
 
     <div class="container mt-4">
         <div class="row justify-content-center">
-            <form class="form-inline">
-                <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-            </form>
+            <div class="form-inline mb-3">
+                <input class="form-control mr-sm-2" name="search" type="search" placeholder="Search" aria-label="Search"
+                    onchange="searchByQuery(this)">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit"
+                    onclick="searchByQuery(document.getElementsByName('search')[0])">Search</button>
+            </div>
         </div>
         <div class="row">
+
             <table class="table">
                 <thead class="thead-light">
                     <tr>
@@ -52,31 +55,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- <tr>
-                        <td>Mark</td>
-                        <td>Otto</td>
-                        <td>@mdo</td>
-                        <td>Tumkur</td>
-                        <td><button type="button" class="btn btn-success">Approve</button></td>
-                    </tr>
-                    <tr>
-                        <td>Mark</td>
-                        <td>Otto</td>
-                        <td>@mdo</td>
-                        <td>Tumkur</td>
-                        <td class="text-align-center"><button type="button" class="btn btn-success">Approve
 
-                            </button></td>
-                    </tr>
-                    <tr>
-                        <td>Mark</td>
-                        <td>Otto</td>
-                        <td>@mdo</td>
-                        <td>Tumkur</td>
-                        <td><button type="button" class="btn btn-success">Approve</button></td>
-                    </tr> -->
                 </tbody>
+
             </table>
+            <h2 id="noResult"></h2>
+
         </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
@@ -94,23 +78,23 @@
 
 
     <script type="text/javascript">
-
-        $(document).ready(function () {
-            var cookedVal = {
-                "id": "open-saber.registry.search",
-                "ver": "1.0",
-                "ets": "11234",
-                "params": {
-                    "did": "",
-                    "key": "",
-                    "msgid": ""
-                },
-                "request": {
-                    "entityType": ["Person"],
-                    "filters": {
-                    }
+        var cookedVal = {
+            "id": "open-saber.registry.search",
+            "ver": "1.0",
+            "ets": "11234",
+            "params": {
+                "did": "",
+                "key": "",
+                "msgid": ""
+            },
+            "request": {
+                "entityType": ["Person"],
+                "filters": {
                 }
-            };
+            }
+        };
+        $(document).ready(function () {
+
             var row = "";
             $.ajax({
                 url: "http://localhost:8080/search",
@@ -123,15 +107,62 @@
                     console.log(msg)
                     $.each(msg.result.Person, function (index, obj) {
                         console.log(index, obj.name)
-                        row += "<tr><td>" + obj.name + "</td><td>" + obj.gender + "</td><td>" + obj.dob + "</td><td><button type='button' class='btn btn-success'>Approve</button></td></tr>";
+                        row += "<tr><td>" + obj.name + "</td><td>" + obj.gender + "</td><td>" + obj.dob + "</td><td><button type='button' class='btn btn-success' onclick=myFunction(" + JSON.stringify(obj) + ")>Approve</button></td></tr>";
 
                     });
 
                     $("table tbody").append(row);
                 }
             });
-        });
 
+
+
+
+        });
+        function myFunction(obj) {
+            console.log(obj.osid)
+            document.location.href = "./Person.html?username=" + obj.osid;
+        }
+
+        function searchByQuery(key) {
+
+            // alert("Input box changed");
+            console.log('key', key.value)
+            console.log(key)
+            var row = "";
+
+            cookedVal.request.filters = {
+                "name": { "contains": key.value }
+            }
+
+            $.ajax({
+                url: "http://localhost:8080/search",
+                type: "post",
+                dataType: "application/json",
+                data: JSON.stringify(cookedVal),
+                contentType: "application/json",
+                dataType: "json",
+                success: function (msg) {
+                    console.log(msg)
+                    if (msg.result.Person.length > 0) {
+                        document.getElementById("noResult").textContent = "";
+
+                        $.each(msg.result.Person, function (index, obj) {
+                            console.log(index, obj.name)
+                            row += "<tr><td>" + obj.name + "</td><td>" + obj.gender + "</td><td>" + obj.dob + "</td><td><button type='button' class='btn btn-success' onclick=myFunction(" + JSON.stringify(obj) + ")>Approve</button></td></tr>";
+
+                        });
+                        $("table").find("tr:not(:first)").remove();
+                        $("table tbody").append(row);
+                    }
+                    else {
+                        $("table").find("tr:not(:first)").remove();
+                        document.getElementById("noResult").textContent = "No Result Found";
+                    }
+
+                }
+            });
+        }
     </script>
 </body>
 
