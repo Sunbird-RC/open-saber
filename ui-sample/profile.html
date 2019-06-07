@@ -1,0 +1,202 @@
+<html>
+
+<head>
+    <title>
+
+    </title>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript"
+        src="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <link type="text/css" href="./css/profile.css" rel="stylesheet" />
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+</head>
+
+<body onload="myFunction()">
+    <h3 class="text-center">Profile Information</h3>
+    <div class="border">
+<div class="image">
+    <img src="http://icons.iconarchive.com/icons/graphicloads/flat-finance/256/person-icon.png" class="center" alt="Avatar">
+</div>
+<table id="row">
+    <tr>
+        <th class="header">Name</th>
+        <th class="text" id="name" >John Doe</th>
+    </tr>
+    <tr>
+        <th class="header">Email ID</th>
+        <th class="text" id="email">johndoe@abc.com</th>
+    </tr>
+    <tr>
+        <th class="header">Phone</th>
+        <th class="text" id="phone">+91 9900998811</th>
+    </tr>
+    <tr>
+        <th class="header">DOB</th>
+        <th class="text" id="dob">01 April 1980</th>
+    </tr>
+    <tr>
+        <th class="header">Gender</th>
+        <th class="text" id="gender">01 April 1980</th>
+    </tr>
+    <tr>
+        <th class="header">School</th>
+        <th class="text" id="school">GH Padalur, Padalur</th>
+    </tr>
+    <tr>
+        <th class="header">Designation</th>
+        <th class="text" id="teacher">Teacher</th>
+    </tr>
+    <tr>
+        <th class="header">District</th>
+        <th class="text" id="dist">Thiruchirapalli</th>
+    </tr>
+    <tr>
+        <th class="header">Certificate</th>
+        <th class="text" id="certificate"><a class="">abcd.JPG<span>
+            <i class="fa fa-cloud-upload" aria-hidden="true"></i></span></a></th>
+    </tr>
+    <tr><th class="header"><button class="btn btn-primary" id="button" onclick="edit(this.id)">Edit</button></th>
+        <th class="text"><button class="btn btn-primary" id="button" onclick="edit(this.id)">Cancel</button></th>
+    </tr>
+</table>
+    </div>
+    <script type = "text/javascript">
+    var readobj = [];
+    var c = [];
+function myFunction() {
+
+const params = {
+    "id": "open-saber.registry.read",
+    "ver": "1.0",
+    "ets": "11234",
+    "params": {
+        "did": "",
+        "key": "",
+        "msgid": ""
+    },
+    "request": {
+    	"Person": {
+    		"osid": "1-fc14539e-5b5c-4661-81af-ace2984644bb",
+        "includeSignatures": true
+    	}
+    }
+}
+
+        const http = new XMLHttpRequest()
+        http.open('POST', "http://localhost:8080/read")
+        http.setRequestHeader('Content-type', 'application/json')
+        http.send(JSON.stringify(params)) // Make sure to stringify
+       
+        http.onload = function() {
+            var obj = JSON.parse(http.responseText);
+            console.log('', http.responseText,obj,obj.id);
+                 for(key in obj) {
+                     if(key === "result") {
+                          readobj =  obj[key].Person;
+                          c = obj[key].Person;
+                          console.log(readobj,c);
+                         
+                         for(val in readobj){
+                            console.log(val);
+                            if( val !== "osid" && val !== "nationalIdentifier") {
+                             document.getElementById(val).innerHTML = readobj[val];
+                        //  console.log(val, document.getElementById(val).innerHTML = b[val]);
+                            }
+                         }
+                        }
+//   console.log(key ,b);
+}
+        }
+
+}
+  function edit(id) {
+      var isedited = false;
+var edit = document.getElementById(id);
+edit.innerHTML = "Update";
+for(key in c) {
+    // console.log(c);
+    if( key !== "osid" && key !== "nationalIdentifier") {
+if(document.getElementById(key).firstChild != "[object HTMLInputElement]"){
+      var content = document.getElementById(key).firstChild.nodeValue;
+      console.log(content,document.getElementById(key).innerHTML,key,c[key])
+      if(content === document.getElementById(key).innerHTML){
+        // b[key]=content;
+      isedited = !isedited;
+     }
+     if(key !== "email" && key !== "phone" && key !== "dob"){
+         console.log(key);
+        document.getElementById(key).innerHTML = "<input type = 'text' name = "+c[key]+" id = "+c[key]+" value = '" + content + "'/>";
+      document.getElementById(c[key]).onchange = function() {myFunction()};
+     }
+     if(key === "email" ) {
+         c[key]="email";
+        document.getElementById(key).innerHTML = "<input type = 'text' name = "+c[key]+" id = "+c[key]+" value = '" + content + "'/>";
+      document.getElementById(c[key]).onchange = function() {myFunction()};
+     }
+     if( key === "phone" ) {
+        c[key]="phone";
+        document.getElementById(key).innerHTML = "<input type = 'text' name = "+c[key]+" id = "+c[key]+" value = '" + content + "'/>";
+      document.getElementById(c[key]).onchange = function() {myFunction()};
+     }
+     if(key === "dob") {
+        c[key]="dob";
+        document.getElementById(key).innerHTML = "<input type = 'text' name = "+c[key]+" id = "+c[key]+" value = '" + content + "'/>";
+      document.getElementById(c[key]).onchange = function() {myFunction()};
+     }
+
+function myFunction() {
+  var x = document.getElementById(c[key]);
+  console.log(x.value);
+
+      console.log( document.getElementById(key).value,c[key],isedited);
+
+
+      if(isedited){
+        const params = {
+    "id": "open-saber.registry.update",
+    "ver": "1.0",
+    "ets": "11234",
+    "params": {
+        "did": "",
+        "key": "",
+        "msgid": ""
+    },
+    "request": {
+        "Person": {
+        	"osid": "1-3ce66c21-9a9b-4405-80d0-953ecf4ddc36",
+        	key:content
+        }
+    }
+}
+        const http = new XMLHttpRequest()
+        http.open('POST', "http://localhost:8080/update")
+        http.setRequestHeader('Content-type', 'application/json')
+        http.send(JSON.stringify(params)) // Make sure to stringify
+       
+        http.onload = function() {
+            var obj = JSON.parse(http.responseText);
+            console.log('', http.responseText,obj,obj.id);
+        }
+      
+    }
+}}
+    }
+}
+}
+    // if(document.getElementById("dist").firstChild != "[object HTMLInputElement]"){
+    //   var content = document.getElementById("dist").firstChild.nodeValue;
+    //   document.getElementById("dist").innerHTML = "<input type = 'text' name = 'txtNewInput' id = 'txtNewInput' value = '" + content + "'/>";
+    // }
+    // if(document.getElementById("certificate").firstChild != "[object HTMLInputElement]"){
+    //   var content = document.getElementById("certificate").firstChild.nodeValue;
+    //   document.getElementById("certificate").innerHTML = "<input type = 'text' name = 'txtNewInput' id = 'txtNewInput' value = '" + content + "'/>";
+    // }
+
+  
+</script>
+</body>
+
+</html>
