@@ -114,6 +114,7 @@ const params = {
 }
   function edit(id) {
       var isedited = false;
+      var temp;
 var edit = document.getElementById(id);
 edit.innerHTML = "Update";
 for(key in c) {
@@ -122,39 +123,60 @@ for(key in c) {
 if(document.getElementById(key).firstChild != "[object HTMLInputElement]"){
       var content = document.getElementById(key).firstChild.nodeValue;
       console.log(content,document.getElementById(key).innerHTML,key,c[key])
-      if(content === document.getElementById(key).innerHTML){
-        // b[key]=content;
-      isedited = !isedited;
-     }
-     if(key !== "email" && key !== "phone" && key !== "dob"){
+    //   if(content === document.getElementById(key).innerHTML){
+    //     // b[key]=content;
+    //   isedited = !isedited;
+    //  }
+    if(key !== "email" && key !== "phone" && key !== "dob"){
          console.log(key);
-        document.getElementById(key).innerHTML = "<input type = 'text' name = "+c[key]+" id = "+c[key]+" value = '" + content + "'/>";
-      document.getElementById(c[key]).onchange = function() {myFunction()};
+         edit(key);
      }
      if(key === "email" ) {
-         c[key]="email";
-        document.getElementById(key).innerHTML = "<input type = 'text' name = "+c[key]+" id = "+c[key]+" value = '" + content + "'/>";
-      document.getElementById(c[key]).onchange = function() {myFunction()};
+         console.log('email',key);
+        temp ="email";
+         edit(temp);
+        
      }
      if( key === "phone" ) {
-        c[key]="phone";
-        document.getElementById(key).innerHTML = "<input type = 'text' name = "+c[key]+" id = "+c[key]+" value = '" + content + "'/>";
-      document.getElementById(c[key]).onchange = function() {myFunction()};
+        console.log('phone',key);
+       temp="phone";
+        edit(temp);
      }
      if(key === "dob") {
-        c[key]="dob";
-        document.getElementById(key).innerHTML = "<input type = 'text' name = "+c[key]+" id = "+c[key]+" value = '" + content + "'/>";
-      document.getElementById(c[key]).onchange = function() {myFunction()};
+        console.log('dob',key);
+        temp="dob";
+        edit(temp);
      }
+function edit(key) {
+    var keys = key.toUpperCase();
+    console.log('edit',key,keys,c[key]);
+    // c[key] = c[key].toUpperCase();
+    document.getElementById(key).innerHTML = "<input type = 'text' name = "+keys+" id = "+keys+" value = '" + content + "'/>";
+      onchange(keys,key);
+}
+function onchange(keys,key) {
+    console.log('call',keys,key)
+    document.getElementById(keys).onchange = function myFunction() {
+    console.log(c[key],key);
+  var x = document.getElementById(keys);
+  console.log(x);
+// c[key]=x.value;
+if(x.value !== c[key]) {
+    
+    isedited = !isedited;
+}
+if(isedited) {
+    c[key] = x.value;
+    update(isedited);
+}
+      console.log( x.value,c[key],key,isedited);
 
-function myFunction() {
-  var x = document.getElementById(c[key]);
-  console.log(x.value);
-
-      console.log( document.getElementById(key).value,c[key],isedited);
-
-
-      if(isedited){
+    }
+   
+}
+function update(edited) {
+    console.log('fun', edited,c)
+    if(edited){
         const params = {
     "id": "open-saber.registry.update",
     "ver": "1.0",
@@ -167,10 +189,12 @@ function myFunction() {
     "request": {
         "Person": {
         	"osid": "1-3ce66c21-9a9b-4405-80d0-953ecf4ddc36",
-        	key:content
         }
     }
 }
+params.request.Person = c;
+
+console.log('param',params);
         const http = new XMLHttpRequest()
         http.open('POST', "http://localhost:8080/update")
         http.setRequestHeader('Content-type', 'application/json')
@@ -180,10 +204,10 @@ function myFunction() {
             var obj = JSON.parse(http.responseText);
             console.log('', http.responseText,obj,obj.id);
         }
-      
+}
     }
-}}
-    }
+}
+}
 }
 }
     // if(document.getElementById("dist").firstChild != "[object HTMLInputElement]"){
