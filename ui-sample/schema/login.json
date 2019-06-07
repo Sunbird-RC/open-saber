@@ -1,0 +1,27 @@
+{
+    "$id": "#/properties/SignUp",
+    "type": "object",
+    "title": "Login In",
+    "required": [
+        "username",
+        "otp"
+    ],
+    "additionalProperties": false,
+    "properties": {
+        "username": {
+            "$id": "#/properties/username",
+            "type": "string",
+            "title": "Username"
+        },
+        "otp": {
+            "$id": "#/properties/password",
+            "format": "password",
+            "title": "Enter otp"
+        }
+    },
+    "dependencies": {
+        "otp": [
+            "username"
+        ]
+    }
+}
