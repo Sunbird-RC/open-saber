@@ -1,0 +1,169 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+
+            <a class="navbar-brand" href="#">Open Saber</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText"
+                aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarText">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">
+                            English
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            <a class="dropdown-item" href="#">English</a>
+                            <a class="dropdown-item" href="#">Spanish</a>
+                        </div>
+                    </li>
+                </ul>
+
+            </div>
+        </div>
+
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="form-inline mb-3">
+                <input class="form-control mr-sm-2" name="search" type="search" placeholder="Search" aria-label="Search"
+                    onchange="searchByQuery(this)">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit"
+                    onclick="searchByQuery(document.getElementsByName('search')[0])">Search</button>
+            </div>
+        </div>
+        <div class="row">
+
+            <table class="table">
+                <thead class="thead-light">
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Gender</th>
+                        <th scope="col">DOB</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+
+            </table>
+            <h2 id="noResult"></h2>
+
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+
+
+    <script type="text/javascript">
+        var cookedVal = {
+            "id": "open-saber.registry.search",
+            "ver": "1.0",
+            "ets": "11234",
+            "params": {
+                "did": "",
+                "key": "",
+                "msgid": ""
+            },
+            "request": {
+                "entityType": ["Person"],
+                "filters": {
+                }
+            }
+        };
+        $(document).ready(function () {
+
+            var row = "";
+            $.ajax({
+                url: "http://localhost:8080/search",
+                type: "post",
+                dataType: "application/json",
+                data: JSON.stringify(cookedVal),
+                contentType: "application/json",
+                dataType: "json",
+                success: function (msg) {
+                    console.log(msg)
+                    $.each(msg.result.Person, function (index, obj) {
+                        console.log(index, obj.name)
+                        row += "<tr><td>" + obj.name + "</td><td>" + obj.gender + "</td><td>" + obj.dob + "</td><td><button type='button' class='btn btn-success' onclick=myFunction(" + JSON.stringify(obj) + ")>Approve</button></td></tr>";
+
+                    });
+
+                    $("table tbody").append(row);
+                }
+            });
+
+
+
+
+        });
+        function myFunction(obj) {
+            console.log(obj.osid)
+            document.location.href = "./Person.html?username=" + obj.osid;
+        }
+
+        function searchByQuery(key) {
+
+            // alert("Input box changed");
+            console.log('key', key.value)
+            console.log(key)
+            var row = "";
+
+            cookedVal.request.filters = {
+                "name": { "contains": key.value }
+            }
+
+            $.ajax({
+                url: "http://localhost:8080/search",
+                type: "post",
+                dataType: "application/json",
+                data: JSON.stringify(cookedVal),
+                contentType: "application/json",
+                dataType: "json",
+                success: function (msg) {
+                    console.log(msg)
+                    if (msg.result.Person.length > 0) {
+                        document.getElementById("noResult").textContent = "";
+
+                        $.each(msg.result.Person, function (index, obj) {
+                            console.log(index, obj.name)
+                            row += "<tr><td>" + obj.name + "</td><td>" + obj.gender + "</td><td>" + obj.dob + "</td><td><button type='button' class='btn btn-success' onclick=myFunction(" + JSON.stringify(obj) + ")>Approve</button></td></tr>";
+
+                        });
+                        $("table").find("tr:not(:first)").remove();
+                        $("table tbody").append(row);
+                    }
+                    else {
+                        $("table").find("tr:not(:first)").remove();
+                        document.getElementById("noResult").textContent = "No Result Found";
+                    }
+
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
