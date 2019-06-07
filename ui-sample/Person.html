@@ -2,73 +2,82 @@
 
 <head>
     <meta charset="UTF-8">
-    <link type="text/css" rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" />
+    <link type="text/css" rel="stylesheet"
+        href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" />
     <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> -->
-    <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/todc-bootstrap/3.3.2-3.3.2/css/bootstrap-theme.min.css">
-    <link rel="stylesheet" media="screen" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker-standalone.min.css"/>
-    <link type="text/css" href="./alpaca.css" rel="stylesheet" />
-   
+    <link type="text/css" rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/todc-bootstrap/3.3.2-3.3.2/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" media="screen"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker-standalone.min.css" />
+    <link type="text/css" href="./css/alpaca.css" rel="stylesheet" />
+
     <!--
         <link type="text/css" href="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.css" rel="stylesheet" />
     -->
-  
-<!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script> -->
+
+    <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script> -->
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
-    <script type="text/javascript" src="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.js"></script>
+    <script type="text/javascript"
+        src="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.js"></script>
     <script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.js"></script>
+    <script type="text/javascript"
+        src="http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js"></script>
     <script type="text/javascript" src="http://code.cloudcms.com/alpaca/1.5.24/bootstrap/alpaca.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
     <!-- bootstrap datetimepicker for date and datetime controls -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+    <script
+        src=https://cdnjs.cloudflare.com/ajax/libs/jquery-ajaxy/1.6.1/scripts/jquery.ajaxy.js></script>
 </head>
 
 <body>
     <!-- <div class="container"> -->
-        <nav class="navbar navbar-default">
-                <div class="container">
-                  <!-- Brand and toggle get grouped for better mobile display -->
-                  <div class="navbar-header">
-                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-                      <span class="sr-only">Toggle navigation</span>
-                      <span class="icon-bar"></span>
-                      <span class="icon-bar"></span>
-                      <span class="icon-bar"></span>
-                    </button>
-                    <a class="navbar-brand" href="#">Open Saber</a>
-                  </div>
-              
-                  <!-- Collect the nav links, forms, and other content for toggling -->
-                  <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                    <ul class="nav navbar-nav navbar-right">
-                      <!-- <li><a href="#">Link</a></li> -->
-                      <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"> Select Language <span class="caret"></span></a>
+    <nav class="navbar navbar-default">
+        <div class="container">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">Open Saber</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <!-- <li><a href="#">Link</a></li> -->
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                            aria-expanded="false"> English <span class="caret"></span></a>
                         <ul class="dropdown-menu">
-                          <li class="active"><a  class="dropdown-item active" href="./Person.html">English</a></li>
-                          <li ><a class="dropdown-item active" href="./Person-es.html">Spanish</a></li>
+                            <li class="active"><a class="dropdown-item active" href="./Person.html">English</a></li>
+                            <li><a class="dropdown-item active" href="./Person-es.html">Spanish</a></li>
                         </ul>
-                      </li>
-                    </ul>
-                  </div><!-- /.navbar-collapse -->
-                </div><!-- /.container-fluid -->
-              </nav>
+                    </li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div><!-- /.container-fluid -->
+    </nav>
     <!-- </div> -->
-        
+
     <div class="container" id="PersonForm"></div>
     <script type="text/javascript">
         $(document).ready(function () {
-            var cookedVal = {  "id": "",
-                                "ver": "1.0",
-                                "ets": "11234",
-                                "params": {
-                                    "did": "",
-                                    "key": "",
-                                    "msgid": ""
-                                },
-                                "request": {"Person": {}} 
-                            };
+            var cookedVal = {
+                "id": "",
+                "ver": "1.0",
+                "ets": "11234",
+                "params": {
+                    "did": "",
+                    "key": "",
+                    "msgid": ""
+                },
+                "request": { "Person": {} }
+            };
             $("#PersonForm").alpaca({
                 "schemaSource": "./schema/Person.json",
                 "options": {
@@ -83,8 +92,13 @@
                                 "extraFormats": []
                             },
                             "manualEntry": false,
-                            "fields": {}
-                        }
+                        },
+                        "photo": {
+                            "type": "file",
+                            "styled": true,
+
+                        },
+
                     },
                     "form": {
                         "attributes": {
@@ -92,26 +106,26 @@
                             "action": "http://localhost:8080/add"
                         },
                         "buttons": {
-                            "validate": {
-                                "title": "Validate",
-                                "click": function () {
-                                    this.validate(true);
-                                    this.refreshValidationState(true);
-                                    if (this.isValid(true)) {
-                                        var value = this.getValue();
-                                        alert("Perfecto!");
-                                    } else {
-                                        alert("Invalid. Please correct errors");
-                                    }
-                                }
-                            },
-                            "serialize": {
-                                "title": "Serialize",
-                                "click": function () {
-                                    var value = this.getValue();
-                                    alert(JSON.stringify(value, null, "  "));
-                                }
-                            },
+                            // "validate": {
+                            //     "title": "Validate",
+                            //     "click": function () {
+                            //         this.validate(true);
+                            //         this.refreshValidationState(true);
+                            //         if (this.isValid(true)) {
+                            //             var value = this.getValue();
+                            //             alert("Perfecto!");
+                            //         } else {
+                            //             alert("Invalid. Please correct errors");
+                            //         }
+                            //     }
+                            // },
+                            // "serialize": {
+                            //     "title": "Serialize",
+                            //     "click": function () {
+                            //         var value = this.getValue();
+                            //         alert(JSON.stringify(value, null, "  "));
+                            //     }
+                            // },
                             "add": {
                                 "title": "Add",
                                 "click": function () {
@@ -119,33 +133,42 @@
                                     cookedVal["id"] = "open-saber.registry.create";
                                     cookedVal["request"]["Person"] = value;
                                     console.log(JSON.stringify(cookedVal));
+                                    $.ajax({
 
-                                    $.ajax({url: "http://localhost:8080/add", 
-                                            type: "post", 
-                                            dataType: "application/json",
-                                            contentType: "application/json",
-                                            data: JSON.stringify(cookedVal)
-                                        }, function(data, status) {
-                                            alert("Data: " + JSON.stringify(data) + "\nStatus: " + status);
+                                        url: "http://localhost:8080/add",
+                                        type: "post",
+                                        dataType: "application/json",
+                                        contentType: "application/json",
+                                        data: JSON.stringify(cookedVal),
+                                        // success: function () {
+                                        //     alert('hello');
+                                        // },
+                                        // error: function () {
+                                        //     alert('error');
+                                        // }
+                                    }, function (data, status) {
+                                        alert("Data: " + JSON.stringify(data) + "\nStatus: " + status);
                                     });
                                 }
                             }
                         }
+                    },
+                    "view": {
+                        "parent": "bootstrap-edit-horizontal",
+                        "layout": {
+                            "template": './layout1.html',
+                            "bindings": {
+                                "name": "leftcolumn",
+                                "email": "leftcolumn",
+                                "phone": "leftcolumn",
+                                "gender": "leftcolumn",
+                                "photo": "leftcolumn",
+                                "nationalIdentifier": "rightcolumn",
+                                "dob": "leftcolumn",
+                                "hasDrivingLicense": "rightcolumn"
+                            }
+                        }
                     }
-                    // "view": {
-                    //     "parent": "bootstrap-edit",
-                    //     "layout": {
-                    //         "template": './layout1.html',
-                    //         "bindings": {
-                    //             "nationalIdentifier": "#left",
-                    //             "name": "#right",
-                    //             "gender": "#id3",
-                    //             "dob": "#id4",
-                    //             "hasDrivingLicense": "#id5",
-                    //             "photo": "#id6"
-                    //         }
-                    //     }
-                    // }
                 }
             });
         });
