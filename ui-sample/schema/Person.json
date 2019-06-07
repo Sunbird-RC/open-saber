@@ -7,7 +7,7 @@
     "name",
     "gender",
     "dob"
-  ],
+    ],
   "additionalProperties": false,
   "properties": {
     "nationalIdentifier": {
@@ -48,11 +48,11 @@
       "type": "boolean",
       "title": "Driving license is present"
     },
-    "photo": {
-      "type": "string",
-      "contentEncoding": "base64",
-      "mediaType": "image/png",
-      "title": "photo"
-    }
+    "photo":{
+      "title":"Photo",
+      "description":"Upload your profile picture.",
+      "type":"string",
+      "format":"uri"
+  }
   }
 }

@@ -10,6 +10,7 @@
     <link rel="stylesheet" media="screen"
         href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker-standalone.min.css" />
     <link type="text/css" href="./css/alpaca.css" rel="stylesheet" />
+    <link type="text/css" href="./css/person.css" rel="stylesheet"/>
 
     <!--
         <link type="text/css" href="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.css" rel="stylesheet" />
@@ -26,8 +27,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
     <!-- bootstrap datetimepicker for date and datetime controls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-ajaxy/1.6.1/scripts/jquery.ajaxy.js"></script>
     <script
-        src=https://cdnjs.cloudflare.com/ajax/libs/jquery-ajaxy/1.6.1/scripts/jquery.ajaxy.js></script>
+        src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+
+
 </head>
 
 <body>
@@ -96,6 +100,23 @@
                         "photo": {
                             "type": "file",
                             "styled": true,
+                            "type": "file",
+                            "selectionHandler": function (files, data) {
+                                var myArray = [];
+                                var file = {};
+                                for (var i = 0; i < files.length; i++) {
+                                    file = {
+                                        
+                                        'name': files[i].name,
+                                        'size': files[i].size,
+                                        'type': files[i].type,
+                                    }
+                                    //add the file obj to your array
+                                    myArray.push(file)
+                                }
+                                this.data = myArray;
+                                console.log('this.data', this.data)
+                            },
 
                         },
 
@@ -130,9 +151,13 @@
                                 "title": "Add",
                                 "click": function () {
                                     var value = this.getValue();
+                                    console.log(value, 'value')
                                     cookedVal["id"] = "open-saber.registry.create";
+                                    var photo = value.photo[0];
+                                    value.photo = photo.name
                                     cookedVal["request"]["Person"] = value;
                                     console.log(JSON.stringify(cookedVal));
+
                                     $.ajax({
 
                                         url: "http://localhost:8080/add",
@@ -152,23 +177,23 @@
                                 }
                             }
                         }
-                    },
-                    "view": {
-                        "parent": "bootstrap-edit-horizontal",
-                        "layout": {
-                            "template": './layout1.html',
-                            "bindings": {
-                                "name": "leftcolumn",
-                                "email": "leftcolumn",
-                                "phone": "leftcolumn",
-                                "gender": "leftcolumn",
-                                "photo": "leftcolumn",
-                                "nationalIdentifier": "rightcolumn",
-                                "dob": "leftcolumn",
-                                "hasDrivingLicense": "rightcolumn"
-                            }
-                        }
                     }
+                    // "view": {
+                    //     "parent": "bootstrap-edit-horizontal",
+                    //     "layout": {
+                    //         "template": './layout1.html',
+                    //         "bindings": {
+                    //             "name": "leftcolumn",
+                    //             "email": "leftcolumn",
+                    //             "phone": "leftcolumn",
+                    //             "gender": "leftcolumn",
+                    //             "photo": "leftcolumn",
+                    //             "nationalIdentifier": "rightcolumn",
+                    //             "dob": "leftcolumn",
+                    //             "hasDrivingLicense": "rightcolumn"
+                    //         }
+                    //     }
+                    // }
                 }
             });
         });
