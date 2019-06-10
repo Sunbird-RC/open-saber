@@ -49,10 +49,6 @@
             <table class="table" id="tablePerson">
                 <thead class="thead-light">
                     <tr>
-                        <!-- <th scope="col">Name</th>
-                        <th scope="col">Gender</th>
-                        <th scope="col">DOB</th>
-                        <th scope="col"></th> -->
                     </tr>
                 </thead>
                 <tbody>
@@ -117,7 +113,6 @@
                         $('table thead tr').append('<th>' + key + '</th>');
 
                     });
-
                     $('table thead tr').append('<th>' + '' + '</th>');
                     for (var i = 0; i < filteredObject.length; i++) {
                         $('table tbody').append('<tr></tr>')
@@ -150,7 +145,6 @@
                 contentType: "application/json",
                 dataType: "json",
                 success: function (msg) {
-                    console.log(msg)
                     if (msg.result.Person.length > 0) {
                         document.getElementById("noResult").textContent = "";
                         $("table").find("tr:not(:first)").remove();
