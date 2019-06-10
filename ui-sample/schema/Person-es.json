@@ -48,11 +48,17 @@
         "type": "boolean",
         "title": "Licencia de conducir esta presente"
       },
-      "photo": {
-        "type": "string",
-        "contentEncoding": "base64",
-        "mediaType": "image/png",
-        "title": "foto"
-      }
+      "isAdmin": {
+        "$id": "#/properties/hasDrivingLicense",
+        "type": "boolean",
+        "title": "Administración"
+      },
+      
+      "photo":{
+        "title": "Foto",
+        "description":"Upload your profile picture.",
+        "type":"string",
+        "format":"uri"
+    }
     }
   }

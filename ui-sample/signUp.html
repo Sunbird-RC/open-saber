@@ -62,15 +62,9 @@
           <strong>OTP </strong> sent to phone
         </div>
         <div id="SignUPForm">
-          <!-- <form>
-
-            <div class="data">
-
-              <input type="button" value="verify" onclick="add('password')" />
-              <div id="fooBar">&nbsp;</div>
-            </div>
-          </form> -->
         </div>
+        <!-- <button type="button" class="btn btn-primary">Primary</button> -->
+
       </div>
 
       <div class="col-md-4">
@@ -95,6 +89,7 @@
 
 
   <script type="text/javascript">
+
     $(".alert").hide();
 
     $(".dropdown-menu li a").click(function () {
@@ -146,6 +141,8 @@
             "buttons": {
               "validate": {
                 "title": "Validate",
+                "id": "validate",
+
                 "click": function () {
                   this.validate(true);
                   this.refreshValidationState(true);
@@ -154,6 +151,8 @@
                     generateOTP();
                   }
                   console.log('this.valida', value)
+                  document.getElementById("sign").style.display = "inline-block";
+                  document.getElementById("validate").style.display = "none";
 
                 }
               },
@@ -166,6 +165,7 @@
               // },
               "add": {
                 "title": "Sign Up ",
+                "id": "sign",
                 "click": function () {
                   this.refreshValidationState(true);
                   if (!this.isValid(true)) {
@@ -201,16 +201,18 @@
           }
         },
         "postRender": function () {
+          document.getElementById("sign").style.display = "none";
+
           // at some point in the future, refresh this bad boy
           if (phone) {
             var control = $("#field1").alpaca("get");
-            control.refresh(function () {
-              // behold, i am the callback that is fired once the refresh completes
-            });
+
+
           }
 
         },
       });
+
     });
   </script>
   <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script> -->

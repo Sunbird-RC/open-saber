@@ -48,6 +48,12 @@
       "type": "boolean",
       "title": "Driving license is present"
     },
+    "isAdmin": {
+      "$id": "#/properties/hasDrivingLicense",
+      "type": "boolean",
+      "title": "Admin"
+    },
+    
     "photo":{
       "title":"Photo",
       "description":"Upload your profile picture.",

@@ -10,7 +10,7 @@
     <link rel="stylesheet" media="screen"
         href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker-standalone.min.css" />
     <link type="text/css" href="./css/alpaca.css" rel="stylesheet" />
-    <link type="text/css" href="./css/person.css" rel="stylesheet"/>
+    <link type="text/css" href="./css/person.css" rel="stylesheet" />
 
     <!--
         <link type="text/css" href="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.css" rel="stylesheet" />
@@ -58,7 +58,7 @@
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
                             aria-expanded="false"> Spanish <span class="caret"></span></a>
                         <ul class="dropdown-menu">
-                            <li ><a class="dropdown-item active" href="./Person.html">English</a></li>
+                            <li><a class="dropdown-item active" href="./Person.html">English</a></li>
                             <li class="active"><a class="dropdown-item active" href="./Person-es.html">Spanish</a></li>
                         </ul>
                     </li>
@@ -106,7 +106,7 @@
                                 var file = {};
                                 for (var i = 0; i < files.length; i++) {
                                     file = {
-                                        
+
                                         'name': files[i].name,
                                         'size': files[i].size,
                                         'type': files[i].type,
@@ -127,26 +127,26 @@
                             "action": "http://localhost:8080/add"
                         },
                         "buttons": {
-                            // "validate": {
-                            //     "title": "Validate",
-                            //     "click": function () {
-                            //         this.validate(true);
-                            //         this.refreshValidationState(true);
-                            //         if (this.isValid(true)) {
-                            //             var value = this.getValue();
-                            //             alert("Perfecto!");
-                            //         } else {
-                            //             alert("Invalid. Please correct errors");
-                            //         }
-                            //     }
-                            // },
-                            // "serialize": {
-                            //     "title": "Serialize",
-                            //     "click": function () {
-                            //         var value = this.getValue();
-                            //         alert(JSON.stringify(value, null, "  "));
-                            //     }
-                            // },
+                            "validate": {
+                                "title": "Validate",
+                                "click": function () {
+                                    this.validate(true);
+                                    this.refreshValidationState(true);
+                                    if (this.isValid(true)) {
+                                        var value = this.getValue();
+                                        alert("Perfecto!");
+                                    } else {
+                                        alert("Invalid. Please correct errors");
+                                    }
+                                }
+                            },
+                            "serialize": {
+                                "title": "Serialize",
+                                "click": function () {
+                                    var value = this.getValue();
+                                    alert(JSON.stringify(value, null, "  "));
+                                }
+                            },
                             "add": {
                                 "title": "Add",
                                 "click": function () {
@@ -165,35 +165,34 @@
                                         dataType: "application/json",
                                         contentType: "application/json",
                                         data: JSON.stringify(cookedVal),
-                                        // success: function () {
-                                        //     alert('hello');
-                                        // },
+                                        success: function (data) {
+                                            document.location.href = "./profile.html?osid=" + data.result.Person.osid;
+
+                                        },
                                         // error: function () {
                                         //     alert('error');
                                         // }
-                                    }, function (data, status) {
-                                        alert("Data: " + JSON.stringify(data) + "\nStatus: " + status);
                                     });
                                 }
                             }
                         }
+                    },
+                    "view": {
+                        "parent": "bootstrap-edit-horizontal",
+                        "layout": {
+                            "template": './layout1.html',
+                            "bindings": {
+                                "nationalIdentifier": "leftcolumn",
+                                "gender": "leftcolumn",
+                                "name": "leftcolumn",
+                                "isAdmin": "leftcolumn",
+                                "phone": "leftcolumn",
+                                "photo": "leftcolumn",
+                                "dob": "leftcolumn",
+                                "hasDrivingLicense": "leftcolumn"
+                            }
+                        }
                     }
-                    // "view": {
-                    //     "parent": "bootstrap-edit-horizontal",
-                    //     "layout": {
-                    //         "template": './layout1.html',
-                    //         "bindings": {
-                    //             "name": "leftcolumn",
-                    //             "email": "leftcolumn",
-                    //             "phone": "leftcolumn",
-                    //             "gender": "leftcolumn",
-                    //             "photo": "leftcolumn",
-                    //             "nationalIdentifier": "rightcolumn",
-                    //             "dob": "leftcolumn",
-                    //             "hasDrivingLicense": "rightcolumn"
-                    //         }
-                    //     }
-                    // }
                 }
             });
         });
