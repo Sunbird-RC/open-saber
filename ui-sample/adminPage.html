@@ -106,22 +106,23 @@
                 success: function (msg) {
                     console.log(msg)
                     $.each(msg.result.Person, function (index, obj) {
-                        console.log(index, obj.name)
-                        row += "<tr><td>" + obj.name + "</td><td>" + obj.gender + "</td><td>" + obj.dob + "</td><td><button type='button' class='btn btn-success' onclick=myFunction(" + JSON.stringify(obj) + ")>Approve</button></td></tr>";
+                        console.log(index, obj.name,obj,JSON.stringify(obj.osid))
+if(obj.name){
+         row += "<tr><td>" + obj.name + "</td><td>" + obj.gender + "</td><td>" + obj.dob + "</td><td><button type='button' class='btn btn-success' onclick=myFunction(" + JSON.stringify(obj.osid) + ")>Approve</button></td></tr>";
+}
+else {
+    row += "<tr><td>" + obj.Name + "</td><td>" + obj.Gender + "</td><td>" + obj.Dob + "</td><td><button type='button' class='btn btn-success' onclick=myFunction(" + JSON.stringify(obj.osid) + ")>Approve</button></td></tr>";
 
+}
                     });
 
                     $("table tbody").append(row);
                 }
             });
-
-
-
-
         });
         function myFunction(obj) {
-            console.log(obj.osid)
-            document.location.href = "./Person.html?username=" + obj.osid;
+            console.log(obj)
+            document.location.href = "./profile.html?username=" + obj;
         }
 
         function searchByQuery(key) {
