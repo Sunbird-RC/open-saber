@@ -7,7 +7,7 @@
     "name",
     "gender",
     "dob"
-  ],
+    ],
   "additionalProperties": false,
   "properties": {
     "nationalIdentifier": {
@@ -25,34 +25,53 @@
     },
     "gender": {
       "$id": "#/properties/gender",
-      "type": "string",
-      "enum": [
-        "MALE",
-        "FEMALE",
-        "OTHER"
-      ],
-      "title": "Gender"
+      "$ref": "Common.json#/definitions/Gender"
     },
     "dob": {
       "$id": "#/properties/birthDate",
+      "$ref": "Common.json#/definitions/Date"
+    },
+    "email": {
+      "$id": "email",
       "type": "string",
-      "format": "date",
-      "$comment": "YYYY-MM-DD format",
-      "examples": [
-        "1990-12-01"
-      ],
-      "title": "Date of birth"
+      "title": "Email ID"
+    },
+    "school": {
+      "$id": "school",
+      "type": "string",
+      "title": "School"
+    },
+    "phone": {
+      "$id": "phone",
+      "type": "string",
+      "title": "Phone"
+    },
+    "dist": {
+      "$id": "dist",
+      "type": "string",
+      "title": "District"
+    },
+    "certificate": {
+      "$id": "certificate",
+      "type": "string",
+      "title": "Certificate"
     },
     "hasDrivingLicense": {
       "$id": "#/properties/hasDrivingLicense",
       "type": "boolean",
       "title": "Driving license is present"
     },
-    "photo": {
-      "type": "string",
-      "contentEncoding": "base64",
-      "mediaType": "image/png",
-      "title": "photo"
-    }
+    "isAdmin": {
+      "$id": "#/properties/hasDrivingLicense",
+      "type": "boolean",
+      "title": "Admin"
+    },
+    
+    "photo":{
+      "title":"Photo",
+      "description":"Upload your profile picture.",
+      "type":"string",
+      "format":"uri"
+  }
   }
 }

@@ -15,7 +15,7 @@ img {
     font-family: Open Sans;
     font-size: 17px;
     padding-bottom: 1rem;
-    width: 15rem;
+    width: 16rem;
 }
 table {
     width: 141%;
@@ -54,4 +54,21 @@ input {
 .outline:hover {
     color: #007bff !important;
     background-color: white !important;
+}
+#style {
+    color: red; 
+    font-size: 14px;
+    width:146px;
+}
+.outline1{
+    color:white !important;
+    background-color: #28a745!important;
+    font-size: 14px;
+    line-height:0.5;
+}
+.outline1:hover {
+    color: white !important;
+    background-color: #28a745!important;
+    font-size: 14px;
+    line-height:0.5;
 }

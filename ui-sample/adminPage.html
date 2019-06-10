@@ -122,14 +122,10 @@ else {
         });
         function myFunction(obj) {
             console.log(obj)
-            document.location.href = "./profile.html?username=" + obj;
+            document.location.href = "./profile.html?osid=" + obj;
         }
 
         function searchByQuery(key) {
-
-            // alert("Input box changed");
-            console.log('key', key.value)
-            console.log(key)
             var row = "";
 
             cookedVal.request.filters = {
@@ -149,7 +145,6 @@ else {
                         document.getElementById("noResult").textContent = "";
 
                         $.each(msg.result.Person, function (index, obj) {
-                            console.log(index, obj.name)
                             row += "<tr><td>" + obj.name + "</td><td>" + obj.gender + "</td><td>" + obj.dob + "</td><td><button type='button' class='btn btn-success' onclick=myFunction(" + JSON.stringify(obj) + ")>Approve</button></td></tr>";
 
                         });
