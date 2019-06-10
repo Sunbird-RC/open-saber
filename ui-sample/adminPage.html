@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="./css//admin.css">
 </head>
 
 <body>
@@ -43,15 +44,15 @@
                     onclick="searchByQuery(document.getElementsByName('search')[0])">Search</button>
             </div>
         </div>
-        <div class="row">
+        <div class="row" style="overflow-x:auto;">
 
-            <table class="table">
+            <table class="table" id="tablePerson">
                 <thead class="thead-light">
                     <tr>
-                        <th scope="col">Name</th>
+                        <!-- <th scope="col">Name</th>
                         <th scope="col">Gender</th>
                         <th scope="col">DOB</th>
-                        <th scope="col"></th>
+                        <th scope="col"></th> -->
                     </tr>
                 </thead>
                 <tbody>
@@ -75,6 +76,9 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.core.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
+
 
 
     <script type="text/javascript">
@@ -94,8 +98,6 @@
             }
         };
         $(document).ready(function () {
-
-            var row = "";
             $.ajax({
                 url: "http://localhost:8080/search",
                 type: "post",
@@ -104,20 +106,31 @@
                 contentType: "application/json",
                 dataType: "json",
                 success: function (msg) {
-                    console.log(msg)
-                    $.each(msg.result.Person, function (index, obj) {
-                        console.log(index, obj.name)
-                        row += "<tr><td>" + obj.name + "</td><td>" + obj.gender + "</td><td>" + obj.dob + "</td><td><button type='button' class='btn btn-success' onclick=myFunction(" + JSON.stringify(obj) + ")>Approve</button></td></tr>";
+                    filteredObject = []
+                    _.map(msg.result.Person, (person) => {
+                        filteredObject.push(_.omit(person, ['@type', '_osUpdatedBy', '_osCreatedAt', '_osCreatedBy', '_osCreatedAt', '_osUpdatedAt']))
+
+                    });
+                    var colHeader = Object.keys(filteredObject[0]);
+
+                    _.forEach(filteredObject[0], (value, key) => {
+                        $('table thead tr').append('<th>' + key + '</th>');
 
                     });
 
-                    $("table tbody").append(row);
+                    $('table thead tr').append('<th>' + '' + '</th>');
+                    for (var i = 0; i < filteredObject.length; i++) {
+                        $('table tbody').append('<tr></tr>')
+                        var row = "";
+                        for (var j = 0; j < colHeader.length; j++) {
+                            $('table tbody tr').last().append('<td>' + filteredObject[i][colHeader[j]] + '</td>');
+                        }
+                        row = "<td><button type='button' class='btn btn-success' onclick=myFunction(" + JSON.stringify(filteredObject[i]) + ")>Approve</button></td>";
+
+                        $('table tbody tr').last().append(row);
+                    }
                 }
             });
-
-
-
-
         });
         function myFunction(obj) {
             console.log(obj.osid)
@@ -125,8 +138,6 @@
         }
 
         function searchByQuery(key) {
-            var row = "";
-
             cookedVal.request.filters = {
                 "name": { "contains": key.value }
             }
@@ -142,13 +153,22 @@
                     console.log(msg)
                     if (msg.result.Person.length > 0) {
                         document.getElementById("noResult").textContent = "";
-
-                        $.each(msg.result.Person, function (index, obj) {
-                            row += "<tr><td>" + obj.name + "</td><td>" + obj.gender + "</td><td>" + obj.dob + "</td><td><button type='button' class='btn btn-success' onclick=myFunction(" + JSON.stringify(obj) + ")>Approve</button></td></tr>";
+                        $("table").find("tr:not(:first)").remove();
+                        filteredObject = []
+                        _.map(msg.result.Person, (person) => {
+                            filteredObject.push(_.omit(person, ['@type', '_osUpdatedBy', '_osCreatedAt', '_osCreatedBy', '_osCreatedAt', '_osUpdatedAt']))
 
                         });
-                        $("table").find("tr:not(:first)").remove();
-                        $("table tbody").append(row);
+                        var colHeader = Object.keys(filteredObject[0]);
+                        for (var i = 0; i < filteredObject.length; i++) {
+                            $('table tbody').append('<tr></tr>')
+                            var row = "";
+                            for (var j = 0; j < colHeader.length; j++) {
+                                $('table tbody tr').last().append('<td>' + filteredObject[i][colHeader[j]] + '</td>');
+                            }
+                            row = "<td><button type='button' class='btn btn-success' onclick=myFunction(" + JSON.stringify(filteredObject[i]) + ")>Approve</button></td>";
+                            $('table tbody tr').last().append(row);
+                        }
                     }
                     else {
                         $("table").find("tr:not(:first)").remove();
