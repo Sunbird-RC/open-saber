@@ -160,13 +160,6 @@
 
                 }
               },
-              // "serialize": {
-              //     "title": "Serialize",
-              //     "click": function () {
-              //         var value = this.getValue();
-              //         alert(JSON.stringify(value, null, "  "));
-              //     }
-              // },
               "add": {
                 "title": "Log In",
                 "id": "logIn",
@@ -177,15 +170,10 @@
                     return;
                   }
                   var value = this.getValue();
-                  console.log(value.otp, 'hi', getOtp)
                   cookedVal["id"] = "open-saber.registry.create";
                   cookedVal["request"]["Person"] = value;
-                  console.log(JSON.stringify(cookedVal));
-
                   if (value.otp === getOtp) {
                     document.location.href = "./Person.html";
-
-                    console.log('hii')
                     $.ajax({
                       url: "http://localhost:8080/add",
                       type: "post",

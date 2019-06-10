@@ -16,7 +16,6 @@
 </head>
 
 <body>
-  <!-- <div class="container"> -->
   <nav class="navbar navbar-default">
     <div class="container">
       <!-- Brand and toggle get grouped for better mobile display -->
@@ -34,7 +33,6 @@
       <!-- Collect the nav links, forms, and other content for toggling -->
       <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
         <ul class="nav navbar-nav navbar-right">
-          <!-- <li><a href="#">Link</a></li> -->
           <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
               aria-expanded="false"> English <span class="caret"></span></a>
@@ -46,7 +44,6 @@
       </div><!-- /.navbar-collapse -->
     </div><!-- /.container-fluid -->
   </nav>
-  <!-- </div> -->
 
   <div class="container">
     <div class="row" id="addHeight">
@@ -59,12 +56,10 @@
         <div class="alert alert-success alert-dismissible" role="alert">
           <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
               aria-hidden="true">&times;</span></button>
-          <strong>OTP </strong> sent to phone
+          <strong>OTP </strong> sent to your phone
         </div>
         <div id="SignUPForm">
         </div>
-        <!-- <button type="button" class="btn btn-primary">Primary</button> -->
-
       </div>
 
       <div class="col-md-4">
@@ -101,9 +96,6 @@
     var phone = '';
     let getOtp = ''
     function generateOTP() {
-
-      // Declare a digits variable  
-      // which stores all digits 
       var digits = '0123456789';
       let OTP = '';
       for (let i = 0; i < 6; i++) {
@@ -132,7 +124,7 @@
         "schemaSource": "./schema/signIn.json",
         "options": {
 
-          "validate": true,
+          "validate": false,
           "form": {
             "attributes": {
               "method": "post",
@@ -149,20 +141,14 @@
                   var value = this.getValue();
                   if (value['phone']) {
                     generateOTP();
-                  }
-                  console.log('this.valida', value)
                   document.getElementById("sign").style.display = "inline-block";
                   document.getElementById("validate").style.display = "none";
+                  }
+                  console.log('this.valida', value)
+                
 
                 }
               },
-              // "serialize": {
-              //     "title": "Serialize",
-              //     "click": function () {
-              //         var value = this.getValue();
-              //         alert(JSON.stringify(value, null, "  "));
-              //     }
-              // },
               "add": {
                 "title": "Sign Up ",
                 "id": "sign",
@@ -202,21 +188,12 @@
         },
         "postRender": function () {
           document.getElementById("sign").style.display = "none";
-
-          // at some point in the future, refresh this bad boy
           if (phone) {
             var control = $("#field1").alpaca("get");
-
-
           }
-
         },
       });
-
     });
   </script>
-  <!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script> -->
-
 </body>
-
 </html>

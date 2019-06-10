@@ -1,5 +1,4 @@
 <html>
-
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
@@ -56,7 +55,9 @@
                 </tbody>
 
             </table>
-            <h2 id="noResult"></h2>
+            <div class="col-md-12">
+                <h2 id="noResult"></h2>
+            </div>
 
         </div>
     </div>
@@ -72,10 +73,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.core.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
-
-
 
     <script type="text/javascript">
         var cookedVal = {
@@ -108,12 +106,11 @@
 
                     });
                     var colHeader = Object.keys(filteredObject[0]);
-
                     _.forEach(filteredObject[0], (value, key) => {
                         $('table thead tr').append('<th>' + key + '</th>');
-
                     });
                     $('table thead tr').append('<th>' + '' + '</th>');
+                    
                     for (var i = 0; i < filteredObject.length; i++) {
                         $('table tbody').append('<tr></tr>')
                         var row = "";
@@ -136,7 +133,6 @@
             cookedVal.request.filters = {
                 "name": { "contains": key.value }
             }
-
             $.ajax({
                 url: "http://localhost:8080/search",
                 type: "post",
@@ -150,10 +146,11 @@
                         $("table").find("tr:not(:first)").remove();
                         filteredObject = []
                         _.map(msg.result.Person, (person) => {
-                            filteredObject.push(_.omit(person, ['@type', '_osUpdatedBy', '_osCreatedAt', '_osCreatedBy', '_osCreatedAt', '_osUpdatedAt']))
-
+                            filteredObject.push(_.omit(person, ['@type', '_osUpdatedBy', '_osCreatedAt', '_osCreatedBy', '_osCreatedAt', '_osUpdatedAt']));
                         });
                         var colHeader = Object.keys(filteredObject[0]);
+                        $('table thead tr').append('<th>' + '' + '</th>');
+                       
                         for (var i = 0; i < filteredObject.length; i++) {
                             $('table tbody').append('<tr></tr>')
                             var row = "";
