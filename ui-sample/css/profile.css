@@ -29,7 +29,7 @@ input {
 }
 .text {
     text-align: initial;
-    padding-left: 3rem;
+    /* padding-left: 3rem; */
     font-weight: unset;
     padding-bottom: 1rem;
         font-family: Open Sans;

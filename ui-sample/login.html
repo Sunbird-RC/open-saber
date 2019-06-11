@@ -147,6 +147,7 @@
             "buttons": {
               "validate": {
                 "title": "Validate",
+                "id": "validate",
                 "click": function () {
                   this.validate(true);
                   this.refreshValidationState(true);
@@ -154,19 +155,14 @@
                   if (value['username']) {
                     generateOTP();
                   }
-                  console.log('this.valida', value)
+                  document.getElementById("logIn").style.display = "inline-block";
+                  document.getElementById("validate").style.display = "none";
 
                 }
               },
-              // "serialize": {
-              //     "title": "Serialize",
-              //     "click": function () {
-              //         var value = this.getValue();
-              //         alert(JSON.stringify(value, null, "  "));
-              //     }
-              // },
               "add": {
-                "title": "Sign Up",
+                "title": "Log In",
+                "id": "logIn",
                 "click": function () {
                   this.refreshValidationState(true);
                   if (!this.isValid(true)) {
@@ -174,15 +170,10 @@
                     return;
                   }
                   var value = this.getValue();
-                  console.log(value.otp, 'hi', getOtp)
                   cookedVal["id"] = "open-saber.registry.create";
                   cookedVal["request"]["Person"] = value;
-                  console.log(JSON.stringify(cookedVal));
-
                   if (value.otp === getOtp) {
                     document.location.href = "./Person.html";
-
-                    console.log('hii')
                     $.ajax({
                       url: "http://localhost:8080/add",
                       type: "post",
@@ -202,14 +193,10 @@
           }
         },
         "postRender": function () {
-          // at some point in the future, refresh this bad boy
-          if (phone) {
-            var control = $("#field1").alpaca("get");
-            control.refresh(function () {
-              // behold, i am the callback that is fired once the refresh completes
-            });
-          }
+          document.getElementById("logIn").style.display = "none";
 
+          // at some point in the future, refresh this bad boy
+      
         },
       });
     });

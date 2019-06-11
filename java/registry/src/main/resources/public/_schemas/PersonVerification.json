@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "PersonVerified": {
+      "$ref": "#/definitions/PersonVerified"
+    }
+  },
+  "title":"PersonVerified",
+  "required": [
+    "PersonVerified"
+  ],
+  "definitions": {
+    "PersonVerified": {
+      "$id": "#/properties/PersonVerified",
+      "type": "object",
+      "title": "The PersonVerified Schema",
+      "required": [
+        "phoneVerified",
+        "emailVerified",
+        "certificateVerified",
+        "personId"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "signatures": {
+          "$id": "#/properties/signatures",
+          "type": "array",
+          "items": {
+            "$ref": "Signature.json#/definitions/Signature"
+          },
+          "$comment": "Placeholder for all verifiable claims"
+        },
+        "photo": {
+          "type": "string",
+          "contentEncoding": "base64",
+          "mediaType": "image/png"
+        },
+        "nationalIdentifier": {
+          "$id": "#/properties/nationalIdentifier",
+          "type": "string",
+          "$comment": "Nationality"
+        },
+        "emailVerified": {
+          "$id": "emailVerified",
+          "type": "boolean",
+          "title": "Email ID"
+        },
+        "phoneVerified": {
+          "$id": "phoneVerified",
+          "type": "boolean",
+          "title": "Phone"
+        },
+        "certificateVerified": {
+          "$id": "certificateVerified",
+          "type": "boolean",
+          "title": "Certificate"
+        },
+        "personId": {
+          "$id": "personId",
+          "type": "string",
+          "title": "personId"
+        },
+        "nameVerified": {
+          "$id": "#/properties/nameVerified",
+          "type": "boolean",
+          "title": "Full name"
+        },
+        "genderVerified": {
+          "$id": "#/properties/genderVerified",
+          "$ref": "Common.json#/definitions/Gender"
+        },
+        "dobVerified": {
+          "$id": "#/properties/birthDate",
+          "$ref": "Common.json#/definitions/Date"
+        },
+        "schoolVerified": {
+          "$id": "schoolVerified",
+          "type": "boolean",
+          "title": "School"
+        },
+        "distVerified": {
+          "$id": "distVerified",
+          "type": "boolean",
+          "title": "District"
+        },
+        "hasDrivingLicense": {
+          "$id": "#/properties/hasDrivingLicense",
+          "type": "boolean",
+          "title": "Driving license is present"
+        },
+        "vehicles": {
+          "$id": "#/properties/vehicles",
+          "type": "array",
+          "items": {
+            "$ref": "Vehicle.json#/definitions/Vehicle"
+          }
+        }
+      }
+    }
+  }
+}
