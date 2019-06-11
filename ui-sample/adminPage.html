@@ -101,7 +101,8 @@
                         for (var j = 0; j < colHeader.length; j++) {
                             $('table tbody tr').last().append('<td>' + filteredObject[i][colHeader[j]] + '</td>');
                         }
-                        row = "<td><button type='button' class='btn btn-success' onclick=myFunction(" + filteredObject[i] + ")>Approve</button></td>";
+                        console.log(JSON.stringify(filteredObject[i].osid))
+                        row = "<td><button type='button' class='btn btn-primary' onclick=myFunction(" + JSON.stringify(filteredObject[i].osid) + ")>Approve</button></td>";
 
                         $('table tbody tr').last().append(row);
                     }
@@ -110,7 +111,7 @@
         });
         function myFunction(obj) {
             console.log(obj)
-            // document.location.href x= "./profile.html?osid=" + obj.osid;
+            document.location.href = "./profile.html?osid=" + obj;
         }
 
         function searchByQuery(key) {
