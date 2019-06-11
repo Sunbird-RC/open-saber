@@ -150,16 +150,19 @@
                                 val = val.toUpperCase();
                                 // if (head !== 'osid' && head !== 'nationalIdentifier') {
                                 var temprow;
-                                temprow = "<tr><th id=" + val + " class='header pr-5' name=" + val + ">" + head.charAt(0).toUpperCase() + head.slice(1) + "</th><td id=" + head + " class='text' name=" + head + " style='width:216px'>" + value + "</td >";
+                                // var rowid = val.toLowerCase();
+                                temprow = "<tr><th id=" + val + " class='header pr-5' name=" + val + ">" + head.charAt(0).toUpperCase() + head.slice(1) + "</th><td id=" + head + " class='text' name=" + head + "  width='15% !importent'>" + value + "</td >";
                                 person = head + 'Verified';
                                 personobj = person.replace(/['"]+/g, '');
+                               
+
                                 if (checkVerification.hasOwnProperty(personobj) && checkVerification[head + 'Verified']) {
                                     var verifiedrow = "<td class='text pl-3' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>validated</td></tr>";
-                                    row += temprow + verifiedrow;
+                                    row += temprow + verifiedrow ;
                                 }
                                 else {
                                     var validaterow = "<td class='text pl-3' style='color:#007bff;font-size: 14px;'><i class='fa fa-exclamation-circle pr-1' style='color: #007bff;font-size: small !important;'></i>Pending validation</td></tr>";
-                                    row += temprow + validaterow;
+                                    row += temprow + validaterow ;
                                 }
 
                                 //  if (head === 'School' || head === 'school' || head === 'Designation' || head === 'designation' || head === 'dist' || head === 'Dist') {
@@ -175,8 +178,19 @@
                                 // }
                                 //
                                 // }
+                              
                             }
+                            
                             $("table tbody").append(row);
+                          
+                                var element = document.getElementsByTagName("tr");
+for(var i=0;i< element.length;i++) {
+    var newElement = document.createElement('br');
+    console.log('i',i,element[i].parentElement,element[i].nextSibling)
+var elementParent = element[i].parentNode;
+elementParent.insertBefore(newElement, element[i].nextSibling);
+}
+                            
                         }
                     }
                 }
