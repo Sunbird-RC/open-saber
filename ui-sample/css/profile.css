@@ -14,7 +14,8 @@ img {
     text-align: end;
     font-family: Open Sans;
     font-size: 17px;
-    padding-bottom: 1rem;
+    /* padding-bottom: 1rem;
+    padding-top: 1rem; */
     width: 16rem;
 }
 table {
@@ -31,7 +32,7 @@ input {
     text-align: initial;
     /* padding-left: 3rem; */
     font-weight: unset;
-    padding-bottom: 1rem;
+    /* padding-bottom: 1rem; */
         font-family: Open Sans;
     font-size: 17px;
     /* width: 216px; */
@@ -72,3 +73,6 @@ input {
     font-size: 14px;
     line-height:0.5;
 }
+tr.break td {
+    height: 10px;
+  }

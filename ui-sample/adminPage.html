@@ -18,9 +18,9 @@
     <div class="container mt-4">
         <div class="row justify-content-center">
             <div class="form-inline mb-3">
-                <input class="form-control mr-sm-2" name="search" type="search" placeholder="Search by name" aria-label="Search"
+                <input class="form-control mr-sm-2" name="search" type="search" placeholder="Search By Name" aria-label="Search"
                     onchange="searchByQuery(this)">
-                <button class="btn btn-outline-primary my-2 my-sm-0" type="submit"
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit"
                     onclick="searchByQuery(document.getElementsByName('search')[0])">Search</button>
             </div>
         </div>
@@ -88,6 +88,7 @@
                 contentType: "application/json",
                 dataType: "json",
                 success: function (msg) {
+                    console.log(msg)
                     filteredObject = []
                     _.map(msg.result.Person, (person) => {
                         filteredObject.push(_.omit(person, ['@type', '_osUpdatedBy', '_osCreatedAt', '_osCreatedBy', '_osCreatedAt', '_osUpdatedAt']))
@@ -105,7 +106,8 @@
                         for (var j = 0; j < colHeader.length; j++) {
                             $('table tbody tr').last().append('<td>' + filteredObject[i][colHeader[j]] + '</td>');
                         }
-                        row = "<td><button type='button' class='btn btn-primary' onclick=myFunction(" + JSON.stringify(filteredObject[i]) + ")>Approve</button></td>";
+                        console.log(JSON.stringify(filteredObject[i].osid))
+                        row = "<td><button type='button' class='btn btn-primary' onclick=myFunction(" + JSON.stringify(filteredObject[i].osid) + ")>Approve</button></td>";
 
                         $('table tbody tr').last().append(row);
                     }
@@ -145,7 +147,7 @@
                             for (var j = 0; j < colHeader.length; j++) {
                                 $('table tbody tr').last().append('<td>' + filteredObject[i][colHeader[j]] + '</td>');
                             }
-                            row = "<td><button type='button' class='btn btn-primary' onclick=myFunction(" + JSON.stringify(filteredObject[i]) + ")>Approve</button></td>";
+                            row = "<td><button type='button' class='btn btn-success' onclick=myFunction(" + JSON.stringify(filteredObject[i]) + ")>Approve</button></td>";
                             $('table tbody tr').last().append(row);
                         }
                     }
