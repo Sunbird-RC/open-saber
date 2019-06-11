@@ -59,6 +59,11 @@
       "description":"Upload your profile picture.",
       "type":"string",
       "format":"uri"
+  },
+  "phone": {
+    "$id": "#/properties/phone",
+    "type": "string",
+    "title": "phone"
   }
   }
 }
