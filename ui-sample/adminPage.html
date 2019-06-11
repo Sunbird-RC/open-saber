@@ -70,7 +70,8 @@
             "request": {
                 "entityType": ["Person"],
                 "filters": {
-                }
+                },
+                "viewTemplateId": "Person_SearchResult.json"
             }
         };
         $(document).ready(function () {
@@ -101,8 +102,8 @@
                         for (var j = 0; j < colHeader.length; j++) {
                             $('table tbody tr').last().append('<td>' + filteredObject[i][colHeader[j]] + '</td>');
                         }
-                        console.log(JSON.stringify(filteredObject[i].osid))
-                        row = "<td><button type='button' class='btn btn-primary' onclick=myFunction(" + JSON.stringify(filteredObject[i].osid) + ")>Approve</button></td>";
+                        console.log(JSON.stringify(filteredObject[i].UniqueId))
+                        row = "<td><button type='button' class='btn btn-primary' onclick=myFunction(" + JSON.stringify(filteredObject[i].UniqueId) + ")>Approve</button></td>";
 
                         $('table tbody tr').last().append(row);
                     }
@@ -110,6 +111,35 @@
             });
         });
         function myFunction(obj) {
+var param = {
+    "id": "open-saber.registry.update",
+    "ver": "1.0",
+    "ets": "11234",
+    "params": {
+        "did": "",
+        "key": "",
+        "msgid": ""
+    },
+    "request": {
+        "Person": {
+           "osid":obj,
+           "isAdmin":"true"
+        
+        }
+    }
+}
+
+            $.ajax({
+                url: "http://localhost:8080/update",
+                type: "post",
+                dataType: "application/json",
+                data: JSON.stringify(param),
+                contentType: "application/json",
+                dataType: "json",
+                success: function (msg) {
+                    console.log('isadmin',msg);
+                }
+            });
             console.log(obj)
             document.location.href = "./profile.html?osid=" + obj;
         }

@@ -11,11 +11,11 @@
 </head>
 
 <body onload="myFunction()">
-        <div id ="navbar"> </div>    
+    <div id="navbar"> </div>
     <h3 class="text-center mt-2 mb-3">Profile Information</h3>
     <div class="border">
         <div class="image mb-2">
-            <img src="http://icons.iconarchive.com/icons/graphicloads/flat-finance/256/person-icon.png" class="center"
+            <img src="http://icons.iconarchive.com/icons/graphicloads/flat-finance/256/person-icon.png" class="center mt-3"
                 alt="Avatar">
         </div>
         <table id="row">
@@ -50,16 +50,73 @@
             var tempobj;
             var readobj = [];
             var c = [];
+            var admin;
             var checkVerification;
             $(document).ready(function () {
                 $('[data-toggle="tooltip"]').tooltip();
                 $('#navbar').load("navbar.html");
             });
             function myFunction() {
+            fileToBase64("logo.png", "../logo.png").then(result => {
+ console.log(result);
+});
+                // Convert file to base64 string
+function fileToBase64 (filename, filepath)  {
+  return new Promise(resolve => {
+    var file = new File([filename], filepath);
+    var reader = new FileReader();
+    // Read file content on file loaded event
+    reader.onload = function(event) {
+      resolve(event.target.result);
+    };
+    
+    // Convert data to base64 
+    reader.readAsDataURL(file);
+  });
+};
+// Example call:
+
+
+                // file = document.querySelector('#files > input[type="file"]').files[0]
+                // console.log(file)
                 var query = window.location.search.substring(1);
                 var qs = query.split('=');
-                const reqParam = {
+                searchVerificationDetails();
+                readAdminStatus(qs);
+                function searchVerificationDetails() {
 
+                    const reqParam = {
+
+                        "id": "open-saber.registry.search",
+                        "ver": "1.0",
+                        "ets": "11234",
+                        "params": {
+                            "did": "",
+                            "key": "",
+                            "msgid": ""
+                        },
+                        "request": {
+                            "entityType": ["PersonVerified"],
+
+                            "filters": {
+                                "personId": { "contains": qs[1] }
+                            }
+                        }
+                    }
+                    const https = new XMLHttpRequest()
+                    https.open('POST', "http://localhost:8080/search")
+                    https.setRequestHeader('Content-type', 'application/json')
+                    https.send(JSON.stringify(reqParam)) // Make sure to stringify
+
+                    https.onload = function () {
+                        checkVerification = JSON.parse(https.responseText);
+
+                        checkVerification = checkVerification.result.PersonVerified[0];
+                        console.log(checkVerification)
+                    }
+                }
+
+                const params = {
                     "id": "open-saber.registry.search",
                     "ver": "1.0",
                     "ets": "11234",
@@ -69,103 +126,75 @@
                         "msgid": ""
                     },
                     "request": {
-                        "entityType": ["PersonVerified"],
+                        "entityType": ["Person"],
 
                         "filters": {
-                            "personId": { "contains": qs[1] }
-                        }
-                    }
-                }
-                const https = new XMLHttpRequest()
-                https.open('POST', "http://localhost:8080/search")
-                https.setRequestHeader('Content-type', 'application/json')
-                https.send(JSON.stringify(reqParam)) // Make sure to stringify
-
-                https.onload = function () {
-                    checkVerification = JSON.parse(https.responseText);
-                    console.log(checkVerification)
-                    checkVerification = checkVerification.result.PersonVerified[0];
-                }
-                const params = {
-                    "id": "open-saber.registry.read",
-                    "ver": "1.0",
-                    "ets": "11234",
-                    "params": {
-                        "did": "",
-                        "key": "",
-                        "msgid": ""
-                    },
-                    "request": {
-                        "Person": {
-                            "osid": qs[1],
-                            "includeSignatures": true
-                        }
+                            "osid": { "eq": qs[1].slice(2, qs[1].length) }
+                        },
+                        "viewTemplateId": "Person_Default.json"
                     }
                 }
 
                 const http = new XMLHttpRequest()
-                http.open('POST', "http://localhost:8080/read")
+                http.open('POST', "http://localhost:8080/search")
                 http.setRequestHeader('Content-type', 'application/json')
                 http.send(JSON.stringify(params)) // Make sure to stringify
                 var row = "", col = "";
                 http.onload = function () {
                     var obj = JSON.parse(http.responseText);
+                    console.log(obj, admin)
                     for (key in obj) {
                         if (key === "result") {
-                            readobj = obj[key].Person;
-                            c = obj[key].Person;
+                            readobj = obj[key].Person[0];
+                            c = obj[key].Person[0];
                             for (var head in c) {
                                 document.getElementById('button1').style.display = 'none';
-                                if (c.isAdmin === 'true') {
-                                    document.getElementById('button').style.display = 'none';
+                                if (admin === 'true') {
+                                    document.getElementById('button').innerHTML = 'Sign';
                                 }
                                 var val = head;
                                 var headval = head;
                                 var value = c[head];
                                 val = val.toUpperCase();
-                                // if (head !== 'osid' && head !== 'nationalIdentifier') {
                                 var temprow;
-                                // var rowid = val.toLowerCase();
-                                temprow = "<tr><th id=" + val + " class='header pr-5' name=" + val + ">" + head.charAt(0).toUpperCase() + head.slice(1) + "</th><td id=" + head + " class='text' name=" + head + "  width='15% !importent'>" + value + "</td >";
+                                console.log('val', val, head, c)
+                                temprow = "<tr><th id=" + val + " class='header pr-5' name=" + val + ">" + head.charAt(0).toUpperCase() + head.slice(1) + "</th><td id=" + head + " class='text' name=" + head + "  width='25% !importent'>" + value + "</td >";
                                 person = head + 'Verified';
                                 personobj = person.replace(/['"]+/g, '');
-                               
 
-                                if (checkVerification.hasOwnProperty(personobj) && checkVerification[head + 'Verified']) {
-                                    var verifiedrow = "<td class='text pl-3' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>validated</td></tr>";
-                                    row += temprow + verifiedrow ;
+                                if (admin !== 'true') {
+                                    if (checkVerification.hasOwnProperty(personobj) && checkVerification[head + 'Verified']) {
+                                        var verifiedrow = "<td class='text pl-3' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>validated</td></tr>";
+                                        row += temprow + verifiedrow;
+                                    }
+                                    else {
+                                        var validaterow = "<td class='text pl-2' style='color:#007bff;font-size: 14px;'><i class='fa fa-exclamation-circle pr-1' style='color: #007bff;font-size: small !important;'></i>Pending validation</td></tr>";
+                                        row += temprow + validaterow;
+                                    }
+                                } else {
+                                    var approvedrow = "<td class='text pl-3' id='style'><button  class='btn btn-outline-success mr-3 sc' style='color:green;font-size:1rem;' ><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>approve</button><button class='btn btn-outline-danger sc' style='font-size:1rem;'>&nbsp;reject</button></td></tr>";
+                                    row += temprow + approvedrow;
                                 }
-                                else {
-                                    var validaterow = "<td class='text pl-3' style='color:#007bff;font-size: 14px;'><i class='fa fa-exclamation-circle pr-1' style='color: #007bff;font-size: small !important;'></i>Pending validation</td></tr>";
-                                    row += temprow + validaterow ;
-                                }
 
-                                //  if (head === 'School' || head === 'school' || head === 'Designation' || head === 'designation' || head === 'dist' || head === 'Dist') {
-
-                                //     if (c.isAdmin === 'true') {
-                                //         var approvedrow = "<td class='text' id='style'>reject<button class='btn btn-primary outline1 ml-3'>approve</button></td></tr>";
-                                //         row += temprow + approvedrow;
-                                //     }
-                                //     else {
-                                //         var approvedrow = "<td class='text' style='color: red;font-size: 14px;'>Pending Approval</td></tr>";
-                                //         row += temprow + approvedrow;
-                                //     }
-                                // }
-                                //
-                                // }
-                              
                             }
-                            
+                            // $("table tbody tr th td").tooltipOnOverflow();
                             $("table tbody").append(row);
-                          
-                                var element = document.getElementsByTagName("tr");
-for(var i=0;i< element.length;i++) {
-    var newElement = document.createElement('br');
-    console.log('i',i,element[i].parentElement,element[i].nextSibling)
-var elementParent = element[i].parentNode;
-elementParent.insertBefore(newElement, element[i].nextSibling);
-}
-                            
+
+                            var element = document.getElementsByTagName("tr");
+                            console.log(element)
+                            for (var i = 0; i < element.length; i++) {
+                                var newElement = document.createElement('div');
+                                var divElement = document.getElementsByTagName('div');
+                                console.log(newElement.setAttribute('class', 'mt-1'))
+                                for (var j = 1; j < element.length - 1; j++) {
+                                    // divElement[j+3].setAttribute('class', 'note');
+                                    console.log(divElement[j + 3]);
+                                    name = "mystyle";
+                                }
+                                var elementParent = element[i].parentNode;
+                                elementParent.insertBefore(newElement, element[i].nextSibling);
+                            }
+
                         }
                     }
                 }
@@ -178,37 +207,29 @@ elementParent.insertBefore(newElement, element[i].nextSibling);
                 edit.innerHTML = "Update";
                 document.getElementById('button1').style.display = '-webkit-inline-box';
                 for (key in c) {
-                    // if (key !== "osid" && key !== "nationalIdentifier") {
+                    console.log(key, document.getElementById(key));
                     if (document.getElementById(key).firstChild != "[object HTMLInputElement]") {
+
                         var content = document.getElementById(key).firstChild.nodeValue;
                         edit(key);
                         function edit(key) {
+                            // console.log(key);
                             var keys = key.toUpperCase() + key;
-                            console.log(c, c.isAdmin)
-                            // document.getElementById(key).innerHTML = "<input type = 'text' name = " + keys + " id = " + keys + " value = '" + content + "'/>";
-
-                            console.log('isad')
                             var anchor = document.getElementById(key);
                             var att = document.createAttribute("contenteditable");
                             att.value = "true";
                             anchor.setAttributeNode(att);
-                            console.log(anchor, keys, key);
-
                             onchange(keys, key);
                         }
                         function onchange(keys, key) {
                             var childElemnet = document.getElementById(key);
-                            console.log(key, c[key], childElemnet)
                             document.getElementById(key).onkeyup = function myFunction() {
                                 var x = document.getElementById(key);
-                                console.log(c[key], x.innerHTML.localeCompare(c[key]), x.innerHTML)
                                 if (x.innerHTML.localeCompare(c[key])) {
-                                    console.log('true')
                                     isedited = true;
                                 }
                                 if (isedited) {
                                     c[key] = x.innerHTML;
-                                    console.log(c[key])
                                     update(isedited);
                                 }
                             }
@@ -238,13 +259,10 @@ elementParent.insertBefore(newElement, element[i].nextSibling);
 
                                 http.onload = function () {
                                     var obj = JSON.parse(http.responseText);
-                                    // window.location.href = window.location.href;
                                 }
-                                // window.location.href = window.location.href;
                             }
                         }
                     }
-                    // }
                 }
             }
             function backtoProfile(id) {
@@ -282,6 +300,40 @@ elementParent.insertBefore(newElement, element[i].nextSibling);
                         dlAnchorElem.setAttribute("href", dataStr);
                         dlAnchorElem.setAttribute("download", "Person.json");
                         dlAnchorElem.click();
+                    }
+                });
+            }
+            function readAdminStatus(osid) {
+                const params = {
+                    "id": "open-saber.registry.read",
+                    "ver": "1.0",
+                    "ets": "11234",
+                    "params": {
+                        "did": "",
+                        "key": "",
+                        "msgid": ""
+                    },
+                    "request": {
+                        "Person": {
+                            "osid": osid[1],
+                            "includeSignatures": true
+                        }
+                    }
+                }
+                $.ajax({
+                    url: "http://localhost:8080/read",
+                    type: "post",
+                    dataType: "application/json",
+                    data: JSON.stringify(params),
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (msg) {
+                        console.log(msg.result.Person.photo);
+                        var encodedString = btoa(msg.result.Person.photo);
+console.log(encodedString);
+                        var decodedString = atob(encodedString);
+console.log(decodedString);
+                        admin = msg.result.Person.isAdmin;
                     }
                 });
             }

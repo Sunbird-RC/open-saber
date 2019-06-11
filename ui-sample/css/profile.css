@@ -16,7 +16,7 @@ img {
     font-size: 17px;
     /* padding-bottom: 1rem;
     padding-top: 1rem; */
-    width: 16rem;
+    width: 26%;
 }
 table {
     width: 141%;
@@ -40,6 +40,12 @@ input {
 }
 .bton {
     text-align: end;
+}
+td:focus {
+    outline: auto 1px;
+}
+.sc {
+    padding: 0px 10px 0px 11px !important;
 }
 .bton1 {
     text-align: left;
@@ -75,4 +81,11 @@ input {
 }
 tr.break td {
     height: 10px;
+  }
+  i:hover {
+      cursor: pointer;
+  }
+  .btn-outline-success:hover {
+color: green;
+background-color: white;
   }

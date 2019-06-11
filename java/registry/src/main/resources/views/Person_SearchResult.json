@@ -1,0 +1,22 @@
+{
+  "subject": "Person",
+  "fields": [
+    {
+      "name": "name",
+      "title": "Name",
+      "display": true
+    },
+    {
+      "name": "gender",
+      "title": "Gender"
+    },
+    {
+      "name": "dist",
+      "title": "District"
+    },
+    {
+      "name": "osid",
+      "title": "UniqueId"
+    }
+  ]
+}

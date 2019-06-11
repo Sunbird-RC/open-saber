@@ -41,10 +41,10 @@
       "type": "string",
       "title": "School"
     },
-    "phone": {
-      "$id": "phone",
+    "photo": {
       "type": "string",
-      "title": "Phone"
+      "contentEncoding": "base64",
+      "mediaType": "image/png"
     },
     "dist": {
       "$id": "dist",
