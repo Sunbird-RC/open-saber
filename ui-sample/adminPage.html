@@ -11,6 +11,9 @@
 
     <link type="text/css" href="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.css"
       rel="stylesheet" />
+      <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+
 </head>
 
 <body>
@@ -74,10 +77,10 @@
         };
         $(document).ready(function () {
             $('#navbar').load("bootstrap-4-navbar.html", function() {
-                console.log('nav item')
+                var urlParams = new URLSearchParams(location.search);
              document.getElementById("nav1").style.display = "none"
              document.getElementById("nav2").style.display = "none"
-
+             document.getElementById('name').innerHTML = urlParams.get('name')
             });
 
             $.ajax({
@@ -106,7 +109,6 @@
                         for (var j = 0; j < colHeader.length; j++) {
                             $('table tbody tr').last().append('<td>' + filteredObject[i][colHeader[j]] + '</td>');
                         }
-                        console.log(JSON.stringify(filteredObject[i].osid))
                         row = "<td><button type='button' class='btn btn-primary' onclick=myFunction(" + JSON.stringify(filteredObject[i].osid) + ")>Approve</button></td>";
 
                         $('table tbody tr').last().append(row);
@@ -116,7 +118,7 @@
         });
         function myFunction(obj) {
             console.log(obj)
-            document.location.href = "./profile.html?osid=" + obj.osid;
+            document.location.href = "./profile.html?osid=" + obj;
         }
 
         function searchByQuery(key) {
@@ -147,7 +149,7 @@
                             for (var j = 0; j < colHeader.length; j++) {
                                 $('table tbody tr').last().append('<td>' + filteredObject[i][colHeader[j]] + '</td>');
                             }
-                            row = "<td><button type='button' class='btn btn-success' onclick=myFunction(" + JSON.stringify(filteredObject[i]) + ")>Approve</button></td>";
+                            row = "<td><button type='button' class=' btn btn-primary' onclick=myFunction(" + JSON.stringify(filteredObject[i].osid) + ")>Approve</button></td>";
                             $('table tbody tr').last().append(row);
                         }
                     }

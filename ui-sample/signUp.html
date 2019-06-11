@@ -70,7 +70,7 @@
 
 
   <script type="text/javascript">
-        let timerOn = false;
+    let timerOn = false;
 
     function timer(remaining) {
       var m = Math.floor(remaining / 60);
@@ -95,32 +95,36 @@
     var phone = '';
     let getOtp = ''
     function generateOTP(phone) {
-      // var digits = '0123456789';
-      // let OTP = '';
-      // for (let i = 0; i < 6; i++) {
-      //   OTP += digits[Math.floor(Math.random() * 10)];
-      // }
-      // console.log('otp', OTP)
-      // $(".alert").show();
-      // getOtp = OTP
-      // timer(120);
-
-      // return OTP;
-
-      $.ajax({
-        url: "http://10.0.1.62:8014/otp/send/" + phone,
-        type: "post",
-        contentType: "application/json",
-        success: function (data, textStatus, xhr) {
-          console.log(xhr.status)
-          if (xhr.status == 200) {
-            timerOn = true
-            timer(120);
-
-          }
-        }
+      var digits = '0123456789';
+      let OTP = '';
+      for (let i = 0; i < 6; i++) {
+        OTP += digits[Math.floor(Math.random() * 10)];
       }
-      );
+      console.log('otp', OTP)
+      $(".alert").show();
+      timerOn = true
+
+      getOtp = OTP
+      timer(120);
+
+      return OTP;
+
+      // $.ajax({
+      //   url: "http://10.0.1.62:8014/otp/send/" + phone,
+      //   type: "post",
+      //   contentType: "application/json",
+      //   success: function (data, textStatus, xhr) {
+      //     console.log(xhr.status)
+      //     if (xhr.status == 200) {
+      //       timerOn = true
+      //       timer(120);
+      //             $(".alert").show();
+
+
+      //     }
+      //   }
+      // }
+      // );
     }
     $(document).ready(function () {
       $('#navbar').load("navbar.html");
@@ -151,7 +155,7 @@
                   this.refreshValidationState(true);
                   var value = this.getValue();
                   if (value['phone']) {
-                    var present = searchExitingData(value.phone);
+                    searchExitingData(value.phone);
 
                   }
                 }
@@ -251,6 +255,7 @@
             document.location.href = './login.html'
           }
           else {
+            console.log('hwy')
             generateOTP(phone);
             document.getElementById("sign").style.display = "inline-block";
             document.getElementById("validate").style.display = "none";
