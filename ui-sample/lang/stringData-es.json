@@ -1,3 +1,5 @@
 {
-    "productName": "Spanish ProductName"
+    "productName": "Spanish ProductName",
+    "login": "Iniciar sesión",
+    "signUp": "Regístrate"
 }

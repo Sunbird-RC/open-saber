@@ -1,5 +1,17 @@
-function dataLocalizeRefresh() {
-  var opts = { language: "es", pathPrefix: "./lang" };
+function dataLocalizeRefresh(lang, fullLangText) {
+  var opts = { language: lang, pathPrefix: "./lang" };
   $("[data-localize]").localize("stringData", opts);
-  console.log("dataLocalizeRefreshEnd");
+  document.getElementById("langSelected").innerText = fullLangText
+  console.log("dataLocalizeRefreshEnd " + lang);
+}
+
+function dataLocalizeRefreshDefault() {
+  var langSelected = document.getElementById("langSelected")
+  var lang = "en"
+  if (langSelected != null) {
+    lang = langSelected.innerText
+  }
+  var opts = { language: lang, pathPrefix: "./lang" };
+  $("[data-localize]").localize("stringData", opts);
+  console.log("dataLocalizeRefreshEnd " + lang);
 }

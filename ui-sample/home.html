@@ -24,11 +24,14 @@ crossorigin="anonymous"></script>
 <script type="text/javascript" src="./utils.js"></script> 
 <script>
         $(document).ready(function(){
-           $('#navbar').load("bootstrap-4-navbar.html");
-           dataLocalizeRefresh();
-           document.getElementById("nav").style.display = "inline-block";
-
+           $('#navbar').load("bootstrap-4-navbar.html", function() {
+                dataLocalizeRefresh("en", "English");
+           });
         });
+
+        function signUpPage() {
+            document.location.href = "./signUp.html?lang=" + document.getElementById("langSelected").innerHTML
+        }
 </script>
 
 <body>
@@ -41,7 +44,7 @@ crossorigin="anonymous"></script>
                 agents to issue information into it, via secure standards, privacy protected by a consent driven
                 architecture and expressed via a explicit but extensible vocabulary.</p>
             <p>
-                <a href="./signUp.html" class="btn btn-secondary my-2">Sign Up For Free</a>
+                <a onClick="signUpPage()" class="btn btn-secondary my-2">Sign Up For Free</a>
             </p>
         </div>
     </section>
