@@ -2,26 +2,24 @@
   "$schema": "http://json-schema.org/draft-07/schema",
   "type": "object",
   "properties": {
-    "Person": {
-      "$ref": "#/definitions/Person"
+    "PersonVerified": {
+      "$ref": "#/definitions/PersonVerified"
     }
   },
-  "title":"Person",
+  "title":"PersonVerified",
   "required": [
-    "Person"
+    "PersonVerified"
   ],
   "definitions": {
-    "Person": {
-      "$id": "#/properties/Person",
+    "PersonVerified": {
+      "$id": "#/properties/PersonVerified",
       "type": "object",
-      "title": "The Person Schema",
+      "title": "The PersonVerified Schema",
       "required": [
-        "nationalIdentifier",
-        "name",
-        "gender",
-        "dob",
-        "email",
-        "phone"
+        "phoneVerified",
+        "emailVerified",
+        "certificateVerified",
+        "personId"
       ],
       "additionalProperties": false,
       "properties": {
@@ -33,7 +31,7 @@
           },
           "$comment": "Placeholder for all verifiable claims"
         },
-         "photo": {
+        "photo": {
           "type": "string",
           "contentEncoding": "base64",
           "mediaType": "image/png"
@@ -43,43 +41,48 @@
           "type": "string",
           "$comment": "Nationality"
         },
-        "name": {
-          "$id": "#/properties/name",
+        "emailVerified": {
+          "$id": "emailVerified",
+          "type": "boolean",
+          "title": "Email ID"
+        },
+        "phoneVerified": {
+          "$id": "phoneVerified",
+          "type": "boolean",
+          "title": "Phone"
+        },
+        "certificateVerified": {
+          "$id": "certificateVerified",
+          "type": "boolean",
+          "title": "Certificate"
+        },
+        "personId": {
+          "$id": "personId",
           "type": "string",
+          "title": "personId"
+        },
+        "nameVerified": {
+          "$id": "#/properties/nameVerified",
+          "type": "boolean",
           "title": "Full name"
         },
-        "gender": {
-          "$id": "#/properties/gender",
+        "genderVerified": {
+          "$id": "#/properties/genderVerified",
           "$ref": "Common.json#/definitions/Gender"
         },
-        "dob": {
+        "dobVerified": {
           "$id": "#/properties/birthDate",
           "$ref": "Common.json#/definitions/Date"
         },
-        "email": {
-          "$id": "email",
-          "type": "string",
-          "title": "Email ID"
-        },
-        "school": {
-          "$id": "school",
-          "type": "string",
+        "schoolVerified": {
+          "$id": "schoolVerified",
+          "type": "boolean",
           "title": "School"
         },
-        "phone": {
-          "$id": "phone",
-          "type": "string",
-          "title": "Phone"
-        },
-        "dist": {
-          "$id": "dist",
-          "type": "string",
+        "distVerified": {
+          "$id": "distVerified",
+          "type": "boolean",
           "title": "District"
-        },
-        "certificate": {
-          "$id": "certificate",
-          "type": "string",
-          "title": "Certificate"
         },
         "hasDrivingLicense": {
           "$id": "#/properties/hasDrivingLicense",

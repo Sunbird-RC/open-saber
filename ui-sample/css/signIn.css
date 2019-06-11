@@ -40,7 +40,7 @@
 
 
   #addHeight {
-    height: 9rem;
+    height: 5rem;
   }
   .alpaca-form-buttons-container {
   text-align: center !important
@@ -80,4 +80,6 @@ padding-top: 9.3rem;
   background-clip: border-box;
   border: 1px solid rgba(0,0,0,.125);
   border-radius: .25rem;
+  margin-top: 4rem;
+  height: auto;
 }

@@ -11,7 +11,6 @@
 
   <link type="text/css" href="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.css"
     rel="stylesheet" />
-
 </head>
 
 <body>
@@ -27,7 +26,7 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="#">Open Saber</a>
+        <a class="navbar-brand" href="#">OpenSABER</a>
       </div>
 
       <!-- Collect the nav links, forms, and other content for toggling -->
@@ -53,23 +52,21 @@
     </div>
     <div class="row">
       <div class="col-md-4">
+        <div class="col-md-4">
+          <img
+            src="https://upload.wikimedia.org/wikipedia/commons/9/99/%EC%B9%98%EB%A6%AC%EB%BD%80_%EC%B4%88%EB%93%B1%ED%95%99%EA%B5%90.jpg"
+            alt="" style="width: 34rem; border-radius: 1rem;">
+        </div>
       </div>
       <div class="col-md-4">
-        <div class="alert alert-success alert-dismissible" role="alert">
+        <div class="alert alert-success alert-dismissible" role="alert" id="alert">
           <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
               aria-hidden="true">&times;</span></button>
-          <strong>OTP </strong> sent to your phone
+          <strong>OTP </strong> sent success.
+          <span id="timer"></span>
+
         </div>
         <div id="SignUPForm">
-          <!-- <form>
-
-            <div class="data">
-
-              <input type="button" value="verify" onclick="add('password')" />
-              <div id="fooBar">&nbsp;</div>
-            </div>
-          </form> -->
-          
         </div>
 
       </div>
@@ -77,6 +74,16 @@
       <div class="col-md-4">
       </div>
 
+    </div>
+
+  </div>
+  <div class="container mt-5 ">
+    <div class="jumbotron box-shadow ">
+      <!-- <h2 class="card-title">Open Saber</h2> -->
+      <p class="card-text">This online register lists all teachers practising in the Country in real-time. It also shows
+        whether a teacher's registration and/or practising records have been validated or not. These assurances are
+        downloadable too. Keep this record relevant to be able to consume and offer other value enabled services.</p>
+      <a href="https://opensaber.io/" target="_blank" class="card-link">Learn more</a>
     </div>
 
   </div>
@@ -96,20 +103,31 @@
 
 
   <script type="text/javascript">
-    $(".alert").hide();
-
-    $(".dropdown-menu li a").click(function () {
-      console.log('hey')
-      var selText = $(this).text();
-      $(this).parents('.dropdown').find('.dropdown-toggle').html(selText + ' <span class="caret"></span>');
-    });
+    let timerOn = true;
+    var ID;
+    function timer(remaining) {
+      var m = Math.floor(remaining / 60);
+      var s = remaining % 60;
+      m = m < 10 ? '0' + m : m;
+      s = s < 10 ? '0' + s : s;
+      document.getElementById('timer').innerHTML = ' Valid for =' + m + ':' + s;
+      remaining -= 1;
+      if (remaining >= 0 && timerOn) {
+        setTimeout(function () {
+          timer(remaining);
+        }, 1000);
+        return;
+      }
+      if (!timerOn) {
+        return;
+      }
+      alert('Timeout for otp');
+      $(".alert").hide();
+    }
 
     var phone = '';
     let getOtp = ''
-    function generateOTP() {
-
-      // Declare a digits variable  
-      // which stores all digits 
+    function generateOTP(phone) {
       var digits = '0123456789';
       let OTP = '';
       for (let i = 0; i < 6; i++) {
@@ -118,9 +136,26 @@
       console.log('otp', OTP)
       $(".alert").show();
       getOtp = OTP
+      timer(120);
+
       return OTP;
+
+      // $.ajax({
+      //   url: "http://10.0.1.62:8014/otp/send/" + phone,
+      //   type: "post",
+      //   contentType: "application/json",
+      //   success: function (data, textStatus, xhr) {
+      //     console.log(xhr.status)
+      //     if (xhr.status == 200) {
+      //       timer(120);
+
+      //     }
+      //   }
+      // }
+      // );
     }
     $(document).ready(function () {
+      $('#navbar').load("navbar.html");
       var cookedVal = {
         "id": "",
         "ver": "1.0",
@@ -146,18 +181,16 @@
             },
             "buttons": {
               "validate": {
-                "title": "Validate",
+                "title": "Next",
                 "id": "validate",
                 "click": function () {
                   this.validate(true);
                   this.refreshValidationState(true);
                   var value = this.getValue();
-                  if (value['username']) {
-                    generateOTP();
-                  }
-                  document.getElementById("logIn").style.display = "inline-block";
-                  document.getElementById("validate").style.display = "none";
+                  if (value['phone']) {
+                    var present = searchExitingData(value.phone);
 
+                  }
                 }
               },
               "add": {
@@ -165,26 +198,44 @@
                 "id": "logIn",
                 "click": function () {
                   this.refreshValidationState(true);
+                  this.refreshValidationState(true);
                   if (!this.isValid(true)) {
                     this.focus();
                     return;
                   }
                   var value = this.getValue();
-                  cookedVal["id"] = "open-saber.registry.create";
-                  cookedVal["request"]["Person"] = value;
-                  if (value.otp === getOtp) {
-                    document.location.href = "./Person.html";
-                    $.ajax({
-                      url: "http://localhost:8080/add",
-                      type: "post",
-                      dataType: "application/json",
-                      contentType: "application/json",
-                      data: JSON.stringify(cookedVal)
-                    }, function (data, status) {
-                      alert("Data: " + JSON.stringify(data) + "\nStatus: " + status);
+                  console.log(value.otp, 'hi', getOtp)
+                  cookedVal['phone'] = value.phone
+                  cookedVal['otp'] = value.otp
+                  console.log(JSON.stringify(cookedVal));
 
-                    });
+
+
+                  console.log('hii')
+                  $.ajax({
+                    url: "http://10.0.1.62:8014/otp/verify",
+                    type: "post",
+                    contentType: "application/json",
+                    data: JSON.stringify(cookedVal),
+                    success: function (data, textStatus, xhr) {
+                      console.log(xhr.status)
+                      if (xhr.status == 200) {
+                        document.location.href = "./profile.html?osid=" + ID ;
+
+                      }
+
+
+                      // document.location.href = "./profile.html?osid=" + data.result.Person.osid;
+                    },
+                    complete: function (xhr, textStatus) {
+                      console.log(xhr.status);
+                      if (xhr.status == 400) {
+                      alert("Invalid OTP")
+                       
+                      }
+                    }
                   }
+                  );
 
                 },
 
@@ -195,13 +246,62 @@
         "postRender": function () {
           document.getElementById("logIn").style.display = "none";
 
-          // at some point in the future, refresh this bad boy
-      
+          if (phone) {
+            var control = $("#field1").alpaca("get");
+          }
         },
       });
     });
-  </script>
 
+    function searchExitingData(phone) {
+      var cookedVal = {
+        "id": "open-saber.registry.search",
+        "ver": "1.0",
+        "ets": "11234",
+        "params": {
+          "did": "",
+          "key": "",
+          "msgid": ""
+        },
+        "request": {
+          "entityType": ["Person"],
+          "filters": {
+            "phone": {
+              "eq": phone
+            }
+          }
+        }
+      }
+
+      $.ajax({
+        url: "http://localhost:8080/search",
+        type: "post",
+        dataType: "application/json",
+        data: JSON.stringify(cookedVal),
+        contentType: "application/json",
+        dataType: "json",
+        success: function (msg) {
+          console.log(Array.isArray(msg.result.Person) + " : " + msg.result.Person.length)
+          if (Array.isArray(msg.result.Person) && msg.result.Person.length == 1) {
+            // document.location.href = "./profile.html?osid=" + msg.result.Person[0].osid;
+            ID = msg.result.Person[0].osid
+            generateOTP(phone);
+            document.getElementById("logIn").style.display = "inline-block";
+            document.getElementById("validate").style.display = "none";
+
+
+
+          }
+          else {
+            alert('This number is not recognised, please register.')
+            document.location.href = './signUp.html'
+          }
+
+
+        }
+      });
+    }
+  </script>
 </body>
 
 </html>

@@ -1,202 +1,277 @@
 <html>
 
 <head>
-    <title>
-
-    </title>
-    <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
-    <script type="text/javascript"
-        src="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.js"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+        integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
     <link type="text/css" href="./css/profile.css" rel="stylesheet" />
-    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <link type="text/css" href="./css/signIn.css" rel="stylesheet" />
 </head>
 
 <body onload="myFunction()">
-    <h3 class="text-center">Profile Information</h3>
+        <div id ="navbar"> </div>    
+    <h3 class="text-center mt-2 mb-3">Profile Information</h3>
     <div class="border">
-<div class="image">
-    <img src="http://icons.iconarchive.com/icons/graphicloads/flat-finance/256/person-icon.png" class="center" alt="Avatar">
-</div>
-<table id="row">
-    <tr>
-        <th class="header">Name</th>
-        <th class="text" id="name" >John Doe</th>
-    </tr>
-    <tr>
-        <th class="header">Email ID</th>
-        <th class="text" id="email">johndoe@abc.com</th>
-    </tr>
-    <tr>
-        <th class="header">Phone</th>
-        <th class="text" id="phone">+91 9900998811</th>
-    </tr>
-    <tr>
-        <th class="header">DOB</th>
-        <th class="text" id="dob">01 April 1980</th>
-    </tr>
-    <tr>
-        <th class="header">Gender</th>
-        <th class="text" id="gender">01 April 1980</th>
-    </tr>
-    <tr>
-        <th class="header">School</th>
-        <th class="text" id="school">GH Padalur, Padalur</th>
-    </tr>
-    <tr>
-        <th class="header">Designation</th>
-        <th class="text" id="teacher">Teacher</th>
-    </tr>
-    <tr>
-        <th class="header">District</th>
-        <th class="text" id="dist">Thiruchirapalli</th>
-    </tr>
-    <tr>
-        <th class="header">Certificate</th>
-        <th class="text" id="certificate"><a class="">abcd.JPG<span>
-            <i class="fa fa-cloud-upload" aria-hidden="true"></i></span></a></th>
-    </tr>
-    <tr><th class="header"><button class="btn btn-primary" id="button" onclick="edit(this.id)">Edit</button></th>
-        <th class="text"><button class="btn btn-primary" id="button" onclick="edit(this.id)">Cancel</button></th>
-    </tr>
-</table>
-    </div>
-    <script type = "text/javascript">
-    var readobj = [];
-    var c = [];
-function myFunction() {
+        <div class="image mb-2">
+            <img src="http://icons.iconarchive.com/icons/graphicloads/flat-finance/256/person-icon.png" class="center"
+                alt="Avatar">
+        </div>
+        <table id="row">
+            <tbody>
 
-const params = {
-    "id": "open-saber.registry.read",
-    "ver": "1.0",
-    "ets": "11234",
-    "params": {
-        "did": "",
-        "key": "",
-        "msgid": ""
-    },
-    "request": {
-    	"Person": {
-    		"osid": "1-fc14539e-5b5c-4661-81af-ace2984644bb",
-        "includeSignatures": true
-    	}
-    }
-}
+            </tbody>
+        </table>
+        <div class="text-center pt-3">
+            <span class=""><button class="btn btn-primary" id="button" onclick="edit(this.id)">Edit</button></span>
+            <span class="pl-3 pr-3"><button class="btn btn-primary outline" id="button1" style="margin-top: -1rem;"
+                    onclick="backtoProfile(this.id)">Cancel</button></span>
+            <span class=""><button class="btn btn-primary" id="button" onclick="downloadJson()" data-toggle="tooltip"
+                    title="Download Signed
+                Profile">Download</button></span>
+            <a id="downloadAnchorElem" style="display:none"></a>
 
-        const http = new XMLHttpRequest()
-        http.open('POST', "http://localhost:8080/read")
-        http.setRequestHeader('Content-type', 'application/json')
-        http.send(JSON.stringify(params)) // Make sure to stringify
-       
-        http.onload = function() {
-            var obj = JSON.parse(http.responseText);
-            console.log('', http.responseText,obj,obj.id);
-                 for(key in obj) {
-                     if(key === "result") {
-                          readobj =  obj[key].Person;
-                          c = obj[key].Person;
-                          console.log(readobj,c);
-                         
-                         for(val in readobj){
-                            console.log(val);
-                            if( val !== "osid" && val !== "nationalIdentifier") {
-                             document.getElementById(val).innerHTML = readobj[val];
-                        //  console.log(val, document.getElementById(val).innerHTML = b[val]);
-                            }
-                         }
+        </div>
+        <script type="text/javascript"
+            src="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+            integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+            crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+        <script type="text/javascript">
+            var tempobj;
+            var readobj = [];
+            var c = [];
+            var checkVerification;
+            $(document).ready(function () {
+                $('[data-toggle="tooltip"]').tooltip();
+                $('#navbar').load("navbar.html");
+            });
+            function myFunction() {
+                var query = window.location.search.substring(1);
+                var qs = query.split('=');
+                const reqParam = {
+
+                    "id": "open-saber.registry.search",
+                    "ver": "1.0",
+                    "ets": "11234",
+                    "params": {
+                        "did": "",
+                        "key": "",
+                        "msgid": ""
+                    },
+                    "request": {
+                        "entityType": ["PersonVerified"],
+
+                        "filters": {
+                            "personId": { "contains": qs[1] }
                         }
-//   console.log(key ,b);
-}
-        }
+                    }
+                }
+                const https = new XMLHttpRequest()
+                https.open('POST', "http://localhost:8080/search")
+                https.setRequestHeader('Content-type', 'application/json')
+                https.send(JSON.stringify(reqParam)) // Make sure to stringify
 
-}
-  function edit(id) {
-      var isedited = false;
-var edit = document.getElementById(id);
-edit.innerHTML = "Update";
-for(key in c) {
-    // console.log(c);
-    if( key !== "osid" && key !== "nationalIdentifier") {
-if(document.getElementById(key).firstChild != "[object HTMLInputElement]"){
-      var content = document.getElementById(key).firstChild.nodeValue;
-      console.log(content,document.getElementById(key).innerHTML,key,c[key])
-      if(content === document.getElementById(key).innerHTML){
-        // b[key]=content;
-      isedited = !isedited;
-     }
-     if(key !== "email" && key !== "phone" && key !== "dob"){
-         console.log(key);
-        document.getElementById(key).innerHTML = "<input type = 'text' name = "+c[key]+" id = "+c[key]+" value = '" + content + "'/>";
-      document.getElementById(c[key]).onchange = function() {myFunction()};
-     }
-     if(key === "email" ) {
-         c[key]="email";
-        document.getElementById(key).innerHTML = "<input type = 'text' name = "+c[key]+" id = "+c[key]+" value = '" + content + "'/>";
-      document.getElementById(c[key]).onchange = function() {myFunction()};
-     }
-     if( key === "phone" ) {
-        c[key]="phone";
-        document.getElementById(key).innerHTML = "<input type = 'text' name = "+c[key]+" id = "+c[key]+" value = '" + content + "'/>";
-      document.getElementById(c[key]).onchange = function() {myFunction()};
-     }
-     if(key === "dob") {
-        c[key]="dob";
-        document.getElementById(key).innerHTML = "<input type = 'text' name = "+c[key]+" id = "+c[key]+" value = '" + content + "'/>";
-      document.getElementById(c[key]).onchange = function() {myFunction()};
-     }
+                https.onload = function () {
+                    checkVerification = JSON.parse(https.responseText);
+                    console.log(checkVerification)
+                    checkVerification = checkVerification.result.PersonVerified[0];
+                }
+                const params = {
+                    "id": "open-saber.registry.read",
+                    "ver": "1.0",
+                    "ets": "11234",
+                    "params": {
+                        "did": "",
+                        "key": "",
+                        "msgid": ""
+                    },
+                    "request": {
+                        "Person": {
+                            "osid": qs[1],
+                            "includeSignatures": true
+                        }
+                    }
+                }
 
-function myFunction() {
-  var x = document.getElementById(c[key]);
-  console.log(x.value);
+                const http = new XMLHttpRequest()
+                http.open('POST', "http://localhost:8080/read")
+                http.setRequestHeader('Content-type', 'application/json')
+                http.send(JSON.stringify(params)) // Make sure to stringify
+                var row = "", col = "";
+                http.onload = function () {
+                    var obj = JSON.parse(http.responseText);
+                    for (key in obj) {
+                        if (key === "result") {
+                            readobj = obj[key].Person;
+                            c = obj[key].Person;
+                            for (var head in c) {
+                                document.getElementById('button1').style.display = 'none';
+                                if (c.isAdmin === 'true') {
+                                    document.getElementById('button').style.display = 'none';
+                                }
+                                var val = head;
+                                var headval = head;
+                                var value = c[head];
+                                val = val.toUpperCase();
+                                // if (head !== 'osid' && head !== 'nationalIdentifier') {
+                                var temprow;
+                                temprow = "<tr><th id=" + val + " class='header pr-5' name=" + val + ">" + head.charAt(0).toUpperCase() + head.slice(1) + "</th><td id=" + head + " class='text' name=" + head + " style='width:216px'>" + value + "</td >";
+                                person = head + 'Verified';
+                                personobj = person.replace(/['"]+/g, '');
+                                if (checkVerification.hasOwnProperty(personobj) && checkVerification[head + 'Verified']) {
+                                    var verifiedrow = "<td class='text pl-3' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>validated</td></tr>";
+                                    row += temprow + verifiedrow;
+                                }
+                                else {
+                                    var validaterow = "<td class='text pl-3' style='color:#007bff;font-size: 14px;'><i class='fa fa-exclamation-circle pr-1' style='color: #007bff;font-size: small !important;'></i>Pending validation</td></tr>";
+                                    row += temprow + validaterow;
+                                }
 
-      console.log( document.getElementById(key).value,c[key],isedited);
+                                //  if (head === 'School' || head === 'school' || head === 'Designation' || head === 'designation' || head === 'dist' || head === 'Dist') {
 
+                                //     if (c.isAdmin === 'true') {
+                                //         var approvedrow = "<td class='text' id='style'>reject<button class='btn btn-primary outline1 ml-3'>approve</button></td></tr>";
+                                //         row += temprow + approvedrow;
+                                //     }
+                                //     else {
+                                //         var approvedrow = "<td class='text' style='color: red;font-size: 14px;'>Pending Approval</td></tr>";
+                                //         row += temprow + approvedrow;
+                                //     }
+                                // }
+                                //
+                                // }
+                            }
+                            $("table tbody").append(row);
+                        }
+                    }
+                }
 
-      if(isedited){
-        const params = {
-    "id": "open-saber.registry.update",
-    "ver": "1.0",
-    "ets": "11234",
-    "params": {
-        "did": "",
-        "key": "",
-        "msgid": ""
-    },
-    "request": {
-        "Person": {
-        	"osid": "1-3ce66c21-9a9b-4405-80d0-953ecf4ddc36",
-        	key:content
-        }
-    }
-}
-        const http = new XMLHttpRequest()
-        http.open('POST', "http://localhost:8080/update")
-        http.setRequestHeader('Content-type', 'application/json')
-        http.send(JSON.stringify(params)) // Make sure to stringify
-       
-        http.onload = function() {
-            var obj = JSON.parse(http.responseText);
-            console.log('', http.responseText,obj,obj.id);
-        }
-      
-    }
-}}
-    }
-}
-}
-    // if(document.getElementById("dist").firstChild != "[object HTMLInputElement]"){
-    //   var content = document.getElementById("dist").firstChild.nodeValue;
-    //   document.getElementById("dist").innerHTML = "<input type = 'text' name = 'txtNewInput' id = 'txtNewInput' value = '" + content + "'/>";
-    // }
-    // if(document.getElementById("certificate").firstChild != "[object HTMLInputElement]"){
-    //   var content = document.getElementById("certificate").firstChild.nodeValue;
-    //   document.getElementById("certificate").innerHTML = "<input type = 'text' name = 'txtNewInput' id = 'txtNewInput' value = '" + content + "'/>";
-    // }
+            }
+            function edit(id) {
+                var isedited = false;
+                var temp;
+                var edit = document.getElementById(id);
+                edit.innerHTML = "Update";
+                document.getElementById('button1').style.display = '-webkit-inline-box';
+                for (key in c) {
+                    // if (key !== "osid" && key !== "nationalIdentifier") {
+                    if (document.getElementById(key).firstChild != "[object HTMLInputElement]") {
+                        var content = document.getElementById(key).firstChild.nodeValue;
+                        edit(key);
+                        function edit(key) {
+                            var keys = key.toUpperCase() + key;
+                            console.log(c, c.isAdmin)
+                            // document.getElementById(key).innerHTML = "<input type = 'text' name = " + keys + " id = " + keys + " value = '" + content + "'/>";
 
-  
-</script>
+                            console.log('isad')
+                            var anchor = document.getElementById(key);
+                            var att = document.createAttribute("contenteditable");
+                            att.value = "true";
+                            anchor.setAttributeNode(att);
+                            console.log(anchor, keys, key);
+
+                            onchange(keys, key);
+                        }
+                        function onchange(keys, key) {
+                            var childElemnet = document.getElementById(key);
+                            console.log(key, c[key], childElemnet)
+                            document.getElementById(key).onkeyup = function myFunction() {
+                                var x = document.getElementById(key);
+                                console.log(c[key], x.innerHTML.localeCompare(c[key]), x.innerHTML)
+                                if (x.innerHTML.localeCompare(c[key])) {
+                                    console.log('true')
+                                    isedited = true;
+                                }
+                                if (isedited) {
+                                    c[key] = x.innerHTML;
+                                    console.log(c[key])
+                                    update(isedited);
+                                }
+                            }
+                        }
+                        function update(edited) {
+                            if (edited) {
+                                const params = {
+                                    "id": "open-saber.registry.update",
+                                    "ver": "1.0",
+                                    "ets": "11234",
+                                    "params": {
+                                        "did": "",
+                                        "key": "",
+                                        "msgid": ""
+                                    },
+                                    "request": {
+                                        "Person": {
+                                            "osid": "1-3ce66c21-9a9b-4405-80d0-953ecf4ddc36",
+                                        }
+                                    }
+                                }
+                                params.request.Person = c;
+                                const http = new XMLHttpRequest()
+                                http.open('POST', "http://localhost:8080/update")
+                                http.setRequestHeader('Content-type', 'application/json')
+                                http.send(JSON.stringify(params)) // Make sure to stringify
+
+                                http.onload = function () {
+                                    var obj = JSON.parse(http.responseText);
+                                    // window.location.href = window.location.href;
+                                }
+                                // window.location.href = window.location.href;
+                            }
+                        }
+                    }
+                    // }
+                }
+            }
+            function backtoProfile(id) {
+                var keyValue = document.getElementById(id).value;
+                window.location.href = window.location.href;
+            }
+            function downloadJson() {
+                var urlParams = new URLSearchParams(location.search);
+                const params = {
+                    "id": "open-saber.registry.read",
+                    "ver": "1.0",
+                    "ets": "11234",
+                    "params": {
+                        "did": "",
+                        "key": "",
+                        "msgid": ""
+                    },
+                    "request": {
+                        "Person": {
+                            "osid": urlParams.get('osid'),
+                            "includeSignatures": true
+                        }
+                    }
+                }
+                $.ajax({
+                    url: "http://localhost:8080/read",
+                    type: "post",
+                    dataType: "application/json",
+                    data: JSON.stringify(params),
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (msg) {
+                        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(msg.result.Person));
+                        var dlAnchorElem = document.getElementById('downloadAnchorElem');
+                        dlAnchorElem.setAttribute("href", dataStr);
+                        dlAnchorElem.setAttribute("download", "Person.json");
+                        dlAnchorElem.click();
+                    }
+                });
+            }
+        </script>
 </body>
 
 </html>
