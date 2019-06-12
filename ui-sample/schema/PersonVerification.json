@@ -14,30 +14,23 @@
     },
     "nameVerified": {
       "$id": "#/properties/nameVerified",
-      "type": "string",
+      "type": "boolean",
       "title": "Name"
     },
     "phonenameVerified": {
       "$id": "#/properties/phonenameVerified",
-      "format": "phone",
+      "type": "boolean",
       "title": "phone"
     },
     "teacherIdnameVerified": {
       "$id": "#/properties/teacherIdnameVerified",
-      "type": "string",
-      "$comment": "teacherId",
-      "pattern": "^[0-9]{3}-.*",
-      "title": "Teacher Id",
-      "examples": [
-        "888-abc",
-        "639-def"
-      ]
+      "type": "boolean",
+      "title": "Teacher Id"
     },
-     "schoolnameVerified": {
+    "schoolnameVerified": {
       "$id": "#/properties/schoolnameVerified",
-      "type": "string",
+      "type": "boolean",
       "title": "school"
     }
   }
 }
-

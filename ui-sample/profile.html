@@ -26,7 +26,7 @@
         </table>
         <div class="text-center pt-3">
             <span class=""><button class="btn btn-primary" id="button" onclick="edit(this.id)" style="margin-top: 1rem;" >Edit</button></span>
-            <span class="pl-3 pr-3"><button class="btn btn-primary outline" id="button1" style="margin-top: -1rem;"
+            <span class="pl-3 pr-3"><button class="btn btn-primary outline" id="button1" 
                     onclick="backtoProfile(this.id)">Cancel</button></span>
             <span class=""><button class="btn btn-primary" id="downButton" onclick="downloadJson()" data-toggle="tooltip"
                     title="Download Signed
@@ -202,14 +202,14 @@
                 edit.innerHTML = "Update";
                 document.getElementById('button1').style.display = '-webkit-inline-box';
                 for (key in c) {
-                    // console.log(key, document.getElementById(key),c,permanantObj);
+                    console.log(key, document.getElementById(key),c,permanantObj);
                     if (document.getElementById(key).firstChild != "[object HTMLInputElement]") {
 
                         var content = document.getElementById(key).firstChild.nodeValue;
-                        // console.log(content)
+                        console.log(content)
                         edit(key);
                         function edit(key) {
-                            // console.log(key);
+                            console.log(key);
                             var keys = key;
                             var anchor = document.getElementById(key);
                             var att = document.createAttribute("contenteditable");
@@ -219,14 +219,15 @@
                         }
                         function onchange(keys, key) {
                             var childElemnet = document.getElementById(key);
-                            // console.log(childElemnet)
+                            console.log(childElemnet)
                             document.getElementById(key).onkeyup = function myFunction() {
                                 var x = document.getElementById(key);
-                                // console.log(key);
+                                console.log(key,x);
                                 //  tempkey = key.charAt(0).toLowerCase() + key.slice(1);
                                 tempkey = key;
-                                // console.log(x.innerHTML, permanantObj[tempkey],tempkey,permanantObj)
+                                console.log(x.innerHTML, permanantObj[tempkey],tempkey,permanantObj)
                                 if (x.innerHTML.localeCompare(permanantObj[tempkey])) {
+                                    console.log('edited')
                                     isedited = true;
                                 }
                                 if (isedited) {
@@ -262,6 +263,7 @@
                                 http.onload = function () {
                                  
                                     var obj = JSON.parse(http.responseText);
+                                    console.log('obj',obj,params)
                                 }
                             }
                         }

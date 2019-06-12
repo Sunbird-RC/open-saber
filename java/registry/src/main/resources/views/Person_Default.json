@@ -3,20 +3,20 @@
   "fields": [
     {
       "name": "name",
-      "title": "name",
+      "title": "Name",
       "display": true
     },
     {
       "name": "phone",
-      "title": "phone"
+      "title": "Phone"
     },
     {
       "name": "school",
-      "title": "school"
+      "title": "School"
     },
     {
       "name": "teacherId",
-      "title": "teacherId"
+      "title": "TeacherId"
     }
   ]
 }

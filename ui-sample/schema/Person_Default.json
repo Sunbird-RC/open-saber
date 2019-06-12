@@ -3,7 +3,7 @@
     "fields": [
       {
         "name": "name",
-        "title": "name",
+        "title": "Name",
         "display": true
       },
       {
@@ -12,15 +12,11 @@
       },
       {
         "name": "school",
-        "title": "school"
+        "title": "School"
       },
       {
         "name": "teacherId",
-        "title": "teacherId"
-      },
-      {
-        "name": "osid",
-        "title": "uniqueId"
+        "title": "TeacherId"
       }
     ]
   }
