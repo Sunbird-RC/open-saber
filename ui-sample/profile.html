@@ -67,6 +67,8 @@
             var checkVerification;
             var permanantObj;
             var tempkey;
+            var preval;
+            var verifiedDetails;
             $(document).ready(function () {
                 $('#navbar').load("bootstrap-4-navbar.html", function () {
                     console.log('nav item')
@@ -79,6 +81,11 @@
                 $('[data-toggle="tooltip"]').tooltip();
 
             });
+           
+                
+            
+                  
+                
             function myFunction() {
                 searchVerificationDetails();
                 readAdminStatus(qs);
@@ -133,7 +140,7 @@
                         "viewTemplateId": "Person_Default.json"
                     }
                 }
-
+                console.log(params)
                 const http = new XMLHttpRequest()
                 http.open('POST', "http://localhost:8080/search")
                 http.setRequestHeader('Content-type', 'application/json')
@@ -151,8 +158,10 @@
                     }
                     for (key in obj) {
                         if (key === "result") {
+
                             readobj = obj[key].Person[0];
                             c = obj[key].Person[0];
+
                             for (var head in c) {
                                 document.getElementById('button1').style.display = 'none';
                                 if (admin === 'true') {
@@ -164,15 +173,14 @@
                                 var headval = head;
                                 var value = c[head];
                                 var temprow;
-                                // console.log('val',)
-                                temprow = "<tr><th class='header pr-5'>" + head.charAt(0).toUpperCase() + head.slice(1) + "</th><td id=" + head + " class='text' name=" + head + "  width='20% !importent'>" + value + "</td >";
-                                person = head + 'Verified';
-                                personobj = person.replace(/['"]+/g, '');
-
+                                temprow = "<tr><th class='header pr-5'>" + head + "</th><td id=" + head + " class='text' name=" + head + "  width='20% !importent'>" + value + "</td >";
+                                // personobj = person.replace(/['"]+/g, '');
+                                console.log('if', c, head)
                                 if (admin !== 'true') {
-                                    if (checkVerification.hasOwnProperty(personobj) && checkVerification[head + 'Verified']) {
+                                    if (checkVerification[head + 'Verified']) {
                                         var verifiedrow = "<td class='text pl-2' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>validated</td></tr>";
                                         row += temprow + verifiedrow;
+                                    
                                     }
                                     else {
                                         var validaterow = "<td class='text pl-2' style='color:#007bff;font-size: 14px;'><i class='fa fa-exclamation-circle pr-1' style='color: #007bff;font-size: small !important;'></i>Pending validation</td></tr>";
@@ -183,9 +191,10 @@
                                     row += temprow + approvedrow;
                                 }
 
+
                             }
-                            // $("table tbody tr th td").tooltipOnOverflow();
                             $("table tbody").append(row);
+                            // $("table tbody tr th td").tooltipOnOverflow();
 
                             var element = document.getElementsByTagName("tr");
                             // console.log(element)
@@ -193,7 +202,6 @@
                                 var newElement = document.createElement('div');
                                 var divElement = document.getElementsByTagName('div');
                                 newElement.setAttribute('class', 'mt-2')
-                                // console.log()
                                 for (var j = 1; j < element.length - 1; j++) {
                                     // divElement[j+3].setAttribute('class', 'note');
                                     // console.log(divElement[j + 3]);
@@ -215,11 +223,11 @@
                 edit.innerHTML = "Update";
                 document.getElementById('button1').style.display = '-webkit-inline-box';
                 for (key in c) {
-                    console.log(key, document.getElementById(key), c, permanantObj);
+                    // console.log(key, document.getElementById(key),c,permanantObj);
                     if (document.getElementById(key).firstChild != "[object HTMLInputElement]") {
 
                         var content = document.getElementById(key).firstChild.nodeValue;
-                        console.log(content)
+                        // console.log(content)
                         edit(key);
                         function edit(key) {
                             console.log(key);
@@ -235,17 +243,29 @@
                             console.log(childElemnet)
                             document.getElementById(key).onkeyup = function myFunction() {
                                 var x = document.getElementById(key);
-                                console.log(key, x);
-                                //  tempkey = key.charAt(0).toLowerCase() + key.slice(1);
-                                tempkey = key;
-                                console.log(x.innerHTML, permanantObj[tempkey], tempkey, permanantObj)
-                                if (x.innerHTML.localeCompare(permanantObj[tempkey])) {
-                                    console.log('edited')
-                                    isedited = true;
-                                }
-                                if (isedited) {
-                                    permanantObj[tempkey] = x.innerHTML;
-                                    update(isedited, qs[1]);
+                                // console.log(key,x);
+                                $.getJSON('schema/Person_Default.json', function (data) {
+                    $.each(data, function (i, f) {
+                        if (i === 'fields') {
+                            verifiedDetails = f;
+                        }
+                    });
+                });
+
+                                for (var i = 0; i < verifiedDetails.length; i++) {
+                                    console.log(verifiedDetails[i].name, key, verifiedDetails[i].title)
+                                    if (key === verifiedDetails[i].title) {
+                                        tempkey = verifiedDetails[i].name;
+                                        console.log(x.innerHTML, permanantObj[tempkey], tempkey, permanantObj)
+                                        if (x.innerHTML.localeCompare(permanantObj[tempkey])) {
+                                            console.log('edited')
+                                            isedited = true;
+                                        }
+                                        if (isedited) {
+                                            permanantObj[tempkey] = x.innerHTML;
+                                            update(isedited, qs[1]);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -276,7 +296,7 @@
                                 http.onload = function () {
 
                                     var obj = JSON.parse(http.responseText);
-                                    console.log('obj', obj, params)
+                                    // console.log('obj',obj,params)
                                 }
                             }
                         }
