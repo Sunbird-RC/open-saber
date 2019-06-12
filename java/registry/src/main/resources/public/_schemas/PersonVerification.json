@@ -35,22 +35,22 @@
         },
         "teacherIdVerified": {
           "$id": "#/properties/teacherIdVerified",
-          "type": "string",
+          "type": "boolean",
           "$comment": "teacher identifier"
         },
         "nameVerified": {
           "$id": "#/properties/nameVerified",
-          "type": "string",
+          "type": "boolean",
           "title": "Name"
         },
         "phoneVerified": {
           "$id": "phoneVerified",
-          "type": "string",
+          "type": "boolean",
           "title": "Phone"
         },
         "schoolVerified": {
           "$id": "schoolVerified",
-          "type": "string",
+          "type": "boolean",
           "title": "School"
         }
       }
