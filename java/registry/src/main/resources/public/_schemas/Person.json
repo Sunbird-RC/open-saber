@@ -16,12 +16,10 @@
       "type": "object",
       "title": "The Person Schema",
       "required": [
-        "voterId",
-        "name",
-        "gender",
-        "dob",
-        "email",
-        "phone"
+        "teacherId",
+        "school",
+        "phone",
+        "name"
       ],
       "additionalProperties": false,
       "properties": {
@@ -33,24 +31,13 @@
           },
           "$comment": "Placeholder for all verifiable claims"
         },
-        "hasDrivingLicense": {
-          "$id": "#/properties/hasDrivingLicense",
-          "type": "boolean",
-          "title": "Driving license is present"
-        },
         "isAdmin": {
           "$id": "#/properties/hasDrivingLicense",
           "type": "boolean",
           "title": "Admin"
         },
-        "photo": {
-          "title": "Photo",
-          "description": "Upload your profile picture.",
-          "type": "string",
-          "format": "uri"
-        },
-        "voterId": {
-          "$id": "#/properties/voterId",
+        "teacherId": {
+          "$id": "#/properties/teacherId",
           "type": "string",
           "$comment": "Voter identifier"
         },
@@ -58,19 +45,6 @@
           "$id": "#/properties/name",
           "type": "string",
           "title": "Full name"
-        },
-        "gender": {
-          "$id": "#/properties/gender",
-          "$ref": "Common.json#/definitions/Gender"
-        },
-        "dob": {
-          "$id": "#/properties/birthDate",
-          "$ref": "Common.json#/definitions/Date"
-        },
-        "email": {
-          "$id": "email",
-          "type": "string",
-          "title": "Email"
         },
         "school": {
           "$id": "school",
@@ -81,16 +55,6 @@
           "$id": "phone",
           "type": "string",
           "title": "Phone"
-        },
-        "district": {
-          "$id": "district",
-          "type": "string",
-          "title": "District"
-        },
-        "certificate": {
-          "$id": "certificate",
-          "type": "string",
-          "title": "Certificate"
         }
       }
     }

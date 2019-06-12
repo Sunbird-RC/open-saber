@@ -110,8 +110,8 @@
                         for (var j = 0; j < colHeader.length; j++) {
                             $('table tbody tr').last().append('<td>' + filteredObject[i][colHeader[j]] + '</td>');
                         }
-                        console.log(JSON.stringify(filteredObject[i].UniqueId))
-                        row = "<td><button type='button' class='btn btn-primary' onclick=myFunction(" + JSON.stringify(filteredObject[i].UniqueId) + ")>Approve</button></td>";
+                        console.log(JSON.stringify(filteredObject[i].uniqueId))
+                        row = "<td><button type='button' class='btn btn-primary' onclick=myFunction(" + JSON.stringify(filteredObject[i].uniqueId) + ")>Approve</button></td>";
 
                         $('table tbody tr').last().append(row);
                     }
@@ -131,8 +131,7 @@ var param = {
     "request": {
         "Person": {
            "osid":obj,
-           "isAdmin":"true"
-        
+           "isAdmin":"true" 
         }
     }
 }
@@ -145,7 +144,7 @@ var param = {
                 contentType: "application/json",
                 dataType: "json",
                 success: function (msg) {
-                    console.log('isadmin',msg);
+                    console.log('isadmin',msg,param);
                 }
             });
             console.log(obj)

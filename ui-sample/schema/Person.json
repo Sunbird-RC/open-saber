@@ -1,86 +1,47 @@
 {
-  "$id": "#/properties/Person",
-  "type": "object",
-  "title": "",
-  "required": [
-    "voterId",
-    "name",
-    "gender",
-    "dob",
-    "phone"
-  ],
-  "additionalProperties": false,
-  "properties": {
-    "voterId": {
-      "$id": "#/properties/voterId",
-      "type": "string",
-      "$comment": "Nationality",
-      "pattern": "^[0-9]{3}-.*",
-      "title": "National identifier",
-      "examples": [
-        "888-abc",
-        "639-def"
-      ]
-    },
-    "name": {
-      "$id": "#/properties/name",
-      "type": "string",
-      "title": "Full name"
-    },
-    "gender": {
-      "$id": "#/properties/gender",
-      "title": "Gender"
-    },
-    "dob": {
-      "$id": "#/properties/birthDate",
-      "type": "string",
-      "format": "date",
-      "$comment": "YYYY-MM-DD format",
-      "examples": [
-        "1990-12-01"
-      ],
-      "title": "DOB"
-    },
-    "email": {
-      "$id": "email",
-      "type": "string",
-      "title": "Email ID"
-    },
-    "school": {
-      "$id": "school",
-      "type": "string",
-      "title": "School"
-    },
-    "district": {
-      "$id": "district",
-      "type": "string",
-      "title": "District"
-    },
-    "certificate": {
-      "$id": "certificate",
-      "type": "string",
-      "title": "Certificate"
-    },
-    "hasDrivingLicense": {
-      "$id": "#/properties/hasDrivingLicense",
-      "type": "boolean",
-      "title": "Driving license is present"
-    },
-    "isAdmin": {
-      "$id": "#/properties/hasDrivingLicense",
-      "type": "boolean",
-      "title": "Admin"
-    },
-    "photo": {
-      "title": "Photo",
-      "description": "Upload your profile picture.",
-      "type": "string",
-      "format": "uri"
-    },
-    "phone": {
-      "$id": "#/properties/phone",
-      "type": "string",
-      "title": "phone"
+    "$id": "#/properties/Person",
+    "type": "object",
+    "title": "The Person Schema",
+    "required": [
+      "teacherId",
+      "school",
+      "phone",
+      "name"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "signatures": {
+        "$id": "#/properties/signatures",
+        "type": "array",
+        "items": {
+          "$ref": "Signature.json#/definitions/Signature"
+        },
+        "$comment": "Placeholder for all verifiable claims"
+      },
+      "isAdmin": {
+        "$id": "#/properties/hasDrivingLicense",
+        "type": "boolean",
+        "title": "Admin"
+      },
+      "teacherId": {
+        "$id": "#/properties/teacherId",
+        "type": "string",
+        "$comment": "Voter identifier"
+      },
+      "name": {
+        "$id": "#/properties/name",
+        "type": "string",
+        "title": "Full name"
+      },
+      "school": {
+        "$id": "school",
+        "type": "string",
+        "title": "School"
+      },
+      "phone": {
+        "$id": "phone",
+        "type": "string",
+        "title": "Phone"
+      }
+      }
     }
-  }
-}

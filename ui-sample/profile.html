@@ -25,10 +25,10 @@
             </tbody>
         </table>
         <div class="text-center pt-3">
-            <span class=""><button class="btn btn-primary" id="button" onclick="edit(this.id)">Edit</button></span>
+            <span class=""><button class="btn btn-primary" id="button" onclick="edit(this.id)" style="margin-top: 1rem;" >Edit</button></span>
             <span class="pl-3 pr-3"><button class="btn btn-primary outline" id="button1" style="margin-top: -1rem;"
                     onclick="backtoProfile(this.id)">Cancel</button></span>
-            <span class=""><button class="btn btn-primary" id="button" onclick="downloadJson()" data-toggle="tooltip"
+            <span class=""><button class="btn btn-primary" id="downButton" onclick="downloadJson()" data-toggle="tooltip"
                     title="Download Signed
                 Profile">Download</button></span>
             <a id="downloadAnchorElem" style="display:none"></a>
@@ -58,38 +58,15 @@
             var tempkey;
             $(document).ready(function () {
                 $('#navbar').load("bootstrap-4-navbar.html", function() {
-                console.log('nav item')
+                // console.log('nav item')
              document.getElementById("nav1").style.display = "none"
              document.getElementById("nav2").style.display = "none"
-
+            
             });
                 $('[data-toggle="tooltip"]').tooltip();
             
             });
             function myFunction() {
-            fileToBase64("logo.png", "../logo.png").then(result => {
- console.log(result);
-});
-                // Convert file to base64 string
-function fileToBase64 (filename, filepath)  {
-  return new Promise(resolve => {
-    var file = new File([filename], filepath);
-    var reader = new FileReader();
-    // Read file content on file loaded event
-    reader.onload = function(event) {
-      resolve(event.target.result);
-    };
-    
-    // Convert data to base64 
-    reader.readAsDataURL(file);
-  });
-};
-// Example call:
-
-
-                // file = document.querySelector('#files > input[type="file"]').files[0]
-                // console.log(file)
-              
                 searchVerificationDetails();
                 readAdminStatus(qs);
                 function searchVerificationDetails() {
@@ -121,7 +98,7 @@ function fileToBase64 (filename, filepath)  {
                         checkVerification = JSON.parse(https.responseText);
 
                         checkVerification = checkVerification.result.PersonVerified[0];
-                        console.log(checkVerification)
+                        // console.log(checkVerification)
                     }
                 }
 
@@ -151,7 +128,7 @@ function fileToBase64 (filename, filepath)  {
                 var row = "", col = "";
                 http.onload = function () {
                     var obj = JSON.parse(http.responseText);
-                    console.log(obj, admin)
+                    // console.log(obj, admin)
                     document.getElementById('dropdown').innerHTML = obj.result.Person.name;
                     if(obj.result.Person.isAdmin) {
                         document.getElementById('admin').style.display = 'inline'
@@ -166,21 +143,22 @@ function fileToBase64 (filename, filepath)  {
                             for (var head in c) {
                                 document.getElementById('button1').style.display = 'none';
                                 if (admin === 'true') {
-                                    document.getElementById('button').innerHTML = 'Sign';
+                                    document.getElementById('button').style.display  = 'none';
+                                    document.getElementById("downButton").style.display = 'none'
+
                                 }
                                 var val = head;
                                 var headval = head;
                                 var value = c[head];
-                                val = val.toUpperCase();
                                 var temprow;
-                                console.log('val', val, head, c)
-                                temprow = "<tr><th class='header pr-5' name=" + val + ">" + head.charAt(0).toUpperCase() + head.slice(1) + "</th><td id=" + head + " class='text' name=" + head + "  width='20% !importent'>" + value + "</td >";
+                                // console.log('val',)
+                                temprow = "<tr><th class='header pr-5'>" + head.charAt(0).toUpperCase() + head.slice(1) + "</th><td id=" + head + " class='text' name=" + head + "  width='20% !importent'>" + value + "</td >";
                                 person = head + 'Verified';
                                 personobj = person.replace(/['"]+/g, '');
 
                                 if (admin !== 'true') {
                                     if (checkVerification.hasOwnProperty(personobj) && checkVerification[head + 'Verified']) {
-                                        var verifiedrow = "<td class='text pl-3' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>validated</td></tr>";
+                                        var verifiedrow = "<td class='text pl-2' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>validated</td></tr>";
                                         row += temprow + verifiedrow;
                                     }
                                     else {
@@ -201,7 +179,8 @@ function fileToBase64 (filename, filepath)  {
                             for (var i = 0; i < element.length; i++) {
                                 var newElement = document.createElement('div');
                                 var divElement = document.getElementsByTagName('div');
-                                // console.log(newElement.setAttribute('class', 'mt-1'))
+                                newElement.setAttribute('class', 'mt-2')
+                                // console.log()
                                 for (var j = 1; j < element.length - 1; j++) {
                                     // divElement[j+3].setAttribute('class', 'note');
                                     // console.log(divElement[j + 3]);
@@ -223,15 +202,15 @@ function fileToBase64 (filename, filepath)  {
                 edit.innerHTML = "Update";
                 document.getElementById('button1').style.display = '-webkit-inline-box';
                 for (key in c) {
-                    console.log(key, document.getElementById(key),c,permanantObj);
+                    // console.log(key, document.getElementById(key),c,permanantObj);
                     if (document.getElementById(key).firstChild != "[object HTMLInputElement]") {
 
                         var content = document.getElementById(key).firstChild.nodeValue;
-                        console.log(content)
+                        // console.log(content)
                         edit(key);
                         function edit(key) {
                             // console.log(key);
-                            var keys = key.toUpperCase() + key;
+                            var keys = key;
                             var anchor = document.getElementById(key);
                             var att = document.createAttribute("contenteditable");
                             att.value = "true";
@@ -240,13 +219,14 @@ function fileToBase64 (filename, filepath)  {
                         }
                         function onchange(keys, key) {
                             var childElemnet = document.getElementById(key);
-                            console.log(childElemnet)
+                            // console.log(childElemnet)
                             document.getElementById(key).onkeyup = function myFunction() {
                                 var x = document.getElementById(key);
-                                 tempkey = key.charAt(0).toLowerCase() + key.slice(1);
-                                console.log(x.innerHTML, permanantObj[tempkey],tempkey,permanantObj)
+                                // console.log(key);
+                                //  tempkey = key.charAt(0).toLowerCase() + key.slice(1);
+                                tempkey = key;
+                                // console.log(x.innerHTML, permanantObj[tempkey],tempkey,permanantObj)
                                 if (x.innerHTML.localeCompare(permanantObj[tempkey])) {
-                                    console.log(qs[1])
                                     isedited = true;
                                 }
                                 if (isedited) {
@@ -256,7 +236,6 @@ function fileToBase64 (filename, filepath)  {
                             }
                         }
                         function update(edited,id) {
-                            console.log(permanantObj,id)
                             if (edited) {
                                 const params = {
                                     "id": "open-saber.registry.update",
@@ -275,7 +254,6 @@ function fileToBase64 (filename, filepath)  {
                                 }
                               
                                 params.request.Person = permanantObj;
-                                console.log('param',params)
                                 const http = new XMLHttpRequest()
                                 http.open('POST', "http://localhost:8080/update")
                                 http.setRequestHeader('Content-type', 'application/json')
@@ -284,7 +262,6 @@ function fileToBase64 (filename, filepath)  {
                                 http.onload = function () {
                                  
                                     var obj = JSON.parse(http.responseText);
-                                    console.log(obj)
                                 }
                             }
                         }
@@ -357,11 +334,7 @@ function fileToBase64 (filename, filepath)  {
                         
                         permanantObj = msg.result.Person;
                         console.log(permanantObj);
-                        var encodedString = btoa(msg.result.Person.photo);
-console.log(encodedString);
-                        var decodedString = atob(encodedString);
-console.log(decodedString);
-                        admin = msg.result.Person.isAdmin;
+                       
                     }
                 });
             }

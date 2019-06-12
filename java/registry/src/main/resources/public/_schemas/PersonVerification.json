@@ -20,58 +20,25 @@
       ],
       "additionalProperties": false,
       "properties": {
-        "photo": {
-          "type": "string",
-          "contentEncoding": "base64",
-          "mediaType": "image/png"
-        },
-        "voterIdVerified": {
-          "$id": "#/properties/voterId",
-          "type": "string",
-          "$comment": "VoterId"
-        },
-        "emailVerified": {
-          "$id": "emailVerified",
+        "teacherIdVerified": {
+          "$id": "#/properties/teacherId",
           "type": "boolean",
-          "title": "Email ID"
+          "$comment": "VoterId"
         },
         "phoneVerified": {
           "$id": "phoneVerified",
           "type": "boolean",
           "title": "Phone"
         },
-        "certificateVerified": {
-          "$id": "certificateVerified",
-          "type": "boolean",
-          "title": "Certificate"
-        },
         "personId": {
           "$id": "personId",
           "type": "string",
           "title": "personId"
         },
-        "nameVerified": {
-          "$id": "#/properties/nameVerified",
-          "type": "boolean",
-          "title": "Full name"
-        },
-        "genderVerified": {
-          "$id": "#/properties/genderVerified",
-          "$ref": "Common.json#/definitions/Gender"
-        },
-        "dobVerified": {
-          "$id": "#/properties/birthDate",
-          "$ref": "Common.json#/definitions/Date"
-        },
         "schoolVerified": {
           "$id": "schoolVerified",
           "type": "boolean",
           "title": "School"
-        },
-        "distVerified": {
-          "$id": "distVerified",
-          "type": "boolean",
-          "title": "District"
         }
       }
     }
