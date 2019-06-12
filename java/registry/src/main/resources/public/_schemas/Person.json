@@ -19,9 +19,9 @@
         "voterId",
         "name",
         "gender",
-        "doB",
-        "emailId",
-        "phoneNo"
+        "dob",
+        "email",
+        "phone"
       ],
       "additionalProperties": false,
       "properties": {
@@ -33,10 +33,21 @@
           },
           "$comment": "Placeholder for all verifiable claims"
         },
-         "photo": {
+        "hasDrivingLicense": {
+          "$id": "#/properties/hasDrivingLicense",
+          "type": "boolean",
+          "title": "Driving license is present"
+        },
+        "isAdmin": {
+          "$id": "#/properties/hasDrivingLicense",
+          "type": "boolean",
+          "title": "Admin"
+        },
+        "photo": {
+          "title": "Photo",
+          "description": "Upload your profile picture.",
           "type": "string",
-          "contentEncoding": "base64",
-          "mediaType": "image/png"
+          "format": "uri"
         },
         "voterId": {
           "$id": "#/properties/voterId",
@@ -52,22 +63,22 @@
           "$id": "#/properties/gender",
           "$ref": "Common.json#/definitions/Gender"
         },
-        "doB": {
+        "dob": {
           "$id": "#/properties/birthDate",
           "$ref": "Common.json#/definitions/Date"
         },
-        "emailId": {
-          "$id": "emailId",
+        "email": {
+          "$id": "email",
           "type": "string",
-          "title": "Email ID"
+          "title": "Email"
         },
         "school": {
           "$id": "school",
           "type": "string",
           "title": "School"
         },
-        "phoneNo": {
-          "$id": "phoneNo",
+        "phone": {
+          "$id": "phone",
           "type": "string",
           "title": "Phone"
         },
@@ -80,11 +91,6 @@
           "$id": "certificate",
           "type": "string",
           "title": "Certificate"
-        },
-        "isAdmin": {
-          "$id": "isAdmin",
-          "type": "boolean",
-          "title": "Admin"
         }
       }
     }

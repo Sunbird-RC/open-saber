@@ -152,7 +152,7 @@ function fileToBase64 (filename, filepath)  {
                 http.onload = function () {
                     var obj = JSON.parse(http.responseText);
                     console.log(obj, admin)
-                    document.getElementById('name').innerHTML = obj.result.Person.name;
+                    document.getElementById('dropdown').innerHTML = obj.result.Person.name;
                     if(obj.result.Person.isAdmin) {
                         document.getElementById('admin').style.display = 'inline'
                         document.getElementById('adminline').style.display = 'inline'
@@ -174,7 +174,7 @@ function fileToBase64 (filename, filepath)  {
                                 val = val.toUpperCase();
                                 var temprow;
                                 console.log('val', val, head, c)
-                                temprow = "<tr><th id=" + val + " class='header pr-5' name=" + val + ">" + head.charAt(0).toUpperCase() + head.slice(1) + "</th><td id=" + head + " class='text' name=" + head + "  width='20% !importent'>" + value + "</td >";
+                                temprow = "<tr><th class='header pr-5' name=" + val + ">" + head.charAt(0).toUpperCase() + head.slice(1) + "</th><td id=" + head + " class='text' name=" + head + "  width='20% !importent'>" + value + "</td >";
                                 person = head + 'Verified';
                                 personobj = person.replace(/['"]+/g, '');
 
@@ -197,15 +197,15 @@ function fileToBase64 (filename, filepath)  {
                             $("table tbody").append(row);
 
                             var element = document.getElementsByTagName("tr");
-                            console.log(element)
+                            // console.log(element)
                             for (var i = 0; i < element.length; i++) {
                                 var newElement = document.createElement('div');
                                 var divElement = document.getElementsByTagName('div');
-                                console.log(newElement.setAttribute('class', 'mt-1'))
+                                // console.log(newElement.setAttribute('class', 'mt-1'))
                                 for (var j = 1; j < element.length - 1; j++) {
                                     // divElement[j+3].setAttribute('class', 'note');
-                                    console.log(divElement[j + 3]);
-                                    name = "mystyle";
+                                    // console.log(divElement[j + 3]);
+                                    name1 = "mystyle";
                                 }
                                 var elementParent = element[i].parentNode;
                                 elementParent.insertBefore(newElement, element[i].nextSibling);
@@ -223,7 +223,7 @@ function fileToBase64 (filename, filepath)  {
                 edit.innerHTML = "Update";
                 document.getElementById('button1').style.display = '-webkit-inline-box';
                 for (key in c) {
-                    console.log(key, document.getElementById(key));
+                    console.log(key, document.getElementById(key),c,permanantObj);
                     if (document.getElementById(key).firstChild != "[object HTMLInputElement]") {
 
                         var content = document.getElementById(key).firstChild.nodeValue;

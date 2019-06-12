@@ -3,16 +3,16 @@
   "fields": [
     {
       "name": "name",
-      "title": "Name",
+      "title": "name",
       "display": true
     },
     {
       "name": "gender",
-      "title": "Gender"
+      "title": "gender"
     },
     {
       "name": "district",
-      "title": "District"
+      "title": "district"
     },
     {
       "name": "osid",

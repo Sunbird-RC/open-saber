@@ -3,36 +3,36 @@
     "fields": [
       {
         "name": "name",
-        "title": "Name",
+        "title": "name",
         "display": true
       },
       {
         "name": "gender",
-        "title": "Gender"
+        "title": "gender"
       },
       {
-        "name": "doB",
-        "title": "DoB"
+        "name": "dob",
+        "title": "dob"
       },
       {
-        "name": "emailId",
-        "title": "EmailId"
+        "name": "email",
+        "title": "email"
       },
       {
-        "name": "phoneNo",
-        "title": "PhoneNo"
+        "name": "phone",
+        "title": "phone"
       },
       {
         "name": "school",
-        "title": "School"
+        "title": "school"
       },
       {
         "name": "district",
-        "title": "District"
+        "title": "district"
       },
       {
         "name": "certificate",
-        "title": "Certificate"
+        "title": "certificate"
       },
       {
         "name": "voterId",

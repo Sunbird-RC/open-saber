@@ -1,34 +1,26 @@
-"Person": {
+{
   "$id": "#/properties/Person",
   "type": "object",
-  "title": "The Person Schema",
+  "title": "",
   "required": [
     "voterId",
     "name",
     "gender",
     "dob",
-    "email",
     "phone"
   ],
   "additionalProperties": false,
   "properties": {
-    "signatures": {
-      "$id": "#/properties/signatures",
-      "type": "array",
-      "items": {
-        "$ref": "Signature.json#/definitions/Signature"
-      },
-      "$comment": "Placeholder for all verifiable claims"
-    },
-     "photo": {
-      "type": "string",
-      "contentEncoding": "base64",
-      "mediaType": "image/png"
-    },
     "voterId": {
       "$id": "#/properties/voterId",
       "type": "string",
-      "$comment": "Voter identifier"
+      "$comment": "Nationality",
+      "pattern": "^[0-9]{3}-.*",
+      "title": "National identifier",
+      "examples": [
+        "888-abc",
+        "639-def"
+      ]
     },
     "name": {
       "$id": "#/properties/name",
@@ -37,14 +29,20 @@
     },
     "gender": {
       "$id": "#/properties/gender",
-      "$ref": "Common.json#/definitions/Gender"
+      "title": "Gender"
     },
-    "doB": {
+    "dob": {
       "$id": "#/properties/birthDate",
-      "$ref": "Common.json#/definitions/Date"
+      "type": "string",
+      "format": "date",
+      "$comment": "YYYY-MM-DD format",
+      "examples": [
+        "1990-12-01"
+      ],
+      "title": "DOB"
     },
-    "emailId": {
-      "$id": "emailId",
+    "email": {
+      "$id": "email",
       "type": "string",
       "title": "Email ID"
     },
@@ -52,11 +50,6 @@
       "$id": "school",
       "type": "string",
       "title": "School"
-    },
-    "phoneNo": {
-      "$id": "phoneNo",
-      "type": "string",
-      "title": "Phone"
     },
     "district": {
       "$id": "district",
@@ -67,4 +60,27 @@
       "$id": "certificate",
       "type": "string",
       "title": "Certificate"
+    },
+    "hasDrivingLicense": {
+      "$id": "#/properties/hasDrivingLicense",
+      "type": "boolean",
+      "title": "Driving license is present"
+    },
+    "isAdmin": {
+      "$id": "#/properties/hasDrivingLicense",
+      "type": "boolean",
+      "title": "Admin"
+    },
+    "photo": {
+      "title": "Photo",
+      "description": "Upload your profile picture.",
+      "type": "string",
+      "format": "uri"
+    },
+    "phone": {
+      "$id": "#/properties/phone",
+      "type": "string",
+      "title": "phone"
     }
+  }
+}

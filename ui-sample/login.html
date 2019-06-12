@@ -217,6 +217,8 @@
 
 
                   console.log('hii')
+                  document.location.href = "./profile.html?osid=" + ID;
+
                   $.ajax({
                     url: "http://10.0.1.62:8014/otp/verify",
                     type: "post",
