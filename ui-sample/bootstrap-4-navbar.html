@@ -13,34 +13,37 @@
                 </li>
                 <li class="nav-item dropdown pr-4" id="nav2">
                     <!-- <a class="nav-link" href="./signUp.html" id="navbarDropdownMenuLink" > signUp</a> -->
-                    <a class="btn btn-outline-primary" href="./signUp.html" data-localize="signUp" id="navbarDropdownMenuLink">Sign up</a>
+                    <a class="btn btn-outline-primary" href="./signUp.html" data-localize="signUp"
+                        id="navbarDropdownMenuLink">Sign up</a>
+                </li>
+                <li class="nav-item  pt-2">
+                    <a class="nav-link" id="admin" href="" data-localize="manage" style="display: none">Manage</a>
                 </li>
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="langSelected" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle" href="#" id="langSelected" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
                         <ul>
-                            <li  onclick="dataLocalizeRefresh('es', 'Spanish')" id="es">Spanish</li>
-                            <li  onclick="dataLocalizeRefresh('en', 'English')" id="en">English</li>
+                            <li onclick="dataLocalizeRefresh('es', 'Spanish')" id="es">Spanish</li>
+                            <li onclick="dataLocalizeRefresh('en', 'English')" id="en">English</li>
                         </ul>
                     </div>
                 </li>
                 <li class="nav-item dropdown" id="profile">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
-                            aria-haspopup="true" aria-expanded="false">
-                            <i class="fa fa-user-circle-o" style="font-size:25px;color: grey"></i>
-    
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-user-circle" style="font-size:28px;color: grey"></i>
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <a class="dropdown-item" id="dropdown">
                         </a>
-                        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink" >
-                            <a class="dropdown-item" id="dropdown">
-                            </a>
-                            <div class="dropdown-divider" id="adminline" style="display: none"></div>
-                            <a id="admin" class="dropdown-item" style="display: none">Manage</a>
-                            <a class="dropdown-item" href="./home.html">Logout</a>
-                        </div>
-    
-    
-                    </li>
+                        <div class="dropdown-divider" id="adminline" style="display: none"></div>
+                        <a class="dropdown-item" data-localize="logout" href="./home.html">Logout</a>
+                    </div>
+
+
+                </li>
             </ul>
         </div>
     </div>
