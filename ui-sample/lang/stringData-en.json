@@ -1,5 +1,6 @@
 {
-    "productName": "Hey English",
+    "productName": "Teacher Registry",
     "login": "Login",
-    "signUp": "SignUp"
+    "signUp": "SignUp",
+    "profile": "Profile Information"
 }

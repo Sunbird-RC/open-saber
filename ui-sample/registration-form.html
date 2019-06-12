@@ -131,59 +131,57 @@
                                         contentType: "application/json",
                                         data: JSON.stringify(cookedVal),
                                         success: function (data) {
-                                        params.request.personId = data.result.Person.osid;
-console.log('personid', params.request.personId);
-personVerify(data.result.Person.osid);
-                                           
+                                            params.request.personId = data.result.Person.osid;
+                                            console.log('personid', params.request.personId);
+                                            personVerify(data.result.Person.osid);
+
                                         },
                                         error: function () {
                                             alert('error');
                                         }
                                     }
-                                    ); 
+                                    );
                                     function personVerify(osid) {
-                                    var params = {
-                                        "id": "open-saber.registry.create",
-                                        "ver": "1.0",
-                                        "ets": "11234",
-                                        "params": {
-                                            "did": "",
-                                            "key": "",
-                                            "msgid": ""
-                                        },
-                                        "request": {
-                                            "PersonVerified": {
-                                                "phoneVerified": true,
-                                                "emailVerified": false,
-                                                "certificateVerified": true,
-                                                "nameVerified": false,
-                                                "schoolVerified": false,
-                                                "distVerified": true,
-                                                "personId": osid
+                                        var params = {
+                                            "id": "open-saber.registry.create",
+                                            "ver": "1.0",
+                                            "ets": "11234",
+                                            "params": {
+                                                "did": "",
+                                                "key": "",
+                                                "msgid": ""
+                                            },
+                                            "request": {
+                                                "PersonVerified": {
+                                                    "phoneVerified": true,
+                                                    "teacherIdVerified": false,
+                                                    "nameVerified": false,
+                                                    "schoolVerified": false,
+                                                    "personId": osid
 
+                                                }
                                             }
                                         }
-                                    }
                                         $.ajax({
-                                        url: "http://localhost:8080/add",
-                                        type: "post",
-                                        contentType: "application/json",
-                                        data: JSON.stringify(params),
-                                        success: function (data) {
-                                        // params.request.personId = data.result.Person.osid;
-console.log('parma',data)
-                                            document.location.href = "./profile.html?osid=" + osid;
-                                        },
-                                        error: function () {
-                                            alert('error');
+                                            url: "http://localhost:8080/add",
+                                            type: "post",
+                                            contentType: "application/json",
+                                            data: JSON.stringify(params),
+                                            success: function (data) {
+                                                // params.request.personId = data.result.Person.osid;
+                                                console.log('parma', data)
+                                                document.location.href = "./profile.html?osid=" + osid;
+                                            },
+                                            error: function () {
+                                                alert('error');
+                                            }
                                         }
+                                        );
+
                                     }
-                                    ); 
-                                  
+
                                 }
-                                 
-                                }
-                                
+
                             }
                         }
                     }

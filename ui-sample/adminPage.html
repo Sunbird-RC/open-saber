@@ -58,7 +58,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
-    
+    <script type="text/javascript" src="./utils.js"></script> 
+
     <script type="text/javascript">
         var cookedVal = {
             "id": "open-saber.registry.search",
@@ -81,7 +82,10 @@
                 var urlParams = new URLSearchParams(location.search);
              document.getElementById("nav1").style.display = "none"
              document.getElementById("nav2").style.display = "none"
+
              document.getElementById('name').innerHTML = urlParams.get('name')
+
+             dataLocalizeRefreshDefault();
             });
 
             $.ajax({
