@@ -2,8 +2,7 @@
 <head>
     <meta charset="UTF-8">
 
-    <link type="text/css" rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" />
-    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link type="text/css" rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/todc-bootstrap/3.3.2-3.3.2/css/bootstrap-theme.min.css">
     <link rel="stylesheet" media="screen"
@@ -75,7 +74,13 @@
             }
         };
         $(document).ready(function () {
-            $('#navbar').load("navbar.html");
+            $('#navbar').load("bootstrap-4-navbar.html", function() {
+                console.log('nav item')
+             document.getElementById("nav1").style.display = "none"
+             document.getElementById("nav2").style.display = "none"
+
+            });
+
             $.ajax({
                 url: "http://localhost:8080/search",
                 type: "post",
@@ -183,6 +188,7 @@ var param = {
 
                 }
             });
+
         }
     </script>
 </body>

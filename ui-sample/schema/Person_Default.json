@@ -1,0 +1,42 @@
+{
+    "subject": "Person",
+    "fields": [
+      {
+        "name": "name",
+        "title": "Name",
+        "display": true
+      },
+      {
+        "name": "gender",
+        "title": "Gender"
+      },
+      {
+        "name": "dob",
+        "title": "DoB"
+      },
+      {
+        "name": "email",
+        "title": "EmailId"
+      },
+      {
+        "name": "phone",
+        "title": "PhoneNo"
+      },
+      {
+        "name": "school",
+        "title": "School"
+      },
+      {
+        "name": "dist",
+        "title": "District"
+      },
+      {
+        "name": "certificate",
+        "title": "Certificate"
+      },
+      {
+        "name": "osid",
+        "title": "UniqueID"
+      }
+    ]
+  }

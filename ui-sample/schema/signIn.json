@@ -1,7 +1,7 @@
 {
     "$id": "#/properties/SignUp",
     "type": "object",
-    "title": "Create Your Account",
+    "title": "Sign up",
     "required": [
       "phone"
     ],

@@ -40,7 +40,7 @@
 
 
   #addHeight {
-    height: 9rem;
+    height: 5rem;
   }
   .alpaca-form-buttons-container {
   text-align: center !important
@@ -64,40 +64,22 @@
 position: relative;
 padding-top: 9.3rem;
   }
-/* 
-  .form-control {
-    width: 84%;
-  }
 
-  .alpaca-form-buttons-container {
-    margin-top: 5rem !important; 
-  }
-  #fooBar {
-    margin-bottom: -2rem;
-    position: absolute;
-    float: left;
-    margin-left: -29rem;
-    width: 100%;
-    margin-top: 2rem
-
+  #alert {
+    
+    display:none;
 }
-  #fooBar input {
-    width: 29rem;
-    line-height: normal;
-font-size: 14px;
-line-height: 1.42857143;
-color: #555;
-background-color: #fff;
-background-image: none;
-border: 1px solid #ccc;
-border-radius: 4px;
--webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
--webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
--o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
-height: 33px;
-  } */
+.border-top { border-top: 1px solid #e5e5e5; }
+.border-bottom { border-bottom: 1px solid #e5e5e5; }
 
+.box-shadow { box-shadow: 0 .25rem .75rem rgba(65, 58, 58, 0.42) }
 
-  
+.jumbotron {
+  word-wrap: break-word;
+  background-color: #fff;
+  background-clip: border-box;
+  border: 1px solid rgba(0,0,0,.125);
+  border-radius: .25rem;
+  margin-top: 4rem;
+  height: auto;
+}

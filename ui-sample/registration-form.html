@@ -91,7 +91,7 @@
                         },
                         "buttons": {
                             "add": {
-                                "title": "Add",
+                                "title": "Register",
                                 "id": "sign",
                                 "click": function () {
                                     var value = this.getValue();
@@ -121,23 +121,8 @@
                                 }
                             }
                         }
-                    },
-                    "view": {
-                        "parent": "bootstrap-edit-horizontal",
-                        "layout": {
-                            "template": './layout1.html',
-                            "bindings": {
-                                "nationalIdentifier": "leftcolumn",
-                                "gender": "leftcolumn",
-                                "name": "leftcolumn",
-                                "isAdmin": "leftcolumn",
-                                "phone": "leftcolumn",
-                                "photo": "leftcolumn",
-                                "dob": "leftcolumn",
-                                "hasDrivingLicense": "leftcolumn"
-                            }
-                        }
                     }
+                
                 }
             });
         });

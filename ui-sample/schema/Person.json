@@ -1,13 +1,13 @@
 {
   "$id": "#/properties/Person",
   "type": "object",
-  "title": "The Person Schema",
+  "title": "",
   "required": [
     "nationalIdentifier",
     "name",
     "gender",
     "dob"
-    ],
+  ],
   "additionalProperties": false,
   "properties": {
     "nationalIdentifier": {
@@ -16,7 +16,10 @@
       "$comment": "Nationality",
       "pattern": "^[0-9]{3}-.*",
       "title": "National identifier",
-      "examples": ["888-abc", "639-def"]
+      "examples": [
+        "888-abc",
+        "639-def"
+      ]
     },
     "name": {
       "$id": "#/properties/name",
@@ -25,11 +28,17 @@
     },
     "gender": {
       "$id": "#/properties/gender",
-      "$ref": "Common.json#/definitions/Gender"
+      "title": "Gender"
     },
     "dob": {
       "$id": "#/properties/birthDate",
-      "$ref": "Common.json#/definitions/Date"
+      "type": "string",
+      "format": "date",
+      "$comment": "YYYY-MM-DD format",
+      "examples": [
+        "1990-12-01"
+      ],
+      "title": "DOB"
     },
     "email": {
       "$id": "email",
@@ -66,12 +75,16 @@
       "type": "boolean",
       "title": "Admin"
     },
-    
-    "photo":{
-      "title":"Photo",
-      "description":"Upload your profile picture.",
-      "type":"string",
-      "format":"uri"
-  }
+    "photo": {
+      "title": "Photo",
+      "description": "Upload your profile picture.",
+      "type": "string",
+      "format": "uri"
+    },
+    "phone": {
+      "$id": "#/properties/phone",
+      "type": "string",
+      "title": "phone"
+    }
   }
 }

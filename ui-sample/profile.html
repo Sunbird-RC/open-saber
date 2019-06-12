@@ -53,8 +53,14 @@
             var admin;
             var checkVerification;
             $(document).ready(function () {
+                $('#navbar').load("bootstrap-4-navbar.html", function() {
+                console.log('nav item')
+             document.getElementById("nav1").style.display = "none"
+             document.getElementById("nav2").style.display = "none"
+
+            });
                 $('[data-toggle="tooltip"]').tooltip();
-                $('#navbar').load("navbar.html");
+            
             });
             function myFunction() {
             fileToBase64("logo.png", "../logo.png").then(result => {
@@ -158,7 +164,7 @@ function fileToBase64 (filename, filepath)  {
                                 val = val.toUpperCase();
                                 var temprow;
                                 console.log('val', val, head, c)
-                                temprow = "<tr><th id=" + val + " class='header pr-5' name=" + val + ">" + head.charAt(0).toUpperCase() + head.slice(1) + "</th><td id=" + head + " class='text' name=" + head + "  width='25% !importent'>" + value + "</td >";
+                                temprow = "<tr><th id=" + val + " class='header pr-5' name=" + val + ">" + head.charAt(0).toUpperCase() + head.slice(1) + "</th><td id=" + head + " class='text' name=" + head + "  width='20% !importent'>" + value + "</td >";
                                 person = head + 'Verified';
                                 personobj = person.replace(/['"]+/g, '');
 
@@ -172,7 +178,7 @@ function fileToBase64 (filename, filepath)  {
                                         row += temprow + validaterow;
                                     }
                                 } else {
-                                    var approvedrow = "<td class='text pl-3' id='style'><button  class='btn btn-outline-success mr-3 sc' style='color:green;font-size:1rem;' ><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>approve</button><button class='btn btn-outline-danger sc' style='font-size:1rem;'>&nbsp;reject</button></td></tr>";
+                                    var approvedrow = "<td class='text pl-2' id='style'><button  class='btn btn-outline-success mr-3 sc' style='color:green;font-size:1rem;' ><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>approve</button><button class='btn btn-outline-danger sc' style='font-size:1rem;'>&nbsp;reject</button></td></tr>";
                                     row += temprow + approvedrow;
                                 }
 
