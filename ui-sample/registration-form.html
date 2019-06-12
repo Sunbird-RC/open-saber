@@ -2,33 +2,29 @@
 
 <head>
     <meta charset="UTF-8">
-    <link type="text/css" rel="stylesheet"
-        href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" />
-    <link type="text/css" rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/todc-bootstrap/3.3.2-3.3.2/css/bootstrap-theme.min.css">
-    <link rel="stylesheet" media="screen"
-        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker-standalone.min.css" />
+    <link type="text/css" rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" />
+    <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/todc-bootstrap/3.3.2-3.3.2/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" media="screen" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker-standalone.min.css"
+    />
     <link type="text/css" href="./css/alpaca.css" rel="stylesheet" />
     <link type="text/css" href="./css/person.css" rel="stylesheet" />
-    
+    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
 </head>
 
 <body>
-    <div id ="navbar"> </div>
+    <div id="navbar"> </div>
     <div class="container" id="PersonForm"></div>
 
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
-    <script type="text/javascript"
-        src="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.js"></script>
+    <script type="text/javascript" src="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.js"></script>
     <script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
-    <script type="text/javascript"
-        src="http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js"></script>
     <script type="text/javascript" src="http://code.cloudcms.com/alpaca/1.5.24/bootstrap/alpaca.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-ajaxy/1.6.1/scripts/jquery.ajaxy.js"></script>
-    <script
-        src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
 
 
     <script type="text/javascript">
@@ -80,9 +76,7 @@
                                 this.data = myArray;
                                 console.log('this.data', this.data)
                             },
-
                         },
-
                     },
                     "form": {
                         "attributes": {
@@ -122,7 +116,11 @@
                             }
                         }
                     }
-                
+
+                },
+                "postRender": function () {
+                    var urlParams = new URLSearchParams(location.search);
+                    document.getElementById("alpaca6").value = urlParams.get('phone')
                 }
             });
         });

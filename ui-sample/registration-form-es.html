@@ -193,6 +193,10 @@
                             }
                         }
                     }
+                },
+                "postRender": function () {
+                    var urlParams = new URLSearchParams(location.search);
+                    document.getElementById("alpaca6").value = urlParams.get('phone')
                 }
             });
         });

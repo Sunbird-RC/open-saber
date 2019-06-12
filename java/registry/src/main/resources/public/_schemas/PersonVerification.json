@@ -16,30 +16,19 @@
       "type": "object",
       "title": "The PersonVerified Schema",
       "required": [
-        "phoneVerified",
-        "emailVerified",
-        "certificateVerified",
         "personId"
       ],
       "additionalProperties": false,
       "properties": {
-        "signatures": {
-          "$id": "#/properties/signatures",
-          "type": "array",
-          "items": {
-            "$ref": "Signature.json#/definitions/Signature"
-          },
-          "$comment": "Placeholder for all verifiable claims"
-        },
         "photo": {
           "type": "string",
           "contentEncoding": "base64",
           "mediaType": "image/png"
         },
-        "nationalIdentifier": {
-          "$id": "#/properties/nationalIdentifier",
+        "voterIdVerified": {
+          "$id": "#/properties/voterId",
           "type": "string",
-          "$comment": "Nationality"
+          "$comment": "VoterId"
         },
         "emailVerified": {
           "$id": "emailVerified",
@@ -83,18 +72,6 @@
           "$id": "distVerified",
           "type": "boolean",
           "title": "District"
-        },
-        "hasDrivingLicense": {
-          "$id": "#/properties/hasDrivingLicense",
-          "type": "boolean",
-          "title": "Driving license is present"
-        },
-        "vehicles": {
-          "$id": "#/properties/vehicles",
-          "type": "array",
-          "items": {
-            "$ref": "Vehicle.json#/definitions/Vehicle"
-          }
         }
       }
     }

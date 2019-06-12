@@ -1,64 +1,86 @@
 {
-    "$id": "#/properties/Person",
-    "type": "object",
-    "title": "",
-    "required": [
-      "nationalIdentifier",
-      "name",
-      "gender",
-      "dob"
-    ],
-    "additionalProperties": false,
-    "properties": {
-      "nationalIdentifier": {
-        "$id": "#/properties/nationalIdentifier",
-        "type": "string",
-        "$comment": "Nationality",
-        "pattern": "^[0-9]{3}-.*",
-        "title": "Identificador nacional",
-        "examples": ["888-abc", "639-def"]
-      },
-      "name": {
-        "$id": "#/properties/name",
-        "type": "string",
-        "title": "Nombre completo"
-      },
-      "gender": {
-        "$id": "#/properties/gender",
-        "type": "string",
-        "enum": [
-          "MASCULINO",
-          "HEMBRA",
-          "OTRO"
-        ],
-        "title": "Género"
-      },
-      "dob": {
-        "$id": "#/properties/birthDate",
-        "type": "string",
-        "format": "date",
-        "$comment": "YYYY-MM-DD format",
-        "examples": [
-          "1990-12-01"
-        ],
-        "title": "Fecha de nacimiento"
-      },
-      "hasDrivingLicense": {
-        "$id": "#/properties/hasDrivingLicense",
-        "type": "boolean",
-        "title": "Licencia de conducir esta presente"
-      },
-      "isAdmin": {
-        "$id": "#/properties/hasDrivingLicense",
-        "type": "boolean",
-        "title": "Administración"
-      },
-      
-      "photo":{
-        "title": "Foto",
-        "description":"Upload your profile picture.",
-        "type":"string",
-        "format":"uri"
-    }
+  "$id": "#/properties/Person",
+  "type": "object",
+  "title": "",
+  "required": [
+    "voterId",
+    "name",
+    "gender",
+    "dob"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "$id": "#/properties/name",
+      "type": "string",
+      "title": "Nombre completo"
+    },
+    "gender": {
+      "$id": "#/properties/gender",
+      "type": "string",
+      "enum": [
+        "MASCULINO",
+        "HEMBRA",
+        "OTRO"
+      ],
+      "title": "Género"
+    },
+    "dob": {
+      "$id": "#/properties/birthDate",
+      "type": "string",
+      "format": "date",
+      "$comment": "YYYY-MM-DD format",
+      "examples": [
+        "1990-12-01"
+      ],
+      "title": "Fecha de nacimiento"
+    },
+    "phone": {
+      "$id": "#/properties/phone",
+      "type": "string",
+      "title": "Teléfono"
+    },
+    "email": {
+      "$id": "email",
+      "type": "string",
+      "title": "Email"
+    },
+    "school": {
+      "$id": "school",
+      "type": "string",
+      "title": "Colegio"
+    },
+    "dist": {
+      "$id": "dist",
+      "type": "string",
+      "title": "Distrito"
+    },
+    "certificate": {
+      "$id": "certificate",
+      "type": "string",
+      "title": "Certificado"
+    },
+    "voterId": {
+      "$id": "#/properties/voterId",
+      "type": "string",
+      "$comment": "Identificador de votantes",
+      "pattern": "^[0-9]{3}-.*",
+      "title": "Voter id",
+      "examples": [
+        "888-abc",
+        "639-def"
+      ]
+    },
+    "isAdmin": {
+      "$id": "#/properties/hasDrivingLicense",
+      "type": "boolean",
+      "title": "isAdmin"
+    },
+    "photo": {
+      "title": "Foto",
+      "description": "Upload your profile picture.",
+      "type": "string",
+      "format": "uri"
     }
   }
+}

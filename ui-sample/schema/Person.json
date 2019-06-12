@@ -3,24 +3,13 @@
   "type": "object",
   "title": "",
   "required": [
-    "nationalIdentifier",
+    "voterId",
     "name",
     "gender",
     "dob"
   ],
   "additionalProperties": false,
   "properties": {
-    "nationalIdentifier": {
-      "$id": "#/properties/nationalIdentifier",
-      "type": "string",
-      "$comment": "Nationality",
-      "pattern": "^[0-9]{3}-.*",
-      "title": "National identifier",
-      "examples": [
-        "888-abc",
-        "639-def"
-      ]
-    },
     "name": {
       "$id": "#/properties/name",
       "type": "string",
@@ -28,7 +17,13 @@
     },
     "gender": {
       "$id": "#/properties/gender",
-      "title": "Gender"
+      "title": "Gender",
+      "type": "string",
+      "enum": [
+          "MALE",
+          "FEMALE",
+          "OTHER"
+        ]
     },
     "dob": {
       "$id": "#/properties/birthDate",
@@ -39,6 +34,11 @@
         "1990-12-01"
       ],
       "title": "DOB"
+    },
+    "phone": {
+      "$id": "#/properties/phone",
+      "type": "string",
+      "title": "phone"
     },
     "email": {
       "$id": "email",
@@ -65,10 +65,16 @@
       "type": "string",
       "title": "Certificate"
     },
-    "hasDrivingLicense": {
-      "$id": "#/properties/hasDrivingLicense",
-      "type": "boolean",
-      "title": "Driving license is present"
+    "voterId": {
+      "$id": "#/properties/voterId",
+      "type": "string",
+      "$comment": "Nationality",
+      "pattern": "^[0-9]{3}-.*",
+      "title": "Voter id",
+      "examples": [
+        "888-abc",
+        "639-def"
+      ]
     },
     "isAdmin": {
       "$id": "#/properties/hasDrivingLicense",
@@ -80,11 +86,6 @@
       "description": "Upload your profile picture.",
       "type": "string",
       "format": "uri"
-    },
-    "phone": {
-      "$id": "#/properties/phone",
-      "type": "string",
-      "title": "phone"
     }
   }
 }
