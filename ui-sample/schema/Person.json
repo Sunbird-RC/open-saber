@@ -1,15 +1,35 @@
-{
+"Person": {
   "$id": "#/properties/Person",
   "type": "object",
-  "title": "",
+  "title": "The Person Schema",
   "required": [
     "voterId",
     "name",
     "gender",
-    "dob"
+    "dob",
+    "email",
+    "phone"
   ],
   "additionalProperties": false,
   "properties": {
+    "signatures": {
+      "$id": "#/properties/signatures",
+      "type": "array",
+      "items": {
+        "$ref": "Signature.json#/definitions/Signature"
+      },
+      "$comment": "Placeholder for all verifiable claims"
+    },
+     "photo": {
+      "type": "string",
+      "contentEncoding": "base64",
+      "mediaType": "image/png"
+    },
+    "voterId": {
+      "$id": "#/properties/voterId",
+      "type": "string",
+      "$comment": "Voter identifier"
+    },
     "name": {
       "$id": "#/properties/name",
       "type": "string",
@@ -17,31 +37,14 @@
     },
     "gender": {
       "$id": "#/properties/gender",
-      "title": "Gender",
-      "type": "string",
-      "enum": [
-          "MALE",
-          "FEMALE",
-          "OTHER"
-        ]
+      "$ref": "Common.json#/definitions/Gender"
     },
-    "dob": {
+    "doB": {
       "$id": "#/properties/birthDate",
-      "type": "string",
-      "format": "date",
-      "$comment": "YYYY-MM-DD format",
-      "examples": [
-        "1990-12-01"
-      ],
-      "title": "DOB"
+      "$ref": "Common.json#/definitions/Date"
     },
-    "phone": {
-      "$id": "#/properties/phone",
-      "type": "string",
-      "title": "phone"
-    },
-    "email": {
-      "$id": "email",
+    "emailId": {
+      "$id": "emailId",
       "type": "string",
       "title": "Email ID"
     },
@@ -50,13 +53,13 @@
       "type": "string",
       "title": "School"
     },
-    "photo": {
+    "phoneNo": {
+      "$id": "phoneNo",
       "type": "string",
-      "contentEncoding": "base64",
-      "mediaType": "image/png"
+      "title": "Phone"
     },
-    "dist": {
-      "$id": "dist",
+    "district": {
+      "$id": "district",
       "type": "string",
       "title": "District"
     },
@@ -64,28 +67,4 @@
       "$id": "certificate",
       "type": "string",
       "title": "Certificate"
-    },
-    "voterId": {
-      "$id": "#/properties/voterId",
-      "type": "string",
-      "$comment": "Nationality",
-      "pattern": "^[0-9]{3}-.*",
-      "title": "Voter id",
-      "examples": [
-        "888-abc",
-        "639-def"
-      ]
-    },
-    "isAdmin": {
-      "$id": "#/properties/hasDrivingLicense",
-      "type": "boolean",
-      "title": "Admin"
-    },
-    "photo": {
-      "title": "Photo",
-      "description": "Upload your profile picture.",
-      "type": "string",
-      "format": "uri"
     }
-  }
-}

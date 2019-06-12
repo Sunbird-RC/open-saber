@@ -11,15 +11,15 @@
         "title": "Gender"
       },
       {
-        "name": "dob",
+        "name": "doB",
         "title": "DoB"
       },
       {
-        "name": "email",
+        "name": "emailId",
         "title": "EmailId"
       },
       {
-        "name": "phone",
+        "name": "phoneNo",
         "title": "PhoneNo"
       },
       {
@@ -27,7 +27,7 @@
         "title": "School"
       },
       {
-        "name": "dist",
+        "name": "district",
         "title": "District"
       },
       {
@@ -35,8 +35,8 @@
         "title": "Certificate"
       },
       {
-        "name": "osid",
-        "title": "UniqueID"
+        "name": "voterId",
+        "title": "voterId"
       }
     ]
   }

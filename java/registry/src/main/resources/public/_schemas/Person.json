@@ -19,9 +19,9 @@
         "voterId",
         "name",
         "gender",
-        "dob",
-        "email",
-        "phone"
+        "doB",
+        "emailId",
+        "phoneNo"
       ],
       "additionalProperties": false,
       "properties": {
@@ -52,12 +52,12 @@
           "$id": "#/properties/gender",
           "$ref": "Common.json#/definitions/Gender"
         },
-        "dob": {
+        "doB": {
           "$id": "#/properties/birthDate",
           "$ref": "Common.json#/definitions/Date"
         },
-        "email": {
-          "$id": "email",
+        "emailId": {
+          "$id": "emailId",
           "type": "string",
           "title": "Email ID"
         },
@@ -66,13 +66,13 @@
           "type": "string",
           "title": "School"
         },
-        "phone": {
-          "$id": "phone",
+        "phoneNo": {
+          "$id": "phoneNo",
           "type": "string",
           "title": "Phone"
         },
-        "dist": {
-          "$id": "dist",
+        "district": {
+          "$id": "district",
           "type": "string",
           "title": "District"
         },
@@ -80,6 +80,11 @@
           "$id": "certificate",
           "type": "string",
           "title": "Certificate"
+        },
+        "isAdmin": {
+          "$id": "isAdmin",
+          "type": "boolean",
+          "title": "Admin"
         }
       }
     }

@@ -54,6 +54,8 @@
             var c = [];
             var admin;
             var checkVerification;
+            var permanantObj;
+            var tempkey;
             $(document).ready(function () {
                 $('#navbar').load("bootstrap-4-navbar.html", function() {
                 console.log('nav item')
@@ -241,19 +243,20 @@ function fileToBase64 (filename, filepath)  {
                             console.log(childElemnet)
                             document.getElementById(key).onkeyup = function myFunction() {
                                 var x = document.getElementById(key);
-                                console.log(x.innerHTML)
-                                if (x.innerHTML.localeCompare(c[key])) {
+                                 tempkey = key.charAt(0).toLowerCase() + key.slice(1);
+                                console.log(x.innerHTML, permanantObj[tempkey],tempkey,permanantObj)
+                                if (x.innerHTML.localeCompare(permanantObj[tempkey])) {
                                     console.log(qs[1])
                                     isedited = true;
                                 }
                                 if (isedited) {
-                                    c[key] = x.innerHTML;
+                                    permanantObj[tempkey] = x.innerHTML;
                                     update(isedited,qs[1]);
                                 }
                             }
                         }
                         function update(edited,id) {
-                            console.log(c,id)
+                            console.log(permanantObj,id)
                             if (edited) {
                                 const params = {
                                     "id": "open-saber.registry.update",
@@ -271,7 +274,7 @@ function fileToBase64 (filename, filepath)  {
                                     }
                                 }
                               
-                                params.request.Person = c;
+                                params.request.Person = permanantObj;
                                 console.log('param',params)
                                 const http = new XMLHttpRequest()
                                 http.open('POST', "http://localhost:8080/update")
@@ -279,7 +282,9 @@ function fileToBase64 (filename, filepath)  {
                                 http.send(JSON.stringify(params)) // Make sure to stringify
 
                                 http.onload = function () {
+                                 
                                     var obj = JSON.parse(http.responseText);
+                                    console.log(obj)
                                 }
                             }
                         }
@@ -349,7 +354,9 @@ function fileToBase64 (filename, filepath)  {
                     contentType: "application/json",
                     dataType: "json",
                     success: function (msg) {
-                        console.log(msg.result.Person.isAdmin);
+                        
+                        permanantObj = msg.result.Person;
+                        console.log(permanantObj);
                         var encodedString = btoa(msg.result.Person.photo);
 console.log(encodedString);
                         var decodedString = atob(encodedString);
