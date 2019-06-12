@@ -103,14 +103,14 @@
 
 
   <script type="text/javascript">
-    let timerOn = true;
-    var ID;
+    let timerOn = false;
+
     function timer(remaining) {
       var m = Math.floor(remaining / 60);
       var s = remaining % 60;
       m = m < 10 ? '0' + m : m;
       s = s < 10 ? '0' + s : s;
-      document.getElementById('timer').innerHTML = ' Valid for =' + m + ':' + s;
+      document.getElementById('timer').innerHTML = ' Valid for = ' + m + ':' + s;
       remaining -= 1;
       if (remaining >= 0 && timerOn) {
         setTimeout(function () {
@@ -135,6 +135,8 @@
       }
       console.log('otp', OTP)
       $(".alert").show();
+      timerOn = true
+
       getOtp = OTP
       timer(120);
 
@@ -147,7 +149,10 @@
       //   success: function (data, textStatus, xhr) {
       //     console.log(xhr.status)
       //     if (xhr.status == 200) {
+      //       timerOn = true
       //       timer(120);
+      //             $(".alert").show();
+
 
       //     }
       //   }
@@ -220,7 +225,7 @@
                     success: function (data, textStatus, xhr) {
                       console.log(xhr.status)
                       if (xhr.status == 200) {
-                        document.location.href = "./profile.html?osid=" + ID ;
+                        document.location.href = "./profile.html?osid=" + ID;
 
                       }
 
@@ -230,8 +235,8 @@
                     complete: function (xhr, textStatus) {
                       console.log(xhr.status);
                       if (xhr.status == 400) {
-                      alert("Invalid OTP")
-                       
+                        alert("Invalid OTP")
+
                       }
                     }
                   }
