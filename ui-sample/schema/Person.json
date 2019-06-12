@@ -3,84 +3,44 @@
   "type": "object",
   "title": "",
   "required": [
-    "voterId",
+    "teacherId",
     "name",
-    "gender",
-    "dob",
-    "phone"
+    "phone",
+    "school"
   ],
   "additionalProperties": false,
   "properties": {
-    "voterId": {
-      "$id": "#/properties/voterId",
+    "name": {
+      "$id": "#/properties/name",
       "type": "string",
-      "$comment": "Nationality",
+      "title": "Name"
+    },
+    "phone": {
+      "$id": "#/properties/phone",
+      "format": "phone",
+      "title": "phone"
+    },
+    "teacherId": {
+      "$id": "#/properties/teacherId",
+      "type": "string",
+      "$comment": "teacherId",
       "pattern": "^[0-9]{3}-.*",
-      "title": "National identifier",
+      "title": "Teacher Id",
       "examples": [
         "888-abc",
         "639-def"
       ]
     },
-    "name": {
-      "$id": "#/properties/name",
+     "school": {
+      "$id": "#/properties/school",
       "type": "string",
-      "title": "Full name"
-    },
-    "gender": {
-      "$id": "#/properties/gender",
-      "title": "Gender"
-    },
-    "dob": {
-      "$id": "#/properties/birthDate",
-      "type": "string",
-      "format": "date",
-      "$comment": "YYYY-MM-DD format",
-      "examples": [
-        "1990-12-01"
-      ],
-      "title": "DOB"
-    },
-    "email": {
-      "$id": "email",
-      "type": "string",
-      "title": "Email ID"
-    },
-    "school": {
-      "$id": "school",
-      "type": "string",
-      "title": "School"
-    },
-    "district": {
-      "$id": "district",
-      "type": "string",
-      "title": "District"
-    },
-    "certificate": {
-      "$id": "certificate",
-      "type": "string",
-      "title": "Certificate"
-    },
-    "hasDrivingLicense": {
-      "$id": "#/properties/hasDrivingLicense",
-      "type": "boolean",
-      "title": "Driving license is present"
+      "title": "school"
     },
     "isAdmin": {
-      "$id": "#/properties/hasDrivingLicense",
+      "$id": "isAdmin",
       "type": "boolean",
-      "title": "Admin"
-    },
-    "photo": {
-      "title": "Photo",
-      "description": "Upload your profile picture.",
-      "type": "string",
-      "format": "uri"
-    },
-    "phone": {
-      "$id": "#/properties/phone",
-      "type": "string",
-      "title": "phone"
+      "title": "isAdmin"
     }
+    
   }
 }

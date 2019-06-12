@@ -6,7 +6,7 @@
       "$ref": "#/definitions/PersonVerified"
     }
   },
-  "title":"PersonVerified",
+  "title": "PersonVerified",
   "required": [
     "PersonVerified"
   ],
@@ -20,60 +20,60 @@
       ],
       "additionalProperties": false,
       "properties": {
-        "photo": {
-          "type": "string",
-          "contentEncoding": "base64",
-          "mediaType": "image/png"
-        },
-        "voterIdVerified": {
-          "$id": "#/properties/voterId",
-          "type": "string",
-          "$comment": "VoterId"
-        },
-        "emailVerified": {
-          "$id": "emailVerified",
-          "type": "boolean",
-          "title": "Email ID"
-        },
-        "phoneVerified": {
-          "$id": "phoneVerified",
-          "type": "boolean",
-          "title": "Phone"
-        },
-        "certificateVerified": {
-          "$id": "certificateVerified",
-          "type": "boolean",
-          "title": "Certificate"
+        "signatures": {
+          "$id": "#/properties/signatures",
+          "type": "array",
+          "items": {
+            "$ref": "Signature.json#/definitions/Signature"
+          },
+          "$comment": "Placeholder for all verifiable claims"
         },
         "personId": {
-          "$id": "personId",
+          "$id": "#/properties/personId",
           "type": "string",
-          "title": "personId"
+          "$comment": "person identifier"
+        },
+        "teacherIdVerified": {
+          "$id": "#/properties/teacherIdVerified",
+          "type": "string",
+          "$comment": "teacher identifier"
         },
         "nameVerified": {
           "$id": "#/properties/nameVerified",
-          "type": "boolean",
-          "title": "Full name"
+          "type": "string",
+          "title": "Name"
         },
-        "genderVerified": {
-          "$id": "#/properties/genderVerified",
-          "$ref": "Common.json#/definitions/Gender"
-        },
-        "dobVerified": {
-          "$id": "#/properties/birthDate",
-          "$ref": "Common.json#/definitions/Date"
+        "phoneVerified": {
+          "$id": "phoneVerified",
+          "type": "string",
+          "title": "Phone"
         },
         "schoolVerified": {
           "$id": "schoolVerified",
-          "type": "boolean",
+          "type": "string",
           "title": "School"
-        },
-        "distVerified": {
-          "$id": "distVerified",
-          "type": "boolean",
-          "title": "District"
         }
       }
     }
+  },
+  "_osConfig": {
+    "osComment": [
+      "This section contains the OpenSABER specific configuration information",
+      "privateFields: Optional; list of field names to be encrypted and stored in database",
+      "signedFields: Optional; list of field names that must be pre-signed",
+      "indexFields: Optional; list of field names used for creating index. Enclose within braces to indicate it is a composite index. In this definition, (serialNum, teacherCode) is a composite index and teacherName is a single column index.",
+      "uniqueIndexFields: Optional; list of field names used for creating unique index. Field names must be different from index field name",
+      "systemFields: Optional; list of fields names used for system standard information like created, updated timestamps and userid"
+    ],
+    "privateFields": [],
+    "signedFields": [],
+    "indexFields": [],
+    "uniqueIndexFields": [],
+    "systemFields": [
+      "_osCreatedAt",
+      "_osUpdatedAt",
+      "_osCreatedBy",
+      "_osUpdatedBy"
+    ]
   }
 }

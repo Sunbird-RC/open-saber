@@ -10,78 +10,36 @@
   ],
   "additionalProperties": false,
   "properties": {
-    "signatures": {
-      "$id": "#/properties/signatures",
-      "type": "array",
-      "items": {
-        "$ref": "Signature.json#/definitions/Signature"
-      },
-      "$comment": "Placeholder for all verifiable claims"
-    },
-    "photo": {
-      "type": "string",
-      "contentEncoding": "base64",
-      "mediaType": "image/png"
-    },
-    "nationalIdentifier": {
-      "$id": "#/properties/nationalIdentifier",
-      "type": "string",
-      "$comment": "Nationality"
-    },
-    "emailVerified": {
-      "$id": "emailVerified",
-      "type": "boolean",
-      "title": "Email ID"
-    },
-    "phoneVerified": {
-      "$id": "phoneVerified",
-      "type": "boolean",
-      "title": "Phone"
-    },
-    "certificateVerified": {
-      "$id": "certificateVerified",
-      "type": "boolean",
-      "title": "Certificate"
-    },
     "personId": {
-      "$id": "personId",
+      "$id": "#/properties/personId",
       "type": "string",
       "title": "personId"
     },
     "nameVerified": {
       "$id": "#/properties/nameVerified",
-      "type": "boolean",
-      "title": "Full name"
+      "type": "string",
+      "title": "Name"
     },
-    "genderVerified": {
-      "$id": "#/properties/genderVerified",
-      "$ref": "Common.json#/definitions/Gender"
+    "phonenameVerified": {
+      "$id": "#/properties/phonenameVerified",
+      "format": "phone",
+      "title": "phone"
     },
-    "dobVerified": {
-      "$id": "#/properties/birthDate",
-      "$ref": "Common.json#/definitions/Date"
+    "teacherIdnameVerified": {
+      "$id": "#/properties/teacherIdnameVerified",
+      "type": "string",
+      "$comment": "teacherId",
+      "pattern": "^[0-9]{3}-.*",
+      "title": "Teacher Id",
+      "examples": [
+        "888-abc",
+        "639-def"
+      ]
     },
-    "schoolVerified": {
-      "$id": "schoolVerified",
-      "type": "boolean",
-      "title": "School"
-    },
-    "distVerified": {
-      "$id": "distVerified",
-      "type": "boolean",
-      "title": "District"
-    },
-    "hasDrivingLicense": {
-      "$id": "#/properties/hasDrivingLicense",
-      "type": "boolean",
-      "title": "Driving license is present"
-    },
-    "vehicles": {
-      "$id": "#/properties/vehicles",
-      "type": "array",
-      "items": {
-        "$ref": "Vehicle.json#/definitions/Vehicle"
-      }
+     "schoolnameVerified": {
+      "$id": "#/properties/schoolnameVerified",
+      "type": "string",
+      "title": "school"
     }
   }
 }
