@@ -119,35 +119,6 @@
             });
         });
         function myFunction(obj) {
-var param = {
-    "id": "open-saber.registry.update",
-    "ver": "1.0",
-    "ets": "11234",
-    "params": {
-        "did": "",
-        "key": "",
-        "msgid": ""
-    },
-    "request": {
-        "Person": {
-           "osid":obj,
-           "isAdmin":"true" 
-        }
-    }
-}
-
-            $.ajax({
-                url: "http://localhost:8080/update",
-                type: "post",
-                dataType: "application/json",
-                data: JSON.stringify(param),
-                contentType: "application/json",
-                dataType: "json",
-                success: function (msg) {
-                    console.log('isadmin',msg,param);
-                }
-            });
-            console.log(obj)
             document.location.href = "./profile.html?osid=" + obj;
         }
 

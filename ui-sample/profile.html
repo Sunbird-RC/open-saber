@@ -16,8 +16,8 @@
     <h3 class="text-center mt-2 mb-3">Profile Information</h3>
     <div class="border">
         <div class="image mb-2">
-            <img src="http://icons.iconarchive.com/icons/graphicloads/flat-finance/256/person-icon.png" class="center mt-3"
-                alt="Avatar">
+            <img src="http://icons.iconarchive.com/icons/graphicloads/flat-finance/256/person-icon.png"
+                class="center mt-3" alt="Avatar">
         </div>
         <table id="row">
             <tbody>
@@ -25,11 +25,12 @@
             </tbody>
         </table>
         <div class="text-center pt-3">
-            <span class=""><button class="btn btn-primary" id="button" onclick="edit(this.id)" style="margin-top: 1rem;" >Edit</button></span>
-            <span class="pl-3 pr-3"><button class="btn btn-primary outline" id="button1" 
+            <span class=""><button class="btn btn-primary" id="button" onclick="edit(this.id)"
+                    style="margin-top: 1rem;">Edit</button></span>
+            <span class="pl-3 pr-3"><button class="btn btn-primary outline" id="button1"
                     onclick="backtoProfile(this.id)">Cancel</button></span>
-            <span class=""><button class="btn btn-primary" id="downButton" onclick="downloadJson()" data-toggle="tooltip"
-                    title="Download Signed
+            <span class=""><button class="btn btn-primary" id="downButton" onclick="downloadJson()"
+                    data-toggle="tooltip" title="Download Signed
                 Profile">Download</button></span>
             <a id="downloadAnchorElem" style="display:none"></a>
 
@@ -47,8 +48,8 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
         <script type="text/javascript">
-          var query = window.location.search.substring(1);
-                var qs = query.split('=');
+            var query = window.location.search.substring(1);
+            var qs = query.split('=');
             var tempobj;
             var readobj = [];
             var c = [];
@@ -56,16 +57,24 @@
             var checkVerification;
             var permanantObj;
             var tempkey;
+            var preval;
+            var verifiedDetails;
             $(document).ready(function () {
-                $('#navbar').load("bootstrap-4-navbar.html", function() {
-                // console.log('nav item')
-             document.getElementById("nav1").style.display = "none"
-             document.getElementById("nav2").style.display = "none"
-            
-            });
+                $('#navbar').load("bootstrap-4-navbar.html", function () {
+                    // console.log('nav item')
+                    document.getElementById("nav1").style.display = "none"
+                    document.getElementById("nav2").style.display = "none"
+
+                });
                 $('[data-toggle="tooltip"]').tooltip();
-            
+               
+
             });
+           
+                
+            
+                  
+                
             function myFunction() {
                 searchVerificationDetails();
                 readAdminStatus(qs);
@@ -120,7 +129,7 @@
                         "viewTemplateId": "Person_Default.json"
                     }
                 }
-
+                console.log(params)
                 const http = new XMLHttpRequest()
                 http.open('POST', "http://localhost:8080/search")
                 http.setRequestHeader('Content-type', 'application/json')
@@ -128,22 +137,24 @@
                 var row = "", col = "";
                 http.onload = function () {
                     var obj = JSON.parse(http.responseText);
-                    // console.log(obj, admin)
+                    console.log(obj, admin)
                     document.getElementById('dropdown').innerHTML = obj.result.Person.name;
-                    if(obj.result.Person.isAdmin) {
+                    if (obj.result.Person.isAdmin) {
                         document.getElementById('admin').style.display = 'inline'
                         document.getElementById('adminline').style.display = 'inline'
-                        document.getElementById('admin').href='./adminpage.html?name='+ obj.result.Person.name
+                        document.getElementById('admin').href = './adminpage.html?name=' + obj.result.Person.name
 
                     }
                     for (key in obj) {
                         if (key === "result") {
+
                             readobj = obj[key].Person[0];
                             c = obj[key].Person[0];
+
                             for (var head in c) {
                                 document.getElementById('button1').style.display = 'none';
                                 if (admin === 'true') {
-                                    document.getElementById('button').style.display  = 'none';
+                                    document.getElementById('button').style.display = 'none';
                                     document.getElementById("downButton").style.display = 'none'
 
                                 }
@@ -151,15 +162,14 @@
                                 var headval = head;
                                 var value = c[head];
                                 var temprow;
-                                // console.log('val',)
-                                temprow = "<tr><th class='header pr-5'>" + head.charAt(0).toUpperCase() + head.slice(1) + "</th><td id=" + head + " class='text' name=" + head + "  width='20% !importent'>" + value + "</td >";
-                                person = head + 'Verified';
-                                personobj = person.replace(/['"]+/g, '');
-
+                                temprow = "<tr><th class='header pr-5'>" + head + "</th><td id=" + head + " class='text' name=" + head + "  width='20% !importent'>" + value + "</td >";
+                                // personobj = person.replace(/['"]+/g, '');
+                                console.log('if', c, head)
                                 if (admin !== 'true') {
-                                    if (checkVerification.hasOwnProperty(personobj) && checkVerification[head + 'Verified']) {
+                                    if (checkVerification[head + 'Verified']) {
                                         var verifiedrow = "<td class='text pl-2' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>validated</td></tr>";
                                         row += temprow + verifiedrow;
+                                    
                                     }
                                     else {
                                         var validaterow = "<td class='text pl-2' style='color:#007bff;font-size: 14px;'><i class='fa fa-exclamation-circle pr-1' style='color: #007bff;font-size: small !important;'></i>Pending validation</td></tr>";
@@ -170,9 +180,10 @@
                                     row += temprow + approvedrow;
                                 }
 
+
                             }
-                            // $("table tbody tr th td").tooltipOnOverflow();
                             $("table tbody").append(row);
+                            // $("table tbody tr th td").tooltipOnOverflow();
 
                             var element = document.getElementsByTagName("tr");
                             // console.log(element)
@@ -180,7 +191,6 @@
                                 var newElement = document.createElement('div');
                                 var divElement = document.getElementsByTagName('div');
                                 newElement.setAttribute('class', 'mt-2')
-                                // console.log()
                                 for (var j = 1; j < element.length - 1; j++) {
                                     // divElement[j+3].setAttribute('class', 'note');
                                     // console.log(divElement[j + 3]);
@@ -202,11 +212,11 @@
                 edit.innerHTML = "Update";
                 document.getElementById('button1').style.display = '-webkit-inline-box';
                 for (key in c) {
-                    console.log(key, document.getElementById(key),c,permanantObj);
+                    // console.log(key, document.getElementById(key),c,permanantObj);
                     if (document.getElementById(key).firstChild != "[object HTMLInputElement]") {
 
                         var content = document.getElementById(key).firstChild.nodeValue;
-                        console.log(content)
+                        // console.log(content)
                         edit(key);
                         function edit(key) {
                             console.log(key);
@@ -222,21 +232,33 @@
                             console.log(childElemnet)
                             document.getElementById(key).onkeyup = function myFunction() {
                                 var x = document.getElementById(key);
-                                console.log(key,x);
-                                //  tempkey = key.charAt(0).toLowerCase() + key.slice(1);
-                                tempkey = key;
-                                console.log(x.innerHTML, permanantObj[tempkey],tempkey,permanantObj)
-                                if (x.innerHTML.localeCompare(permanantObj[tempkey])) {
-                                    console.log('edited')
-                                    isedited = true;
-                                }
-                                if (isedited) {
-                                    permanantObj[tempkey] = x.innerHTML;
-                                    update(isedited,qs[1]);
+                                // console.log(key,x);
+                                $.getJSON('schema/Person_Default.json', function (data) {
+                    $.each(data, function (i, f) {
+                        if (i === 'fields') {
+                            verifiedDetails = f;
+                        }
+                    });
+                });
+
+                                for (var i = 0; i < verifiedDetails.length; i++) {
+                                    console.log(verifiedDetails[i].name, key, verifiedDetails[i].title)
+                                    if (key === verifiedDetails[i].title) {
+                                        tempkey = verifiedDetails[i].name;
+                                        console.log(x.innerHTML, permanantObj[tempkey], tempkey, permanantObj)
+                                        if (x.innerHTML.localeCompare(permanantObj[tempkey])) {
+                                            console.log('edited')
+                                            isedited = true;
+                                        }
+                                        if (isedited) {
+                                            permanantObj[tempkey] = x.innerHTML;
+                                            update(isedited, qs[1]);
+                                        }
+                                    }
                                 }
                             }
                         }
-                        function update(edited,id) {
+                        function update(edited, id) {
                             if (edited) {
                                 const params = {
                                     "id": "open-saber.registry.update",
@@ -253,7 +275,7 @@
                                         }
                                     }
                                 }
-                              
+
                                 params.request.Person = permanantObj;
                                 const http = new XMLHttpRequest()
                                 http.open('POST', "http://localhost:8080/update")
@@ -261,9 +283,9 @@
                                 http.send(JSON.stringify(params)) // Make sure to stringify
 
                                 http.onload = function () {
-                                 
+
                                     var obj = JSON.parse(http.responseText);
-                                    console.log('obj',obj,params)
+                                    // console.log('obj',obj,params)
                                 }
                             }
                         }
@@ -333,10 +355,10 @@
                     contentType: "application/json",
                     dataType: "json",
                     success: function (msg) {
-                        
+
                         permanantObj = msg.result.Person;
-                        console.log(permanantObj);
-                       
+                        // console.log(permanantObj);
+
                     }
                 });
             }

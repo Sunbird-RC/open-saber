@@ -12,22 +12,22 @@
       "type": "string",
       "title": "personId"
     },
-    "nameVerified": {
+    "NameVerified": {
       "$id": "#/properties/nameVerified",
       "type": "boolean",
       "title": "Name"
     },
-    "phonenameVerified": {
+    "PhonenameVerified": {
       "$id": "#/properties/phonenameVerified",
       "type": "boolean",
       "title": "phone"
     },
-    "teacherIdnameVerified": {
+    "TeacherIdnameVerified": {
       "$id": "#/properties/teacherIdnameVerified",
       "type": "boolean",
       "title": "Teacher Id"
     },
-    "schoolnameVerified": {
+    "SchoolnameVerified": {
       "$id": "#/properties/schoolnameVerified",
       "type": "boolean",
       "title": "school"
