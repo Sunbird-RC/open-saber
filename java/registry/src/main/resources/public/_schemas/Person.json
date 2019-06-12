@@ -6,7 +6,7 @@
       "$ref": "#/definitions/Person"
     }
   },
-  "title":"Person",
+  "title": "Person",
   "required": [
     "Person"
   ],
@@ -17,9 +17,9 @@
       "title": "The Person Schema",
       "required": [
         "teacherId",
-        "school",
+        "name",
         "phone",
-        "name"
+        "school"
       ],
       "additionalProperties": false,
       "properties": {
@@ -31,32 +31,59 @@
           },
           "$comment": "Placeholder for all verifiable claims"
         },
-        "isAdmin": {
-          "$id": "#/properties/hasDrivingLicense",
-          "type": "boolean",
-          "title": "Admin"
-        },
         "teacherId": {
           "$id": "#/properties/teacherId",
           "type": "string",
-          "$comment": "Voter identifier"
+          "$comment": "teacher identifier"
         },
         "name": {
           "$id": "#/properties/name",
           "type": "string",
-          "title": "Full name"
+          "title": "Name"
+        },
+        "phone": {
+          "$id": "#/properties/phone",
+          "type": "string",
+          "title": "Phone"
         },
         "school": {
-          "$id": "school",
+          "$id": "#/properties/school",
           "type": "string",
           "title": "School"
         },
-        "phone": {
-          "$id": "phone",
-          "type": "string",
-          "title": "Phone"
+        "isAdmin": {
+          "$id": "#/properties/isAdmin",
+          "type": "boolean",
+          "title": "isAdmin"
         }
       }
     }
+  },
+  "_osConfig": {
+    "osComment": [
+      "This section contains the OpenSABER specific configuration information",
+      "privateFields: Optional; list of field names to be encrypted and stored in database",
+      "signedFields: Optional; list of field names that must be pre-signed",
+      "indexFields: Optional; list of field names used for creating index. Enclose within braces to indicate it is a composite index. In this definition, (serialNum, teacherCode) is a composite index and teacherName is a single column index.",
+      "uniqueIndexFields: Optional; list of field names used for creating unique index. Field names must be different from index field name",
+      "systemFields: Optional; list of fields names used for system standard information like created, updated timestamps and userid"
+    ],
+    "privateFields": [
+      "teacherId",
+      "phone"
+    ],
+    "signedFields": [],
+    "indexFields": [
+      "teacherId"
+    ],
+    "uniqueIndexFields": [
+      "teacherId"
+    ],
+    "systemFields": [
+      "_osCreatedAt",
+      "_osUpdatedAt",
+      "_osCreatedBy",
+      "_osUpdatedBy"
+    ]
   }
 }

@@ -7,27 +7,37 @@
   ],
   "additionalProperties": false,
   "properties": {
-    "teacherIdVerified": {
-      "$id": "#/properties/teacherId",
-      "type": "string",
-      "$comment": "VoterId"
-    },
-    "phoneVerified": {
-      "$id": "phoneVerified",
-      "type": "boolean",
-      "title": "Phone"
-    },
     "personId": {
-      "$id": "personId",
+      "$id": "#/properties/personId",
       "type": "string",
       "title": "personId"
     },
-    "schoolVerified": {
-      "$id": "schoolVerified",
-      "type": "boolean",
-      "title": "School"
-    }
- 
+    "nameVerified": {
+      "$id": "#/properties/nameVerified",
+      "type": "string",
+      "title": "Name"
+    },
+    "phonenameVerified": {
+      "$id": "#/properties/phonenameVerified",
+      "format": "phone",
+      "title": "phone"
+    },
+    "teacherIdnameVerified": {
+      "$id": "#/properties/teacherIdnameVerified",
+      "type": "string",
+      "$comment": "teacherId",
+      "pattern": "^[0-9]{3}-.*",
+      "title": "Teacher Id",
+      "examples": [
+        "888-abc",
+        "639-def"
+      ]
+    },
+     "schoolnameVerified": {
+      "$id": "#/properties/schoolnameVerified",
+      "type": "string",
+      "title": "school"
     }
   }
+}
 
