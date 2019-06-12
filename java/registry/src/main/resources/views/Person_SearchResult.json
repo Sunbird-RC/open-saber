@@ -7,16 +7,20 @@
       "display": true
     },
     {
-      "name": "gender",
-      "title": "gender"
+      "name": "phone",
+      "title": "phone"
     },
     {
-      "name": "district",
-      "title": "district"
+      "name": "school",
+      "title": "school"
+    },
+    {
+      "name": "teacherId",
+      "title": "teacherId"
     },
     {
       "name": "osid",
-      "title": "UniqueId"
+      "title": "uniqueId"
     }
   ]
 }

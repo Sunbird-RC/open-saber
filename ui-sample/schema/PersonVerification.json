@@ -3,9 +3,6 @@
   "type": "object",
   "title": "The PersonVerified Schema",
   "required": [
-    "phoneVerified",
-    "emailVerified",
-    "certificateVerified",
     "personId"
   ],
   "additionalProperties": false,

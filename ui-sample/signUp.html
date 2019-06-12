@@ -213,10 +213,6 @@
         },
         "postRender": function () {
           document.getElementById("sign").style.display = "none";
-
-          if (phone) {
-            var control = $("#field1").alpaca("get");
-          }
         },
       });
     });
@@ -231,7 +227,8 @@
           "key": "",
           "msgid": ""
         },
-        "request": {
+
+        "request":{
           "entityType": ["Person"],
           "filters": {
             "phone": {

@@ -4,20 +4,24 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
-        integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <!-- <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+        integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous"> -->
     <link type="text/css" href="./css/profile.css" rel="stylesheet" />
     <link type="text/css" href="./css/signIn.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
 
 </head>
 
 <body onload="myFunction()">
     <div id="navbar"> </div>
     <h3 class="text-center mt-2 mb-3" data-localize="profile">Profile Information</h3>
+   
     <div class="border">
-        <div class="image mb-2">
-            <img src="http://icons.iconarchive.com/icons/graphicloads/flat-finance/256/person-icon.png"
-                class="center mt-3" alt="Avatar">
+        <div class="image mb-2 center">
+            <!-- <img src="http://icons.iconarchive.com/icons/graphicloads/flat-finance/256/person-icon.png"
+                class="center mt-3" alt="Avatar"> -->
+            <div id="profileImage"></div>
         </div>
         <table id="row">
             <tbody>
@@ -25,11 +29,13 @@
             </tbody>
         </table>
         <div class="text-center pt-3">
-            <span class=""><button class="btn btn-primary" id="button" onclick="edit(this.id)">Edit</button></span>
-            <span class="pl-3 pr-3"><button class="btn btn-primary outline" id="button1" style="margin-top: -1rem;"
+            
+            <span class=""><button  class="btn btn-primary" id="button" onclick="edit(this.id)"
+                    style="margin-top: 1rem;"><i class="fas fa-user-edit"></i> <span data-localize="edit"> Edit</span> </button></span>
+            <span class="pl-3 pr-3"><button class="btn btn-primary outline" id="button1" data-localize="cancel"
                     onclick="backtoProfile(this.id)">Cancel</button></span>
-            <span class=""><button class="btn btn-primary" id="button" onclick="downloadJson()" data-toggle="tooltip"
-                    title="Download Signed
+            <span class=""><button data-localize="download" class="btn btn-primary" id="downButton" onclick="downloadJson()"
+                    data-toggle="tooltip" title="Download Signed
                 Profile">Download</button></span>
             <a id="downloadAnchorElem" style="display:none"></a>
 
@@ -46,7 +52,8 @@
             crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-localize/0.1.0/jquery.localize.min.js"></script>
+        <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/jquery-localize/0.1.0/jquery.localize.min.js"></script>
 
         <script type="text/javascript" src="./utils.js"></script>
 
@@ -66,36 +73,13 @@
                     document.getElementById("nav1").style.display = "none"
                     document.getElementById("nav2").style.display = "none"
                     dataLocalizeRefresh('en', 'English')
-                    
+
 
                 });
                 $('[data-toggle="tooltip"]').tooltip();
 
             });
             function myFunction() {
-                fileToBase64("logo.png", "../logo.png").then(result => {
-                    console.log(result);
-                });
-                // Convert file to base64 string
-                function fileToBase64(filename, filepath) {
-                    return new Promise(resolve => {
-                        var file = new File([filename], filepath);
-                        var reader = new FileReader();
-                        // Read file content on file loaded event
-                        reader.onload = function (event) {
-                            resolve(event.target.result);
-                        };
-
-                        // Convert data to base64 
-                        reader.readAsDataURL(file);
-                    });
-                };
-                // Example call:
-
-
-                // file = document.querySelector('#files > input[type="file"]').files[0]
-                // console.log(file)
-
                 searchVerificationDetails();
                 readAdminStatus(qs);
                 function searchVerificationDetails() {
@@ -127,7 +111,7 @@
                         checkVerification = JSON.parse(https.responseText);
 
                         checkVerification = checkVerification.result.PersonVerified[0];
-                        console.log(checkVerification)
+                        // console.log(checkVerification)
                     }
                 }
 
@@ -157,8 +141,8 @@
                 var row = "", col = "";
                 http.onload = function () {
                     var obj = JSON.parse(http.responseText);
-                    console.log(obj, admin)
-                    document.getElementById('dropdown').innerHTML = obj.result.Person.name;
+                    // console.log(obj, admin)
+                    document.getElementById('dropdown').innerHTML = obj.result.Person[0].Name;
                     if (obj.result.Person.isAdmin) {
                         document.getElementById('admin').style.display = 'inline'
                         document.getElementById('adminline').style.display = 'inline'
@@ -172,21 +156,22 @@
                             for (var head in c) {
                                 document.getElementById('button1').style.display = 'none';
                                 if (admin === 'true') {
-                                    document.getElementById('button').innerHTML = 'Sign';
+                                    document.getElementById('button').style.display = 'none';
+                                    document.getElementById("downButton").style.display = 'none'
+
                                 }
                                 var val = head;
                                 var headval = head;
                                 var value = c[head];
-                                val = val.toUpperCase();
                                 var temprow;
-                                console.log('val', val, head, c)
-                                temprow = "<tr><th class='header pr-5' name=" + val + ">" + head.charAt(0).toUpperCase() + head.slice(1) + "</th><td id=" + head + " class='text' name=" + head + "  width='20% !importent'>" + value + "</td >";
+                                // console.log('val',)
+                                temprow = "<tr><th class='header pr-5'>" + head.charAt(0).toUpperCase() + head.slice(1) + "</th><td id=" + head + " class='text' name=" + head + "  width='20% !importent'>" + value + "</td >";
                                 person = head + 'Verified';
                                 personobj = person.replace(/['"]+/g, '');
 
                                 if (admin !== 'true') {
                                     if (checkVerification.hasOwnProperty(personobj) && checkVerification[head + 'Verified']) {
-                                        var verifiedrow = "<td class='text pl-3' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>validated</td></tr>";
+                                        var verifiedrow = "<td class='text pl-2' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>validated</td></tr>";
                                         row += temprow + verifiedrow;
                                     }
                                     else {
@@ -207,7 +192,8 @@
                             for (var i = 0; i < element.length; i++) {
                                 var newElement = document.createElement('div');
                                 var divElement = document.getElementsByTagName('div');
-                                // console.log(newElement.setAttribute('class', 'mt-1'))
+                                newElement.setAttribute('class', 'mt-2')
+                                // console.log()
                                 for (var j = 1; j < element.length - 1; j++) {
                                     // divElement[j+3].setAttribute('class', 'note');
                                     // console.log(divElement[j + 3]);
@@ -236,8 +222,8 @@
                         console.log(content)
                         edit(key);
                         function edit(key) {
-                            // console.log(key);
-                            var keys = key.toUpperCase() + key;
+                            console.log(key);
+                            var keys = key;
                             var anchor = document.getElementById(key);
                             var att = document.createAttribute("contenteditable");
                             att.value = "true";
@@ -249,10 +235,12 @@
                             console.log(childElemnet)
                             document.getElementById(key).onkeyup = function myFunction() {
                                 var x = document.getElementById(key);
-                                tempkey = key.charAt(0).toLowerCase() + key.slice(1);
+                                console.log(key, x);
+                                //  tempkey = key.charAt(0).toLowerCase() + key.slice(1);
+                                tempkey = key;
                                 console.log(x.innerHTML, permanantObj[tempkey], tempkey, permanantObj)
                                 if (x.innerHTML.localeCompare(permanantObj[tempkey])) {
-                                    console.log(qs[1])
+                                    console.log('edited')
                                     isedited = true;
                                 }
                                 if (isedited) {
@@ -262,7 +250,6 @@
                             }
                         }
                         function update(edited, id) {
-                            console.log(permanantObj, id)
                             if (edited) {
                                 const params = {
                                     "id": "open-saber.registry.update",
@@ -281,7 +268,6 @@
                                 }
 
                                 params.request.Person = permanantObj;
-                                console.log('param', params)
                                 const http = new XMLHttpRequest()
                                 http.open('POST', "http://localhost:8080/update")
                                 http.setRequestHeader('Content-type', 'application/json')
@@ -290,7 +276,7 @@
                                 http.onload = function () {
 
                                     var obj = JSON.parse(http.responseText);
-                                    console.log(obj)
+                                    console.log('obj', obj, params)
                                 }
                             }
                         }
@@ -360,14 +346,19 @@
                     contentType: "application/json",
                     dataType: "json",
                     success: function (msg) {
+                        console.log(msg)
+                        if (msg.result.Person.isAdmin) {
+                            document.getElementById('admin').style.display = 'inline'
+                            document.getElementById('adminline').style.display = 'inline'
+                            document.getElementById('admin').href = './adminpage.html?name=' + msg.result.Person.name
 
+                        }
                         permanantObj = msg.result.Person;
                         console.log(permanantObj);
-                        var encodedString = btoa(msg.result.Person.photo);
-                        console.log(encodedString);
-                        var decodedString = atob(encodedString);
-                        console.log(decodedString);
-                        admin = msg.result.Person.isAdmin;
+                        var intials = msg.result.Person.name.charAt(0)
+                        console.log(intials)
+                        document.getElementById("profileImage").innerText = intials;
+
                     }
                 });
             }

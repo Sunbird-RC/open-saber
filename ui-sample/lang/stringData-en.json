@@ -2,5 +2,12 @@
     "productName": "Teacher Registry",
     "login": "Login",
     "signUp": "SignUp",
-    "profile": "Profile Information"
+    "profile": "Profile Information",
+    "download": "Download",
+    "edit": "Edit",
+    "cancel": "Cancel",
+    "logout":"Logout",
+    "manage":"Manage"
+
+
 }

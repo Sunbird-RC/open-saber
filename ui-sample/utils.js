@@ -22,3 +22,7 @@ function dataLocalizeRefreshDefault() {
   console.log("dataLocalizeRefreshEnd " + lang);
 
 }
+
+function dataLocalizechange(lang, fullLangText) {
+
+}
