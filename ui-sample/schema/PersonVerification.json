@@ -12,11 +12,6 @@
       "type": "string",
       "title": "personId"
     },
-    "NameVerified": {
-      "$id": "#/properties/nameVerified",
-      "type": "boolean",
-      "title": "Name"
-    },
     "PhonenameVerified": {
       "$id": "#/properties/phonenameVerified",
       "type": "boolean",

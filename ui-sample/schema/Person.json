@@ -40,6 +40,11 @@
       "$id": "isAdmin",
       "type": "boolean",
       "title": "isAdmin"
+    },
+    "isApproved": {
+      "$id": "#/properties/isApproved",
+      "type": "boolean",
+      "title": "isApproved"
     }
     
   }

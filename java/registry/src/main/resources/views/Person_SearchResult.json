@@ -21,6 +21,10 @@
     {
       "name": "osid",
       "title": "uniqueId"
+    },
+    {
+      "name": "isApproved",
+      "title": "isApproved"
     }
   ]
 }

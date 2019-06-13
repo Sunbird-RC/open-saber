@@ -55,6 +55,11 @@
           "$id": "#/properties/isAdmin",
           "type": "boolean",
           "title": "isAdmin"
+        },
+        "isApproved": {
+          "$id": "#/properties/isApproved",
+          "type": "boolean",
+          "title": "isApproved"
         }
       }
     }
@@ -69,12 +74,10 @@
       "systemFields: Optional; list of fields names used for system standard information like created, updated timestamps and userid"
     ],
     "privateFields": [
-      "teacherId",
-      "phone"
+
     ],
     "signedFields": [],
     "indexFields": [
-      "teacherId"
     ],
     "uniqueIndexFields": [
       "teacherId"

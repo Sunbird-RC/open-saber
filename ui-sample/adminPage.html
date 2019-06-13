@@ -14,7 +14,8 @@
     <link type="text/css" href="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.css"
         rel="stylesheet" />
     <!-- <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"> -->
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css"
+        integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 
 
 </head>
@@ -61,11 +62,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-localize/0.1.0/jquery.localize.min.js"></script>
+    <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/jquery-localize/0.1.0/jquery.localize.min.js"></script>
 
     <script type="text/javascript" src="./utils.js"></script>
 
     <script type="text/javascript">
+        var approveStatus;
         var cookedVal = {
             "id": "open-saber.registry.search",
             "ver": "1.0",
@@ -91,7 +94,6 @@
                 document.getElementById('dropdown').innerHTML = urlParams.get('name')
                 dataLocalizeRefresh('en', 'English');
             });
-
             $.ajax({
                 url: "http://localhost:8080/search",
                 type: "post",
@@ -100,32 +102,48 @@
                 contentType: "application/json",
                 dataType: "json",
                 success: function (msg) {
-                    console.log(msg)
-                    filteredObject = []
+                    personRecords = []
                     _.map(msg.result.Person, (person) => {
-                        filteredObject.push(_.omit(person, ['@type', '_osUpdatedBy', '_osCreatedAt', '_osCreatedBy', '_osCreatedAt', '_osUpdatedAt']))
-
+                        personRecords.push(_.omit(person, ['@type', '_osUpdatedBy', '_osCreatedAt', '_osCreatedBy', '_osCreatedAt', '_osUpdatedAt']))
                     });
-                    var colHeader = Object.keys(filteredObject[0]);
-                    _.forEach(filteredObject[0], (value, key) => {
-                        $('table thead tr').append('<th>' + key + '</th>');
+                    var colHeader = Object.keys(personRecords[0]);
+                    _.forEach(personRecords[0], (value, key) => {
+                        console.log(value,key)
+                        if (key !== 'isApproved') {
+                            $('table thead tr').append('<th>' + key + '</th>');
+                        }
                     });
-                    $('table thead tr').append('<th>' + '' + '</th>');
 
-                    for (var i = 0; i < filteredObject.length; i++) {
+                    $('table thead tr').append('<th>' + 'Actions' + '</th>');
+                    console.log('1');
+                    for (var idx = 0; idx < personRecords.length; idx++) {
+                        var approved = false;
                         $('table tbody').append('<tr></tr>')
                         var row = "";
                         for (var j = 0; j < colHeader.length; j++) {
-                            $('table tbody tr').last().append('<td>' + filteredObject[i][colHeader[j]] + '</td>');
+                            console.log('col',colHeader[j])
+                            if (colHeader[j] === 'isApproved') {
+                                console.log('if',personRecords)
+                                approved = personRecords[idx][colHeader[j]]
+                            } else {
+                                $('table tbody tr').last().append('<td>' + personRecords[idx][colHeader[j]] + '</td>');
+                            }
                         }
-                        console.log(JSON.stringify(filteredObject[i].uniqueId))
-                        row = "<td><button type='button' class='btn btn-primary' onclick=myFunction(" + JSON.stringify(filteredObject[i].uniqueId) + ")>Approve</button></td>";
-
-                        $('table tbody tr').last().append(row);
+                        console.log(approved )
+                        if (approved === 'true') {
+                            console.log('truer')
+                            row = "<td><button type='button' class='btn btn-primary' onclick=myFunction(" + JSON.stringify(personRecords[idx].uniqueId) + ")>Approve</button></td>";
+                            $('table tbody tr').last().append(row);
+                        }else {
+                            console.log('fasle')
+                            row = "<td><label style='color: green;font-size: 1rem;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>Verified record</label></td>";
+                            $('table tbody tr').last().append(row);
+                        }
                     }
                 }
             });
         });
+  
         function myFunction(obj) {
             document.location.href = "./profile.html?osid=" + obj;
         }
@@ -145,20 +163,20 @@
                     if (msg.result.Person.length > 0) {
                         document.getElementById("noResult").textContent = "";
                         $("table").find("tr:not(:first)").remove();
-                        filteredObject = []
+                        personRecords = []
                         _.map(msg.result.Person, (person) => {
-                            filteredObject.push(_.omit(person, ['@type', '_osUpdatedBy', '_osCreatedAt', '_osCreatedBy', '_osCreatedAt', '_osUpdatedAt']));
+                            personRecords.push(_.omit(person, ['@type', '_osUpdatedBy', '_osCreatedAt', '_osCreatedBy', '_osCreatedAt', '_osUpdatedAt']));
                         });
-                        var colHeader = Object.keys(filteredObject[0]);
+                        var colHeader = Object.keys(personRecords[0]);
                         $('table thead tr').append('<th>' + '' + '</th>');
 
-                        for (var i = 0; i < filteredObject.length; i++) {
+                        for (var i = 0; i < personRecords.length; i++) {
                             $('table tbody').append('<tr></tr>')
                             var row = "";
                             for (var j = 0; j < colHeader.length; j++) {
-                                $('table tbody tr').last().append('<td>' + filteredObject[i][colHeader[j]] + '</td>');
+                                $('table tbody tr').last().append('<td>' + personRecords[i][colHeader[j]] + '</td>');
                             }
-                            row = "<td><button type='button' class=' btn btn-primary' onclick=myFunction(" + JSON.stringify(filteredObject[i].osid) + ")>Approve</button></td>";
+                            row = "<td><button type='button' class=' btn btn-primary' onclick=myFunction(" + JSON.stringify(personRecords[i].osid) + ")>Approve</button></td>";
                             $('table tbody tr').last().append(row);
                         }
                     }
