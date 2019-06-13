@@ -7,6 +7,13 @@
     "edit": "Editar",
     "cancel":"Cancelar",
     "logout":"Cerrar sesión",
-    "manage":"Gestionar"
+    "manage":"Gestionar",
+    "searchs": "Buscar",
+    "approve": "aprobar",
+    "searchPlaceholder": {
+        "value": "Search By Name"
+    },
+    "pending": "Validación pendiente"
+
 
 }

@@ -1,0 +1,26 @@
+{
+    "subject": "Person",
+    "fields": [
+      {
+        "name": "name",
+        "title": "nombre",
+        "display": true
+      },
+      {
+        "name": "phone",
+        "title": "teléfono"
+      },
+      {
+        "name": "school",
+        "title": "colegio"
+      },
+      {
+        "name": "teacherId",
+        "title": "profesorId"
+      },
+      {
+        "name": "osid",
+        "title": "Identificación única"
+      }
+    ]
+  }

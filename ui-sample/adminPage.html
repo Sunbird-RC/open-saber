@@ -25,9 +25,9 @@
     <div class="container mt-4">
         <div class="row justify-content-center">
             <div class="form-inline mb-3">
-                <input class="form-control mr-sm-2" name="search" type="search" placeholder="Search By Name"
-                    aria-label="Search" onchange="searchByQuery(this)">
-                <button class="btn btn-outline-success my-2 my-sm-0" type="submit"
+                <input class="form-control mr-sm-2" data-localize="searchPlaceholder.num" name="search" type="search"
+                    value="" placeholder="Search By Name" aria-label="Search" onchange="searchByQuery(this)">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit" data-localize="searchs"
                     onclick="searchByQuery(document.getElementsByName('search')[0])">Search</button>
             </div>
         </div>
@@ -68,7 +68,8 @@
     <script type="text/javascript" src="./utils.js"></script>
 
     <script type="text/javascript">
-        var approveStatus;
+        var urlParams = new URLSearchParams(location.search);
+        var lang = urlParams.get('lang')
         var cookedVal = {
             "id": "open-saber.registry.search",
             "ver": "1.0",
@@ -85,15 +86,17 @@
                 "viewTemplateId": "Person_SearchResult.json"
             }
         };
-        $(document).ready(function () {
-            $('#navbar').load("bootstrap-4-navbar.html", function () {
-                var urlParams = new URLSearchParams(location.search);
-                document.getElementById("nav1").style.display = "none"
-                document.getElementById("nav2").style.display = "none"
+        if (lang == 'English') {
+            cookedVal.request.viewTemplateId = "Person_SearchResult.json"
 
-                document.getElementById('dropdown').innerHTML = urlParams.get('name')
-                dataLocalizeRefresh('en', 'English');
-            });
+        } else if (lang == 'Spanish') {
+            cookedVal.request.viewTemplateId = "Person_SearchResult_es.json"
+
+        }
+
+        $(document).ready(function () {
+
+            var langId;
             $.ajax({
                 url: "http://localhost:8080/search",
                 type: "post",
@@ -114,38 +117,69 @@
                         }
                     });
 
-                    $('table thead tr').append('<th>' + 'Actions' + '</th>');
-                    console.log('1');
+                    $('table thead tr').append("<th> <div data-localize='actions'>" +  'Actions' + '</div></th>');
+                    // console.log('1');
                     for (var idx = 0; idx < personRecords.length; idx++) {
                         var approved = false;
                         $('table tbody').append('<tr></tr>')
                         var row = "";
                         for (var j = 0; j < colHeader.length; j++) {
-                            console.log('col',colHeader[j])
+                            // console.log('col',colHeader[j])
                             if (colHeader[j] === 'isApproved') {
-                                console.log('if',personRecords)
+                                // console.log('if',personRecords)
                                 approved = personRecords[idx][colHeader[j]]
                             } else {
                                 $('table tbody tr').last().append('<td>' + personRecords[idx][colHeader[j]] + '</td>');
                             }
                         }
-                        console.log(approved )
-                        if (approved === 'true') {
-                            console.log('truer')
+                        console.log("approved = " + approved)
+                        if (approved === 'false') {
                             row = "<td><button type='button' class='btn btn-primary' onclick=myFunction(" + JSON.stringify(personRecords[idx].uniqueId) + ")>Approve</button></td>";
                             $('table tbody tr').last().append(row);
-                        }else {
-                            console.log('fasle')
-                            row = "<td><label style='color: green;font-size: 1rem;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>Verified record</label></td>";
+                        } else {
+                            row = "<td><label style='color: green;font-size: 1rem;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i><div data-localize='verifiedRecord'>Verified record</div></label></td>";
                             $('table tbody tr').last().append(row);
                         }
+                        if (lang === 'English') {
+                            langId = 'uniqueId'
+                        } else if (lang === 'Spanish') {
+                            langId = 'Identificaciónúnica'
+                        }
+                        //row = "<td><button type='button' class='btn btn-primary' data-localize='approve' onclick=myFunction(" + JSON.stringify(personRecords[idx][langId]) + ")>Approve</button></td>";
+
+                        // $('table tbody tr').last().append(row);
                     }
+                }
+            });
+
+
+            $('#navbar').load("bootstrap-4-navbar.html", function () {
+                var urlParams = new URLSearchParams(location.search);
+                document.getElementById("nav1").style.display = "none"
+                document.getElementById("nav2").style.display = "none"
+
+                document.getElementById('dropdown').innerHTML = urlParams.get('name')
+
+                if (lang == 'English') {
+                    dataLocalizeRefresh('en', 'English')
+
+                }
+                else if (lang == 'Spanish') {
+                    dataLocalizeRefresh('es', 'Spanish')
+
                 }
             });
         });
   
         function myFunction(obj) {
-            document.location.href = "./profile.html?osid=" + obj;
+            console.log(obj)
+            if (lang == 'English') {
+                document.location.href = "./profile.html?osid=" + obj + '&lang=' + lang;
+            }
+            else if (lang == 'Spanish') {
+                document.location.href = "./profile.html?osid=" + obj + '&lang=' + lang;
+
+            }
         }
 
         function searchByQuery(key) {
@@ -170,15 +204,36 @@
                         var colHeader = Object.keys(personRecords[0]);
                         $('table thead tr').append('<th>' + '' + '</th>');
 
-                        for (var i = 0; i < personRecords.length; i++) {
-                            $('table tbody').append('<tr></tr>')
-                            var row = "";
-                            for (var j = 0; j < colHeader.length; j++) {
-                                $('table tbody tr').last().append('<td>' + personRecords[i][colHeader[j]] + '</td>');
+                        for (var idx = 0; idx < personRecords.length; idx++) {
+                        var approved = false;
+                        $('table tbody').append('<tr></tr>')
+                        var row = "";
+                        for (var j = 0; j < colHeader.length; j++) {
+                            // console.log('col',colHeader[j])
+                            if (colHeader[j] === 'isApproved') {
+                                // console.log('if',personRecords)
+                                approved = personRecords[idx][colHeader[j]]
+                            } else {
+                                $('table tbody tr').last().append('<td>' + personRecords[idx][colHeader[j]] + '</td>');
                             }
-                            row = "<td><button type='button' class=' btn btn-primary' onclick=myFunction(" + JSON.stringify(personRecords[i].osid) + ")>Approve</button></td>";
+                        }
+                        console.log(approved )
+                        if (approved === 'true') {
+                            // console.log('truer')
+                            row = "<td><button type='button' class='btn btn-primary' onclick=myFunction(" + JSON.stringify(personRecords[idx].uniqueId) + ")>Approve</button></td>";
+                            $('table tbody tr').last().append(row);
+                        }else {
+                            // console.log('fasle')
+                            row = "<td><label style='color: green;font-size: 1rem;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>Verified record</label></td>";
                             $('table tbody tr').last().append(row);
                         }
+                        if (lang == 'English') {
+                            langId = 'uniqueId'
+                        } else if (lang == 'Spanish') {
+                            langId = 'Identificaciónúnica'
+                        }
+
+                    }
                     }
                     else {
                         $("table").find("tr:not(:first)").remove();

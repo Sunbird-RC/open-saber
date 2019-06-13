@@ -4,39 +4,40 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-        <link rel="stylesheet" href="./css/home.css">
+    <link rel="stylesheet" href="./css/home.css">
 </head>
 
 
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
-crossorigin="anonymous"></script>
+    integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+    crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
-integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
-crossorigin="anonymous"></script>
+    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
-crossorigin="anonymous"></script>
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-localize/0.1.0/jquery.localize.min.js"></script>
-<script type="text/javascript" src="./utils.js"></script> 
+<script type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/jquery-localize/0.1.0/jquery.localize.min.js"></script>
+<script type="text/javascript" src="./utils.js"></script>
 <script>
-        $(document).ready(function(){
-           $('#navbar').load("bootstrap-4-navbar.html", function() {
-                dataLocalizeRefresh("en", "English");
-                document.getElementById("profile").style.display='none';
-           });
+    $(document).ready(function () {
+        $('#navbar').load("bootstrap-4-navbar.html", function () {
+            dataLocalizeRefresh("en", "English");
+            document.getElementById("profile").style.display = 'none';
         });
+    });
 
-        function signUpPage() {
-            document.location.href = "./signUp.html?lang=" + document.getElementById("langSelected").innerHTML
-        }
+    function signUpPage() {
+        document.location.href = "./signUp.html?lang=" + document.getElementById("langSelected").innerHTML
+    }
 </script>
 
 <body>
-    <div id ="navbar"> </div>
+    <div id="navbar"> </div>
     <section class="jumbotron text-center">
         <div class="container">
             <h1 class="jumbotron-heading">Welcome to the world of building registries!</h1>
@@ -45,7 +46,7 @@ crossorigin="anonymous"></script>
                 agents to issue information into it, via secure standards, privacy protected by a consent driven
                 architecture and expressed via a explicit but extensible vocabulary.</p>
             <p>
-                <a onClick="signUpPage()" class="btn btn-secondary text-light my-2">Sign Up For Free</a>
+                <!-- <a onClick="signUpPage()" class="btn btn-secondary text-light my-2">Sign Up For Free</a> -->
             </p>
         </div>
     </section>
@@ -54,28 +55,32 @@ crossorigin="anonymous"></script>
             <div class="card mb-4 box-shadow">
 
                 <div class="card-body">
-                        <h5 class="card-title">Details on Modelling and Specifications</h5>
-                        <p class="card-text">OpenSABER uses Everit Schema validator for validation. The schema file needs to be created and pre-deployed in the registry</p>
-                        <a href="#" class="card-link">Learn more</a>
-                      </div>
+                    <h5 class="card-title">Details on Modelling and Specifications</h5>
+                    <p class="card-text">OpenSABER uses Everit Schema validator for validation. The schema file needs to
+                        be created and pre-deployed in the registry</p>
+                    <a href="#" class="card-link">Learn more</a>
+                </div>
             </div>
+            <!-- <div class="card mb-4 box-shadow">
+
+                <div class="card-body">
+                    <h5 class="card-title">Design</h5>
+                    <p class="card-text">OpenSABER is a collection of interfaces, default implementations and
+                        configuration tools to enable any knowledge .
+
+                    </p>
+                    <a href="#" class="card-link">Learn more</a>
+                </div>
+            </div> -->
             <div class="card mb-4 box-shadow">
 
-                    <div class="card-body">
-                            <h5 class="card-title">Design</h5>
-                            <p class="card-text">OpenSABER is a collection of interfaces, default implementations and configuration tools to enable any knowledge .
-
-                                </p>
-                            <a href="#" class="card-link">Learn more</a>
-                          </div>
-            </div>
-            <div class="card mb-4 box-shadow">
-
-                    <div class="card-body">
-                            <h5 class="card-title">Middleware Design</h5>
-                            <p class="card-text">Opensaber middleware is an independent set of plug-able software components which handles the data that goes into the registry.</p>
-                            <a href="https://github.com/project-sunbird/open-saber/wiki/Middleware-Design" target="_blank" class="card-link">Learn more</a>
-                          </div>
+                <div class="card-body">
+                    <h5 class="card-title">Middleware Design</h5>
+                    <p class="card-text">Opensaber middleware is an independent set of plug-able software components
+                        which handles the data that goes into the registry.</p>
+                    <a href="https://github.com/project-sunbird/open-saber/wiki/Middleware-Design" target="_blank"
+                        class="card-link">Learn more</a>
+                </div>
             </div>
         </div>
 </body>

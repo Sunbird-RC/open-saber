@@ -31,7 +31,7 @@
         "639-def"
       ]
     },
-     "school": {
+    "school": {
       "$id": "#/properties/school",
       "type": "string",
       "title": "school"
@@ -42,10 +42,9 @@
       "title": "isAdmin"
     },
     "isApproved": {
-      "$id": "#/properties/isApproved",
+      "$id": "isApproved",
       "type": "boolean",
       "title": "isApproved"
     }
-    
   }
 }

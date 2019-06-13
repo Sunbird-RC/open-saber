@@ -27,8 +27,8 @@
         </table>
         <div class="text-center pt-3">
 
-            <span class=""><button class="btn btn-primary" id="button" onclick="edit(this.id)"
-                    style="margin-top: 1rem;"><i class="fas fa-user-edit"></i> <span data-localize="edit"> Edit</span>
+            <span class=""><button class="btn btn-primary" data-localize="edit" id="button" onclick="edit(this.id)"
+                    style="margin-top: 1rem;"><i class="fas fa-user-edit"></i> <span > Edit</span>
                 </button></span>
             <span class="pl-3 pr-3"><button class="btn btn-primary outline" id="button1" data-localize="cancel"
                     onclick="backtoProfile(this.id)">Cancel</button></span>
@@ -57,7 +57,9 @@
 
         <script type="text/javascript">
             var query = window.location.search.substring(1);
-            var qs = query.split('=');
+            var urlParams = new URLSearchParams(location.search);
+            var qs = urlParams.get('osid');
+            var lang = urlParams.get('lang');
             var tempobj;
             var readobj = [];
             var c = [];
@@ -71,7 +73,16 @@
                 $('#navbar').load("bootstrap-4-navbar.html", function () {
                     document.getElementById("nav1").style.display = "none"
                     document.getElementById("nav2").style.display = "none"
-                    dataLocalizeRefresh('en', 'English')
+                    if (lang == 'English') {
+                        dataLocalizeRefresh('en', 'English')
+
+                    }
+                    else if (lang == 'Spanish') {
+                        dataLocalizeRefresh('es', 'Spanish')
+
+                    }
+
+
                 });
                 $('[data-toggle="tooltip"]').tooltip();
             });
@@ -109,7 +120,7 @@
                         "entityType": ["PersonVerified"],
 
                         "filters": {
-                            "personId": { "contains": qs[1] }
+                            "personId": { "contains": qs }
                         }
                     }
                     const https = new XMLHttpRequest()
@@ -142,9 +153,15 @@
                 reqParam.request = {
                     "entityType": ["Person"],
                     "filters": {
-                        "osid": { "eq": qs[1].slice(2, qs[1].length) }
+                        "osid": { "eq": qs.slice(2, qs.length) }
                     },
                     "viewTemplateId": "Person_Default.json"
+                }
+                if (lang == 'English') {
+                    params.request.viewTemplateId = "Person_Default.json";
+                } else if (lang == 'Spanish') {
+                    params.request.viewTemplateId = "Person_Default_es.json";
+
                 }
                 const http = new XMLHttpRequest()
                 http.open('POST', "http://localhost:8080/search")
@@ -153,12 +170,21 @@
                 var row = "", col = "";
                 http.onload = function () {
                     var obj = JSON.parse(http.responseText);
-                    document.getElementById('dropdown').innerHTML = obj.result.Person[0].Name;
-                    if (obj.result.Person.isAdmin) {
-                        document.getElementById('admin').style.display = 'inline'
-                        document.getElementById('adminline').style.display = 'inline'
-                        document.getElementById('admin').href = './adminpage.html?name=' + obj.result.Person[0].Name
+                    console.log(obj, admin)
+                    if (lang == 'English') {
+                        document.getElementById('dropdown').innerHTML = obj.result.Person[0].Name;
+
                     }
+                    else if (lang == 'Spanish') {
+                        document.getElementById('dropdown').innerHTML = obj.result.Person[0].Nombre;
+
+                    }
+                    // if (obj.result.Person.isAdmin) {
+                    //     document.getElementById('admin').style.display = 'inline'
+                    //     document.getElementById('adminline').style.display = 'inline'
+                    //     document.getElementById('admin').href = './adminpage.html?name=' + obj.result.Person[0].Name+'&lang';
+
+                    // }
                     for (key in obj) {
                         if (key === "result") {
                             readobj = obj[key].Person[0];
@@ -300,7 +326,7 @@
             }
             function readAdminStatus(osid) {
                 params.request.Person = {
-                    "osid": osid[1],
+                    "osid": osid,
                     "includeSignatures": true
                 }
                 $.ajax({
@@ -314,7 +340,8 @@
                         if (msg.result.Person.isAdmin) {
                             document.getElementById('admin').style.display = 'inline'
                             document.getElementById('adminline').style.display = 'inline'
-                            document.getElementById('admin').href = './adminpage.html?name=' + msg.result.Person.name
+                            document.getElementById('admin').href = './adminpage.html?name=' + msg.result.Person.name+'&lang='+lang
+
                         }
                         permanantObj = msg.result.Person;
                         console.log(permanantObj)

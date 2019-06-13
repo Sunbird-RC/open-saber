@@ -12,18 +12,18 @@
       "type": "string",
       "title": "personId"
     },
-    "PhonenameVerified": {
-      "$id": "#/properties/phonenameVerified",
+    "PhoneVerified": {
+      "$id": "#/properties/phoneVerified",
       "type": "boolean",
       "title": "phone"
     },
-    "TeacherIdnameVerified": {
-      "$id": "#/properties/teacherIdnameVerified",
+    "TeacherIdVerified": {
+      "$id": "#/properties/teacherIdVerified",
       "type": "boolean",
       "title": "Teacher Id"
     },
-    "SchoolnameVerified": {
-      "$id": "#/properties/schoolnameVerified",
+    "SchoolVerified": {
+      "$id": "#/properties/schoolVerified",
       "type": "boolean",
       "title": "school"
     }

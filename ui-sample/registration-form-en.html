@@ -30,11 +30,25 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-ajaxy/1.6.1/scripts/jquery.ajaxy.js"></script>
     <script
         src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
-
+    <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/jquery-localize/0.1.0/jquery.localize.min.js"></script>
+    <script src="utils.js" type="text/javascript"></script>
 
     <script type="text/javascript">
         $(document).ready(function () {
             $('#navbar').load("navbar.html");
+
+            var schema;
+            var cookedVal = {
+
+            };
+            var urlParams = new URLSearchParams(location.search);
+            if (urlParams.get('lang') == 'English') {
+                dataLocalizeRefresh('en', 'English')
+            } else {
+                dataLocalizeRefresh('es', 'Spanish')
+
+            }
             var cookedVal = {
                 "id": "",
                 "ver": "1.0",
@@ -103,36 +117,15 @@
 
                                     cookedVal["request"]["Person"] = value;
                                     console.log(JSON.stringify(cookedVal));
-                                    var params = {
-                                        "id": "open-saber.registry.create",
-                                        "ver": "1.0",
-                                        "ets": "11234",
-                                        "params": {
-                                            "did": "",
-                                            "key": "",
-                                            "msgid": ""
-                                        },
-                                        "request": {
-                                            "PersonVerified": {
-                                                "phoneVerified": true,
-                                                "emailVerified": false,
-                                                "certificateVerified": true,
-                                                "nameVerified": false,
-                                                "schoolVerified": false,
-                                                "distVerified": true,
-                                                "personId": ""
-
-                                            }
-                                        }
-                                    }
+                             
                                     $.ajax({
                                         url: "http://localhost:8080/add",
                                         type: "post",
                                         contentType: "application/json",
                                         data: JSON.stringify(cookedVal),
                                         success: function (data) {
-                                            params.request.personId = data.result.Person.osid;
-                                            console.log('personid', params.request.personId);
+                                            // params.request.personId = data.result.Person.osid;
+                                            // console.log('personid', params.request.personId);
                                             personVerify(data.result.Person.osid);
 
                                         },
@@ -153,10 +146,9 @@
                                             },
                                             "request": {
                                                 "PersonVerified": {
-                                                    "phoneVerified": true,
-                                                    "teacherIdVerified": false,
-                                                    "nameVerified": false,
-                                                    "schoolVerified": false,
+                                                    "PhoneVerified": true,
+                                                    "TeacherIdVerified": false,
+                                                    "SchoolVerified": false,
                                                     "personId": osid
 
                                                 }
@@ -170,7 +162,7 @@
                                             success: function (data) {
                                                 // params.request.personId = data.result.Person.osid;
                                                 console.log('parma', data)
-                                                document.location.href = "./profile.html?osid=" + osid;
+                                                document.location.href = "./profile.html?osid=" + osid+"?lang=English";
                                             },
                                             error: function () {
                                                 alert('error');
