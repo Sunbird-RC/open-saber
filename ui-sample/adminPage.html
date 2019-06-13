@@ -25,8 +25,9 @@
     <div class="container mt-4">
         <div class="row justify-content-center">
             <div class="form-inline mb-3">
-                <input class="form-control mr-sm-2" data-localize="searchPlaceholder.num" name="search" type="search"
-                    value="" placeholder="Search By Name" aria-label="Search" onchange="searchByQuery(this)">
+                <label data-localize="name">Name : </label>
+                <input class="form-control mr-sm-2 ml-2" data-localize="searchPlaceholder.num" name="search" type="search"
+                     aria-label="Search" onchange="searchByQuery(this)">
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit" data-localize="searchs"
                     onclick="searchByQuery(document.getElementsByName('search')[0])">Search</button>
             </div>
@@ -105,33 +106,49 @@
                 contentType: "application/json",
                 dataType: "json",
                 success: function (msg) {
-                    console.log(msg)
-                    filteredObject = []
+                    personRecords = []
                     _.map(msg.result.Person, (person) => {
-                        filteredObject.push(_.omit(person, ['@type', '_osUpdatedBy', '_osCreatedAt', '_osCreatedBy', '_osCreatedAt', '_osUpdatedAt']))
-
+                        personRecords.push(_.omit(person, ['@type', '_osUpdatedBy', '_osCreatedAt', '_osCreatedBy', '_osCreatedAt', '_osUpdatedAt']))
                     });
-                    console.log(filteredObject)
-                    var colHeader = Object.keys(filteredObject[0]);
-                    _.forEach(filteredObject[0], (value, key) => {
-                        $('table thead tr').append('<th>' + key + '</th>');
+                    var colHeader = Object.keys(personRecords[0]);
+                    _.forEach(personRecords[0], (value, key) => {
+                        console.log(value,key)
+                        if (key !== 'isApproved') {
+                            $('table thead tr').append('<th>' + key + '</th>');
+                        }
                     });
-                    $('table thead tr').append('<th>' + '' + '</th>');
 
-                    for (var i = 0; i < filteredObject.length; i++) {
+                    $('table thead tr').append("<th> <div data-localize='actions'>" +  'Actions' + '</div></th>');
+                    // console.log('1');
+                    for (var idx = 0; idx < personRecords.length; idx++) {
+                        var approved = false;
                         $('table tbody').append('<tr></tr>')
                         var row = "";
                         for (var j = 0; j < colHeader.length; j++) {
-                            $('table tbody tr').last().append('<td>' + filteredObject[i][colHeader[j]] + '</td>');
+                            // console.log('col',colHeader[j])
+                            if (colHeader[j] === 'isApproved') {
+                                // console.log('if',personRecords)
+                                approved = personRecords[idx][colHeader[j]]
+                            } else {
+                                $('table tbody tr').last().append('<td>' + personRecords[idx][colHeader[j]] + '</td>');
+                            }
                         }
-                        if (lang == 'English') {
+                        console.log("approved = " + approved)
+                        if (approved === 'false') {
+                            row = "<td><button type='button' class='btn btn-primary' onclick=myFunction(" + JSON.stringify(personRecords[idx].uniqueId) + ")>Approve</button></td>";
+                            $('table tbody tr').last().append(row);
+                        } else {
+                            row = "<td><label style='color: green;font-size: 1rem;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i><div data-localize='verifiedRecord'>Verified record</div></label></td>";
+                            $('table tbody tr').last().append(row);
+                        }
+                        if (lang === 'English') {
                             langId = 'uniqueId'
-                        } else if (lang == 'Spanish') {
+                        } else if (lang === 'Spanish') {
                             langId = 'Identificaciónúnica'
                         }
-                        row = "<td><button type='button' class='btn btn-primary' data-localize='approve' onclick=myFunction(" + JSON.stringify(filteredObject[i][langId]) + ")>Approve</button></td>";
+                        //row = "<td><button type='button' class='btn btn-primary' data-localize='approve' onclick=myFunction(" + JSON.stringify(personRecords[idx][langId]) + ")>Approve</button></td>";
 
-                        $('table tbody tr').last().append(row);
+                        // $('table tbody tr').last().append(row);
                     }
                 }
             });
@@ -154,6 +171,7 @@
                 }
             });
         });
+  
         function myFunction(obj) {
             console.log(obj)
             if (lang == 'English') {
@@ -180,26 +198,43 @@
                     if (msg.result.Person.length > 0) {
                         document.getElementById("noResult").textContent = "";
                         $("table").find("tr:not(:first)").remove();
-                        filteredObject = []
-
-                        var colHeader = Object.keys(filteredObject[0]);
+                        personRecords = []
+                        _.map(msg.result.Person, (person) => {
+                            personRecords.push(_.omit(person, ['@type', '_osUpdatedBy', '_osCreatedAt', '_osCreatedBy', '_osCreatedAt', '_osUpdatedAt']));
+                        });
+                        var colHeader = Object.keys(personRecords[0]);
                         $('table thead tr').append('<th>' + '' + '</th>');
 
-                        for (var i = 0; i < filteredObject.length; i++) {
-                            console.log(filteredObject)
-                            $('table tbody').append('<tr></tr>')
-                            var row = "";
-                            for (var j = 0; j < colHeader.length; j++) {
-                                $('table tbody tr').last().append('<td>' + filteredObject[i][colHeader[j]] + '</td>');
+                        for (var idx = 0; idx < personRecords.length; idx++) {
+                        var approved = false;
+                        $('table tbody').append('<tr></tr>')
+                        var row = "";
+                        for (var j = 0; j < colHeader.length; j++) {
+                            // console.log('col',colHeader[j])
+                            if (colHeader[j] === 'isApproved') {
+                                // console.log('if',personRecords)
+                                approved = personRecords[idx][colHeader[j]]
+                            } else {
+                                $('table tbody tr').last().append('<td>' + personRecords[idx][colHeader[j]] + '</td>');
                             }
-                            if (lang == 'English') {
-                                langId = 'uniqueId'
-                            } else if (lang == 'Spanish') {
-                                langId = 'Identificaciónúnica'
-                            }
-                            row = "<td><button type='button' class=' btn btn-primary' onclick=myFunction(" + JSON.stringify(filteredObject[i][langId]) + ")>Approve</button></td>";
+                        }
+                        console.log(approved )
+                        if (approved === 'true') {
+                            // console.log('truer')
+                            row = "<td><button type='button' class='btn btn-primary' onclick=myFunction(" + JSON.stringify(personRecords[idx].uniqueId) + ")>Approve</button></td>";
+                            $('table tbody tr').last().append(row);
+                        }else {
+                            // console.log('fasle')
+                            row = "<td><label style='color: green;font-size: 1rem;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>Verified record</label></td>";
                             $('table tbody tr').last().append(row);
                         }
+                        if (lang == 'English') {
+                            langId = 'uniqueId'
+                        } else if (lang == 'Spanish') {
+                            langId = 'Identificaciónúnica'
+                        }
+
+                    }
                     }
                     else {
                         $("table").find("tr:not(:first)").remove();

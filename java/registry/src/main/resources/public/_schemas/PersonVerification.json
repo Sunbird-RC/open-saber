@@ -38,11 +38,6 @@
           "type": "boolean",
           "$comment": "teacher identifier"
         },
-        "NameVerified": {
-          "$id": "#/properties/nameVerified",
-          "type": "boolean",
-          "title": "Name"
-        },
         "PhoneVerified": {
           "$id": "phoneVerified",
           "type": "boolean",

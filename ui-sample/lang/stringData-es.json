@@ -13,5 +13,9 @@
     "searchPlaceholder": {
         "value": "Search By Name"
     },
-    "pending": "Validación pendiente"
+    "pending": "Validación pendiente",
+    "name":"Nombre",
+    "verifiedRecord": "Verificado",
+    "actions": "Estado"
+
 }

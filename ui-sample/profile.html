@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
-    <!-- <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
-        integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous"> -->
     <link type="text/css" href="./css/profile.css" rel="stylesheet" />
     <link type="text/css" href="./css/signIn.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css"
@@ -20,8 +18,6 @@
 
     <div class="border">
         <div class="image mb-2 center">
-            <!-- <img src="http://icons.iconarchive.com/icons/graphicloads/flat-finance/256/person-icon.png"
-                class="center mt-3" alt="Avatar"> -->
             <div id="profileImage"></div>
         </div>
         <table id="row">
@@ -75,7 +71,6 @@
             var verifiedDetails;
             $(document).ready(function () {
                 $('#navbar').load("bootstrap-4-navbar.html", function () {
-                    console.log('nav item')
                     document.getElementById("nav1").style.display = "none"
                     document.getElementById("nav2").style.display = "none"
                     if (lang == 'English') {
@@ -90,34 +85,42 @@
 
                 });
                 $('[data-toggle="tooltip"]').tooltip();
-
             });
-
-
-
-
-
+            const reqParam = {
+                "id": "open-saber.registry.search",
+                "ver": "1.0",
+                "ets": "11234",
+                "params": {
+                    "did": "",
+                    "key": "",
+                    "msgid": ""
+                },
+                "request": {
+                }
+            }
+            const params = {
+                "id": "open-saber.registry.read",
+                "ver": "1.0",
+                "ets": "11234",
+                "params": {
+                    "did": "",
+                    "key": "",
+                    "msgid": ""
+                },
+                "request": {
+                    "Person": {
+                    }
+                }
+            }
             function myFunction() {
                 searchVerificationDetails();
                 readAdminStatus(qs);
                 function searchVerificationDetails() {
+                    reqParam.request = {
+                        "entityType": ["PersonVerified"],
 
-                    const reqParam = {
-
-                        "id": "open-saber.registry.search",
-                        "ver": "1.0",
-                        "ets": "11234",
-                        "params": {
-                            "did": "",
-                            "key": "",
-                            "msgid": ""
-                        },
-                        "request": {
-                            "entityType": ["PersonVerified"],
-
-                            "filters": {
-                                "personId": { "contains": qs }
-                            }
+                        "filters": {
+                            "personId": { "contains": qs }
                         }
                     }
                     const https = new XMLHttpRequest()
@@ -126,44 +129,44 @@
                     https.send(JSON.stringify(reqParam)) // Make sure to stringify
 
                     https.onload = function () {
+                        var count = 0;
                         checkVerification = JSON.parse(https.responseText);
-
+                        console.log(checkVerification)
                         checkVerification = checkVerification.result.PersonVerified[0];
-                        // console.log(checkVerification)
+                        for (checkVal in checkVerification) {
+                            if (checkVerification[checkVal] === true) {
+                                count++;
+                            }
+                        }
+                        console.log(count)
+                        if (count === 3) {
+                            var enable = true;
+                            approve(enable, 'update')
+                        }
+                        else {
+                            var enable = false;
+                            approve(enable, 'update')
+                        }
                     }
-                }
 
-                const params = {
-                    "id": "open-saber.registry.search",
-                    "ver": "1.0",
-                    "ets": "11234",
-                    "params": {
-                        "did": "",
-                        "key": "",
-                        "msgid": ""
+                }
+                reqParam.request = {
+                    "entityType": ["Person"],
+                    "filters": {
+                        "osid": { "eq": qs.slice(2, qs.length) }
                     },
-                    "request": {
-                        "entityType": ["Person"],
-
-                        "filters": {
-                            "osid": { "eq": qs.slice(2, qs.length) }
-                        },
-                        "viewTemplateId": "Person_Default.json"
-                    }
+                    "viewTemplateId": "Person_Default.json"
                 }
-
                 if (lang == 'English') {
                     params.request.viewTemplateId = "Person_Default.json";
                 } else if (lang == 'Spanish') {
                     params.request.viewTemplateId = "Person_Default_es.json";
 
                 }
-
-                console.log(params)
                 const http = new XMLHttpRequest()
                 http.open('POST', "http://localhost:8080/search")
                 http.setRequestHeader('Content-type', 'application/json')
-                http.send(JSON.stringify(params)) // Make sure to stringify
+                http.send(JSON.stringify(reqParam)) // Make sure to stringify
                 var row = "", col = "";
                 http.onload = function () {
                     var obj = JSON.parse(http.responseText);
@@ -184,63 +187,58 @@
                     // }
                     for (key in obj) {
                         if (key === "result") {
-
                             readobj = obj[key].Person[0];
                             c = obj[key].Person[0];
-
                             for (var head in c) {
                                 document.getElementById('button1').style.display = 'none';
                                 if (admin === 'true') {
                                     document.getElementById('button').style.display = 'none';
                                     document.getElementById("downButton").style.display = 'none'
-
                                 }
                                 var val = head;
                                 var headval = head;
                                 var value = c[head];
                                 var temprow;
                                 temprow = "<tr><th class='header pr-5'>" + head + "</th><td id=" + head + " class='text' name=" + head + "  width='20% !importent'>" + value + "</td >";
-                                // personobj = person.replace(/['"]+/g, '');
-                                console.log('if', c, head)
                                 if (admin !== 'true') {
-                                    if (checkVerification[head + 'Verified']) {
-                                        var verifiedrow = "<td data-localize='pending' class='text pl-2' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>validated</td></tr>";
-                                        row += temprow + verifiedrow;
-
-                                    }
-                                    else {
-                                        var validaterow = "<td class='text pl-2' style='color:#007bff;font-size: 14px;'><i class='fa fa-exclamation-circle pr-1' style='color: #007bff;font-size: small !important;'></i><span data-localize='pending'>Pending validation</span></td></tr>";
+                                    if (!checkVerification[head + 'Verified'] && checkVerification.hasOwnProperty(head + 'Verified')) {
+                                        var validaterow = "<td class='text pl-2' style='color:#007bff;font-size: 14px;'><i class='fa fa-exclamation-circle pr-1' style='color: #007bff;font-size: small !important;'></i>Pending Validation</td></tr>";
                                         row += temprow + validaterow;
                                     }
-                                } else {
-                                    var approvedrow = "<td class='text pl-2' id='style'><button  class='btn btn-outline-success mr-3 sc' style='color:green;font-size:1rem;' ><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>approve</button><button class='btn btn-outline-danger sc' style='font-size:1rem;'>&nbsp;reject</button></td></tr>";
+                                    else if (head === 'Phone' || checkVerification[head + 'Verified']) {
+                                        var verifiedrow = "<td class='text pl-2' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>Validated</td></tr>";
+                                        row += temprow + verifiedrow;
+                                    }
+                                    else {
+                                        row += temprow;
+                                    }
+                                }
+                                else if (!checkVerification[head + 'Verified'] && checkVerification.hasOwnProperty(head + 'Verified')) {
+                                    var approvedrow = "<td class='text pl-2' id='style'><button id='approve' class='btn btn-outline-success mr-3 sc' style='color:green;font-size:1rem;' onclick=approve(" + head + ")><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>Approve</button><button class='btn btn-outline-danger sc' style='font-size:1rem;' id='reject' >&nbsp;Reject</button></td></tr>";
+                                    row += temprow + approvedrow;
+                                } else if (head === 'Phone' || checkVerification[head + 'Verified']) {
+                                    var approvedrow = "<td class='text pl-2' id='style'><button  class='btn btn-outline-success mr-3 sc' style='color:green;font-size:1rem;' ><i class='fa fa-check-circle pr-1' style='color:green;font-size:large !important;'></i>Validated</button></td></tr>";
                                     row += temprow + approvedrow;
                                 }
-
-
+                                else {
+                                    row += temprow;
+                                }
                             }
                             $("table tbody").append(row);
-                            // $("table tbody tr th td").tooltipOnOverflow();
-
                             var element = document.getElementsByTagName("tr");
-                            // console.log(element)
                             for (var i = 0; i < element.length; i++) {
                                 var newElement = document.createElement('div');
                                 var divElement = document.getElementsByTagName('div');
                                 newElement.setAttribute('class', 'mt-2')
                                 for (var j = 1; j < element.length - 1; j++) {
-                                    // divElement[j+3].setAttribute('class', 'note');
-                                    // console.log(divElement[j + 3]);
                                     name1 = "mystyle";
                                 }
                                 var elementParent = element[i].parentNode;
                                 elementParent.insertBefore(newElement, element[i].nextSibling);
                             }
-
                         }
                     }
                 }
-
             }
             function edit(id) {
                 var isedited = false;
@@ -249,14 +247,10 @@
                 edit.innerHTML = "Update";
                 document.getElementById('button1').style.display = '-webkit-inline-box';
                 for (key in c) {
-                    // console.log(key, document.getElementById(key),c,permanantObj);
                     if (document.getElementById(key).firstChild != "[object HTMLInputElement]") {
-
                         var content = document.getElementById(key).firstChild.nodeValue;
-                        // console.log(content)
                         edit(key);
                         function edit(key) {
-                            console.log(key);
                             var keys = key;
                             var anchor = document.getElementById(key);
                             var att = document.createAttribute("contenteditable");
@@ -266,64 +260,39 @@
                         }
                         function onchange(keys, key) {
                             var childElemnet = document.getElementById(key);
-                            console.log(childElemnet)
-                            document.getElementById(key).onkeyup = function myFunction() {
+                            document.getElementById(key).onchange = function myFunction() {
                                 var x = document.getElementById(key);
-                                // console.log(key,x);
-                                $.getJSON('schema/Person_Default.json', function (data) {
-                                    $.each(data, function (i, f) {
-                                        if (i === 'fields') {
-                                            verifiedDetails = f;
-                                        }
-                                    });
-                                });
-
-                                for (var i = 0; i < verifiedDetails.length; i++) {
-                                    console.log(verifiedDetails[i].name, key, verifiedDetails[i].title)
-                                    if (key === verifiedDetails[i].title) {
-                                        tempkey = verifiedDetails[i].name;
-                                        console.log(x.innerHTML, permanantObj[tempkey], tempkey, permanantObj)
-                                        if (x.innerHTML.localeCompare(permanantObj[tempkey])) {
-                                            console.log('edited')
-                                            isedited = true;
-                                        }
-                                        if (isedited) {
-                                            permanantObj[tempkey] = x.innerHTML;
-                                            update(isedited, qs);
-                                        }
-                                    }
-                                }
                             }
-                        }
-                        function update(edited, id) {
-                            if (edited) {
-                                const params = {
-                                    "id": "open-saber.registry.update",
-                                    "ver": "1.0",
-                                    "ets": "11234",
-                                    "params": {
-                                        "did": "",
-                                        "key": "",
-                                        "msgid": ""
-                                    },
-                                    "request": {
-                                        "Person": {
-                                            "osid": qs,
+                            $.getJSON('schema/Person_Default.json', function (data) {
+                                $.each(data, function (i, f) {
+                                    if (i === 'fields') {
+                                        verifiedDetails = f;
+                                        for (var i = 0; i < verifiedDetails.length; i++) {
+                                            if (key === verifiedDetails[i].title) {
+                                                tempkey = verifiedDetails[i].name;
+                                                if (childElemnet.innerHTML.localeCompare(permanantObj[tempkey])) {
+                                                    isedited = !isedited;
+                                                    permanantObj[tempkey] = childElemnet.innerHTML;
+                                                    update(isedited, key);
+                                                }
+                                            }
                                         }
                                     }
-                                }
+                                });
+                            });
+                        }
 
+                        function update(edited, key) {
+                            if (edited) {
                                 params.request.Person = permanantObj;
                                 const http = new XMLHttpRequest()
                                 http.open('POST', "http://localhost:8080/update")
                                 http.setRequestHeader('Content-type', 'application/json')
                                 http.send(JSON.stringify(params)) // Make sure to stringify
-
                                 http.onload = function () {
-
                                     var obj = JSON.parse(http.responseText);
-                                    // console.log('obj',obj,params)
                                 }
+                                approve(key, 'reject');
                             }
                         }
                     }
@@ -335,21 +304,9 @@
             }
             function downloadJson() {
                 var urlParams = new URLSearchParams(location.search);
-                console.log(urlParams.get('osid'), urlParams.get('lang'))
-                const params = {
-                    "id": "open-saber.registry.read",
-                    "ets": "11234",
-                    "params": {
-                        "did": "",
-                        "key": "",
-                        "msgid": ""
-                    },
-                    "request": {
-                        "Person": {
-                            "osid": urlParams.get('osid'),
-                            "includeSignatures": true
-                        }
-                    }
+                params.request.Person = {
+                    "osid": urlParams.get('osid'),
+                    "includeSignatures": true
                 }
                 $.ajax({
                     url: "http://localhost:8080/read",
@@ -368,21 +325,9 @@
                 });
             }
             function readAdminStatus(osid) {
-                const params = {
-                    "id": "open-saber.registry.read",
-                    "ver": "1.0",
-                    "ets": "11234",
-                    "params": {
-                        "did": "",
-                        "key": "",
-                        "msgid": ""
-                    },
-                    "request": {
-                        "Person": {
-                            "osid": osid,
-                            "includeSignatures": true
-                        }
-                    }
+                params.request.Person = {
+                    "osid": osid,
+                    "includeSignatures": true
                 }
                 $.ajax({
                     url: "http://localhost:8080/read",
@@ -392,7 +337,6 @@
                     contentType: "application/json",
                     dataType: "json",
                     success: function (msg) {
-                        console.log(msg)
                         if (msg.result.Person.isAdmin) {
                             document.getElementById('admin').style.display = 'inline'
                             document.getElementById('adminline').style.display = 'inline'
@@ -400,13 +344,94 @@
 
                         }
                         permanantObj = msg.result.Person;
-                        console.log(permanantObj);
+                        console.log(permanantObj)
                         var intials = msg.result.Person.name.charAt(0)
-                        console.log(intials)
                         document.getElementById("profileImage").innerText = intials;
-
+                        admin = msg.result.Person.isAdmin;
                     }
                 });
+            }
+            function approve(id, tag) {
+console.log(checkVerification)
+                const updateParams = {
+                    "id": "open-saber.registry.update",
+                    "ver": "1.0",
+                    "ets": "11234",
+                    "params": {
+                        "did": "",
+                        "key": "",
+                        "msgid": ""
+                    },
+                    "request": {
+                        "PersonVerified": {
+                        }
+                    }
+                }
+                if (tag === 'reject') {
+                    var key = (id + 'Verified')
+                    updateParams.request.PersonVerified = {
+                        "osid": checkVerification.osid,
+                        [key]: false
+                    }
+                    $.ajax({
+                        url: "http://localhost:8080/update",
+                        type: "post",
+                        dataType: "application/json",
+                        data: JSON.stringify(updateParams),
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: function (msg) {
+                            window.location.href = window.location.href;
+                        }
+                    });
+                }
+                else if (tag === 'update') {
+                    var approveParam = {
+                        "id": "open-saber.registry.update",
+                        "ver": "1.0",
+                        "ets": "11234",
+                        "params": {
+                            "did": "",
+                            "key": "",
+                            "msgid": ""
+                        },
+                        "request": {
+                            "Person": {
+                                "osid": checkVerification.personId,
+                                "isApproved": id
+
+                            }
+                        }
+                    }
+                    console.log('if el', params)
+                    const http = new XMLHttpRequest()
+                    http.open('POST', "http://localhost:8080/update")
+                    http.setRequestHeader('Content-type', 'application/json')
+                    http.send(JSON.stringify(approveParam)) // Make sure to stringify
+                    http.onload = function () {
+                        var obj = JSON.parse(http.responseText);
+                        console.log(obj)
+                    }
+                }
+                else {
+                    var key = (id.id + 'Verified')
+                    updateParams.request.PersonVerified = {
+                        "osid": checkVerification.osid,
+                        [key]: true
+                    }
+                    $.ajax({
+                        url: "http://localhost:8080/update",
+                        type: "post",
+                        dataType: "application/json",
+                        data: JSON.stringify(updateParams),
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: function (msg) {
+                            window.location.href = window.location.href;
+                        }
+                    });
+                }
+                console.log(id, tag, params, updateParams)
             }
         </script>
 </body>

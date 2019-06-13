@@ -71,17 +71,6 @@
 
   <script type="text/javascript">
     let timerOn = false;
-    function dataLocalizeRefresh(lang, fullLangText) {
-      console.log('data', lang, fullLangText)
-
-      var opts = { language: lang, pathPrefix: "./lang" };
-
-      $("[data-localize]").localize("stringData", opts);
-
-      console.log("dataLocalizeRefreshEnd " + lang);
-      document.getElementById("langSelected").innerHTML = fullLangText
-
-    }
     function timer(remaining) {
       var m = Math.floor(remaining / 60);
       var s = remaining % 60;
@@ -137,7 +126,9 @@
       // );
     }
     $(document).ready(function () {
-      $('#navbar').load("navbar.html")
+      $('#navbar').load("navbar.html"),function() {
+
+      }
       var schema;
       var cookedVal = {
 
@@ -191,7 +182,7 @@
                   cookedVal['otp'] = value.otp
                   console.log(JSON.stringify(cookedVal));
 
-                  document.location.href = "./registration-form-es.html?lang=Spanish"
+                  document.location.href = "./registration-form-en.html?lang=Spanish"
 
 
                   console.log('hii')
@@ -203,7 +194,7 @@
                     success: function (data, textStatus, xhr) {
                       console.log(xhr.status)
                       if (xhr.status == 200) {
-                        document.location.href = "./registration-form-es.html?lang=Spanish"
+                        document.location.href = "./registration-form-en.html?lang=Spanish"
 
                       }
 

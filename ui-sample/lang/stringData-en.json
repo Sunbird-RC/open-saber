@@ -14,5 +14,10 @@
         "value": "Search By Name"
     },
     "pending": "Pending validation",
-    "next": "Next"
+    "next": "Next",
+    "verifiedRecord": "Verified",
+    "actions": "Status",
+    "name":"Name"
+
+
 }
