@@ -1,12 +1,17 @@
 <script src="./utils.js"></script>
 <script>
     function langSelectedPage(data) {
+        // console.log('hey')
+
         if (document.getElementById("langSelected").innerHTML == 'English') {
-            document.location.href = "./" + data + ".html?lang=" + document.getElementById("langSelected").innerHTML
+            console.log('hey')
+            document.location.href = "./" + data + "-en.html?lang=" + document.getElementById("langSelected").innerHTML
 
         }
-        else (document.getElementById("langSelected").innerHTML == 'Spanish')
+        else if(document.getElementById("langSelected").innerHTML == 'Spanish') {
             document.location.href = "./" + data + "-es.html?lang=" + document.getElementById("langSelected").innerHTML
+
+        }
 
     }
 
@@ -21,12 +26,12 @@
         <div class="collapse navbar-collapse" id="navbarText">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item dropdown pr-4" id="nav1">
-                    <a class="nav-link" href="./login.html" onClick="langSelectedPage('login')" data-localize="login"
+                    <a class="nav-link"  onClick="langSelectedPage('login')" data-localize="login" href=""
                         id="navbarDropdownMenuLink">Login</a>
                 </li>
                 <li class="nav-item dropdown pr-4" id="nav2">
                     <!-- <a class="nav-link" href="./signUp.html" id="navbarDropdownMenuLink" > signUp</a> -->
-                    <a class="btn btn-outline-primary" onClick="langSelectedPage('signUp')" href="./signUp-en.html"
+                    <a class="btn btn-outline-primary" onClick="langSelectedPage('signUp')"  href=""
                         data-localize="signUp" id="navbarDropdownMenuLink">Sign up</a>
                 </li>
                 <li class="nav-item  pt-2">
