@@ -5,15 +5,13 @@
     "profile": "Información del perfil",
     "download": "Descargar",
     "edit": "Editar",
-    "cancel":"Cancelar",
-    "logout":"Cerrar sesión",
-    "manage":"Gestionar",
+    "cancel": "Cancelar",
+    "logout": "Cerrar sesión",
+    "manage": "Gestionar",
     "searchs": "Buscar",
     "approve": "aprobar",
     "searchPlaceholder": {
         "value": "Search By Name"
     },
     "pending": "Validación pendiente"
-
-
 }

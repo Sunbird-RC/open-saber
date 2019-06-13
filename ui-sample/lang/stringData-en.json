@@ -6,14 +6,13 @@
     "download": "Download",
     "edit": "Edit",
     "cancel": "Cancel",
-    "logout":"Logout",
-    "manage":"Manage",
+    "logout": "Logout",
+    "manage": "Manage",
     "searchs": "Search",
     "approve": "Approve",
     "searchPlaceholder": {
         "value": "Search By Name"
     },
-    "pending": "Pending validation"
-
-
+    "pending": "Pending validation",
+    "next": "Next"
 }
