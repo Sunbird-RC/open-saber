@@ -7,7 +7,13 @@
     "edit": "Edit",
     "cancel": "Cancel",
     "logout":"Logout",
-    "manage":"Manage"
+    "manage":"Manage",
+    "searchs": "Search",
+    "approve": "Approve",
+    "searchPlaceholder": {
+        "value": "Search By Name"
+    },
+    "pending": "Pending validation"
 
 
 }

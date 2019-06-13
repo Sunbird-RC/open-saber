@@ -14,7 +14,8 @@
     <link type="text/css" href="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.css"
         rel="stylesheet" />
     <!-- <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"> -->
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css"
+        integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 
 
 </head>
@@ -24,9 +25,9 @@
     <div class="container mt-4">
         <div class="row justify-content-center">
             <div class="form-inline mb-3">
-                <input class="form-control mr-sm-2" name="search" type="search" placeholder="Search By Name"
-                    aria-label="Search" onchange="searchByQuery(this)">
-                <button class="btn btn-outline-success my-2 my-sm-0" type="submit"
+                <input class="form-control mr-sm-2" data-localize="searchPlaceholder.num" name="search" type="search"
+                    value="" placeholder="Search By Name" aria-label="Search" onchange="searchByQuery(this)">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit" data-localize="searchs"
                     onclick="searchByQuery(document.getElementsByName('search')[0])">Search</button>
             </div>
         </div>
@@ -61,11 +62,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-localize/0.1.0/jquery.localize.min.js"></script>
+    <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/jquery-localize/0.1.0/jquery.localize.min.js"></script>
 
     <script type="text/javascript" src="./utils.js"></script>
 
     <script type="text/javascript">
+        var urlParams = new URLSearchParams(location.search);
+        var lang = urlParams.get('lang')
         var cookedVal = {
             "id": "open-saber.registry.search",
             "ver": "1.0",
@@ -82,16 +86,17 @@
                 "viewTemplateId": "Person_SearchResult.json"
             }
         };
+        if (lang == 'English') {
+            cookedVal.request.viewTemplateId = "Person_SearchResult.json"
+
+        } else if (lang == 'Spanish') {
+            cookedVal.request.viewTemplateId = "Person_SearchResult_es.json"
+
+        }
+
         $(document).ready(function () {
-            $('#navbar').load("bootstrap-4-navbar.html", function () {
-                var urlParams = new URLSearchParams(location.search);
-                document.getElementById("nav1").style.display = "none"
-                document.getElementById("nav2").style.display = "none"
 
-                document.getElementById('dropdown').innerHTML = urlParams.get('name')
-                dataLocalizeRefresh('en', 'English');
-            });
-
+            var langId;
             $.ajax({
                 url: "http://localhost:8080/search",
                 type: "post",
@@ -106,6 +111,7 @@
                         filteredObject.push(_.omit(person, ['@type', '_osUpdatedBy', '_osCreatedAt', '_osCreatedBy', '_osCreatedAt', '_osUpdatedAt']))
 
                     });
+                    console.log(filteredObject)
                     var colHeader = Object.keys(filteredObject[0]);
                     _.forEach(filteredObject[0], (value, key) => {
                         $('table thead tr').append('<th>' + key + '</th>');
@@ -118,16 +124,45 @@
                         for (var j = 0; j < colHeader.length; j++) {
                             $('table tbody tr').last().append('<td>' + filteredObject[i][colHeader[j]] + '</td>');
                         }
-                        console.log(JSON.stringify(filteredObject[i].uniqueId))
-                        row = "<td><button type='button' class='btn btn-primary' onclick=myFunction(" + JSON.stringify(filteredObject[i].uniqueId) + ")>Approve</button></td>";
+                        if (lang == 'English') {
+                            langId = 'uniqueId'
+                        } else if (lang == 'Spanish') {
+                            langId = 'Identificaciónúnica'
+                        }
+                        row = "<td><button type='button' class='btn btn-primary' data-localize='approve' onclick=myFunction(" + JSON.stringify(filteredObject[i][langId]) + ")>Approve</button></td>";
 
                         $('table tbody tr').last().append(row);
                     }
                 }
             });
+
+
+            $('#navbar').load("bootstrap-4-navbar.html", function () {
+                var urlParams = new URLSearchParams(location.search);
+                document.getElementById("nav1").style.display = "none"
+                document.getElementById("nav2").style.display = "none"
+
+                document.getElementById('dropdown').innerHTML = urlParams.get('name')
+
+                if (lang == 'English') {
+                    dataLocalizeRefresh('en', 'English')
+
+                }
+                else if (lang == 'Spanish') {
+                    dataLocalizeRefresh('es', 'Spanish')
+
+                }
+            });
         });
         function myFunction(obj) {
-            document.location.href = "./profile.html?osid=" + obj;
+            console.log(obj)
+            if (lang == 'English') {
+                document.location.href = "./profile.html?osid=" + obj + '&lang=' + lang;
+            }
+            else if (lang == 'Spanish') {
+                document.location.href = "./profile.html?osid=" + obj + '&lang=' + lang;
+
+            }
         }
 
         function searchByQuery(key) {
@@ -146,19 +181,23 @@
                         document.getElementById("noResult").textContent = "";
                         $("table").find("tr:not(:first)").remove();
                         filteredObject = []
-                        _.map(msg.result.Person, (person) => {
-                            filteredObject.push(_.omit(person, ['@type', '_osUpdatedBy', '_osCreatedAt', '_osCreatedBy', '_osCreatedAt', '_osUpdatedAt']));
-                        });
+
                         var colHeader = Object.keys(filteredObject[0]);
                         $('table thead tr').append('<th>' + '' + '</th>');
 
                         for (var i = 0; i < filteredObject.length; i++) {
+                            console.log(filteredObject)
                             $('table tbody').append('<tr></tr>')
                             var row = "";
                             for (var j = 0; j < colHeader.length; j++) {
                                 $('table tbody tr').last().append('<td>' + filteredObject[i][colHeader[j]] + '</td>');
                             }
-                            row = "<td><button type='button' class=' btn btn-primary' onclick=myFunction(" + JSON.stringify(filteredObject[i].osid) + ")>Approve</button></td>";
+                            if (lang == 'English') {
+                                langId = 'uniqueId'
+                            } else if (lang == 'Spanish') {
+                                langId = 'Identificaciónúnica'
+                            }
+                            row = "<td><button type='button' class=' btn btn-primary' onclick=myFunction(" + JSON.stringify(filteredObject[i][langId]) + ")>Approve</button></td>";
                             $('table tbody tr').last().append(row);
                         }
                     }

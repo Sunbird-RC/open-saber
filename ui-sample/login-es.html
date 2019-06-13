@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <link type="text/css" rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" />
-  <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> -->
   <link type="text/css" rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/todc-bootstrap/3.3.2-3.3.2/css/bootstrap-theme.min.css">
   <link rel="stylesheet" media="screen"
@@ -12,39 +11,80 @@
 
   <link type="text/css" href="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.css"
     rel="stylesheet" />
-
 </head>
 
 <body>
-  <div id="navbar"> </div>
+  <!-- <div class="container"> -->
+  <!-- <div id="navbar"> </div> -->
+
+  <nav class="navbar navbar-default">
+    <div class="container">
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+          data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#" data-localize="productName">OpenSABER</a>
+      </div>
+
+      <!-- Collect the nav links, forms, and other content for toggling -->
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <ul class="nav navbar-nav navbar-right">
+          <!-- <li><a href="#">Link</a></li> -->
+          <li class="dropdown">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+              aria-expanded="false">
+              <p id="langSelected"></p> <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+
+              <li><a href="./login.html?lang=English">English</a></li>
+              <li><a href="./login-es.html?lang=Spanish">Spanish</a></li>
+          </li>
+        </ul>
+      </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+  </nav>
+  <!-- </div> -->
+
   <div class="container">
     <div class="row" id="addHeight">
       <div class="col-sm-12"></div>
     </div>
     <div class="row">
       <div class="col-md-4">
-        <img
-          src="https://upload.wikimedia.org/wikipedia/commons/9/99/%EC%B9%98%EB%A6%AC%EB%BD%80_%EC%B4%88%EB%93%B1%ED%95%99%EA%B5%90.jpg"
-          alt="" style="width: 34rem; border-radius: 1rem;">
+        <div class="col-md-4">
+          <img
+            src="https://upload.wikimedia.org/wikipedia/commons/9/99/%EC%B9%98%EB%A6%AC%EB%BD%80_%EC%B4%88%EB%93%B1%ED%95%99%EA%B5%90.jpg"
+            alt="" style="width: 34rem; border-radius: 1rem;">
+        </div>
       </div>
       <div class="col-md-4">
-        <div class="alert alert-success alert-dismissible" role="alert" id="alert" aria-hidden="true">
+        <div class="alert alert-success alert-dismissible" role="alert" id="alert">
           <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
               aria-hidden="true">&times;</span></button>
           <strong>OTP </strong> sent success.
           <span id="timer"></span>
+
         </div>
         <div id="SignUPForm">
         </div>
+
       </div>
 
       <div class="col-md-4">
       </div>
+
     </div>
+
   </div>
   <div class="container mt-5 ">
     <div class="jumbotron box-shadow ">
-      <!-- <h2 class="card-title">Register Now</h2> -->
+      <!-- <h2 class="card-title">Open Saber</h2> -->
       <p class="card-text">This online register lists all teachers practising in the Country in real-time. It also shows
         whether a teacher's registration and/or practising records have been validated or not. These assurances are
         downloadable too. Keep this record relevant to be able to consume and offer other value enabled services.</p>
@@ -53,25 +93,34 @@
 
   </div>
 
-
   <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+  <script type="text/javascript"
+    src="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.js"></script>
   <script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
   <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.js"></script>
   <script type="text/javascript" src="http://code.cloudcms.com/alpaca/1.5.24/bootstrap/alpaca.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
-  <script type="text/javascript"
-    src="https://cdnjs.cloudflare.com/ajax/libs/jquery-localize/0.1.0/jquery.localize.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-localize/0.1.0/jquery.localize.min.js"></script>
+
   <script src="utils.js" type="text/javascript"></script>
   <script type="text/javascript"
-  src="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.js"></script>
+    src="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.js"></script>
 
 
   <script type="text/javascript">
     let timerOn = false;
+    function dataLocalizeRefresh(lang, fullLangText) {
+      console.log('data', lang, fullLangText)
 
+      var opts = { language: lang, pathPrefix: "./lang" };
+
+      $("[data-localize]").localize("stringData", opts);
+
+      console.log("dataLocalizeRefreshEnd " + lang);
+      document.getElementById("langSelected").innerHTML = fullLangText
+
+    }
     function timer(remaining) {
       var m = Math.floor(remaining / 60);
       var s = remaining % 60;
@@ -92,6 +141,14 @@
       $(".alert").hide();
     }
 
+    var urlParams = new URLSearchParams(location.search);
+    if (urlParams.get('lang') == 'English') {
+      dataLocalizeRefresh('en', 'English')
+
+    } else {
+      dataLocalizeRefresh('es', 'Spanish')
+
+    }
     var phone = '';
     let getOtp = ''
     function generateOTP(phone) {
@@ -127,18 +184,28 @@
       // );
     }
     $(document).ready(function () {
-      $('#navbar').load("navbar.html");
-      console.log("refreshed data localisation");
-      var cookedVal = {
+      $('#navbar').load("navbar.html")
 
+
+      var cookedVal = {
+        "id": "",
+        "ver": "1.0",
+        "ets": "11234",
+        "params": {
+          "did": "",
+          "key": "",
+          "msgid": ""
+        },
+        "request": { "Person": {} }
       };
 
 
+
       $("#SignUPForm").alpaca({
-        "schemaSource": "./schema/signIn.json",
+        "schemaSource": "./schema/login-es.json",
         "options": {
 
-          "validate": false,
+          "validate": true,
           "form": {
             "attributes": {
               "method": "post",
@@ -146,23 +213,24 @@
             },
             "buttons": {
               "validate": {
-                "title": "Next",
+                "title": "Siguiente",
                 "id": "validate",
-
                 "click": function () {
                   this.validate(true);
                   this.refreshValidationState(true);
                   var value = this.getValue();
                   if (value['phone']) {
-                    searchExitingData(value.phone);
+                    var present = searchExitingData(value.phone);
 
                   }
                 }
               },
               "add": {
-                "title": "Sign Up ",
-                "id": "sign",
+                "title": "Iniciar sesión",
+                "id": "logIn",
+                "data-localize": "profile",
                 "click": function () {
+                  this.refreshValidationState(true);
                   this.refreshValidationState(true);
                   if (!this.isValid(true)) {
                     this.focus();
@@ -174,10 +242,13 @@
                   cookedVal['otp'] = value.otp
                   console.log(JSON.stringify(cookedVal));
 
-                  document.location.href = "./registration-form.html"
 
 
                   console.log('hii')
+                  var urlParams = new URLSearchParams(location.search);
+                      // urlParams.get('lang')
+                  document.location.href = "./profile.html?osid=" + ID+ "&lang="+ urlParams.get('lang');
+
                   $.ajax({
                     url: "http://10.0.1.62:8014/otp/verify",
                     type: "post",
@@ -185,25 +256,27 @@
                     data: JSON.stringify(cookedVal),
                     success: function (data, textStatus, xhr) {
                       console.log(xhr.status)
+                      var urlParams = new URLSearchParams(location.search);
+                      urlParams.get('lang')
+                        
+
                       if (xhr.status == 200) {
-                        document.location.href = "./registration-form.html"
+                        document.location.href = "./profile.html?osid=" + ID+ "&lang="+ urlParams.get('lang');
 
                       }
 
 
+                      // document.location.href = "./profile.html?osid=" + data.result.Person.osid;
                     },
                     complete: function (xhr, textStatus) {
                       console.log(xhr.status);
                       if (xhr.status == 400) {
-
                         alert("Invalid OTP")
 
-                        // $(".alert").hide();
                       }
                     }
                   }
                   );
-
 
                 },
 
@@ -212,7 +285,8 @@
           }
         },
         "postRender": function () {
-          document.getElementById("sign").style.display = "none";
+          document.getElementById("logIn").style.display = "none";
+          document.ge
         },
       });
     });
@@ -227,8 +301,7 @@
           "key": "",
           "msgid": ""
         },
-
-        "request":{
+        "request": {
           "entityType": ["Person"],
           "filters": {
             "phone": {
@@ -248,18 +321,23 @@
         success: function (msg) {
           console.log(Array.isArray(msg.result.Person) + " : " + msg.result.Person.length)
           if (Array.isArray(msg.result.Person) && msg.result.Person.length == 1) {
-            alert('This number is already exists, please login.')
-            document.location.href = './login.html'
+            // document.location.href = "./profile.html?osid=" + msg.result.Person[0].osid;
+            ID = msg.result.Person[0].osid
+            generateOTP(phone);
+            document.getElementById("logIn").style.display = "inline-block";
+            document.getElementById("validate").style.display = "none";
+
+
+
           }
           else {
-            console.log('hwy')
-            generateOTP(phone);
-            document.getElementById("sign").style.display = "inline-block";
-            document.getElementById("validate").style.display = "none";
+            alert('This number is not recognised, please register.')
+            document.location.href = './signUp-es.html?lang=Spanish'
           }
+
+
         }
       });
-
     }
   </script>
 </body>
