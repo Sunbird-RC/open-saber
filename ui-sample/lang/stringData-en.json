@@ -21,7 +21,9 @@
     "actions": "Status",
     "systemValidated": "System validated",
     "validated": "Validated",
-    "notRequired": "Validation not required"
+    "notRequired": "Validation not required",
+    "reject":"Reject"
+
 
 
 }

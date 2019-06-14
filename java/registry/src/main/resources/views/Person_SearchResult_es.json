@@ -20,7 +20,11 @@
     },
     {
       "name": "osid",
-      "title": "Identificaciónúnica"
+      "title": "osid"
+    },
+    {
+      "name": "isApproved",
+      "title": "isApproved"
     }
   ]
 }

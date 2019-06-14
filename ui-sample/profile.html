@@ -277,10 +277,12 @@
                                     }
                                 }
                                 else if (!isTrue(head) && head !== 'Name' && head !== 'Nombre') {
+                                    console.log(head)
 
-                                    var approvedrow = "<td class='text pl-2' id='style'><button id='approve' class='btn btn-primary mr-3 sc' style='font-size:1rem;' onclick=approve(" + head + ")><i class='fa fa-check-circle pr-1' style='font-size: small !important;'></i>Approve</button><button class='btn btn-outline-danger sc' style='font-size:1rem;' id='reject' >&nbsp;Reject</button></td></tr>";
+                                    var approvedrow = "<td class='text pl-2' id='style'><button id='approve' data-localize='approve' class='btn btn-primary mr-3 sc' style='font-size:1rem;' onclick=approve(" + head + ")><i class='fa fa-check-circle pr-1' style='font-size: small !important;'></i>Approve</button><button class='btn btn-outline-danger sc' style='font-size:1rem;' id='reject' data-localize='reject'>&nbsp;Reject</button></td></tr>";
                                     row += temprow + approvedrow;
                                 } else if (head === 'Phone' || head === 'Teléfono' || isTrue(head)) {
+                                    console.log(head)
                                     approvedStatusCount = approvedStatusCount + 1;
 
                                     var approvedrow = "<td class='text pl-2' id='style'><p  class='mr-3 sc' style='color:green;font-size:1rem;' ><i class='fa fa-check-circle pr-1' style='color:green;font-size:large !important;'></i>Validated</p></td></tr>";
@@ -322,10 +324,6 @@
                             getEnglishColNameFromSpanishColame(head, function (err, data) {
                                 return g_thisPersonVerification[data + 'Verified']
                             })
-                        }
-                        if (head === 'School' || head === 'TeacherId' ||
-                            head === 'Colegio' || head === 'Identificador Maestro') {
-
                         }
 
                     }
@@ -431,6 +429,8 @@
                 } else {
                     // Update is clicked now.
                     for (key in g_thisPerson) {
+                        if(key=== 'osid') 
+                        continue;
                         // Derive the name from the title and setup the new Person object
                         var childElemnet = document.getElementById(key);
 

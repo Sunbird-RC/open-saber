@@ -18,6 +18,7 @@
     "verifiedRecord": "Verificado",
     "actions": "Estado",
     "name":"Nombre",
-    "next": "Send OTP"
+    "next": "Send OTP",
+    "reject":"Rechazar"
 
 }

@@ -110,7 +110,7 @@
                     var colHeader = Object.keys(personRecords[0]);
                     _.forEach(personRecords[0], (value, key) => {
                         console.log(value,key)
-                        if (key !== 'isApproved') {
+                        if (key !== 'isApproved' && key !== 'osid') {
                             $('table thead tr').append('<th>' + key + '</th>');
                         }
                     });
@@ -126,13 +126,13 @@
                             if (colHeader[j] === 'isApproved') {
                                 // console.log('if',personRecords)
                                 approved = personRecords[idx][colHeader[j]]
-                            } else {
+                            }  else if(colHeader[j]!='osid'){
                                 $('table tbody tr').last().append('<td>' + personRecords[idx][colHeader[j]] + '</td>');
                             }
                         }
                         console.log("approved = " + approved)
                         if (approved === false) {
-                            row = "<td><button type='button' class='btn btn-primary' data-localize='approve' onclick=approveFn(" + JSON.stringify(personRecords[idx].uniqueId) + ")>Approve</button></td>";
+                            row = "<td><button type='button' class='btn btn-primary' data-localize='approve' onclick=approveFn(" + JSON.stringify(personRecords[idx].osid) + ")>Approve</button></td>";
                             $('table tbody tr').last().append(row);
                         } else {
                             row = "<td><label style='color: green;font-size: 1rem;' data-localize='verifiedRecord'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>Verified record</label></td>";
@@ -167,7 +167,7 @@
         });
   
         function approveFn(obj) {
-            var url = "file:///Users/rajeshr/IdeaProjects/aishwa8141/open-saber/ui-sample/"
+            var url = "file:///Users/aishwarya/workspace/Saber/open-saber/ui-sample/"
             if (lang == 'English') {
                 url += "profile.html?osid=" + obj + '&lang=' + lang + '&isAdmin=true';
             }
@@ -206,27 +206,28 @@
                         $('table tbody').append('<tr></tr>')
                         var row = "";
                         for (var j = 0; j < colHeader.length; j++) {
-                            // console.log('col',colHeader[j])
+                            console.log('col',colHeader[j])
                             if (colHeader[j] === 'isApproved') {
                                 // console.log('if',personRecords)
                                 approved = personRecords[idx][colHeader[j]]
-                            } else {
+                            } else if(colHeader[j]!='Osid'){
                                 $('table tbody tr').last().append('<td>' + personRecords[idx][colHeader[j]] + '</td>');
                             }
                         }
                         console.log("approved = " + approved)
-                        if (approved === false) {
-                            row = "<td><button type='button' class='btn btn-primary' data-localize='approve' onclick=approveFn(" + JSON.stringify(personRecords[idx].uniqueId) + ")>Approve</button></td>";
-                            $('table tbody tr').last().append(row);
-                        } else {
-                            row = "<td><label style='color: green;font-size: 1rem;' data-localize='verifiedRecord'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>Verified record</label></td>";
-                            $('table tbody tr').last().append(row);
-                        }
                         if (lang === 'English') {
                             langId = 'uniqueId'
                         } else if (lang === 'Spanish') {
                             langId = 'Identificaciónúnica'
                         }
+                        if (approved === false) {
+                            row = "<td><button type='button' class='btn btn-primary' data-localize='approve' onclick=approveFn(" + JSON.stringify(personRecords[idx].osid) + ")>Approve</button></td>";
+                            $('table tbody tr').last().append(row);
+                        } else {
+                            row = "<td><label style='color: green;font-size: 1rem;' data-localize='verifiedRecord'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>Verified record</label></td>";
+                            $('table tbody tr').last().append(row);
+                        }
+                        
                     }
                     }
                     else {

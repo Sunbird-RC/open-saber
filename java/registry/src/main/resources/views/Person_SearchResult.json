@@ -20,7 +20,7 @@
     },
     {
       "name": "osid",
-      "title": "uniqueId"
+      "title": "osid"
     },
     {
       "name": "isApproved",
