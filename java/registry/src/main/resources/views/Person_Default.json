@@ -17,6 +17,10 @@
     {
       "name": "teacherId",
       "title": "TeacherId"
+    },
+    {
+      "name": "isAdmin",
+      "title": "isAdmin"
     }
   ]
 }

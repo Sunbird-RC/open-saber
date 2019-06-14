@@ -2,14 +2,12 @@
 
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
-        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+        crossorigin="anonymous">
     <link type="text/css" href="./css/profile.css" rel="stylesheet" />
     <link type="text/css" href="./css/signIn.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css"
-        integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
-
-
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr"
+        crossorigin="anonymous">
 </head>
 
 <body onload="myFunction()">
@@ -27,67 +25,67 @@
         </table>
         <div class="text-center pt-3">
 
-            <span class=""><button class="btn btn-primary" data-localize="edit" id="button" onclick="edit(this.id)"
-                    style="margin-top: 1rem;"><i class="fas fa-user-edit"></i> <span > Edit</span>
-                </button></span>
-            <span class="pl-3 pr-3"><button class="btn btn-primary outline" id="button1" data-localize="cancel"
-                    onclick="backtoProfile(this.id)">Cancel</button></span>
-            <span class=""><button data-localize="download" class="btn btn-primary" id="downButton"
-                    onclick="downloadJson()" data-toggle="tooltip" title="Download Signed
-                Profile">Download</button></span>
+            <span class="">
+                <button class="btn btn-primary" data-localize="edit" id="button" onclick="editBtnClicked(this.id)" style="margin-top: 1rem;">
+                    <i class="fas fa-user-edit"></i>
+                    <span> Edit</span>
+                </button>
+            </span>
+            <span class="pl-3 pr-3">
+                <button class="btn btn-primary outline" id="button1" data-localize="cancel" onclick="backtoProfile(this.id)">Cancel</button>
+            </span>
+            <span class="">
+                <button data-localize="download" class="btn btn-primary" id="downButton" onclick="downloadJson()" data-toggle="tooltip" title="Download Signed
+                Profile">Download</button>
+            </span>
             <a id="downloadAnchorElem" style="display:none"></a>
 
         </div>
 
-        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-            integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
             crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
-            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
             crossorigin="anonymous"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
-            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
             crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
-        <script type="text/javascript"
-            src="https://cdnjs.cloudflare.com/ajax/libs/jquery-localize/0.1.0/jquery.localize.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-localize/0.1.0/jquery.localize.min.js"></script>
 
         <script type="text/javascript" src="./utils.js"></script>
 
         <script type="text/javascript">
             var query = window.location.search.substring(1);
-            var urlParams = new URL(window.location);
-            var qs = urlParams.searchParams.get('osid');
-            var lang = urlParams.searchParams.get('lang');
+            var g_urlParams = new URL(window.location);
+            var g_osidOfLoggedInUser = g_urlParams.searchParams.get('osid');
+            var g_lang = g_urlParams.searchParams.get('lang');
             var tempobj;
-            var readobj = [];
-            var c = [];
-            var admin;
-            var checkVerification;
-            var permanantObj;
+            var g_thisPerson = {};
+            var g_thisNewPerson = {};
+            var g_isAdmin;
+            var isedited = false;
+            var g_thisPersonVerification = {};
+            var g_PersonDefaultSchemaJson;
             var tempkey;
             var preval;
             var verifiedDetails;
+
             $(document).ready(function () {
-                console.log('url params',qs)
+                console.log('url params', g_osidOfLoggedInUser)
                 $('#navbar').load("bootstrap-4-navbar.html", function () {
                     document.getElementById("nav1").style.display = "none"
                     document.getElementById("nav2").style.display = "none"
-                    if (lang == 'English') {
+                    if (g_lang == 'English') {
                         dataLocalizeRefresh('en', 'English')
-
                     }
-                    else if (lang == 'Spanish') {
+                    else if (g_lang == 'Spanish') {
                         dataLocalizeRefresh('es', 'Spanish')
-
                     }
-
-
                 });
-                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-toggle="tooltip"]').tooltip;
             });
-            const reqParam = {
+
+            const searchReq = {
                 "id": "open-saber.registry.search",
                 "ver": "1.0",
                 "ets": "11234",
@@ -99,7 +97,7 @@
                 "request": {
                 }
             }
-            const params = {
+            const readPersonRequest = {
                 "id": "open-saber.registry.read",
                 "ver": "1.0",
                 "ets": "11234",
@@ -113,111 +111,145 @@
                     }
                 }
             }
-            function myFunction() {
-                searchVerificationDetails();
-                readAdminStatus(qs);
-                function searchVerificationDetails() {
-                    reqParam.request = {
-                        "entityType": ["PersonVerified"],
 
-                        "filters": {
-                            "personId": { "contains": qs }
-                        }
+            const downloadProfileRequest = {
+                "id": "open-saber.registry.read",
+                "ver": "1.0",
+                "ets": "11234",
+                "params": {
+                    "did": "",
+                    "key": "",
+                    "msgid": ""
+                },
+                "request": {
+                    "Person": {
                     }
-                    const https = new XMLHttpRequest()
-                    https.open('POST', "http://localhost:8080/search")
-                    https.setRequestHeader('Content-type', 'application/json')
-                    https.send(JSON.stringify(reqParam)) // Make sure to stringify
-
-                    https.onload = function () {
-                        var count = 0;
-                        checkVerification = JSON.parse(https.responseText);
-                        console.log(checkVerification)
-                        checkVerification = checkVerification.result.PersonVerified[0];
-                        for (checkVal in checkVerification) {
-                            if (checkVerification[checkVal] === true) {
-                                count++;
-                            }
-                        }
-                        console.log(count)
-                        if (count === 3) {
-                            var enable = true;
-                            approve(enable, 'update')
-                        }
-                        else {
-                            var enable = false;
-                            approve(enable, 'update')
-                        }
-                    }
-
                 }
-                reqParam.request = {
-                    "entityType": ["Person"],
+            }
+            const updatePersonVerifiedRequest = {
+                "id": "open-saber.registry.update",
+                "ver": "1.0",
+                "ets": "11234",
+                "params": {
+                    "did": "",
+                    "key": "",
+                    "msgid": ""
+                },
+                "request": {
+                    "PersonVerified": {
+                    }
+                }
+            }
+            const updatePersonRequest = {
+                "id": "open-saber.registry.update",
+                "ver": "1.0",
+                "ets": "11234",
+                "params": {
+                    "did": "",
+                    "key": "",
+                    "msgid": ""
+                },
+                "request": {
+                    "Person": {
+                    }
+                }
+            }
+
+            function getPersonVerificationDetails(cb) {
+                searchReq.request = {
+                    "entityType": ["PersonVerified"],
                     "filters": {
-                        "osid": { "eq": qs.slice(2, qs.length) }
-                    },
-                    "viewTemplateId": "Person_Default.json"
-                }
-                if (lang == 'English') {
-                    params.request.viewTemplateId = "Person_Default.json";
-                } else if (lang == 'Spanish') {
-                    params.request.viewTemplateId = "Person_Default_es.json";
-
-                }
-                const http = new XMLHttpRequest()
-                http.open('POST', "http://localhost:8080/search")
-                http.setRequestHeader('Content-type', 'application/json')
-                http.send(JSON.stringify(reqParam)) // Make sure to stringify
-                var row = "", col = "";
-                http.onload = function () {
-                    var obj = JSON.parse(http.responseText);
-                    console.log(obj, admin)
-                    if (lang == 'English') {
-                        document.getElementById('dropdown').innerHTML = obj.result.Person[0].Name;
-
+                        "personId": { "contains": g_osidOfLoggedInUser }
                     }
-                    else if (lang == 'Spanish') {
-                        document.getElementById('dropdown').innerHTML = obj.result.Person[0].Nombre;
+                }
+                const https = new XMLHttpRequest()
+                https.open('POST', "http://localhost:8080/search")
+                https.setRequestHeader('Content-type', 'application/json')
+                https.send(JSON.stringify(searchReq)) // Make sure to stringify
 
+                https.onload = function () {
+                    var count = 0;
+                    var response = JSON.parse(https.responseText);
+                    g_thisPersonVerification = response.result.PersonVerified[0];
+                    console.log("Finished load PersonVerified")
+                    cb()
+                }
+            }
+
+            function setNameInProfileSection(person) {
+                // Set the name in the Profile
+                if (g_lang == 'English') {
+                    document.getElementById('dropdown').innerHTML = person.Name;
+                }
+                else if (g_lang == 'Spanish') {
+                    document.getElementById('dropdown').innerHTML = person.Nombre;
+                }
+            }
+
+            function myFunction() {
+                getPersonVerificationDetails(function () {
+                    console.log("myFunction is getting called")
+                    searchReq.request = {
+                        "entityType": ["Person"],
+                        "filters": {
+                            "osid": { "eq": g_osidOfLoggedInUser.slice(2, g_osidOfLoggedInUser.length) }
+                        },
+                        "viewTemplateId": "Person_Default.json"
                     }
-                    // if (obj.result.Person.isAdmin) {
-                    //     document.getElementById('admin').style.display = 'inline'
-                    //     document.getElementById('adminline').style.display = 'inline'
-                    //     document.getElementById('admin').href = './adminpage.html?name=' + obj.result.Person[0].Name+'&lang';
+                    if (g_lang == 'English') {
+                        readPersonRequest.request.viewTemplateId = "Person_Default.json";
+                    } else if (g_lang == 'Spanish') {
+                        readPersonRequest.request.viewTemplateId = "Person_Default_es.json";
+                    }
+                    const http = new XMLHttpRequest()
+                    http.open('POST', "http://localhost:8080/search")
+                    http.setRequestHeader('Content-type', 'application/json')
+                    http.send(JSON.stringify(searchReq)) // Make sure to stringify
+                    var row = "", col = "";
+                    http.onload = function () {
+                        var obj = JSON.parse(http.responseText);
+                        console.log("this is the " + JSON.stringify(obj))
+                        setNameInProfileSection(obj.result.Person[0])
 
-                    // }
-                    for (key in obj) {
-                        if (key === "result") {
-                            readobj = obj[key].Person[0];
-                            c = obj[key].Person[0];
-                            for (var head in c) {
+                        g_thisPerson = obj.result.Person[0];
+                        for (var head in g_thisPerson) {
+                            if (head === "isAdmin") {
+                                // We dont need to show this flag
+                                g_isAdmin = g_thisPerson[head]
+                            } else {
                                 document.getElementById('button1').style.display = 'none';
-                                if (admin === 'true') {
+                                if (g_isAdmin === 'true') {
                                     document.getElementById('button').style.display = 'none';
                                     document.getElementById("downButton").style.display = 'none'
                                 }
                                 var val = head;
                                 var headval = head;
-                                var value = c[head];
+                                var value = g_thisPerson[head];
                                 var temprow;
                                 temprow = "<tr><th class='header pr-5'>" + head + "</th><td id=" + head + " class='text' name=" + head + "  width='20% !importent'>" + value + "</td >";
-                                if (admin !== 'true') {
-                                    if (!checkVerification[head + 'Verified'] && checkVerification.hasOwnProperty(head + 'Verified')) {
-                                        var validaterow = "<td class='text pl-2' style='color:#007bff;font-size: 14px;'><i class='fa fa-exclamation-circle pr-1' style='color: #007bff;font-size: small !important;'></i>Pending Validation</td></tr>";
+                                if (g_isAdmin !== 'true') {
+                                    if (head === 'Name') {
+                                        var validaterow = "<td class='text pl-2' style='color:#007bff;font-size: 14px;'><i class='fa fa-exclamation-circle pr-1' style='color: #007bff;font-size: small !important;'></i><div id='notRequired' data-localize='notRequired'>Validation not required</div></td></tr>";
+                                        row += temprow + validaterow;
+                                    } else if (!g_thisPersonVerification[head + 'Verified'] && g_thisPersonVerification.hasOwnProperty(head + 'Verified')) {
+                                        var validaterow = "<td class='text pl-2' style='color:#007bff;font-size: 14px;'><i class='fa fa-exclamation-circle pr-1' style='color: #007bff;font-size: small !important;'></i><div id='pending' data-localize='pending'>Pending Validation</div></td></tr>";
                                         row += temprow + validaterow;
                                     }
-                                    else if (head === 'Phone' || checkVerification[head + 'Verified']) {
-                                        var verifiedrow = "<td class='text pl-2' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>Validated</td></tr>";
+                                    else if (head === 'Phone') {
+                                        var verifiedrow = "<td class='text pl-2' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i><div data-localize='systemValidated'>System validated</div></td></tr>";
+                                        row += temprow + verifiedrow;
+                                    } else if (g_thisPersonVerification[head + 'Verified']) {
+                                        var verifiedrow = "<td class='text pl-2' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i><div data-localize='validated'>Validated</div></td></tr>";
                                         row += temprow + verifiedrow;
                                     }
                                     else {
                                         row += temprow;
                                     }
                                 }
-                                else if (!checkVerification[head + 'Verified'] && checkVerification.hasOwnProperty(head + 'Verified')) {
+                                else if (!g_thisPersonVerification[head + 'Verified'] && g_thisPersonVerification.hasOwnProperty(head + 'Verified')) {
                                     var approvedrow = "<td class='text pl-2' id='style'><button id='approve' class='btn btn-outline-success mr-3 sc' style='color:green;font-size:1rem;' onclick=approve(" + head + ")><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>Approve</button><button class='btn btn-outline-danger sc' style='font-size:1rem;' id='reject' >&nbsp;Reject</button></td></tr>";
                                     row += temprow + approvedrow;
-                                } else if (head === 'Phone' || checkVerification[head + 'Verified']) {
+                                } else if (head === 'Phone' || g_thisPersonVerification[head + 'Verified']) {
                                     var approvedrow = "<td class='text pl-2' id='style'><button  class='btn btn-outline-success mr-3 sc' style='color:green;font-size:1rem;' ><i class='fa fa-check-circle pr-1' style='color:green;font-size:large !important;'></i>Validated</button></td></tr>";
                                     row += temprow + approvedrow;
                                 }
@@ -225,90 +257,131 @@
                                     row += temprow;
                                 }
                             }
-                            $("table tbody").append(row);
-                            var element = document.getElementsByTagName("tr");
-                            for (var i = 0; i < element.length; i++) {
-                                var newElement = document.createElement('div');
-                                var divElement = document.getElementsByTagName('div');
-                                newElement.setAttribute('class', 'mt-2')
-                                for (var j = 1; j < element.length - 1; j++) {
-                                    name1 = "mystyle";
-                                }
-                                var elementParent = element[i].parentNode;
-                                elementParent.insertBefore(newElement, element[i].nextSibling);
-                            }
+                        }
+                        $("table tbody").append(row);
+                        var element = document.getElementsByTagName("tr");
+                        for (var i = 0; i < element.length; i++) {
+                            var newElement = document.createElement('div');
+                            var divElement = document.getElementsByTagName('div');
+                            newElement.setAttribute('class', 'mt-2')
+                            var elementParent = element[i].parentNode;
+                            elementParent.insertBefore(newElement, element[i].nextSibling);
                         }
                     }
-                }
-            }
-            function edit(id) {
-                var isedited = false;
-                var temp;
-                var edit = document.getElementById(id);
-                edit.innerHTML = "Update";
-                document.getElementById('button1').style.display = '-webkit-inline-box';
-                for (key in c) {
-                    if (document.getElementById(key).firstChild != "[object HTMLInputElement]") {
-                        var content = document.getElementById(key).firstChild.nodeValue;
-                        edit(key);
-                        function edit(key) {
-                            var keys = key;
-                            var anchor = document.getElementById(key);
-                            var att = document.createAttribute("contenteditable");
-                            att.value = "true";
-                            anchor.setAttributeNode(att);
-                            onchange(keys, key);
-                        }
-                        function onchange(keys, key) {
-                            var childElemnet = document.getElementById(key);
-                            document.getElementById(key).onchange = function myFunction() {
-                                var x = document.getElementById(key);
-                            }
-                            $.getJSON('schema/Person_Default.json', function (data) {
-                                $.each(data, function (i, f) {
-                                    if (i === 'fields') {
-                                        verifiedDetails = f;
-                                        for (var i = 0; i < verifiedDetails.length; i++) {
-                                            if (key === verifiedDetails[i].title) {
-                                                tempkey = verifiedDetails[i].name;
-                                                if (childElemnet.innerHTML.localeCompare(permanantObj[tempkey])) {
-                                                    isedited = !isedited;
-                                                    permanantObj[tempkey] = childElemnet.innerHTML;
-                                                    update(isedited, key);
-                                                }
-                                            }
-                                        }
-                                    }
-                                });
-                            });
-                        }
 
-                        function update(edited, key) {
-                            if (edited) {
-                                params.request.Person = permanantObj;
-                                const http = new XMLHttpRequest()
-                                http.open('POST', "http://localhost:8080/update")
-                                http.setRequestHeader('Content-type', 'application/json')
-                                http.send(JSON.stringify(params)) // Make sure to stringify
-                                http.onload = function () {
-                                    var obj = JSON.parse(http.responseText);
-                                }
-                                approve(key, 'reject');
+                    getViewSchema(function () {
+                        console.log("Loaded View schema")
+                    })
+                })
+            }
+
+            function getViewSchema(cb) {
+                $.getJSON('schema/Person_Default.json', function (data) {
+                    g_PersonDefaultSchemaJson = data
+                    cb()
+                })
+            }
+
+            function turnOnEditForField(key) {
+                isedited = true;
+                var anchor = document.getElementById(key);
+                var att = document.createAttribute("contenteditable");
+                att.value = "true";
+                anchor.setAttributeNode(att);
+            }
+
+            function getDbColumnNameFromTitle(title, cb) {
+                $.each(g_PersonDefaultSchemaJson, function (i, f) {
+                    if (i === 'fields') {
+                        verifiedDetails = f;
+                        for (var i = 0; i < verifiedDetails.length; i++) {
+                            if (key === verifiedDetails[i].title) {
+                                cb(null, verifiedDetails[i].name)
                             }
                         }
                     }
+                });
+            }
+
+            // function onchange(key) {
+            //     console.log("key is changed" - key)
+            //     var childElemnet = document.getElementById(key);
+            //     document.getElementById(key).onchange = function myFunction() {
+            //         var x = document.getElementById(key);
+            //     }
+
+            //     var name = getDbColumnNameFromTitle(key, function (err, name) {
+            //         if (childElemnet.innerHTML.localeCompare(g_thisPerson[name])) {
+            //             isedited = !isedited;
+            //             g_thisPerson[name] = childElemnet.innerHTML;
+            //             update(isedited, key);
+            //         }
+            //     })
+            // }
+
+            function update() {
+                updatePersonRequest.request.Person = g_thisNewPerson;
+                updatePersonRequest.request.Person.isApproved = false;
+
+                const http = new XMLHttpRequest()
+                http.open('POST', "http://localhost:8080/update")
+                http.setRequestHeader('Content-type', 'application/json')
+                http.send(JSON.stringify(updatePersonRequest)) // Make sure to stringify
+                http.onload = function () {
+                    var obj = JSON.parse(http.responseText);
+                    alert("Your record is successfully updated");
+                    window.location.reload(true);
                 }
             }
+
+            function editBtnClicked(id) {
+                var edit = document.getElementById(id);
+                isedited = !isedited
+
+                if (isedited) {
+                    // Rename edit to Update and turn Cancel on
+                    edit.innerHTML = "Update";
+                    document.getElementById('button1').style.display = '-webkit-inline-box';
+
+                    for (key in g_thisPerson) {
+                        console.log("Throwing error for key " + key)
+                        if (document.getElementById(key).firstChild != "[object HTMLInputElement]") {
+                            turnOnEditForField(key);
+                        }
+                    }
+                } else {
+                    // Update is clicked now.
+                    for (key in g_thisPerson) {
+                        // Derive the name from the title and setup the new Person object
+                        var childElemnet = document.getElementById(key);
+                        var name = getDbColumnNameFromTitle(key, function (err, name) {
+                           if (childElemnet.innerHTML.localeCompare(g_thisPerson[name])) {
+                                update(isedited, key);
+
+                                if (id === 'school' || id == 'teacherId') {
+                                    // This will set PersonVerification to false.
+                                    var attr = key.charAt(0).toUpperCase() + key.slice(1); 
+                                    reject(attr);
+                                }
+                            }
+                        })
+                        g_thisNewPerson[name] = childElemnet.innerHTML;
+                    }
+                    console.log("New person record = " + JSON.stringify(g_thisNewPerson))
+                    update()
+                }
+            }
+
+
             function backtoProfile(id) {
-                var keyValue = document.getElementById(id).value;
-                window.location.href = window.location.href;
+                $("table tbody").empty();
+                myFunction()
             }
+
             function downloadJson() {
-                var urlParams = new URLSearchParams(location.search);
-                params.request.Person = {
-                    "osid": urlParams.get('osid'),
-                    "includeSignatures": true
-                }
+                var g_urlParams = new URLSearchParams(location.search);
+                downloadProfileRequest.request.Person.osid = g_urlParams.get('osid')
+                downloadProfileRequest.request.includeSignatures = true
                 $.ajax({
                     url: "http://localhost:8080/read",
                     type: "post",
@@ -317,7 +390,7 @@
                     contentType: "application/json",
                     dataType: "json",
                     success: function (msg) {
-                        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(msg.result.Person));
+                        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(msg.response.Person));
                         var dlAnchorElem = document.getElementById('downloadAnchorElem');
                         dlAnchorElem.setAttribute("href", dataStr);
                         dlAnchorElem.setAttribute("download", "Person.json");
@@ -325,36 +398,51 @@
                     }
                 });
             }
-            function readAdminStatus(osid) {
-                params.request.Person = {
-                    "osid": osid,
-                    "includeSignatures": true
+
+            function reject(id) {
+                console.log("Rejecting " + id)
+                
+                    var key = (id + 'Verified')
+                    updatePersonVerifiedRequest.request.PersonVerified = {
+                        "osid": g_thisPersonVerification.osid,
+                        [key]: false
+                    }
+                    $.ajax({
+                        url: "http://localhost:8080/update",
+                        type: "post",
+                        dataType: "application/json",
+                        data: JSON.stringify(updatePersonVerifiedRequest),
+                        contentType: "application/json",
+                        dataType: "json",
+                        success: function (msg) {
+
+                        }
+                    });
+                }
+            
+
+            function approve(id, tag) {
+                console.log(g_thisPersonVerification)
+                var key = (id.id + 'Verified')
+                updateParams.request.PersonVerified = {
+                    "osid": g_thisPersonVerification.osid,
+                    [key]: true
                 }
                 $.ajax({
-                    url: "http://localhost:8080/read",
+                    url: "http://localhost:8080/update",
                     type: "post",
                     dataType: "application/json",
-                    data: JSON.stringify(params),
+                    data: JSON.stringify(updateParams),
                     contentType: "application/json",
                     dataType: "json",
                     success: function (msg) {
-                        if (msg.result.Person.isAdmin) {
-                            document.getElementById('admin').style.display = 'inline'
-                            document.getElementById('adminline').style.display = 'inline'
-                            document.getElementById('admin').href = './adminpage.html?name=' + msg.result.Person.name+'&lang='+lang
-
-                        }
-                        permanantObj = msg.result.Person;
-                        console.log(permanantObj)
-                        var intials = msg.result.Person.name.charAt(0)
-                        document.getElementById("profileImage").innerText = intials;
-                        admin = msg.result.Person.isAdmin;
+                        window.location.href = window.location.href;
                     }
                 });
             }
-            function approve(id, tag) {
-console.log(checkVerification)
-                const updateParams = {
+
+            function updatePersonApprovedStatus(status) {
+                var approveParam = {
                     "id": "open-saber.registry.update",
                     "ver": "1.0",
                     "ets": "11234",
@@ -364,75 +452,21 @@ console.log(checkVerification)
                         "msgid": ""
                     },
                     "request": {
-                        "PersonVerified": {
-                        }
-                    }
-                }
-                if (tag === 'reject') {
-                    var key = (id + 'Verified')
-                    updateParams.request.PersonVerified = {
-                        "osid": checkVerification.osid,
-                        [key]: false
-                    }
-                    $.ajax({
-                        url: "http://localhost:8080/update",
-                        type: "post",
-                        dataType: "application/json",
-                        data: JSON.stringify(updateParams),
-                        contentType: "application/json",
-                        dataType: "json",
-                        success: function (msg) {
-                            window.location.href = window.location.href;
-                        }
-                    });
-                }
-                else if (tag === 'update') {
-                    var approveParam = {
-                        "id": "open-saber.registry.update",
-                        "ver": "1.0",
-                        "ets": "11234",
-                        "params": {
-                            "did": "",
-                            "key": "",
-                            "msgid": ""
-                        },
-                        "request": {
-                            "Person": {
-                                "osid": checkVerification.personId,
-                                "isApproved": id
+                        "Person": {
+                            "osid": g_thisPersonVerification.personId,
+                            "isApproved": id
 
-                            }
                         }
                     }
-                    console.log('if el', params)
-                    const http = new XMLHttpRequest()
-                    http.open('POST', "http://localhost:8080/update")
-                    http.setRequestHeader('Content-type', 'application/json')
-                    http.send(JSON.stringify(approveParam)) // Make sure to stringify
-                    http.onload = function () {
-                        var obj = JSON.parse(http.responseText);
-                        console.log(obj)
-                    }
                 }
-                else {
-                    var key = (id.id + 'Verified')
-                    updateParams.request.PersonVerified = {
-                        "osid": checkVerification.osid,
-                        [key]: true
-                    }
-                    $.ajax({
-                        url: "http://localhost:8080/update",
-                        type: "post",
-                        dataType: "application/json",
-                        data: JSON.stringify(updateParams),
-                        contentType: "application/json",
-                        dataType: "json",
-                        success: function (msg) {
-                            window.location.href = window.location.href;
-                        }
-                    });
+                const http = new XMLHttpRequest()
+                http.open('POST', "http://localhost:8080/update")
+                http.setRequestHeader('Content-type', 'application/json')
+                http.send(JSON.stringify(approveParam)) // Make sure to stringify
+                http.onload = function () {
+                    var obj = JSON.parse(http.responseText);
+                    console.log(obj)
                 }
-                console.log(id, tag, params, updateParams)
             }
         </script>
 </body>

@@ -14,8 +14,7 @@
         "value": "Search By Name"
     },
     "pending": "Validación pendiente",
-    "name":"Nombre",
     "verifiedRecord": "Verificado",
-    "actions": "Estado"
-
+    "actions": "Estado",
+    "name":"Nombre"
 }

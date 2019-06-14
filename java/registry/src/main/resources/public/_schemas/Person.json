@@ -80,7 +80,6 @@
     "indexFields": [
     ],
     "uniqueIndexFields": [
-      "teacherId"
     ],
     "systemFields": [
       "_osCreatedAt",

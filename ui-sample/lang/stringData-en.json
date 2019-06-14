@@ -13,11 +13,14 @@
     "searchPlaceholder": {
         "value": "Search By Name"
     },
-    "pending": "Pending validation",
+    "pending": "Pending validationdfvfddgfdgfd",
     "next": "Next",
     "verifiedRecord": "Verified",
+    "name":"Name",
     "actions": "Status",
-    "name":"Name"
+    "systemValidated": "System validated",
+    "validated": "Validated",
+    "notRequired": "Validation not required"
 
 
 }

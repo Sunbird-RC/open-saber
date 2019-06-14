@@ -89,14 +89,11 @@
         };
         if (lang == 'English') {
             cookedVal.request.viewTemplateId = "Person_SearchResult.json"
-
         } else if (lang == 'Spanish') {
             cookedVal.request.viewTemplateId = "Person_SearchResult_es.json"
-
         }
 
         $(document).ready(function () {
-
             var langId;
             $.ajax({
                 url: "http://localhost:8080/search",
@@ -134,7 +131,7 @@
                             }
                         }
                         console.log("approved = " + approved)
-                        if (approved === 'false') {
+                        if (approved == false) {
                             row = "<td><button type='button' class='btn btn-primary' onclick=myFunction(" + JSON.stringify(personRecords[idx].uniqueId) + ")>Approve</button></td>";
                             $('table tbody tr').last().append(row);
                         } else {
@@ -146,9 +143,6 @@
                         } else if (lang === 'Spanish') {
                             langId = 'Identificaciónúnica'
                         }
-                        //row = "<td><button type='button' class='btn btn-primary' data-localize='approve' onclick=myFunction(" + JSON.stringify(personRecords[idx][langId]) + ")>Approve</button></td>";
-
-                        // $('table tbody tr').last().append(row);
                     }
                 }
             });

@@ -246,11 +246,9 @@
 
                   console.log('hii')
                   var urlParams = new URLSearchParams(location.search);
-                  // urlParams.get('lang')
-                  // document.location.href = "./profile.html?osid=" + ID + "&lang=" + urlParams.get('lang');
-
+                  
                   $.ajax({
-                    url: "http://10.0.1.62:8014/otp/verify",
+                    url: "http://localhost:8014/otp/verify",
                     type: "post",
                     contentType: "application/json",
                     data: JSON.stringify(cookedVal),
@@ -258,15 +256,10 @@
                       console.log(xhr.status)
                       var urlParams = new URLSearchParams(location.search);
                       urlParams.get('lang')
-
-
                       if (xhr.status == 200) {
                         document.location.href = "./profile.html?osid=" + ID + "&lang=" + urlParams.get('lang');
 
                       }
-
-
-                      // document.location.href = "./profile.html?osid=" + data.result.Person.osid;
                     },
                     complete: function (xhr, textStatus) {
                       console.log(xhr.status);

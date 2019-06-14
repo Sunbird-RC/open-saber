@@ -198,10 +198,8 @@
 
                   document.location.href = "./registration-form-en.html?lang=English"
 
-
-                  console.log('hii')
                   $.ajax({
-                    url: "http://10.0.1.62:8014/otp/verify",
+                    url: "http://localhost:8014/otp/verify",
                     type: "post",
                     contentType: "application/json",
                     data: JSON.stringify(cookedVal),
@@ -209,18 +207,12 @@
                       console.log(xhr.status)
                       if (xhr.status == 200) {
                         document.location.href = "./registration-form-en.html?lang=English"
-
                       }
-
-
                     },
                     complete: function (xhr, textStatus) {
                       console.log(xhr.status);
                       if (xhr.status == 400) {
-
                         alert("Invalid OTP")
-
-                        // $(".alert").hide();
                       }
                     }
                   }
