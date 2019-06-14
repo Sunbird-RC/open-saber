@@ -16,7 +16,11 @@
       },
       {
         "name": "teacherId",
-        "title": "ProfesorId"
+        "title": "Identificador Maestro"
+      },
+      {
+        "name": "isAdmin",
+        "title": "isAdmin"
       }
     ]
   }

@@ -32,10 +32,10 @@
                 </button>
             </span>
             <span class="pl-3 pr-3">
-                <button class="btn btn-primary outline" id="button1" data-localize="cancel" onclick="backtoProfile(this.id)">Cancel</button>
+                <button class="btn btn-primary outline" id="cancelBtn" data-localize="cancel" onclick="backtoProfile(this.id)">Cancel</button>
             </span>
             <span class="">
-                <button data-localize="download" class="btn btn-primary" id="downButton" onclick="downloadJson()" data-toggle="tooltip" title="Download Signed
+                <button data-localize="download" class="btn btn-primary" id="downloadButton" onclick="downloadJson()" data-toggle="tooltip" title="Download Signed
                 Profile">Download</button>
             </span>
             <a id="downloadAnchorElem" style="display:none"></a>
@@ -66,6 +66,7 @@
             var isedited = false;
             var g_thisPersonVerification = {};
             var g_PersonDefaultSchemaJson;
+            var g_PersonSpanishSchemaJson;
             var tempkey;
             var preval;
             var verifiedDetails;
@@ -227,29 +228,30 @@
                             console.log("Iterating in head" + head)
                             if (head === "isAdmin") {
                                 // We dont need to show this flag
+                                console.log("head is " + head)
                             } else {
-                                document.getElementById('button1').style.display = 'none';
-                                if (g_isAdmin === 'true') {
+                                document.getElementById('cancelBtn').style.display = 'none';
+                                if (g_isAdmin) {
                                     document.getElementById('button').style.display = 'none';
-                                    document.getElementById("downButton").style.display = 'none'
+                                    document.getElementById("downloadButton").style.display = 'none'
                                 }
                                 var val = head;
                                 var headval = head;
                                 var value = g_thisPerson[head];
                                 var temprow;
                                 temprow = "<tr><th class='header pr-5'>" + head + "</th><td id=" + head + " class='text' name=" + head + "  width='20% !importent'>" + value + "</td >";
-                                if (g_isAdmin != 'true') {
-                                    if (head === 'Name') {
+                                if (!g_isAdmin) {
+                                    if (head === 'Name' || head === 'Nombre') {
                                         var validaterow = "<td class='text pl-2' style='color:#007bff;font-size: 14px;'><i class='fa fa-exclamation-circle pr-1' style='color: #007bff;font-size: small !important;'></i><div id='notRequired' data-localize='notRequired'>Validation not required</div></td></tr>";
                                         row += temprow + validaterow;
                                     } else if (!g_thisPersonVerification[head + 'Verified'] && g_thisPersonVerification.hasOwnProperty(head + 'Verified')) {
                                         var validaterow = "<td class='text pl-2' style='color:#007bff;font-size: 14px;'><i class='fa fa-exclamation-circle pr-1' style='color: #007bff;font-size: small !important;'></i><div id='pending' data-localize='pending'>Pending Validation</div></td></tr>";
                                         row += temprow + validaterow;
                                     }
-                                    else if (head === 'Phone') {
+                                    else if (head === 'Phone' || head === 'Teléfono') {
                                         var verifiedrow = "<td class='text pl-2' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i><div data-localize='systemValidated'>System validated</div></td></tr>";
                                         row += temprow + verifiedrow;
-                                    } else if (g_thisPersonVerification[head + 'Verified']) {
+                                    } else if (isTrue(head)) {
                                         var verifiedrow = "<td class='text pl-2' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i><div data-localize='validated'>Validated</div></td></tr>";
                                         row += temprow + verifiedrow;
                                     }
@@ -257,10 +259,10 @@
                                         row += temprow;
                                     }
                                 }
-                                else if (!g_thisPersonVerification[head + 'Verified'] && g_thisPersonVerification.hasOwnProperty(head + 'Verified')) {
+                                else if (!isTrue(head)) {
                                     var approvedrow = "<td class='text pl-2' id='style'><button id='approve' class='btn btn-outline-success mr-3 sc' style='color:green;font-size:1rem;' onclick=approve(" + head + ")><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>Approve</button><button class='btn btn-outline-danger sc' style='font-size:1rem;' id='reject' >&nbsp;Reject</button></td></tr>";
                                     row += temprow + approvedrow;
-                                } else if (head === 'Phone' || g_thisPersonVerification[head + 'Verified']) {
+                                } else if (head === 'Phone' || head === 'Teléfono' || isTrue(head)) {
                                     var approvedrow = "<td class='text pl-2' id='style'><button  class='btn btn-outline-success mr-3 sc' style='color:green;font-size:1rem;' ><i class='fa fa-check-circle pr-1' style='color:green;font-size:large !important;'></i>Validated</button></td></tr>";
                                     row += temprow + approvedrow;
                                 }
@@ -280,15 +282,42 @@
                         }
                     })
 
-                    getViewSchema(function () {
-                        console.log("Loaded View schema")
+                    getViewSchemaEng(function () {
+                        console.log("Loaded View schema for English")
                     })
+
+                    getViewSchemaSpanish(function () {
+                        console.log("Loaded View schema for Spanish")
+                    })
+
+                    function isTrue(head) {
+                        // the head could be in English or Spanish
+                        if (g_lang === 'English') {
+                            return g_thisPersonVerification[head + 'Verified']
+                        } else if (g_lang === 'Spanish') {
+                            getEnglishColNameFromSpanishColame(head, function(err, data) {
+                                return g_thisPersonVerification[data + 'Verified']
+                            })
+                        }
+                    }
                 })
             }
 
-            function getViewSchema(cb) {
-                $.getJSON('schema/Person_Default.json', function (data) {
-                    g_PersonDefaultSchemaJson = data
+            function getViewSchemaEng(cb) {
+                getViewSchema('schema/Person_Default.json', cb);
+            }
+
+            function getViewSchemaSpanish(cb) {
+                getViewSchema('schema/Person_Default_es.json', cb);
+            }
+
+            function getViewSchema(filename, cb) {
+                $.getJSON(filename, function (data) {
+                    if (filename.contains("_es")) {
+                        g_PersonSpanishSchemaJson = data
+                    } else {
+                        g_PersonDefaultSchemaJson = data
+                    }
                     cb()
                 })
             }
@@ -326,6 +355,19 @@
                 });
             }
 
+            function getEnglishColNameFromSpanishColame(name, cb) {
+                $.each(g_PersonSpanishSchemaJson, function (i, f) {
+                    if (i === 'fields') {
+                        verifiedDetails = f;
+                        for (var i = 0; i < verifiedDetails.length; i++) {
+                            if (name === verifiedDetails[i].name) {
+                                cb(null, g_PersonDefaultSchemaJson['fields'].name)
+                            }
+                        }
+                    }
+                });
+            }
+
             function update() {
                 updatePersonRequest.request.Person = g_thisNewPerson;
                 updatePersonRequest.request.Person.isApproved = false;
@@ -348,7 +390,7 @@
                 if (isedited) {
                     // Rename edit to Update and turn Cancel on
                     edit.innerHTML = "Update";
-                    document.getElementById('button1').style.display = '-webkit-inline-box';
+                    document.getElementById('cancelBtn').style.display = '-webkit-inline-box';
 
                     for (key in g_thisPerson) {
                         if (key != 'isAdmin') {
@@ -362,20 +404,26 @@
                     for (key in g_thisPerson) {
                         // Derive the name from the title and setup the new Person object
                         var childElemnet = document.getElementById(key);
-                        var name = getDbColumnNameFromTitle(key, function (err, name) {
-                            if (childElemnet.innerHTML.localeCompare(g_thisPerson[name])) {
-                                update(isedited, key);
-
-                                if (id === 'school' || id == 'teacherId') {
+                        
+                        getDbColumnNameFromTitle(key, function (err, name) {
+                            if (childElemnet.innerHTML.localeCompare(g_thisPerson[key])) {
+                                //update(isedited, key);
+                                
+                                console.log(key)
+                                if (key === 'School' || key === 'TeacherId' || 
+                                    key === 'Colegio' || key === 'Identificador Maestro' ) {
                                     // This will set PersonVerification to false.
                                     var attr = key.charAt(0).toUpperCase() + key.slice(1);
+                                    console.log("Rejecting attr " + attr)
                                     reject(attr);
                                 }
+                                g_thisNewPerson[name] = childElemnet.innerHTML;
+                            } else {
+                                console.log("No change done for attribute " + key)
                             }
                         })
-                        g_thisNewPerson[name] = childElemnet.innerHTML;
                     }
-                    g_thisNewPerson[osid] = g_thisPerson[osid];
+                    g_thisNewPerson["osid"] = g_personOSid;
                     console.log("New person record = " + JSON.stringify(g_thisNewPerson))
                     update()
                 }
@@ -384,7 +432,7 @@
 
             function backtoProfile(id) {
                 var edit = document.getElementById("button").innerHTML = "Edit"
-                document.getElementById('button1').style.display = 'none';
+                document.getElementById('cancelBtn').style.display = 'none';
 
                 for (var field in g_thisPerson) {
                         if (field != 'isAdmin') {
