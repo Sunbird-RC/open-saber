@@ -1,5 +1,6 @@
 {
     "productName": "Teacher Registry",
+    "poweredBy": "Powered by OpenSABER",
     "login": "Login",
     "signUp": "SignUp",
     "profile": "Profile Information",

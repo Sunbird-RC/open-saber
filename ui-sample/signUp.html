@@ -71,6 +71,18 @@
 
   <script type="text/javascript">
     let timerOn = false;
+    var schema;
+    function dataLocalizeRefresh(lang, fullLangText) {
+      console.log('data', lang, fullLangText)
+
+      var opts = { language: lang, pathPrefix: "./lang" };
+
+      $("[data-localize]").localize("stringData", opts);
+
+      console.log("dataLocalizeRefreshEnd " + lang);
+      document.getElementById("langSelected").innerHTML = fullLangText
+
+    }
     function timer(remaining) {
       var m = Math.floor(remaining / 60);
       var s = remaining % 60;
@@ -126,26 +138,23 @@
       // );
     }
     $(document).ready(function () {
-      $('#navbar').load("navbar.html"),function() {
-
-      }
-      var schema;
-      var cookedVal = {
-
-      };
+      $('#navbar').load("navbar.html")
+      var cookedVal = {};
+      var schema = "./schema/signIn-en.json";
+      var nextBtnText = "Next"
       var urlParams = new URLSearchParams(location.search);
       if (urlParams.get('lang') == 'English') {
         dataLocalizeRefresh('en', 'English')
+        schema= "./schema/signIn.json"
       } else {
         dataLocalizeRefresh('es', 'Spanish')
-
+        schema= "./schema/signIn-es.json"
+        nextBtnText = "Siguiente"
       }
 
-
       $("#SignUPForm").alpaca({
-        "schemaSource": './schema/signIn-es.json',
+        "schemaSource": schema,
         "options": {
-
           "validate": false,
           "form": {
             "attributes": {
@@ -154,7 +163,7 @@
             },
             "buttons": {
               "validate": {
-                "title": "Siguiente",
+                "title": nextBtnText,
                 "id": "validate",
 
                 "click": function () {
@@ -168,7 +177,7 @@
                 }
               },
               "add": {
-                "title": "Regístrate ",
+                "title": "Sign Up ",
                 "id": "sign",
                 "click": function () {
                   this.refreshValidationState(true);
@@ -182,31 +191,23 @@
                   cookedVal['otp'] = value.otp
                   console.log(JSON.stringify(cookedVal));
 
-                  document.location.href = "./registration-form-en.html?lang=Spanish"
+                  document.location.href = "./registration-form-en.html?lang=English"
 
-
-                  console.log('hii')
                   $.ajax({
-                    url: "http://10.0.1.62:8014/otp/verify",
+                    url: "http://localhost:8014/otp/verify",
                     type: "post",
                     contentType: "application/json",
                     data: JSON.stringify(cookedVal),
                     success: function (data, textStatus, xhr) {
                       console.log(xhr.status)
                       if (xhr.status == 200) {
-                        document.location.href = "./registration-form-en.html?lang=Spanish"
-
+                        document.location.href = "./registration-form-en.html?lang=English"
                       }
-
-
                     },
                     complete: function (xhr, textStatus) {
                       console.log(xhr.status);
                       if (xhr.status == 400) {
-
                         alert("Invalid OTP")
-
-                        // $(".alert").hide();
                       }
                     }
                   }
@@ -257,7 +258,7 @@
           console.log(Array.isArray(msg.result.Person) + " : " + msg.result.Person.length)
           if (Array.isArray(msg.result.Person) && msg.result.Person.length == 1) {
             alert('This number is already exists, please login.')
-            document.location.href = './login-es.html?lang=Spanish'
+            document.location.href = './login-en.html?lang=English'
           }
           else {
             console.log('hwy')
