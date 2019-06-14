@@ -42,8 +42,8 @@
             </a>
             <ul class="dropdown-menu">
 
-              <li><a href="./login-en.html?lang=English">English</a></li>
-              <li><a href="./login-es.html?lang=Spanish">Spanish</a></li>
+              <li><a href="./login.html?lang=English">English</a></li>
+              <li><a href="./login.html?lang=Spanish">Spanish</a></li>
           </li>
         </ul>
       </div><!-- /.navbar-collapse -->
@@ -110,17 +110,17 @@
 
   <script type="text/javascript">
     let timerOn = false;
-    function dataLocalizeRefresh(lang, fullLangText) {
-      console.log('data', lang, fullLangText)
+    // function dataLocalizeRefresh(lang, fullLangText) {
+    //   console.log('data', lang, fullLangText)
 
-      var opts = { language: lang, pathPrefix: "./lang" };
+    //   var opts = { language: lang, pathPrefix: "./lang" };
 
-      $("[data-localize]").localize("stringData", opts);
+    //   $("[data-localize]").localize("stringData", opts);
 
-      console.log("dataLocalizeRefreshEnd " + lang);
-      document.getElementById("langSelected").innerHTML = fullLangText
+    //   console.log("dataLocalizeRefreshEnd " + lang);
+    //   document.getElementById("langSelected").innerHTML = fullLangText
 
-    }
+    // }
     function timer(remaining) {
       var m = Math.floor(remaining / 60);
       var s = remaining % 60;
@@ -199,10 +199,21 @@
         "request": { "Person": {} }
       };
 
+      var schema = "./schema/signIn-en.json";
+      var nextBtnText = "Next"
+      var urlParams = new URLSearchParams(location.search);
+      if (urlParams.get('lang') == 'English') {
+        dataLocalizeRefresh('en', 'English')
+        schema= "./schema/login.json"
+      } else {
+        dataLocalizeRefresh('es', 'Spanish')
+        schema= "./schema/login-es.json"
+        nextBtnText = "Siguiente"
+      }
 
 
       $("#SignUPForm").alpaca({
-        "schemaSource": "./schema/login.json",
+        "schemaSource": schema,
         "options": {
 
           "validate": true,
@@ -213,7 +224,7 @@
             },
             "buttons": {
               "validate": {
-                "title": "Next",
+                "title": nextBtnText,
                 "id": "validate",
                 "click": function () {
                   this.validate(true);

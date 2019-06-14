@@ -4,7 +4,6 @@ function dataLocalizeRefresh(lang, fullLangText) {
   $("[data-localize]").localize("stringData", opts);
   console.log("dataLocalizeRefreshEnd " + lang);
   document.getElementById("langSelected").innerHTML = fullLangText
-
 }
 
 function dataLocalizeRefreshDefault() {
