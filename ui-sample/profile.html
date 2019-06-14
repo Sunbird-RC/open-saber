@@ -2,12 +2,12 @@
 
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
-        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <link type="text/css" href="./css/profile.css" rel="stylesheet" />
     <link type="text/css" href="./css/signIn.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr"
-        crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css"
+        integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 </head>
 
 <body onload="myFunction()">
@@ -26,31 +26,38 @@
         <div class="text-center pt-3">
 
             <span class="">
-                <button class="btn btn-primary" data-localize="edit" id="button" onclick="editBtnClicked(this.id)" style="margin-top: 1rem;">
+                <button class="btn btn-primary" data-localize="edit" id="button" onclick="editBtnClicked(this.id)"
+                    style="margin-top: 1rem;">
                     <i class="fas fa-user-edit"></i>
                     <span> Edit</span>
                 </button>
             </span>
             <span class="pl-3 pr-3">
-                <button class="btn btn-primary outline" id="cancelBtn" data-localize="cancel" onclick="backtoProfile(this.id)">Cancel</button>
+                <button class="btn btn-primary outline" id="cancelBtn" data-localize="cancel"
+                    onclick="backtoProfile(this.id)">Cancel</button>
             </span>
             <span class="">
-                <button data-localize="download" class="btn btn-primary" id="downloadButton" onclick="downloadJson()" data-toggle="tooltip" title="Download Signed
+                <button data-localize="download" class="btn btn-primary" id="downloadButton" onclick="downloadJson()"
+                    data-toggle="tooltip" title="Download Signed
                 Profile">Download</button>
             </span>
             <a id="downloadAnchorElem" style="display:none"></a>
 
         </div>
 
-        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+            integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
             crossorigin="anonymous"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
             crossorigin="anonymous"></script>
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
             crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.slim.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-localize/0.1.0/jquery.localize.min.js"></script>
+        <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/jquery-localize/0.1.0/jquery.localize.min.js"></script>
 
         <script type="text/javascript" src="./utils.js"></script>
 
@@ -181,9 +188,13 @@
                 // Set the name in the Profile
                 if (g_lang == 'English') {
                     document.getElementById('dropdown').innerHTML = person.Name;
+                    document.getElementById('profileImage').innerHTML = person.Name.charAt(0);
+
                 }
                 else if (g_lang == 'Spanish') {
                     document.getElementById('dropdown').innerHTML = person.Nombre;
+                    document.getElementById('profileImage').innerHTML = person.Nombre.charAt(0);
+
                 }
             }
 
@@ -213,7 +224,7 @@
 
                     g_thisPerson = obj.result.Person[0];
                     console.log(JSON.stringify(g_thisPerson))
-                    g_isAdmin = g_thisPerson.isAdmin
+                    // g_isAdmin = g_thisPerson.isAdmin
                     console.log("This user is an admin " + g_isAdmin)
                     cb()
                 }
@@ -221,14 +232,18 @@
 
             function myFunction() {
                 console.log("myFunction is getting called")
-
+                var approvedStatusCount = 0;
                 getPersonVerificationDetails(function () {
                     getPersonDetails(function () {
+
                         for (var head in g_thisPerson) {
                             console.log("Iterating in head" + head)
                             if (head === "isAdmin") {
                                 // We dont need to show this flag
-                                console.log("head is " + head)
+                                if (g_thisPerson[head]){
+                                console.log("head is " + head, g_thisPerson[head])
+                                document.getElementById('admin').style.display = 'inline-block'
+                                }
                             } else {
                                 document.getElementById('cancelBtn').style.display = 'none';
                                 if (g_isAdmin) {
@@ -242,6 +257,7 @@
                                 temprow = "<tr><th class='header pr-5'>" + head + "</th><td id=" + head + " class='text' name=" + head + "  width='20% !importent'>" + value + "</td >";
                                 if (!g_isAdmin) {
                                     if (head === 'Name' || head === 'Nombre') {
+
                                         var validaterow = "<td class='text pl-2' style='color:#007bff;font-size: 14px;'><i class='fa fa-exclamation-circle pr-1' style='color: #007bff;font-size: small !important;'></i><div id='notRequired' data-localize='notRequired'>Validation not required</div></td></tr>";
                                         row += temprow + validaterow;
                                     } else if (!g_thisPersonVerification[head + 'Verified'] && g_thisPersonVerification.hasOwnProperty(head + 'Verified')) {
@@ -249,26 +265,33 @@
                                         row += temprow + validaterow;
                                     }
                                     else if (head === 'Phone' || head === 'Teléfono') {
-                                        var verifiedrow = "<td class='text pl-2' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i><div data-localize='systemValidated'>System validated</div></td></tr>";
+                                        var verifiedrow = "<td class='text pl-2' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i><span data-localize='systemValidated'>System validated</span></td></tr>";
                                         row += temprow + verifiedrow;
                                     } else if (isTrue(head)) {
-                                        var verifiedrow = "<td class='text pl-2' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i><div data-localize='validated'>Validated</div></td></tr>";
+                                        console.log('hey')
+                                        var verifiedrow = "<td class='text pl-2' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i><span data-localize='validated'>Validated</span></td></tr>";
                                         row += temprow + verifiedrow;
                                     }
                                     else {
                                         row += temprow;
                                     }
                                 }
-                                else if (!isTrue(head)) {
-                                    var approvedrow = "<td class='text pl-2' id='style'><button id='approve' class='btn btn-outline-success mr-3 sc' style='color:green;font-size:1rem;' onclick=approve(" + head + ")><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>Approve</button><button class='btn btn-outline-danger sc' style='font-size:1rem;' id='reject' >&nbsp;Reject</button></td></tr>";
+                                else if (!isTrue(head) && head !== 'Name' && head !== 'Nombre') {
+
+                                    var approvedrow = "<td class='text pl-2' id='style'><button id='approve' class='btn btn-primary mr-3 sc' style='font-size:1rem;' onclick=approve(" + head + ")><i class='fa fa-check-circle pr-1' style='font-size: small !important;'></i>Approve</button><button class='btn btn-outline-danger sc' style='font-size:1rem;' id='reject' >&nbsp;Reject</button></td></tr>";
                                     row += temprow + approvedrow;
                                 } else if (head === 'Phone' || head === 'Teléfono' || isTrue(head)) {
-                                    var approvedrow = "<td class='text pl-2' id='style'><button  class='btn btn-outline-success mr-3 sc' style='color:green;font-size:1rem;' ><i class='fa fa-check-circle pr-1' style='color:green;font-size:large !important;'></i>Validated</button></td></tr>";
+                                    approvedStatusCount = approvedStatusCount + 1;
+
+                                    var approvedrow = "<td class='text pl-2' id='style'><p  class='mr-3 sc' style='color:green;font-size:1rem;' ><i class='fa fa-check-circle pr-1' style='color:green;font-size:large !important;'></i>Validated</p></td></tr>";
                                     row += temprow + approvedrow;
                                 }
                                 else {
                                     row += temprow;
                                 }
+                            }
+                            if (approvedStatusCount === 3) {
+                                updatePersonApprovedStatus(true);
                             }
                         }
                         $("table tbody").append(row);
@@ -291,14 +314,20 @@
                     })
 
                     function isTrue(head) {
+
                         // the head could be in English or Spanish
                         if (g_lang === 'English') {
                             return g_thisPersonVerification[head + 'Verified']
                         } else if (g_lang === 'Spanish') {
-                            getEnglishColNameFromSpanishColame(head, function(err, data) {
+                            getEnglishColNameFromSpanishColame(head, function (err, data) {
                                 return g_thisPersonVerification[data + 'Verified']
                             })
                         }
+                        if (head === 'School' || head === 'TeacherId' ||
+                            head === 'Colegio' || head === 'Identificador Maestro') {
+
+                        }
+
                     }
                 })
             }
@@ -313,7 +342,7 @@
 
             function getViewSchema(filename, cb) {
                 $.getJSON(filename, function (data) {
-                    if (filename.contains("_es")) {
+                    if (filename.includes("_es")) {
                         g_PersonSpanishSchemaJson = data
                     } else {
                         g_PersonDefaultSchemaJson = data
@@ -404,14 +433,14 @@
                     for (key in g_thisPerson) {
                         // Derive the name from the title and setup the new Person object
                         var childElemnet = document.getElementById(key);
-                        
+
                         getDbColumnNameFromTitle(key, function (err, name) {
                             if (childElemnet.innerHTML.localeCompare(g_thisPerson[key])) {
                                 //update(isedited, key);
-                                
+
                                 console.log(key)
-                                if (key === 'School' || key === 'TeacherId' || 
-                                    key === 'Colegio' || key === 'Identificador Maestro' ) {
+                                if (key === 'School' || key === 'TeacherId' ||
+                                    key === 'Colegio' || key === 'Identificador Maestro') {
                                     // This will set PersonVerification to false.
                                     var attr = key.charAt(0).toUpperCase() + key.slice(1);
                                     console.log("Rejecting attr " + attr)
@@ -435,12 +464,12 @@
                 document.getElementById('cancelBtn').style.display = 'none';
 
                 for (var field in g_thisPerson) {
-                        if (field != 'isAdmin') {
-                            if (document.getElementById(field).firstChild != "[object HTMLInputElement]") {
-                                turnOffEditForField(field);
-                            }
+                    if (field != 'isAdmin') {
+                        if (document.getElementById(field).firstChild != "[object HTMLInputElement]") {
+                            turnOffEditForField(field);
                         }
                     }
+                }
                 console.log("Turned off edit");
                 //myFunction()
             }
@@ -492,7 +521,7 @@
             function approve(id, tag) {
                 console.log(g_thisPersonVerification)
                 var key = (id.id + 'Verified')
-                updateParams.request.PersonVerified = {
+                updatePersonVerifiedRequest.request.PersonVerified = {
                     "osid": g_thisPersonVerification.osid,
                     [key]: true
                 }
@@ -500,7 +529,7 @@
                     url: "http://localhost:8080/update",
                     type: "post",
                     dataType: "application/json",
-                    data: JSON.stringify(updateParams),
+                    data: JSON.stringify(updatePersonVerifiedRequest),
                     contentType: "application/json",
                     dataType: "json",
                     success: function (msg) {
