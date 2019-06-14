@@ -193,7 +193,8 @@
                 },
                 "postRender": function () {
                     var urlParams = new URLSearchParams(location.search);
-                    document.getElementById("alpaca4").value = urlParams.get('phone')
+                    document.getElementById("alpaca4").value = urlParams.get('phone');
+                    document.getElementById("alpaca4").readOnly = true; 
                 }
             });
         });
