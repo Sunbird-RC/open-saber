@@ -137,7 +137,7 @@
       $('#navbar').load("navbar.html")
       var cookedVal = {};
       var schema = "";
-      var nextBtnText = "Next"
+      var nextBtnText = "Send OTP"
       var urlParams = new URLSearchParams(location.search);
       if (urlParams.get('lang') == 'English') {
         dataLocalizeRefresh('en', 'English')
@@ -145,7 +145,7 @@
       } else {
         dataLocalizeRefresh('es', 'Spanish')
         schema = "./schema/signIn-es.json"
-        nextBtnText = "Siguiente"
+        nextBtnText = "Enviar OTP"
       }
 
       $("#SignUPForm").alpaca({

@@ -15,7 +15,7 @@
         "value": "Search By Name"
     },
     "pending": "Pending validation",
-    "next": "Next",
+    "next": "Send OTP",
     "verifiedRecord": "Verified",
     "name":"Name",
     "actions": "Status",

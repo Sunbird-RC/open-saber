@@ -10,12 +10,14 @@
     "logout": "Cerrar sesión",
     "manage": "Gestionar",
     "searchs": "Buscar",
-    "approve": "aprobar",
+    "approve": "Aprobar",
     "searchPlaceholder": {
         "value": "Search By Name"
     },
     "pending": "Validación pendiente",
     "verifiedRecord": "Verificado",
     "actions": "Estado",
-    "name":"Nombre"
+    "name":"Nombre",
+    "next": "Send OTP"
+
 }
