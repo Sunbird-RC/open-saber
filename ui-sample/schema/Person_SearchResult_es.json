@@ -16,7 +16,7 @@
       },
       {
         "name": "teacherId",
-        "title": "profesorId"
+        "title": "Identificador Maestro"
       },
       {
         "name": "osid",

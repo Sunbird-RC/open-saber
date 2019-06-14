@@ -218,7 +218,6 @@
       $("#SignUPForm").alpaca({
         "schemaSource": schema,
         "options": {
-
           "validate": true,
           "form": {
             "attributes": {
@@ -235,7 +234,6 @@
                   var value = this.getValue();
                   if (value['phone']) {
                     var present = searchExitingData(value.phone);
-
                   }
                 }
               },
@@ -256,9 +254,6 @@
                   cookedVal['otp'] = value.otp
                   console.log(JSON.stringify(cookedVal));
 
-
-
-                  console.log('hii')
                   var urlParams = new URLSearchParams(location.search);
 
                   $.ajax({
@@ -282,11 +277,8 @@
                         alert("Invalid OTP")
                       }
                     }
-                  }
-                  );
-
-                },
-
+                  });
+                }
               }
             }
           }

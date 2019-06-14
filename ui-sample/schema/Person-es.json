@@ -25,7 +25,7 @@
       "type": "string",
       "$comment": "teacherId",
       "pattern": "^[0-9]{3}-.*",
-      "title": "Profesora Id",
+      "title": "Identificador Maestro",
       "examples": [
         "888-abc",
         "639-def"

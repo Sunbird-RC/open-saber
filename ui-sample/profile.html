@@ -57,12 +57,12 @@
         <script type="text/javascript">
             var query = window.location.search.substring(1);
             var g_urlParams = new URL(window.location);
-            var g_osidOfLoggedInUser = g_urlParams.searchParams.get('osid');
+            var g_personOSid = g_urlParams.searchParams.get('osid');
             var g_lang = g_urlParams.searchParams.get('lang');
             var tempobj;
             var g_thisPerson = {};
             var g_thisNewPerson = {};
-            var g_isAdmin;
+            var g_isAdmin = g_urlParams.searchParams.get('isAdmin');
             var isedited = false;
             var g_thisPersonVerification = {};
             var g_PersonDefaultSchemaJson;
@@ -71,14 +71,14 @@
             var verifiedDetails;
 
             $(document).ready(function () {
-                console.log('url params', g_osidOfLoggedInUser)
+                console.log('url params', g_personOSid)
                 $('#navbar').load("bootstrap-4-navbar.html", function () {
                     document.getElementById("nav1").style.display = "none"
                     document.getElementById("nav2").style.display = "none"
-                    if (g_lang == 'English') {
+                    if (g_lang === 'English') {
                         dataLocalizeRefresh('en', 'English')
                     }
-                    else if (g_lang == 'Spanish') {
+                    else if (g_lang === 'Spanish') {
                         dataLocalizeRefresh('es', 'Spanish')
                     }
                 });
@@ -159,7 +159,7 @@
                 searchReq.request = {
                     "entityType": ["PersonVerified"],
                     "filters": {
-                        "personId": { "contains": g_osidOfLoggedInUser }
+                        "personId": { "contains": g_personOSid }
                     }
                 }
                 const https = new XMLHttpRequest()
@@ -186,36 +186,47 @@
                 }
             }
 
-            function myFunction() {
-                getPersonVerificationDetails(function () {
-                    console.log("myFunction is getting called")
-                    searchReq.request = {
-                        "entityType": ["Person"],
-                        "filters": {
-                            "osid": { "eq": g_osidOfLoggedInUser.slice(2, g_osidOfLoggedInUser.length) }
-                        },
-                        "viewTemplateId": "Person_Default.json"
-                    }
-                    if (g_lang == 'English') {
-                        readPersonRequest.request.viewTemplateId = "Person_Default.json";
-                    } else if (g_lang == 'Spanish') {
-                        readPersonRequest.request.viewTemplateId = "Person_Default_es.json";
-                    }
-                    const http = new XMLHttpRequest()
-                    http.open('POST', "http://localhost:8080/search")
-                    http.setRequestHeader('Content-type', 'application/json')
-                    http.send(JSON.stringify(searchReq)) // Make sure to stringify
-                    var row = "", col = "";
-                    http.onload = function () {
-                        var obj = JSON.parse(http.responseText);
-                        console.log("this is the " + JSON.stringify(obj))
-                        setNameInProfileSection(obj.result.Person[0])
+            function getPersonDetails(cb) {
+                searchReq.request = {
+                    "entityType": ["Person"],
+                    "filters": {
+                        "osid": { "eq": g_personOSid.slice(2, g_personOSid.length) }
+                    },
+                    "viewTemplateId": "Person_Default.json"
+                }
+                if (g_lang === 'English') {
+                    searchReq.request.viewTemplateId = "Person_Default.json";
+                } else if (g_lang === 'Spanish') {
+                    searchReq.request.viewTemplateId = "Person_Default_es.json";
+                    console.log("Set viewTemplate to spanish")
+                }
+                const http = new XMLHttpRequest()
+                http.open('POST', "http://localhost:8080/search")
+                http.setRequestHeader('Content-type', 'application/json')
+                http.send(JSON.stringify(searchReq)) // Make sure to stringify
+                var row = "", col = "";
+                http.onload = function () {
+                    var obj = JSON.parse(http.responseText);
+                    console.log("this is the " + JSON.stringify(obj))
+                    setNameInProfileSection(obj.result.Person[0])
 
-                        g_thisPerson = obj.result.Person[0];
+                    g_thisPerson = obj.result.Person[0];
+                    console.log(JSON.stringify(g_thisPerson))
+                    g_isAdmin = g_thisPerson.isAdmin
+                    console.log("This user is an admin " + g_isAdmin)
+                    cb()
+                }
+            }
+
+            function myFunction() {
+                console.log("myFunction is getting called")
+
+                getPersonVerificationDetails(function () {
+                    getPersonDetails(function () {
                         for (var head in g_thisPerson) {
+                            console.log("Iterating in head" + head)
                             if (head === "isAdmin") {
                                 // We dont need to show this flag
-                                g_isAdmin = g_thisPerson[head]
                             } else {
                                 document.getElementById('button1').style.display = 'none';
                                 if (g_isAdmin === 'true') {
@@ -227,7 +238,7 @@
                                 var value = g_thisPerson[head];
                                 var temprow;
                                 temprow = "<tr><th class='header pr-5'>" + head + "</th><td id=" + head + " class='text' name=" + head + "  width='20% !importent'>" + value + "</td >";
-                                if (g_isAdmin !== 'true') {
+                                if (g_isAdmin != 'true') {
                                     if (head === 'Name') {
                                         var validaterow = "<td class='text pl-2' style='color:#007bff;font-size: 14px;'><i class='fa fa-exclamation-circle pr-1' style='color: #007bff;font-size: small !important;'></i><div id='notRequired' data-localize='notRequired'>Validation not required</div></td></tr>";
                                         row += temprow + validaterow;
@@ -267,7 +278,7 @@
                             var elementParent = element[i].parentNode;
                             elementParent.insertBefore(newElement, element[i].nextSibling);
                         }
-                    }
+                    })
 
                     getViewSchema(function () {
                         console.log("Loaded View schema")
@@ -282,12 +293,24 @@
                 })
             }
 
-            function turnOnEditForField(key) {
-                isedited = true;
+            function setEditForField(key, flag) {
+                isedited = flag;
                 var anchor = document.getElementById(key);
                 var att = document.createAttribute("contenteditable");
-                att.value = "true";
+                if (flag) {
+                    att.value = "true";
+                } else {
+                    att.value = "false";
+                }
                 anchor.setAttributeNode(att);
+            }
+
+            function turnOnEditForField(key) {
+                setEditForField(key, true);
+            }
+
+            function turnOffEditForField(key) {
+                setEditForField(key, false);
             }
 
             function getDbColumnNameFromTitle(title, cb) {
@@ -302,22 +325,6 @@
                     }
                 });
             }
-
-            // function onchange(key) {
-            //     console.log("key is changed" - key)
-            //     var childElemnet = document.getElementById(key);
-            //     document.getElementById(key).onchange = function myFunction() {
-            //         var x = document.getElementById(key);
-            //     }
-
-            //     var name = getDbColumnNameFromTitle(key, function (err, name) {
-            //         if (childElemnet.innerHTML.localeCompare(g_thisPerson[name])) {
-            //             isedited = !isedited;
-            //             g_thisPerson[name] = childElemnet.innerHTML;
-            //             update(isedited, key);
-            //         }
-            //     })
-            // }
 
             function update() {
                 updatePersonRequest.request.Person = g_thisNewPerson;
@@ -344,9 +351,10 @@
                     document.getElementById('button1').style.display = '-webkit-inline-box';
 
                     for (key in g_thisPerson) {
-                        console.log("Throwing error for key " + key)
-                        if (document.getElementById(key).firstChild != "[object HTMLInputElement]") {
-                            turnOnEditForField(key);
+                        if (key != 'isAdmin') {
+                            if (document.getElementById(key).firstChild != "[object HTMLInputElement]") {
+                                turnOnEditForField(key);
+                            }
                         }
                     }
                 } else {
@@ -355,18 +363,19 @@
                         // Derive the name from the title and setup the new Person object
                         var childElemnet = document.getElementById(key);
                         var name = getDbColumnNameFromTitle(key, function (err, name) {
-                           if (childElemnet.innerHTML.localeCompare(g_thisPerson[name])) {
+                            if (childElemnet.innerHTML.localeCompare(g_thisPerson[name])) {
                                 update(isedited, key);
 
                                 if (id === 'school' || id == 'teacherId') {
                                     // This will set PersonVerification to false.
-                                    var attr = key.charAt(0).toUpperCase() + key.slice(1); 
+                                    var attr = key.charAt(0).toUpperCase() + key.slice(1);
                                     reject(attr);
                                 }
                             }
                         })
                         g_thisNewPerson[name] = childElemnet.innerHTML;
                     }
+                    g_thisNewPerson[osid] = g_thisPerson[osid];
                     console.log("New person record = " + JSON.stringify(g_thisNewPerson))
                     update()
                 }
@@ -374,8 +383,18 @@
 
 
             function backtoProfile(id) {
-                $("table tbody").empty();
-                myFunction()
+                var edit = document.getElementById("button").innerHTML = "Edit"
+                document.getElementById('button1').style.display = 'none';
+
+                for (var field in g_thisPerson) {
+                        if (field != 'isAdmin') {
+                            if (document.getElementById(field).firstChild != "[object HTMLInputElement]") {
+                                turnOffEditForField(field);
+                            }
+                        }
+                    }
+                console.log("Turned off edit");
+                //myFunction()
             }
 
             function downloadJson() {
@@ -386,11 +405,12 @@
                     url: "http://localhost:8080/read",
                     type: "post",
                     dataType: "application/json",
-                    data: JSON.stringify(params),
+                    data: JSON.stringify(downloadProfileRequest),
                     contentType: "application/json",
                     dataType: "json",
                     success: function (msg) {
-                        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(msg.response.Person));
+                        console.log(JSON.stringify(msg))
+                        var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(msg.result.Person));
                         var dlAnchorElem = document.getElementById('downloadAnchorElem');
                         dlAnchorElem.setAttribute("href", dataStr);
                         dlAnchorElem.setAttribute("download", "Person.json");
@@ -401,25 +421,25 @@
 
             function reject(id) {
                 console.log("Rejecting " + id)
-                
-                    var key = (id + 'Verified')
-                    updatePersonVerifiedRequest.request.PersonVerified = {
-                        "osid": g_thisPersonVerification.osid,
-                        [key]: false
-                    }
-                    $.ajax({
-                        url: "http://localhost:8080/update",
-                        type: "post",
-                        dataType: "application/json",
-                        data: JSON.stringify(updatePersonVerifiedRequest),
-                        contentType: "application/json",
-                        dataType: "json",
-                        success: function (msg) {
 
-                        }
-                    });
+                var key = (id + 'Verified')
+                updatePersonVerifiedRequest.request.PersonVerified = {
+                    "osid": g_thisPersonVerification.osid,
+                    [key]: false
                 }
-            
+                $.ajax({
+                    url: "http://localhost:8080/update",
+                    type: "post",
+                    dataType: "application/json",
+                    data: JSON.stringify(updatePersonVerifiedRequest),
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (msg) {
+
+                    }
+                });
+            }
+
 
             function approve(id, tag) {
                 console.log(g_thisPersonVerification)

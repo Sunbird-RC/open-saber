@@ -131,8 +131,8 @@
                             }
                         }
                         console.log("approved = " + approved)
-                        if (approved == false) {
-                            row = "<td><button type='button' class='btn btn-primary' onclick=myFunction(" + JSON.stringify(personRecords[idx].uniqueId) + ")>Approve</button></td>";
+                        if (approved === false) {
+                            row = "<td><button type='button' class='btn btn-primary' onclick=approveFn(" + JSON.stringify(personRecords[idx].uniqueId) + ")>Approve</button></td>";
                             $('table tbody tr').last().append(row);
                         } else {
                             row = "<td><label style='color: green;font-size: 1rem;' data-localize='verifiedRecord'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>Verified record</label></td>";
@@ -166,15 +166,17 @@
             });
         });
   
-        function myFunction(obj) {
-            console.log(obj)
+        function approveFn(obj) {
+            var url = "file:///Users/rajeshr/IdeaProjects/aishwa8141/open-saber/ui-sample/"
             if (lang == 'English') {
-                document.location.href = "./profile.html?osid=" + obj + '&lang=' + lang;
+                url += "profile.html?osid=" + obj + '&lang=' + lang + '&isAdmin=true';
             }
             else if (lang == 'Spanish') {
-                document.location.href = "./profile.html?osid=" + obj + '&lang=' + lang;
-
+                url += "profile.html?osid=" + obj + '&lang=' + lang + '&isAdmin=true';
             }
+            //document.location.href
+            console.log(url)
+            window.open(url, '_blank')
         }
 
         function searchByQuery(key) {
@@ -214,11 +216,9 @@
                         }
                         console.log(approved )
                         if (approved === 'true') {
-                            // console.log('truer')
-                            row = "<td><button type='button' class='btn btn-primary' onclick=myFunction(" + JSON.stringify(personRecords[idx].uniqueId) + ")>Approve</button></td>";
+                            row = "<td><button type='button' class='btn btn-primary' onclick=approveFn(" + JSON.stringify(personRecords[idx].uniqueId) + ")>Approve</button></td>";
                             $('table tbody tr').last().append(row);
-                        }else {
-                            // console.log('fasle')
+                        } else {
                             row = "<td><label style='color: green;font-size: 1rem;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>Verified record</label></td>";
                             $('table tbody tr').last().append(row);
                         }
