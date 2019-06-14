@@ -4,14 +4,13 @@
   <meta charset="UTF-8">
   <link type="text/css" rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" />
   <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> -->
-  <link type="text/css" rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/todc-bootstrap/3.3.2-3.3.2/css/bootstrap-theme.min.css">
-  <link rel="stylesheet" media="screen"
-    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker-standalone.min.css" />
+  <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/todc-bootstrap/3.3.2-3.3.2/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" media="screen" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker-standalone.min.css"
+  />
   <link type="text/css" href="./css/signIn.css" rel="stylesheet" />
 
-  <link type="text/css" href="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.css"
-    rel="stylesheet" />
+  <link type="text/css" href="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.css" rel="stylesheet"
+  />
 
 </head>
 
@@ -23,14 +22,14 @@
     </div>
     <div class="row">
       <div class="col-md-4">
-        <img
-          src="https://upload.wikimedia.org/wikipedia/commons/9/99/%EC%B9%98%EB%A6%AC%EB%BD%80_%EC%B4%88%EB%93%B1%ED%95%99%EA%B5%90.jpg"
+        <img src="https://upload.wikimedia.org/wikipedia/commons/9/99/%EC%B9%98%EB%A6%AC%EB%BD%80_%EC%B4%88%EB%93%B1%ED%95%99%EA%B5%90.jpg"
           alt="" style="width: 34rem; border-radius: 1rem;">
       </div>
       <div class="col-md-4">
         <div class="alert alert-success alert-dismissible" role="alert" id="alert" aria-hidden="true">
-          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
-              aria-hidden="true">&times;</span></button>
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
           <strong>OTP </strong> sent success.
           <span id="timer"></span>
         </div>
@@ -45,9 +44,9 @@
   <div class="container mt-5 ">
     <div class="jumbotron box-shadow ">
       <!-- <h2 class="card-title">Register Now</h2> -->
-      <p class="card-text">This online register lists all teachers practising in the Country in real-time. It also shows
-        whether a teacher's registration and/or practising records have been validated or not. These assurances are
-        downloadable too. Keep this record relevant to be able to consume and offer other value enabled services.</p>
+      <p class="card-text">This online register lists all teachers practising in the Country in real-time. It also shows whether a teacher's registration
+        and/or practising records have been validated or not. These assurances are downloadable too. Keep this record relevant
+        to be able to consume and offer other value enabled services.</p>
       <a href="https://opensaber.io/" target="_blank" class="card-link">Learn more</a>
     </div>
 
@@ -60,13 +59,10 @@
   <script type="text/javascript" src="http://code.cloudcms.com/alpaca/1.5.24/bootstrap/alpaca.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
-  <script type="text/javascript"
-    src="https://cdnjs.cloudflare.com/ajax/libs/jquery-localize/0.1.0/jquery.localize.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-localize/0.1.0/jquery.localize.min.js"></script>
   <script src="utils.js" type="text/javascript"></script>
-  <script type="text/javascript"
-    src="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.js"></script>
+  <script type="text/javascript" src="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.js"></script>
 
 
   <script type="text/javascript">
@@ -140,15 +136,15 @@
     $(document).ready(function () {
       $('#navbar').load("navbar.html")
       var cookedVal = {};
-      var schema = "./schema/signIn-en.json";
+      var schema = "";
       var nextBtnText = "Next"
       var urlParams = new URLSearchParams(location.search);
       if (urlParams.get('lang') == 'English') {
         dataLocalizeRefresh('en', 'English')
-        schema= "./schema/signIn.json"
+        schema = "./schema/signIn.json"
       } else {
         dataLocalizeRefresh('es', 'Spanish')
-        schema= "./schema/signIn-es.json"
+        schema = "./schema/signIn-es.json"
         nextBtnText = "Siguiente"
       }
 
@@ -191,7 +187,7 @@
                   cookedVal['otp'] = value.otp
                   console.log(JSON.stringify(cookedVal));
 
-                  document.location.href = "./registration-form-en.html?lang=English"
+                  document.location.href = "./registration-form.html?lang=" + urlParams.get('lang')
 
                   $.ajax({
                     url: "http://localhost:8014/otp/verify",
@@ -201,7 +197,7 @@
                     success: function (data, textStatus, xhr) {
                       console.log(xhr.status)
                       if (xhr.status == 200) {
-                        document.location.href = "./registration-form-en.html?lang=English"
+                        document.location.href = "./registration-form.html?lang=" + urlParams.get('lang')
                       }
                     },
                     complete: function (xhr, textStatus) {

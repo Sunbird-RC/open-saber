@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <link type="text/css" rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" />
-  <link type="text/css" rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/todc-bootstrap/3.3.2-3.3.2/css/bootstrap-theme.min.css">
-  <link rel="stylesheet" media="screen"
-    href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker-standalone.min.css" />
+  <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/todc-bootstrap/3.3.2-3.3.2/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" media="screen" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker-standalone.min.css"
+  />
   <link type="text/css" href="./css/signIn.css" rel="stylesheet" />
 
-  <link type="text/css" href="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.css"
-    rel="stylesheet" />
+  <link type="text/css" href="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.css" rel="stylesheet"
+  />
 </head>
 
 <body>
@@ -21,8 +20,8 @@
     <div class="container">
       <!-- Brand and toggle get grouped for better mobile display -->
       <div class="navbar-header">
-        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-          data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1"
+          aria-expanded="false">
           <span class="sr-only">Toggle navigation</span>
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
@@ -36,18 +35,24 @@
         <ul class="nav navbar-nav navbar-right">
           <!-- <li><a href="#">Link</a></li> -->
           <li class="dropdown">
-            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-              aria-expanded="false">
-              <p id="langSelected"></p> <span class="caret"></span>
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+              <p id="langSelected"></p>
+              <span class="caret"></span>
             </a>
             <ul class="dropdown-menu">
 
-              <li><a href="./login.html?lang=English">English</a></li>
-              <li><a href="./login.html?lang=Spanish">Spanish</a></li>
+              <li>
+                <a href="./login.html?lang=English">English</a>
+              </li>
+              <li>
+                <a href="./login.html?lang=Spanish">Spanish</a>
+              </li>
           </li>
-        </ul>
-      </div><!-- /.navbar-collapse -->
-    </div><!-- /.container-fluid -->
+          </ul>
+      </div>
+      <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container-fluid -->
   </nav>
   <!-- </div> -->
 
@@ -58,15 +63,15 @@
     <div class="row">
       <div class="col-md-4">
         <div class="col-md-4">
-          <img
-            src="https://upload.wikimedia.org/wikipedia/commons/9/99/%EC%B9%98%EB%A6%AC%EB%BD%80_%EC%B4%88%EB%93%B1%ED%95%99%EA%B5%90.jpg"
+          <img src="https://upload.wikimedia.org/wikipedia/commons/9/99/%EC%B9%98%EB%A6%AC%EB%BD%80_%EC%B4%88%EB%93%B1%ED%95%99%EA%B5%90.jpg"
             alt="" style="width: 34rem; border-radius: 1rem;">
         </div>
       </div>
       <div class="col-md-4">
         <div class="alert alert-success alert-dismissible" role="alert" id="alert">
-          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span
-              aria-hidden="true">&times;</span></button>
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
           <strong>OTP </strong> sent success.
           <span id="timer"></span>
 
@@ -85,17 +90,16 @@
   <div class="container mt-5 ">
     <div class="jumbotron box-shadow ">
       <!-- <h2 class="card-title">Open Saber</h2> -->
-      <p class="card-text">This online register lists all teachers practising in the Country in real-time. It also shows
-        whether a teacher's registration and/or practising records have been validated or not. These assurances are
-        downloadable too. Keep this record relevant to be able to consume and offer other value enabled services.</p>
+      <p class="card-text">This online register lists all teachers practising in the Country in real-time. It also shows whether a teacher's registration
+        and/or practising records have been validated or not. These assurances are downloadable too. Keep this record relevant
+        to be able to consume and offer other value enabled services.</p>
       <a href="https://opensaber.io/" target="_blank" class="card-link">Learn more</a>
     </div>
 
   </div>
 
   <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
-  <script type="text/javascript"
-    src="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.js"></script>
+  <script type="text/javascript" src="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.js"></script>
   <script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
   <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.js"></script>
   <script type="text/javascript" src="http://code.cloudcms.com/alpaca/1.5.24/bootstrap/alpaca.min.js"></script>
@@ -104,8 +108,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-localize/0.1.0/jquery.localize.min.js"></script>
 
   <script src="utils.js" type="text/javascript"></script>
-  <script type="text/javascript"
-    src="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.js"></script>
+  <script type="text/javascript" src="http://cdn.jsdelivr.net/npm/alpaca@1.5.27/dist/alpaca/bootstrap/alpaca.min.js"></script>
 
 
   <script type="text/javascript">
@@ -199,15 +202,15 @@
         "request": { "Person": {} }
       };
 
-      var schema = "./schema/signIn-en.json";
+      var schema;
       var nextBtnText = "Next"
       var urlParams = new URLSearchParams(location.search);
       if (urlParams.get('lang') == 'English') {
         dataLocalizeRefresh('en', 'English')
-        schema= "./schema/login.json"
+        schema = "./schema/login.json"
       } else {
         dataLocalizeRefresh('es', 'Spanish')
-        schema= "./schema/login-es.json"
+        schema = "./schema/login-es.json"
         nextBtnText = "Siguiente"
       }
 
@@ -257,7 +260,7 @@
 
                   console.log('hii')
                   var urlParams = new URLSearchParams(location.search);
-                  
+
                   $.ajax({
                     url: "http://localhost:8014/otp/verify",
                     type: "post",
@@ -269,14 +272,14 @@
                       urlParams.get('lang')
                       if (xhr.status == 200) {
                         document.location.href = "./profile.html?osid=" + ID + "&lang=" + urlParams.get('lang');
-
+                      } else {
+                        console.log(xhr.status + "Not going to profile")
                       }
                     },
-                    complete: function (xhr, textStatus) {
+                    failure: function (xhr, textStatus) {
                       console.log(xhr.status);
                       if (xhr.status == 400) {
                         alert("Invalid OTP")
-
                       }
                     }
                   }
@@ -323,23 +326,17 @@
         contentType: "application/json",
         dataType: "json",
         success: function (msg) {
-          console.log(Array.isArray(msg.result.Person) + " : " + msg.result.Person.length)
+          console.log("Searching registry " + Array.isArray(msg.result.Person) + " : " + msg.result.Person.length)
           if (Array.isArray(msg.result.Person) && msg.result.Person.length == 1) {
-            // document.location.href = "./profile.html?osid=" + msg.result.Person[0].osid;
             ID = msg.result.Person[0].osid
             generateOTP(phone);
             document.getElementById("logIn").style.display = "inline-block";
             document.getElementById("validate").style.display = "none";
-
-
-
           }
           else {
             alert('This number is not recognised, please register.')
-            document.location.href = './signUp-en.html?lang=Engilsh'
+            document.location.href = './signUp.html?lang=' + urlParams.get('lang')
           }
-
-
         }
       });
     }
