@@ -187,7 +187,7 @@
                   cookedVal['otp'] = value.otp
                   console.log(JSON.stringify(cookedVal));
 
-                  document.location.href = "./registration-form.html?lang=" + urlParams.get('lang')
+                  // document.location.href = "./registration-form.html?lang=" + urlParams.get('lang')+"&phone="+value.phone;
 
                   $.ajax({
                     url: "http://localhost:8014/otp/verify",
@@ -197,7 +197,7 @@
                     success: function (data, textStatus, xhr) {
                       console.log(xhr.status)
                       if (xhr.status == 200) {
-                        document.location.href = "./registration-form.html?lang=" + urlParams.get('lang')
+                        document.location.href = "./registration-form.html?lang=" + urlParams.get('lang')+"&phone="+value.phone;
                       }
                     },
                     complete: function (xhr, textStatus) {
