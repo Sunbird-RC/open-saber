@@ -214,20 +214,19 @@
                                 $('table tbody tr').last().append('<td>' + personRecords[idx][colHeader[j]] + '</td>');
                             }
                         }
-                        console.log(approved )
-                        if (approved === 'true') {
+                        console.log("approved = " + approved)
+                        if (approved === false) {
                             row = "<td><button type='button' class='btn btn-primary' onclick=approveFn(" + JSON.stringify(personRecords[idx].uniqueId) + ")>Approve</button></td>";
                             $('table tbody tr').last().append(row);
                         } else {
-                            row = "<td><label style='color: green;font-size: 1rem;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>Verified record</label></td>";
+                            row = "<td><label style='color: green;font-size: 1rem;' data-localize='verifiedRecord'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i>Verified record</label></td>";
                             $('table tbody tr').last().append(row);
                         }
-                        if (lang == 'English') {
+                        if (lang === 'English') {
                             langId = 'uniqueId'
-                        } else if (lang == 'Spanish') {
+                        } else if (lang === 'Spanish') {
                             langId = 'Identificaciónúnica'
                         }
-
                     }
                     }
                     else {
