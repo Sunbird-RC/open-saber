@@ -3,84 +3,48 @@
   "type": "object",
   "title": "",
   "required": [
-    "voterId",
+    "teacherId",
     "name",
-    "gender",
-    "dob"
+    "phone",
+    "school"
   ],
   "additionalProperties": false,
   "properties": {
     "name": {
       "$id": "#/properties/name",
       "type": "string",
-      "title": "Nombre completo"
-    },
-    "gender": {
-      "$id": "#/properties/gender",
-      "type": "string",
-      "enum": [
-        "MASCULINO",
-        "HEMBRA",
-        "OTRO"
-      ],
-      "title": "Género"
-    },
-    "dob": {
-      "$id": "#/properties/birthDate",
-      "type": "string",
-      "format": "date",
-      "$comment": "YYYY-MM-DD format",
-      "examples": [
-        "1990-12-01"
-      ],
-      "title": "Fecha de nacimiento"
+      "title": "Nombre"
     },
     "phone": {
       "$id": "#/properties/phone",
-      "type": "string",
+      "format": "phone",
       "title": "Teléfono"
     },
-    "email": {
-      "$id": "email",
+    "teacherId": {
+      "$id": "#/properties/teacherId",
       "type": "string",
-      "title": "Email"
-    },
-    "school": {
-      "$id": "school",
-      "type": "string",
-      "title": "Colegio"
-    },
-    "dist": {
-      "$id": "dist",
-      "type": "string",
-      "title": "Distrito"
-    },
-    "certificate": {
-      "$id": "certificate",
-      "type": "string",
-      "title": "Certificado"
-    },
-    "voterId": {
-      "$id": "#/properties/voterId",
-      "type": "string",
-      "$comment": "Identificador de votantes",
+      "$comment": "teacherId",
       "pattern": "^[0-9]{3}-.*",
-      "title": "Voter id",
+      "title": "Identificador Maestro",
       "examples": [
         "888-abc",
         "639-def"
       ]
     },
-    "isAdmin": {
-      "$id": "#/properties/hasDrivingLicense",
-      "type": "boolean",
-      "title": "isAdmin"
-    },
-    "photo": {
-      "title": "Foto",
-      "description": "Upload your profile picture.",
+    "school": {
+      "$id": "#/properties/school",
       "type": "string",
-      "format": "uri"
+      "title": "colegio"
+    },
+    "isAdmin": {
+      "$id": "isAdmin",
+      "type": "boolean",
+      "title": "esAdmin"
+    },
+    "isApproved": {
+      "$id": "isApproved",
+      "type": "boolean",
+      "title": "estaAprobado"
     }
   }
 }

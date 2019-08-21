@@ -25,11 +25,24 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-ajaxy/1.6.1/scripts/jquery.ajaxy.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
-
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-localize/0.1.0/jquery.localize.min.js"></script>
+    <script src="utils.js" type="text/javascript"></script>
 
     <script type="text/javascript">
         $(document).ready(function () {
             $('#navbar').load("navbar.html");
+
+            var schema;
+            var cookedVal = {
+
+            };
+            var urlParams = new URLSearchParams(location.search);
+            if (urlParams.get('lang') == 'English') {
+                dataLocalizeRefresh('en', 'English')
+            } else {
+                dataLocalizeRefresh('es', 'Spanish')
+
+            }
             var cookedVal = {
                 "id": "",
                 "ver": "1.0",
@@ -41,8 +54,20 @@
                 },
                 "request": { "Person": {} }
             };
+            var schema = "";
+            var registerBtnText = "Register"
+            var urlParams = new URLSearchParams(location.search);
+            if (urlParams.get('lang') == 'English') {
+                dataLocalizeRefresh('en', 'English')
+                schema = "./schema/Person.json"
+            } else {
+                dataLocalizeRefresh('es', 'Spanish')
+                schema = "./schema/Person-es.json"
+                registerBtnText = "Registro"
+            }
+
             $("#PersonForm").alpaca({
-                "schemaSource": "./schema/Person.json",
+                "schemaSource": schema,
                 "options": {
                     "validate": false,
                     "fields": {
@@ -77,6 +102,12 @@
                                 console.log('this.data', this.data)
                             },
                         },
+                        "isAdmin": {
+                            "hidden": true
+                        },
+                        "isApproved": {
+                            "hidden": true
+                        }
                     },
                     "form": {
                         "attributes": {
@@ -85,7 +116,7 @@
                         },
                         "buttons": {
                             "add": {
-                                "title": "Register",
+                                "title": registerBtnText,
                                 "id": "sign",
                                 "click": function () {
                                     var value = this.getValue();
@@ -105,14 +136,56 @@
                                         contentType: "application/json",
                                         data: JSON.stringify(cookedVal),
                                         success: function (data) {
-                                            document.location.href = "./profile.html?osid=" + data.result.Person.osid;
+                                            // params.request.personId = data.result.Person.osid;
+                                            // console.log('personid', params.request.personId);
+                                            personVerify(data.result.Person.osid);
+
                                         },
                                         error: function () {
                                             alert('error');
                                         }
                                     }
                                     );
+                                    function personVerify(osid) {
+                                        var params = {
+                                            "id": "open-saber.registry.create",
+                                            "ver": "1.0",
+                                            "ets": "11234",
+                                            "params": {
+                                                "did": "",
+                                                "key": "",
+                                                "msgid": ""
+                                            },
+                                            "request": {
+                                                "PersonVerified": {
+                                                    "PhoneVerified": true,
+                                                    "TeacherIdVerified": false,
+                                                    "SchoolVerified": false,
+                                                    "personId": osid
+
+                                                }
+                                            }
+                                        }
+                                        $.ajax({
+                                            url: "http://localhost:8080/add",
+                                            type: "post",
+                                            contentType: "application/json",
+                                            data: JSON.stringify(params),
+                                            success: function (data) {
+                                                // params.request.personId = data.result.Person.osid;
+                                                console.log('parma', data)
+                                                document.location.href = "./profile.html?osid=" + osid + "&lang=English";
+                                            },
+                                            error: function () {
+                                                alert('error');
+                                            }
+                                        }
+                                        );
+
+                                    }
+
                                 }
+
                             }
                         }
                     }
@@ -120,7 +193,8 @@
                 },
                 "postRender": function () {
                     var urlParams = new URLSearchParams(location.search);
-                    document.getElementById("alpaca6").value = urlParams.get('phone')
+                    document.getElementById("alpaca4").value = urlParams.get('phone');
+                    document.getElementById("alpaca4").readOnly = true; 
                 }
             });
         });

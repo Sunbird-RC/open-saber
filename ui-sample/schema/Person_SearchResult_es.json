@@ -3,24 +3,24 @@
     "fields": [
       {
         "name": "name",
-        "title": "Name",
+        "title": "nombre",
         "display": true
       },
       {
         "name": "phone",
-        "title": "phone"
+        "title": "teléfono"
       },
       {
         "name": "school",
-        "title": "School"
+        "title": "colegio"
       },
       {
         "name": "teacherId",
-        "title": "TeacherId"
+        "title": "ProfesorId"
       },
       {
-        "name": "isAdmin",
-        "title": "isAdmin"
+        "name": "osid",
+        "title": "Identificación única"
       }
     ]
   }

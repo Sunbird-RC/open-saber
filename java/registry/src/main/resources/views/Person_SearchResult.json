@@ -3,20 +3,28 @@
   "fields": [
     {
       "name": "name",
-      "title": "Name",
+      "title": "name",
       "display": true
     },
     {
-      "name": "gender",
-      "title": "Gender"
+      "name": "phone",
+      "title": "phone"
     },
     {
-      "name": "district",
-      "title": "District"
+      "name": "school",
+      "title": "school"
+    },
+    {
+      "name": "teacherId",
+      "title": "teacherId"
     },
     {
       "name": "osid",
-      "title": "UniqueId"
+      "title": "osid"
+    },
+    {
+      "name": "isApproved",
+      "title": "isApproved"
     }
   ]
 }

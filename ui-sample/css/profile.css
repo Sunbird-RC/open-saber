@@ -23,7 +23,8 @@ table {
 }
 .border {
     width: 42rem;
-    margin-left: 25rem
+    margin-left: 25rem;
+    box-shadow: 0 .25rem .75rem rgba(65, 58, 58, 0.42)
 }
 input {
     font-size: 13px !important;
@@ -89,3 +90,26 @@ tr.break td {
 color: green;
 background-color: white;
   }
+  #profileImage {
+    width: 124px;
+    height: 124px;
+    border-radius: 50%;
+    background: #b75cbc;
+    font-size: 81px;
+    color: #fff;
+    text-align: center;
+    line-height: 124px;
+    margin: 20px 0;
+    margin-left: auto;
+    margin-right: auto;
+    text-transform: capitalize;
+
+  }
+
+  .btn-primary {
+    background-color: #4d90fe;
+    border-color: #4d90fe;
+    box-shadow: 0 1px 2px 0 rgba(60,64,67,0.302),0 1px 3px 1px rgba(60,64,67,0.149);
+    border: 1px solid transparent
+  }
+

@@ -1,70 +1,50 @@
-"Person": {
+{
   "$id": "#/properties/Person",
   "type": "object",
-  "title": "The Person Schema",
+  "title": "",
   "required": [
-    "voterId",
+    "teacherId",
     "name",
-    "gender",
-    "dob",
-    "email",
-    "phone"
+    "phone",
+    "school"
   ],
   "additionalProperties": false,
   "properties": {
-    "signatures": {
-      "$id": "#/properties/signatures",
-      "type": "array",
-      "items": {
-        "$ref": "Signature.json#/definitions/Signature"
-      },
-      "$comment": "Placeholder for all verifiable claims"
-    },
-     "photo": {
-      "type": "string",
-      "contentEncoding": "base64",
-      "mediaType": "image/png"
-    },
-    "voterId": {
-      "$id": "#/properties/voterId",
-      "type": "string",
-      "$comment": "Voter identifier"
-    },
     "name": {
       "$id": "#/properties/name",
       "type": "string",
-      "title": "Full name"
+      "title": "Name"
     },
-    "gender": {
-      "$id": "#/properties/gender",
-      "$ref": "Common.json#/definitions/Gender"
+    "phone": {
+      "$id": "#/properties/phone",
+      "format": "phone",
+      "title": "phone"
     },
-    "doB": {
-      "$id": "#/properties/birthDate",
-      "$ref": "Common.json#/definitions/Date"
-    },
-    "emailId": {
-      "$id": "emailId",
+    "teacherId": {
+      "$id": "#/properties/teacherId",
       "type": "string",
-      "title": "Email ID"
+      "$comment": "teacherId",
+      "pattern": "^[0-9]{3}-.*",
+      "title": "Teacher Id",
+      "examples": [
+        "888-abc",
+        "639-def"
+      ]
     },
     "school": {
-      "$id": "school",
+      "$id": "#/properties/school",
       "type": "string",
-      "title": "School"
+      "title": "school"
     },
-    "phoneNo": {
-      "$id": "phoneNo",
-      "type": "string",
-      "title": "Phone"
+    "isAdmin": {
+      "$id": "isAdmin",
+      "type": "boolean",
+      "title": "isAdmin"
     },
-    "district": {
-      "$id": "district",
-      "type": "string",
-      "title": "District"
-    },
-    "certificate": {
-      "$id": "certificate",
-      "type": "string",
-      "title": "Certificate"
+    "isApproved": {
+      "$id": "isApproved",
+      "type": "boolean",
+      "title": "isApproved"
     }
+  }
+}
