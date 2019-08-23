@@ -1,0 +1,14 @@
+<div class="ui form">
+    <div class="ui grid">
+      <div *ngFor="let field of formFieldProperties;let i = index" class="{{field.renderingHints.semanticColumnWidth || 'twelve'}} wide column">
+        <div *ngIf="field.inputType==='text' || field.inputType==='number'" class="field" [ngClass]="{ 'disabled':!field.editable}">
+          <label>
+            {{field.label}}
+          </label>
+          <div class="field">
+            <input name={{field.code}} type={{field.inputType}} [(ngModel)]="formInputData[field.code]" placeholder={{field.placeholder}}>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>

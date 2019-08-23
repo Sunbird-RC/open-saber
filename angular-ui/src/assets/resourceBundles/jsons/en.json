@@ -1,0 +1,11 @@
+{
+    "data": {
+        "frmelmnts": {
+            "btn": {
+                "signUp": "Sign Up",
+                "logIn": "Log In",
+                "approve": "Approve"
+            }
+        }
+    }
+}

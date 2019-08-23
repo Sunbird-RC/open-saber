@@ -1,0 +1,37 @@
+<div class="ui container py-20 ">
+  <table class="ui celled padded table">
+    <thead>
+      <tr>
+        <th *ngFor="let header of result.headers">{{header}}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of result.row" [ngClass]="{positive:user.isApproved===true}">
+        <td *ngFor="let col of result.headers">
+          {{user[col]}}
+        </td>
+        <td *ngIf="user['isApproved']===false">
+          <button class="ui inverted green button">{{resourceService?.frmelmnts?.btn?.approve}}</button>
+        </td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <th colspan="5">
+          <div class="ui right floated pagination menu">
+            <a class="icon item">
+              <i class="left chevron icon"></i>
+            </a>
+            <a class="item">1</a>
+            <a class="item">2</a>
+            <a class="item">3</a>
+            <a class="item">4</a>
+            <a class="icon item">
+              <i class="right chevron icon"></i>
+            </a>
+          </div>
+        </th>
+      </tr>
+    </tfoot>
+  </table>
+</div>
