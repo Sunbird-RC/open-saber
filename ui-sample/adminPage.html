@@ -167,16 +167,15 @@
         });
   
         function approveFn(obj) {
-            var url = "file:///Users/aishwarya/workspace/Saber/open-saber/ui-sample/"
-            if (lang == 'English') {
-                url += "profile.html?osid=" + obj + '&lang=' + lang + '&isAdmin=true';
+            var localUrl = "file:///Users/rajeshr/IdeaProjects/aishwa8141/open-saber/ui-sample/"
+            if (lang === 'English') {
+                localUrl += "profile.html?osid=" + obj + '&lang=' + lang + '&isAdmin=true';
             }
-            else if (lang == 'Spanish') {
-                url += "profile.html?osid=" + obj + '&lang=' + lang + '&isAdmin=true';
+            else if (lang === 'Spanish') {
+                localUrl += "profile.html?osid=" + obj + '&lang=' + lang + '&isAdmin=true';
             }
-            //document.location.href
-            console.log(url)
-            window.open(url, '_blank')
+            console.log(localUrl)
+            window.open(localUrl, '_blank')
         }
 
         function searchByQuery(key) {

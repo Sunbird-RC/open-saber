@@ -19,6 +19,14 @@
     "actions": "Estado",
     "name":"Nombre",
     "next": "Send OTP",
-    "reject":"Rechazar"
+    "reject":"Rechazar",
+    "teacherCard": "Como maestro",
+    "teacherLine1": "Me aseguro de que mi información es correcta.",
+    "teacherLine2": "Me convierto en modo visible.",
+    "teacherLine3": "Ayudo a construir mi micro-comunidad.",
+    "stateCard": "Como estado",
+    "stateLine1": "Quiero mejorar mi sistema educativo.",
+    "stateLine2": "Quiero identificar las habilidades y la demanda para el futuro del país.",
+    "stateLine3": "Quiero ayudar a crear auto-sostenible, comunidades auto-gestión."
 
 }

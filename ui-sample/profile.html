@@ -76,7 +76,7 @@
             var g_PersonSpanishSchemaJson;
             var tempkey;
             var preval;
-            var verifiedDetails;
+            var approvedStatusCount = 0; 
 
             $(document).ready(function () {
                 console.log('url params', g_personOSid)
@@ -179,7 +179,7 @@
                     var count = 0;
                     var response = JSON.parse(https.responseText);
                     g_thisPersonVerification = response.result.PersonVerified[0];
-                    console.log("Finished load PersonVerified")
+                    console.log("Finished load PersonVerified" + JSON.stringify(g_thisPersonVerification))
                     cb()
                 }
             }
@@ -232,12 +232,12 @@
 
             function myFunction() {
                 console.log("myFunction is getting called")
-                var approvedStatusCount = 0;
+                approvedStatusCount = 0;
                 getPersonVerificationDetails(function () {
                     getPersonDetails(function () {
 
                         for (var head in g_thisPerson) {
-                            console.log("Iterating in head" + head)
+                            //console.log("Iterating in head " + head)
                             if (head === "isAdmin") {
                                 // We dont need to show this flag
                                 if (g_thisPerson[head]){
@@ -256,8 +256,8 @@
                                 var temprow;
                                 temprow = "<tr><th class='header pr-5'>" + head + "</th><td id=" + head + " class='text' name=" + head + "  width='20% !importent'>" + value + "</td >";
                                 if (!g_isAdmin) {
+                                    console.log("Checking profile as normal user " + head)
                                     if (head === 'Name' || head === 'Nombre') {
-
                                         var validaterow = "<td class='text pl-2' style='color:#007bff;font-size: 14px;'><i class='fa fa-exclamation-circle pr-1' style='color: #007bff;font-size: small !important;'></i><div id='notRequired' data-localize='notRequired'>Validation not required</div></td></tr>";
                                         row += temprow + validaterow;
                                     } else if (!g_thisPersonVerification[head + 'Verified'] && g_thisPersonVerification.hasOwnProperty(head + 'Verified')) {
@@ -268,32 +268,33 @@
                                         var verifiedrow = "<td class='text pl-2' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i><span data-localize='systemValidated'>System validated</span></td></tr>";
                                         row += temprow + verifiedrow;
                                     } else if (isTrue(head)) {
-                                        console.log('hey')
                                         var verifiedrow = "<td class='text pl-2' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i><span data-localize='validated'>Validated</span></td></tr>";
                                         row += temprow + verifiedrow;
                                     }
                                     else {
                                         row += temprow;
                                     }
+                                } else if (g_isAdmin) {
+                                    console.log("Checking profile as Admin user " + head)
+                                    if (head === 'Name' || head === 'Nombre') {
+                                        var validaterow = "<td class='text pl-2' style='color:#007bff;font-size: 14px;'><i class='fa fa-exclamation-circle pr-1' style='color: #007bff;font-size: small !important;'></i><div id='notRequired' data-localize='notRequired'>Validation not required</div></td></tr>";
+                                        row += temprow + validaterow;
+                                    } else if (head === 'Phone' || head === 'Teléfono') {
+                                        var verifiedrow = "<td class='text pl-2' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i><span data-localize='systemValidated'>System validated</span></td></tr>";
+                                        row += temprow + verifiedrow;
+                                    } else if (isTrueImpl(head, function (data) {
+                                            if (data) {
+                                                var verifiedrow = "<td class='text pl-2' style='color:green;font-size: 14px;'><i class='fa fa-check-circle pr-1' style='color:green;font-size: small !important;'></i><span data-localize='validated'>Validated</span></td></tr>";
+                                                console.log(" Setting up validated here")
+                                                row += temprow + verifiedrow;
+                                                incApprovedStatusCount()
+                                            } else {
+                                                console.log(" Setting up approve  " + head)
+                                                var validaterow = "<td class='text pl-2' id='style'><button id='approve' data-localize='approve' class='btn btn-primary mr-3 sc' style='font-size:1rem;' onclick=approve(" + head + ")><i class='fa fa-check-circle pr-1' style='font-size: small !important;'></i>Approve</button><button class='btn btn-outline-danger sc' style='font-size:1rem;' id='reject' data-localize='reject'>&nbsp;Reject</button></td></tr>";
+                                                row += temprow + validaterow;
+                                            }
+                                    })) {}
                                 }
-                                else if (!isTrue(head) && head !== 'Name' && head !== 'Nombre') {
-                                    console.log(head)
-
-                                    var approvedrow = "<td class='text pl-2' id='style'><button id='approve' data-localize='approve' class='btn btn-primary mr-3 sc' style='font-size:1rem;' onclick=approve(" + head + ")><i class='fa fa-check-circle pr-1' style='font-size: small !important;'></i>Approve</button><button class='btn btn-outline-danger sc' style='font-size:1rem;' id='reject' data-localize='reject'>&nbsp;Reject</button></td></tr>";
-                                    row += temprow + approvedrow;
-                                } else if (head === 'Phone' || head === 'Teléfono' || isTrue(head)) {
-                                    console.log(head)
-                                    approvedStatusCount = approvedStatusCount + 1;
-
-                                    var approvedrow = "<td class='text pl-2' id='style'><p  class='mr-3 sc' style='color:green;font-size:1rem;' ><i class='fa fa-check-circle pr-1' style='color:green;font-size:large !important;'></i>Validated</p></td></tr>";
-                                    row += temprow + approvedrow;
-                                }
-                                else {
-                                    row += temprow;
-                                }
-                            }
-                            if (approvedStatusCount === 3) {
-                                updatePersonApprovedStatus(true);
                             }
                         }
                         $("table tbody").append(row);
@@ -308,24 +309,35 @@
                     })
 
                     getViewSchemaEng(function () {
-                        console.log("Loaded View schema for English")
+                        
                     })
 
                     getViewSchemaSpanish(function () {
-                        console.log("Loaded View schema for Spanish")
+                        
                     })
 
-                    function isTrue(head) {
-
+                    function isTrueImpl(head, cb) {
                         // the head could be in English or Spanish
+                        console.log("isTrueImpl called for " + head + " " + g_lang)
                         if (g_lang === 'English') {
-                            return g_thisPersonVerification[head + 'Verified']
+                            console.log("Returning English " + head + " - English ->" + g_thisPersonVerification[head + 'Verified'])
+                            cb(g_thisPersonVerification[head + 'Verified'])
                         } else if (g_lang === 'Spanish') {
                             getEnglishColNameFromSpanishColame(head, function (err, data) {
-                                return g_thisPersonVerification[data + 'Verified']
+                                //console.log(data + "Verified is " +  g_thisPersonVerification[data + 'Verified'])
+                                var capName = data.charAt(0).toUpperCase() + data.slice(1)
+                                var result = g_thisPersonVerification[data + 'Verified'] || g_thisPersonVerification[capName + 'Verified']
+                                console.log("head " + data + " --> " + result)
+                                cb(result)
                             })
                         }
 
+                    }
+
+                    function isTrue(head) {
+                        isTrueImpl(head, function(d) {
+                             return d   
+                        })
                     }
                 })
             }
@@ -342,8 +354,10 @@
                 $.getJSON(filename, function (data) {
                     if (filename.includes("_es")) {
                         g_PersonSpanishSchemaJson = data
+                        console.log("Loaded View schema for Spanish")
                     } else {
                         g_PersonDefaultSchemaJson = data
+                        console.log("Loaded View schema for English")
                     }
                     cb()
                 })
@@ -372,7 +386,7 @@
             function getDbColumnNameFromTitle(title, cb) {
                 $.each(g_PersonDefaultSchemaJson, function (i, f) {
                     if (i === 'fields') {
-                        verifiedDetails = f;
+                        var verifiedDetails = f;
                         for (var i = 0; i < verifiedDetails.length; i++) {
                             if (key === verifiedDetails[i].title) {
                                 cb(null, verifiedDetails[i].name)
@@ -383,12 +397,20 @@
             }
 
             function getEnglishColNameFromSpanishColame(name, cb) {
+                // Iterate spanish details to fetch the tiel
                 $.each(g_PersonSpanishSchemaJson, function (i, f) {
                     if (i === 'fields') {
-                        verifiedDetails = f;
+                        console.log("Getting the right fields")
+                        var verifiedDetails = f;
                         for (var i = 0; i < verifiedDetails.length; i++) {
-                            if (name === verifiedDetails[i].name) {
-                                cb(null, g_PersonDefaultSchemaJson['fields'].name)
+                            console.log("Iterating over title " + verifiedDetails[i].title + " name " + verifiedDetails[i].name)
+                            var capName = name.charAt(0).toUpperCase() + name.slice(1)
+                            if (name === verifiedDetails[i].title || 
+                                capName === verifiedDetails[i].title) {
+                                console.log("Getting the right name " + name + " " + g_PersonDefaultSchemaJson['fields'][i].name)
+                                cb(null, g_PersonDefaultSchemaJson['fields'][i].name)
+                            } else {
+                                console.log("Not getting " + name +  "  " + verifiedDetails[i].name)
                             }
                         }
                     }
@@ -429,7 +451,7 @@
                 } else {
                     // Update is clicked now.
                     for (key in g_thisPerson) {
-                        if(key=== 'isAdmin') 
+                        if(key === 'isAdmin' || key === 'osid') 
                         continue;
                         // Derive the name from the title and setup the new Person object
                         var childElemnet = document.getElementById(key);
@@ -471,7 +493,6 @@
                     }
                 }
                 console.log("Turned off edit");
-                //myFunction()
             }
 
             function downloadJson() {
@@ -517,9 +538,13 @@
                 });
             }
 
+            function incApprovedStatusCount() {
+                approvedStatusCount++;
+                console.log("approvedStatusCount = " + approvedStatusCount);
+            }
 
-            function approve(id, tag) {
-                console.log(g_thisPersonVerification)
+            function approve(id) {
+                console.log(JSON.stringify(g_thisPersonVerification) + "id = " + id)
                 var key = (id.id + 'Verified')
                 updatePersonVerifiedRequest.request.PersonVerified = {
                     "osid": g_thisPersonVerification.osid,
@@ -533,7 +558,12 @@
                     contentType: "application/json",
                     dataType: "json",
                     success: function (msg) {
-                        window.location.href = window.location.href;
+                        incApprovedStatusCount()
+                        if (approvedStatusCount == 2) {
+                            updatePersonApprovedStatus(true);
+                        } else {
+                            window.location.href = window.location.href;
+                        }
                     }
                 });
             }
@@ -562,7 +592,7 @@
                 http.send(JSON.stringify(approveParam)) // Make sure to stringify
                 http.onload = function () {
                     var obj = JSON.parse(http.responseText);
-                    console.log(obj)
+                    console.log("PersonApprovedStatus is set to " + obj + " " + status)
                 }
             }
         </script>

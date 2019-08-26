@@ -22,8 +22,13 @@
     "systemValidated": "System validated",
     "validated": "Validated",
     "notRequired": "Validation not required",
-    "reject":"Reject"
-
-
-
+    "reject":"Reject",
+    "teacherCard": "As a teacher",
+    "teacherLine1": "I ensure my data is correct.",
+    "teacherLine2": "I become discoverable. ",
+    "teacherLine3": "I help build my micro-community.",
+    "stateCard": "As a state",
+    "stateLine1": "I want to improve my education system.",
+    "stateLine2": "I want to identify skills and demand for the country's future ",
+    "stateLine3": "I want to help create self-sustaining, self-run communities."
 }

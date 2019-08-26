@@ -1,0 +1,8 @@
+{
+    "URLS": {
+        "BASE_URL": "http://localhost:8080",
+        "SEARCH": "/search",
+        "READ": "/read",
+        "ADD": "/add"
+    }
+}
