@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import {ResourceService} from '../../services/resource/resource.service'
 
 declare var jQuery: any;
 
@@ -12,6 +13,7 @@ declare var jQuery: any;
 export class HeaderComponent implements OnInit {
   userProfile = false
   userLogin = false
+  resourceService: ResourceService;
   avtarMobileStyle = {
     backgroundColor: 'transparent',
     color: '#AAAAAA',
@@ -34,7 +36,9 @@ export class HeaderComponent implements OnInit {
     height: '38px',
     width: '38px'
   };
-  constructor(public router: Router, public activatedRoute: ActivatedRoute,) { }
+  constructor(public router: Router, public activatedRoute: ActivatedRoute,  resourceService: ResourceService) { 
+    this.resourceService = resourceService;
+  }
 
   ngOnInit() {
     this.userProfile = true;

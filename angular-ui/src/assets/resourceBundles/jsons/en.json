@@ -4,7 +4,17 @@
             "btn": {
                 "signUp": "Sign Up",
                 "logIn": "Log In",
-                "approve": "Approve"
+                "approve": "Approve",
+                "create": "Create",
+                "profile": "profile",
+                "logout": "logout",
+                "edit": "Edit",
+                "cancel": "Cancel",
+                "download":"Dowload"
+            },
+            "msg": {
+                "logInHead": "Log-in to your account",
+                "createAccount": "create account"
             }
         }
     }

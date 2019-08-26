@@ -27,7 +27,6 @@ export class SignupComponent implements OnInit {
   ngOnInit() {
     this.fetchFormData()
     this.resourceService.initialize();
-    console.log('resi', this.resourceService)
   }
   fetchFormData() {
     this.formFieldProperties = this.formService.getFormConfig("signUp").fields;

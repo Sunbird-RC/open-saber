@@ -59,6 +59,10 @@
   cursor: pointer !important;
 }
 
+.tac {
+  text-align: center !important;
+}
+
 @media only screen and (max-width: 1023px) {
   [class*="mobile hidden"],
   [class*="tablet only"]:not(.mobile),
@@ -91,4 +95,9 @@
 .py-20 {
   padding-top: 20px!important;
   padding-bottom: 20px!important;
+}
+
+body{
+  font-family: 'Open Sans', sans-serif;
+
 }

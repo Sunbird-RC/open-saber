@@ -11,8 +11,8 @@
           {{user[col]}}
         </td>
         <td *ngIf="user['isApproved']===false">
-          <button class="ui inverted green button">{{resourceService?.frmelmnts?.btn?.approve}}</button>
-        </td>
+          <button class="ui inverted green button" (click)="navigateToProfilePage(user)">{{resourceService?.frmelmnts?.btn?.approve}}</button>
+        </td> 
       </tr>
     </tbody>
     <tfoot>

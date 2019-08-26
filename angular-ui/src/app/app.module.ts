@@ -16,6 +16,9 @@ import { SuiSelectModule, SuiModalModule, SuiAccordionModule, SuiPopupModule, Su
 import { DefaultTemplateComponent } from './components/default-template/default-template.component';
 import { FormsModule, ReactiveFormsModule, } from '@angular/forms';
 import { AdminPageComponent } from './components/admin-page/admin-page.component';
+import { ProfileComponent } from './components/profile/profile.component';
+import { LoginComponent } from './components/login/login.component';
+import { CreateComponent } from './components/create/create.component';
 
 
 @NgModule({
@@ -26,7 +29,10 @@ import { AdminPageComponent } from './components/admin-page/admin-page.component
     FooterComponent,
     LandingPageComponent,
     DefaultTemplateComponent,
-    AdminPageComponent
+    AdminPageComponent,
+    ProfileComponent,
+    LoginComponent,
+    CreateComponent
   ],
   imports: [
     BrowserModule,

@@ -13,19 +13,20 @@
                         <div class="six wide column p-0 d-flex flex-jc-flex-end flex-ai-center">
                                 <i class="large bars icon link primary-color mobile only" (click)="showSideBar()"
                                         tabindex="0"></i>
-                                        <div class="ui text menu m-0 d-flex flex-jc-center flex-ai-center computer only">
+                                <div class="ui text menu m-0 d-flex flex-jc-center flex-ai-center computer only">
 
-                                <ng-container>
-                                        <a class="item" [class.active]="router.isActive('/signUp')" routerLink="/signUp">
-                                                SignUp
-                                        </a>
-                                        <a class="item " routerLink="/logIn">
-                                                LogIn
-                                        </a>
+                                        <ng-container>
+                                                <a class="item" [class.active]="router.isActive('/signUp')"
+                                                        routerLink="/signUp">
+                                                        {{resourceService?.frmelmnts?.btn?.signUp}}
+                                                </a>
+                                                <a class="item " routerLink="/logIn">
+                                                        {{resourceService?.frmelmnts?.btn?.logIn}}
+                                                </a>
 
-                                </ng-container>
+                                        </ng-container>
                                 </div>
-                                <a class="profile-avtar computer only p-0 ml-15" tabindex="0" *ngIf="userLogin"> 
+                                <a class="profile-avtar computer only p-0 ml-15" tabindex="0" *ngIf="userLogin">
                                         <div suiDropdown class="ui dropdown right top pointing"
                                                 id="dropdown-menu-list-header">
                                                 <ngx-avatar [style]="avtarDesktopStyle" [size]="38" initialsSize="1"
@@ -37,12 +38,12 @@
                                                         </div>
                                                         <div class="ui divider"></div>
                                                         <a class="item" routerLink="profile">
-                                                                profile
+                                                                {{resourceService?.frmelmnts?.btn?.profile}}
                                                         </a>
 
 
                                                         <a class="item" (click)="logout()">
-                                                                logout
+                                                                {{resourceService?.frmelmnts?.btn?.logout}}
                                                         </a>
                                                 </div>
                                         </div>
