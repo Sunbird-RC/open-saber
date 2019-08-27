@@ -14,7 +14,7 @@
           "editable": true,
           "placeholder": "Name",
           "inputType": "text",
-          "required": false,
+          "required": true,
           "displayProperty": "Editable",
           "visible": true,
           "renderingHints": {
@@ -31,7 +31,7 @@
           "editable": true,
           "placeholder": "Phone",
           "inputType": "text",
-          "required": false,
+          "required": true,
           "displayProperty": "Editable",
           "visible": true,
           "renderingHints": {
@@ -48,7 +48,7 @@
           "editable": true,
           "placeholder": "Password",
           "inputType": "password",
-          "required": false,
+          "required": true,
           "displayProperty": "Editable",
           "visible": true,
           "renderingHints": {

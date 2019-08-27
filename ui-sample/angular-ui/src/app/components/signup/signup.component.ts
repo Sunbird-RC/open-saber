@@ -2,7 +2,6 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormService } from '../../services/forms/form.service';
 import { ResourceService } from '../../services/resource/resource.service';
 import { DefaultTemplateComponent } from '../default-template/default-template.component';
-import {takeUntil} from 'rxjs/operators'
 import { Subject } from 'rxjs';
 
 
@@ -18,9 +17,6 @@ export class SignupComponent implements OnInit {
   public formService: FormService;
 
   public formFieldProperties: any;
-
-  public unsubscribe = new Subject<void>();
-
 
   public resourceService: ResourceService;
   constructor(formService: FormService, resouceService: ResourceService) {

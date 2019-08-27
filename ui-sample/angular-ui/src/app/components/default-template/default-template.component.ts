@@ -2,6 +2,8 @@ import { Component, Input, OnInit, AfterViewInit, Output, EventEmitter } from '@
 import { Router, ActivatedRoute } from '@angular/router'
 import { DataService } from '../../services/data/data.service';
 import urlConfig from '../../services/urlConfig.json';
+import * as _ from 'lodash-es';
+
 
 @Component({
   selector: 'app-default-template',
@@ -41,9 +43,10 @@ export class DefaultTemplateComponent implements OnInit {
       url: urlConfig.URLS.READ,
     }
     this.dataService.post(requestData).subscribe(response => {
-      console.log(response);
       this.formInputData = response.result.Person;
-    })
+    },(err =>{
+      console.log(err)
+    }))
   }
 
 }
