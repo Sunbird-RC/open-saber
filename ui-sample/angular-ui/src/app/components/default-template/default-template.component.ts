@@ -1,6 +1,6 @@
 import { Component, Input, OnInit, AfterViewInit, Output, EventEmitter } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router'
-import {DataService} from '../../services/data/data.service';
+import { DataService } from '../../services/data/data.service';
 import urlConfig from '../../services/urlConfig.json';
 
 @Component({
@@ -25,7 +25,6 @@ export class DefaultTemplateComponent implements OnInit {
     if (this.userId) {
       this.getUserDetails();
     }
-    console.log('form input data', this.formInputData)
   }
 
   getUserDetails() {
@@ -46,7 +45,5 @@ export class DefaultTemplateComponent implements OnInit {
       this.formInputData = response.result.Person;
     })
   }
-
-
 
 }
