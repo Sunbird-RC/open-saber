@@ -10,7 +10,9 @@
                 "logout": "logout",
                 "edit": "Edit",
                 "cancel": "Cancel",
-                "download":"Dowload"
+                "download": "Dowload",
+                "SearchIn": "search",
+                "update": "Update"
             },
             "msg": {
                 "logInHead": "Log-in to your account",

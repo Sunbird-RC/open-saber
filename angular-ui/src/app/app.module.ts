@@ -11,7 +11,7 @@ import { AvatarModule } from 'ngx-avatar';
 import { HttpClientModule } from '@angular/common/http';
 import {HttpModule} from '@angular/http'
 import { SuiSelectModule, SuiModalModule, SuiAccordionModule, SuiPopupModule, SuiDropdownModule, SuiProgressModule,
-  SuiRatingModule, SuiCollapseModule } from 'ng2-semantic-ui';
+  SuiRatingModule, SuiCollapseModule , SuiCheckboxModule} from 'ng2-semantic-ui';
   import { RouterModule } from '@angular/router';
 import { DefaultTemplateComponent } from './components/default-template/default-template.component';
 import { FormsModule, ReactiveFormsModule, } from '@angular/forms';
@@ -19,6 +19,7 @@ import { AdminPageComponent } from './components/admin-page/admin-page.component
 import { ProfileComponent } from './components/profile/profile.component';
 import { LoginComponent } from './components/login/login.component';
 import { CreateComponent } from './components/create/create.component';
+import { UpdateComponent } from './components/update/update.component';
 
 
 @NgModule({
@@ -32,7 +33,8 @@ import { CreateComponent } from './components/create/create.component';
     AdminPageComponent,
     ProfileComponent,
     LoginComponent,
-    CreateComponent
+    CreateComponent,
+    UpdateComponent
   ],
   imports: [
     BrowserModule,
@@ -41,7 +43,7 @@ import { CreateComponent } from './components/create/create.component';
     HttpClientModule,
     HttpModule,
     SuiSelectModule, SuiModalModule, SuiAccordionModule, SuiPopupModule, SuiDropdownModule, SuiProgressModule,
-    SuiRatingModule, SuiCollapseModule,
+    SuiRatingModule, SuiCollapseModule, SuiCheckboxModule,
     RouterModule,
     FormsModule,
     ReactiveFormsModule

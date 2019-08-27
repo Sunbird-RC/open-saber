@@ -1,3 +1,13 @@
+<div class="ui container py-20 m-20 tac">
+  <div class="ui small ui action input primary-search-input" id="search-input-container">
+    <input type="text" id="keyword" name="filter_search" title="Search"
+      placeholder="{{resourceService.frmelmnts?.btn?.SearchIn}}" class="searchinput" [(ngModel)]="key"
+      (keyup.enter)="onEnter(key)" />
+    <button class="ui icon button">
+      <i class="search large text-secondary icon primary-search-icon" (click)="onEnter(key)"></i>
+    </button>
+  </div>
+</div>
 <div class="ui container py-20 ">
   <table class="ui celled padded table">
     <thead>
@@ -11,22 +21,23 @@
           {{user[col]}}
         </td>
         <td *ngIf="user['isApproved']===false">
-          <button class="ui inverted green button" (click)="navigateToProfilePage(user)">{{resourceService?.frmelmnts?.btn?.approve}}</button>
-        </td> 
+          <button class="ui inverted green button"
+            (click)="navigateToProfilePage(user)">{{resourceService?.frmelmnts?.btn?.approve}}</button>
+        </td>
       </tr>
     </tbody>
-    <tfoot>
+    <tfoot *ngIf="paginationDetails.totalItems > pageLimit">
       <tr>
         <th colspan="5">
           <div class="ui right floated pagination menu">
-            <a class="icon item">
+            <a class="icon item" (click)="navigateToPage(paginationDetails.currentPage - 1)"
+              [ngClass]="{active:paginationDetails.currentPage===page}">
               <i class="left chevron icon"></i>
             </a>
-            <a class="item">1</a>
-            <a class="item">2</a>
-            <a class="item">3</a>
-            <a class="item">4</a>
-            <a class="icon item">
+            <a *ngFor="let page of paginationDetails.pages" [ngClass]="{active:paginationDetails.currentPage===page}"
+              (click)="navigateToPage(page)" class="item">{{page}}</a>
+            <a class="icon item" [ngClass]="{active:paginationDetails.currentPage===page}"
+              (click)="navigateToPage(paginationDetails.currentPage + 1)">
               <i class="right chevron icon"></i>
             </a>
           </div>

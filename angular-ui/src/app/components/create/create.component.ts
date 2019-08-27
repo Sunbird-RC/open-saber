@@ -30,33 +30,24 @@ export class CreateComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log(this.formService.getPersonForm())
-    console.log(this.resourceService)
     this.formFieldProperties = this.formService.getPersonForm().fields;
   }
 
   createUser() {
-    console.log(this.formData.formInputData);
     const requestData = {
       data: {
         "id": "open-saber.registry.create",
-        "ver": "1.0",
-        "ets": "11234",
-        "params": {
-          "did": "",
-          "key": "",
-          "msgid": ""
-        },
         "request": {
           "Person": this.formData.formInputData
         }
       },
       url: urlConfig.URLS.ADD
     };
+    console.log("request data :", requestData)
     this.dataService.post(requestData).subscribe(response => {
       this.navigateToProfilePage(response.result.Person.osid);
     }, err => {
-      // this.toasterService.error(this.resourceService.messages.fmsg.m0078);
+      console.log("error", err);
     });
   }
   navigateToProfilePage(id: String) {

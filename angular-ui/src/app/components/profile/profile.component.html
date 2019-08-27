@@ -30,7 +30,7 @@
         <a class="ui primary button" title="Download JSON" [href]="downloadJsonHref" download="download.json"
           (click)="dowloadJson()"> {{resourceService?.frmelmnts?.btn?.download}}
         </a>
-        <button class="ui primary button">
+        <button class="ui primary button" (click)="navigateToEditPage()">
           {{resourceService?.frmelmnts?.btn?.edit}}
         </button>
         <button class="ui button" (click)="navigateToHomePage()">

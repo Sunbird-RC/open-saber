@@ -6,6 +6,7 @@ import { AdminPageComponent } from './components/admin-page/admin-page.component
 import { ProfileComponent } from './components/profile/profile.component';
 import { LoginComponent } from './components/login/login.component';
 import { CreateComponent } from './components/create/create.component';
+import { UpdateComponent } from './components/update/update.component';
 
 const routes: Routes = [
   {
@@ -16,7 +17,7 @@ const routes: Routes = [
     path: 'signUp', component: SignupComponent,
   },
   {
-    path: 'admin', component: AdminPageComponent
+    path: 'admin/:pageNumber', component: AdminPageComponent
   },
   {
     path: 'profile/:id', component: ProfileComponent
@@ -26,6 +27,9 @@ const routes: Routes = [
   },
   {
     path:'create', component: CreateComponent
+  },
+  {
+    path:'edit/:id', component: UpdateComponent
   }
 ];
 

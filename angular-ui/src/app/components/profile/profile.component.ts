@@ -19,9 +19,10 @@ export class ProfileComponent implements OnInit {
   userId: String;
   userProfile: any;
   downloadJsonHref: any;
-  constructor(dataService: DataService, resourceService: ResourceService, activatedRoute: ActivatedRoute, private sanitizer: DomSanitizer) {
+  constructor(dataService: DataService, resourceService: ResourceService, activatedRoute: ActivatedRoute, private sanitizer: DomSanitizer, router: Router) {
     this.dataService = dataService
     this.resourceService = resourceService;
+    this.router = router
     this.activatedRoute = activatedRoute;
   }
 
@@ -39,13 +40,6 @@ export class ProfileComponent implements OnInit {
     const requestData = {
       data: {
         "id": "open-saber.registry.read",
-        "ver": "1.0",
-        "ets": "11234",
-        "params": {
-          "did": "",
-          "key": "",
-          "msgid": ""
-        },
         'request': {
           "Person": {
             "osid": this.userId
@@ -65,6 +59,10 @@ export class ProfileComponent implements OnInit {
     var theJSON = JSON.stringify(this.userProfile);
     var uri = this.sanitizer.bypassSecurityTrustUrl("data:text/json;charset=UTF-8," + encodeURIComponent(theJSON));
     this.downloadJsonHref = uri;
+  }
+  navigateToEditPage()  {
+    console.log(this.userId, )
+    this.router.navigate(['/edit', this.userId])
   }
 }
 
