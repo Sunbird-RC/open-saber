@@ -12,7 +12,8 @@
                 "cancel": "Cancel",
                 "download": "Dowload",
                 "SearchIn": "search",
-                "update": "Update"
+                "update": "Update",
+                "generate": "Generate"
             },
             "msg": {
                 "logInHead": "Log-in to your account",

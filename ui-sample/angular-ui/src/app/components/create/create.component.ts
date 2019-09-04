@@ -35,19 +35,20 @@ export class CreateComponent implements OnInit {
   }
 
   validate()  {
-      if(!!this.formData) {
-        console.log("please fill the form");
-      } else {
+    console.log(this.formData.formInputData)
+      if(!!this.formData.formInputData) {
         this.createUser();
+      } else {
+        console.log("please fill the form");
       }
   }
 
   createUser() {
     const requestData = {
       data: {
-        "id": "open-saber.registry.create",
-        "request": {
-          "Person": this.formData.formInputData
+        id: "open-saber.registry.create",
+        request: {
+          Person: this.formData.formInputData
         }
       },
       url: urlConfig.URLS.ADD

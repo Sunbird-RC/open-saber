@@ -1,0 +1,266 @@
+{
+    "type": "certificate",
+    "action": "certificate",
+    "data": {
+        "templateName": "defaultTemplate",
+        "action": "create",
+        "fields": [
+            {
+                "code": "recipientName",
+                "dataType": "text",
+                "name": "recipientName",
+                "label": "Recipient Name",
+                "description": "Recipient Name",
+                "editable": true,
+                "placeholder": "Recipient Name",
+                "inputType": "text",
+                "required": true,
+                "displayProperty": "Editable",
+                "visible": true,
+                "renderingHints": {
+                    "semanticColumnWidth": "six"
+                },
+                "index": 1
+            },
+            {
+                "code": "recipientId",
+                "dataType": "text",
+                "name": "recipientId",
+                "label": "Recipient Id",
+                "description": "Recipient Id",
+                "editable": true,
+                "placeholder": "Recipient Id",
+                "inputType": "text",
+                "required": true,
+                "displayProperty": "Editable",
+                "visible": true,
+                "renderingHints": {
+                    "semanticColumnWidth": "six"
+                },
+                "index": 2
+            },
+            {
+                "code": "recipientPhone",
+                "dataType": "text",
+                "name": "recipientPhone",
+                "label": "Recipient Phone",
+                "description": "Recipient Phone",
+                "editable": true,
+                "placeholder": "Recipient Phone",
+                "inputType": "text",
+                "required": true,
+                "displayProperty": "Editable",
+                "visible": true,
+                "renderingHints": {
+                    "semanticColumnWidth": "six"
+                },
+                "index": 3
+            },
+            {
+                "code": "recipientEmail",
+                "dataType": "text",
+                "name": "recipientEmail",
+                "label": "Recipient Email",
+                "description": "Recipient Email",
+                "editable": true,
+                "placeholder": "Recipient Email",
+                "inputType": "text",
+                "required": true,
+                "displayProperty": "Editable",
+                "visible": true,
+                "renderingHints": {
+                    "semanticColumnWidth": "six"
+                },
+                "index": 4
+            },
+
+            {
+                "code": "courseName",
+                "dataType": "text",
+                "name": "courseName",
+                "label": "courseName",
+                "description": "Course Name",
+                "editable": true,
+                "placeholder": "Course Name",
+                "inputType": "text",
+                "required": true,
+                "displayProperty": "Editable",
+                "visible": true,
+                "renderingHints": {
+                    "semanticColumnWidth": "twelve"
+                },
+                "index": 5
+            },
+            {
+                "code": "certificateName",
+                "dataType": "text",
+                "name": "certificateName",
+                "label": "Certificate Name",
+                "description": "Certificate Name",
+                "editable": true,
+                "placeholder": "Certificate Name",
+                "inputType": "text",
+                "required": true,
+                "displayProperty": "Editable",
+                "visible": true,
+                "renderingHints": {
+                    "semanticColumnWidth": "twelve"
+                },
+                "index": 6
+            },
+            {
+                "code": "certificateDescription",
+                "dataType": "text",
+                "name": "certificateDescription",
+                "label": "Certificate Description",
+                "description": "Certificate Description",
+                "editable": true,
+                "placeholder": "Certificate Description",
+                "inputType": "text",
+                "required": false,
+                "displayProperty": "Editable",
+                "visible": true,
+                "renderingHints": {
+                    "semanticColumnWidth": "twelve"
+                },
+                "index": 7
+            },
+            {
+                "code": "certificateLogo",
+                "dataType": "text",
+                "name": "certificateLogo",
+                "label": "Certificate Logo",
+                "description": "Certificate Logo",
+                "editable": true,
+                "placeholder": "Certificate Logo",
+                "inputType": "text",
+                "required": false,
+                "displayProperty": "Editable",
+                "visible": true,
+                "renderingHints": {
+                    "semanticColumnWidth": "twelve"
+                },
+                "index": 8
+            },
+            {
+                "code": "signatoryName",
+                "dataType": "text",
+                "name": "signatoryName",
+                "label": "Signatory Name",
+                "description": "Signatory Name",
+                "editable": true,
+                "placeholder": "Signatory Name",
+                "inputType": "text",
+                "required": false,
+                "displayProperty": "Editable",
+                "visible": true,
+                "renderingHints": {
+                    "semanticColumnWidth": "three"
+                },
+                "index": 9
+            },
+            {
+                "code": "signatoryDesignation",
+                "dataType": "text",
+                "name": "signatoryDesignation",
+                "label": "Signatory Designation",
+                "description": "Signatory Designation",
+                "editable": true,
+                "placeholder": "Signatory Designation",
+                "inputType": "text",
+                "required": false,
+                "displayProperty": "Editable",
+                "visible": true,
+                "renderingHints": {
+                    "semanticColumnWidth": "three"
+                },
+                "index": 10
+            },
+            {
+                "code": "signatoryId",
+                "dataType": "text",
+                "name": "signatoryId",
+                "label": "Signatory ID",
+                "description": "Signatory ID",
+                "editable": true,
+                "placeholder": "Signatory ID",
+                "inputType": "text",
+                "required": false,
+                "displayProperty": "Editable",
+                "visible": true,
+                "renderingHints": {
+                    "semanticColumnWidth": "three"
+                },
+                "index": 11
+            },
+            {
+                "code": "signatoryImage",
+                "dataType": "text",
+                "name": "signatoryImage",
+                "label": "Signatory Image",
+                "description": "Signatory Image",
+                "editable": true,
+                "placeholder": "Signatory Image",
+                "inputType": "text",
+                "required": true,
+                "displayProperty": "Editable",
+                "visible": true,
+                "renderingHints": {
+                    "semanticColumnWidth": "three"
+                },
+                "index": 12
+            },
+            {
+                "code": "htmlTemplateUrl",
+                "dataType": "text",
+                "name": "htmlTemplateUrl",
+                "label": "HTML Template URL",
+                "description": "HTML Template URL",
+                "editable": true,
+                "placeholder": "HTML Template URL",
+                "inputType": "text",
+                "required": true,
+                "displayProperty": "Editable",
+                "visible": true,
+                "renderingHints": {
+                    "semanticColumnWidth": "twelve"
+                },
+                "index": 13
+            },
+            {
+                "code": "issuerName",
+                "dataType": "text",
+                "name": "issuerName",
+                "label": "Issuer Name",
+                "description": "Issuer Name",
+                "editable": true,
+                "placeholder": "Issuer Name",
+                "inputType": "text",
+                "required": true,
+                "displayProperty": "Editable",
+                "visible": true,
+                "renderingHints": {
+                    "semanticColumnWidth": "six"
+                },
+                "index": 14
+            },
+            {
+                "code": "issuerURL",
+                "dataType": "text",
+                "name": "issuerURL",
+                "label": "Issuer URL",
+                "description": "Issuer URL",
+                "editable": true,
+                "placeholder": "Issuer URL",
+                "inputType": "text",
+                "required": true,
+                "displayProperty": "Editable",
+                "visible": true,
+                "renderingHints": {
+                    "semanticColumnWidth": "six"
+                },
+                "index": 15
+            }
+        ]
+    }
+}

@@ -20,6 +20,7 @@ import { ProfileComponent } from './components/profile/profile.component';
 import { LoginComponent } from './components/login/login.component';
 import { CreateComponent } from './components/create/create.component';
 import { UpdateComponent } from './components/update/update.component';
+import { CreateCertificateComponent } from './components/create-certificate/create-certificate.component';
 
 
 @NgModule({
@@ -34,7 +35,8 @@ import { UpdateComponent } from './components/update/update.component';
     ProfileComponent,
     LoginComponent,
     CreateComponent,
-    UpdateComponent
+    UpdateComponent,
+    CreateCertificateComponent
   ],
   imports: [
     BrowserModule,
