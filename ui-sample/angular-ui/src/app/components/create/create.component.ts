@@ -35,11 +35,10 @@ export class CreateComponent implements OnInit {
   }
 
   validate()  {
-    console.log(this.formData.formInputData)
-      if(!!this.formData.formInputData) {
-        this.createUser();
-      } else {
+      if(!!this.formData) {
         console.log("please fill the form");
+      } else {
+        this.createUser();
       }
   }
 
