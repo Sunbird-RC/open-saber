@@ -2,13 +2,12 @@ package io.opensaber.registry.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.APIMessage;
 import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.pojos.Response;
 import io.opensaber.pojos.ResponseParams;
-import io.opensaber.registry.exception.RecordNotFoundException;
+import io.opensaber.registry.helper.RegistryHelper;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
@@ -23,12 +22,8 @@ import io.opensaber.registry.transform.ConfigurationHelper;
 import io.opensaber.registry.transform.Data;
 import io.opensaber.registry.transform.ITransformer;
 import io.opensaber.registry.transform.Transformer;
-import io.opensaber.registry.util.ReadConfigurator;
-import io.opensaber.registry.util.ReadConfiguratorFactory;
 import io.opensaber.registry.util.RecordIdentifier;
 import io.opensaber.registry.util.ViewTemplateManager;
-import io.opensaber.views.ViewTemplate;
-import io.opensaber.views.ViewTransformer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,6 +73,8 @@ public class RegistryController {
     private NativeReadService nativeReadService;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private RegistryHelper registryHelper;
 
     /**
      * Note: Only one mime type is supported at a time. Pick up the first mime
@@ -96,25 +93,9 @@ public class RegistryController {
         responseParams.setStatus(Response.Status.SUCCESSFUL);
 
         try {
-            //shardManager.activateShard(null);
 
             watch.start("RegistryController.searchEntity");
-            //when osid in the filter list contains shard-id we are removing.
-            if(payload.findPath(uuidPropertyName).isObject()) {
-                ObjectNode osidKeyValue = (ObjectNode)payload.get("filters").get(uuidPropertyName);
-                String nodeKey = osidKeyValue.fields().next().getKey();
-                RecordIdentifier recordID = RecordIdentifier.parse(osidKeyValue.get(nodeKey).asText());
-                osidKeyValue.set(nodeKey,objectMapper.convertValue(recordID.getUuid(),JsonNode.class));
-            }
-            JsonNode result = searchService.search(payload);
-
-			// applying view-templates to response
-			ViewTemplate viewTemplate = viewTemplateManager.getViewTemplate(apiMessage.getRequest().getRequestMapNode());
-			if (viewTemplate != null) {
-				ViewTransformer vTransformer = new ViewTransformer();
-				result = vTransformer.transform(viewTemplate, result);
-			}
-            // Search is tricky to support LD. Needs a revisit here.
+            JsonNode result = registryHelper.searchEntity(payload);
 
             response.setResult(result);
             responseParams.setStatus(Response.Status.SUCCESSFUL);
@@ -136,7 +117,8 @@ public class RegistryController {
         Response response = new Response(Response.API_ID.HEALTH, "OK", responseParams);
 
         try {
-            HealthCheckResponse healthCheckResult = registryService.health();
+            Shard shard = shardManager.getDefaultShard();
+            HealthCheckResponse healthCheckResult = registryService.health(shard);
             response.setResult(JSONUtil.convertObjectJsonMap(healthCheckResult));
             responseParams.setErrmsg("");
             responseParams.setStatus(Response.Status.SUCCESSFUL);
@@ -172,8 +154,8 @@ public class RegistryController {
             String entityId = apiMessage.getRequest().getRequestMapNode().get(entityType).get(dbConnectionInfoMgr.getUuidPropertyName()).asText();
             RecordIdentifier recordId = RecordIdentifier.parse(entityId);
             String shardId = dbConnectionInfoMgr.getShardId(recordId.getShardLabel());
-            shardManager.activateShard(shardId);
-            registryService.deleteEntityById(recordId.getUuid());
+            Shard shard = shardManager.activateShard(shardId);
+            registryService.deleteEntityById(shard,apiMessage.getUserID(),recordId.getUuid());
             responseParams.setErrmsg("");
             responseParams.setStatus(Response.Status.SUCCESSFUL);
         } catch (UnsupportedOperationException e) {
@@ -195,27 +177,18 @@ public class RegistryController {
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.CREATE, "OK", responseParams);
         Map<String, Object> result = new HashMap<>();
-        String jsonString = apiMessage.getRequest().getRequestMapAsString();
         String entityType = apiMessage.getRequest().getEntityType();
+        JsonNode rootNode = apiMessage.getRequest().getRequestMapNode();
 
         try {
-            Map requestMap = ((HashMap<String, Object>) apiMessage.getRequest().getRequestMap().get(entityType));
-            logger.info("Add api: entity type and shard propery: {}", shardManager.getShardProperty());
-            Object attribute = requestMap.getOrDefault(shardManager.getShardProperty(), null);
-            Shard shard = shardManager.getShard(attribute);
-
-            watch.start("RegistryController.addToExistingEntity");
-            String resultId = registryService.addEntity(jsonString);
-            RecordIdentifier recordId = new RecordIdentifier(shard.getShardLabel(), resultId);
+            String label = registryHelper.addEntity(rootNode,apiMessage.getUserID());
             Map resultMap = new HashMap();
-            String label = recordId.toString();
             resultMap.put(dbConnectionInfoMgr.getUuidPropertyName(), label);
 
             result.put(entityType, resultMap);
             response.setResult(result);
             responseParams.setStatus(Response.Status.SUCCESSFUL);
             watch.stop("RegistryController.addToExistingEntity");
-            logger.info("AddEntity,{}", resultId);
         } catch (Exception e) {
             logger.error("Exception in controller while adding entity !", e);
             response.setResult(result);
@@ -237,34 +210,9 @@ public class RegistryController {
 
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.READ, "OK", responseParams);
-        String entityType = apiMessage.getRequest().getEntityType();
-        String label = apiMessage.getRequest().getRequestMapNode().get(entityType).get(dbConnectionInfoMgr.getUuidPropertyName()).asText();
-        RecordIdentifier recordId = RecordIdentifier.parse(label);
-        String shardId = dbConnectionInfoMgr.getShardId(recordId.getShardLabel());
-        shardManager.activateShard(shardId);
-        logger.info("Read Api: shard id: " + recordId.getShardLabel() + " for label: " + label);
-
-        boolean includeSignatures = (boolean) apiMessage.getRequest().getRequestMap().getOrDefault("includeSignatures",
-                false);
-        ReadConfigurator configurator = ReadConfiguratorFactory.getOne(includeSignatures);
-        configurator.setIncludeTypeAttributes(requireLDResponse);
-
+        JsonNode inputJson = apiMessage.getRequest().getRequestMapNode();
         try {
-            JsonNode resultNode = null;
-            try {
-                resultNode = readService.getEntity(recordId.getUuid(), entityType, configurator);
-            } catch (RecordNotFoundException e) {
-                //if record is not found in elasticsearch, route to native db.
-                resultNode = nativeReadService.getEntity(recordId.getUuid(), entityType, configurator);
-            }
-            // applying view-templates to response
-            ViewTemplate viewTemplate = viewTemplateManager.getViewTemplate(apiMessage.getRequest().getRequestMapNode());
-
-            if (viewTemplate != null) {
-                ViewTransformer vTransformer = new ViewTransformer();
-                resultNode = vTransformer.transform(viewTemplate, resultNode);
-            }
-
+            JsonNode resultNode = registryHelper.readEntity(inputJson,apiMessage.getUserID(),requireLDResponse);
             // Transformation based on the mediaType
             Data<Object> data = new Data<>(resultNode);
             Configuration config = configurationHelper.getResponseConfiguration(requireLDResponse);
@@ -272,7 +220,7 @@ public class RegistryController {
             ITransformer<Object> responseTransformer = transformer.getInstance(config);
             Data<Object> resultContent = responseTransformer.transform(data);
             response.setResult(resultContent.getData());
-            logger.info("ReadEntity,{},{}", recordId.toString(), config);
+            logger.info("ReadEntity,{},{}", resultNode.get(apiMessage.getRequest().getEntityType()).get(uuidPropertyName),config);
         } catch (Exception e) {
             logger.error("Read Api Exception occurred ", e);
             responseParams.setErrmsg(e.getMessage());
@@ -288,22 +236,13 @@ public class RegistryController {
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.UPDATE, "OK", responseParams);
 
-        String jsonString = apiMessage.getRequest().getRequestMapAsString();
-        String entityType = apiMessage.getRequest().getEntityType();
-
-        String label = apiMessage.getRequest().getRequestMapNode().get(entityType).get(uuidPropertyName).asText();
-        RecordIdentifier recordId = RecordIdentifier.parse(label);
-        String shardId = dbConnectionInfoMgr.getShardId(recordId.getShardLabel());
-        shardManager.activateShard(shardId);
-        logger.info("Update Api: shard id: " + recordId.getShardLabel() + " for uuid: " + recordId.getUuid());
-
+        JsonNode inputJson = apiMessage.getRequest().getRequestMapNode();
         try {
             watch.start("RegistryController.update");
-            registryService.updateEntity(recordId.getUuid(), jsonString);
+            registryHelper.updateEntity(inputJson,apiMessage.getUserID());
             responseParams.setErrmsg("");
             responseParams.setStatus(Response.Status.SUCCESSFUL);
             watch.stop("RegistryController.update");
-            logger.info("UpdateEntity,{}", recordId.toString());
         } catch (Exception e) {
             logger.error("RegistryController: Exception while updating entity (without id)!", e);
             responseParams.setStatus(Response.Status.UNSUCCESSFUL);

@@ -1,9 +1,7 @@
 package io.opensaber.registry.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.pojos.Filter;
 import io.opensaber.pojos.FilterOperators;
 import io.opensaber.pojos.SearchQuery;
@@ -14,12 +12,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import io.opensaber.registry.util.RecordIdentifier;
-import org.apache.tinkerpop.shaded.kryo.util.ObjectMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.json.Json;
 
 public interface ISearchService {
 
@@ -132,6 +127,7 @@ public interface ISearchService {
         }
         return rangeValues;
     }
+
 
 
 }
