@@ -103,6 +103,47 @@ var populate_add_tasks = function (tasks, entityType, static_payload, arrDynamic
             //     var phone = parseInt(dataPortion[field]) * 100
             //     dataPortion[field] = phone + (itr + 1)
             // }
+
+            // Integer fields
+            if (field === 'nAlumni' || field === 'pincode') {
+                var tempVal = parseInt(dataPortion[field])
+                if (!isNaN(tempVal)) {
+                    dataPortion[field] = tempVal
+                } else {
+                    delete dataPortion[field]
+                }
+            } else if (field === 'rating' || field === 'latitude' || field === 'longitude') {
+                // Float (number) fields
+                var tempVal = parseFloat(dataPortion[field])
+                
+                if (!isNaN(tempVal)) {
+                    console.log("field = " + field + " val = " + tempVal)
+                    dataPortion[field] = tempVal
+                } else {
+                    delete dataPortion[field]
+                }
+            } else if (field === 'isWomenOnly') {
+                var tempVal = dataPortion[field]
+                if (tempVal === 'Y') {
+                    tempVal = true
+                } else {
+                    tempVal = false
+                }
+                dataPortion[field] = tempVal
+            } else if (field === 'isActive') {
+                var tempVal = dataPortion[field]
+                if (tempVal === '1') {
+                    tempVal = true
+                } else {
+                    tempVal = false
+                }
+                dataPortion[field] = tempVal
+            } else {
+                if (dataPortion[field] === "Not Set" || 
+                    dataPortion[field] === "NULL" || dataPortion[field] === "null") {
+                    delete dataPortion[field]
+                }
+            }
         }
 
         // Any extra column to delete from the csv goes here
@@ -164,7 +205,7 @@ var addApiPayload = {
 }
 
 // The subject that we have schematized
-var entityType = "Student"
+var entityType = "TrainingCenter"
 addApiPayload.request[entityType] = {}
 
 // The URL where the registry is running
@@ -173,7 +214,7 @@ var baseUrl = "http://127.0.0.1:8080"
 // Whether you want to run in dryRun mode
 // true - API will not be invoked.
 // false - API will be invoked.
-var dryRun = false
+var dryRun = true
 
 var PARALLEL_LIMIT = 1;
 var dataEntities = {}

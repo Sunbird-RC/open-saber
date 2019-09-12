@@ -7,7 +7,6 @@ var async = require("async")
 var fs = require("fs");
 var path = require("path");
 var csvjson = require('csvjson');
-console.log("Data",data);
 
 var options = {
   delimiter : ',', // optional
@@ -15,8 +14,10 @@ var options = {
 };
 
 var csvToJson = function (csvFileName) {
-  var data = fs.readFileSync(path.join(__dirname, 'Data-Student-Parent-Teacher.csv'), { encoding : 'utf8'});
+  var data = fs.readFileSync(path.join(__dirname, csvFileName), { encoding : 'utf8'});
   const jsonObject = csvjson.toObject(data, options);
   console.log("JSON Object",jsonObject);
   return jsonObject;
 }
+
+csvToJson('data.csv')

@@ -19,12 +19,6 @@
         "awardingBodyName": {
           "$id": "#properties/TrainingCenterAwardingBodyName",
           "type": "string",
-          "enum": [
-            "NSDC",
-            "DGT",
-            "NIIESBUD",
-            "OTHER"
-          ],
           "title": "AwardingBodyName",
           "$comment": "Who awarded this training center"
         },
@@ -65,12 +59,12 @@
         },
         "latitude": {
           "$id": "#/properties/TrainingCenterLatitude",
-          "type": "string",
+          "type": "number",
           "title": "TrainingCenterLatitude"
         },
         "longitude": {
           "$id": "#/properties/TrainingCenterLongitude",
-          "type": "string",
+          "type": "number",
           "title": "TrainingCenterLongitude"
         },
         "pan": {
