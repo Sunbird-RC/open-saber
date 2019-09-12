@@ -138,10 +138,11 @@
         },
         "rating": {
           "$id": "#/properties/TrainingCenterRating",
-          "type": "integer",
-          "enum": [1, 2, 3, 4, 5],
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5,
           "title": "TrainingCenterRating",
-          "$comment": "5 being excellent, 1 being low"
+          "$comment": "5 being excellent, 1 being low. Decimal rating allowed."
         },
         "nAlumni": {
           "$id": "#/properties/TrainingCenterTrainedStudent",
