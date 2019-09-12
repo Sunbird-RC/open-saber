@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "Course": {
+      "$ref": "#/definitions/Course"
+    }
+  },
+  "title": "Course",
+  "required": [
+    "Course"
+  ],
+  "definitions": {
+    "Course": {
+      "$id": "#/properties/Course",
+      "type": "object",
+      "title": "The Course Schema",
+      "required": [
+          "name",
+          "duration",
+          "scheme"
+      ],
+      "properties": {
+        "name": {
+          "$id": "#properties/name",
+          "type": "string",
+          "title": "CourseName"
+        },
+        "scheme": {
+          "$id": "#properties/scheme",
+          "type": "string",
+          "enum": [
+            "PMKVY", "DDUGKY", "ITI"
+          ],
+          "title": "Scheme"
+        },
+        "duration": {
+          "$id": "#properties/duration",
+          "type": "string",
+          "title": "Duration"
+        }
+      }
+    }
+  }
+}
