@@ -144,6 +144,8 @@ var populate_add_tasks = function (tasks, entityType, static_payload, arrDynamic
                     delete dataPortion[field]
                 }
             }
+            // Add any extra column you need.
+            dataPortion['fee'] = "paid"
         }
 
         // Any extra column to delete from the csv goes here

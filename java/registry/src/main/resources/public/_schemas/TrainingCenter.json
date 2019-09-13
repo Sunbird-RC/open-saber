@@ -85,11 +85,8 @@
         "centerType": {
           "$id": "#/properties/TrainingCenterType",
           "type": "string",
-          "enum": [
-            "government",
-            "private"
-          ],
-          "title": "TrainingCenterType"
+          "title": "TrainingCenterType",
+          "$comment": "This must become an enum."
         },
         "fee": {
           "$id": "#/properties/TrainingCenterFeeStructure",
