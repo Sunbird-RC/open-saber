@@ -7,33 +7,40 @@ import { ProfileComponent } from './components/profile/profile.component';
 import { LoginComponent } from './components/login/login.component';
 import { CreateComponent } from './components/create/create.component';
 import { UpdateComponent } from './components/update/update.component';
-import { CreateCertificateComponent } from './components/create-certificate/create-certificate.component';
+import { environment } from '../environments/environment';
+import { AppAuthGuard } from './app.authguard';
 
-const routes: Routes = [
+var routes = [
   {
-    path: '', 
-    component: LandingPageComponent,
+    path: '',
+    component: LandingPageComponent
   },
   {
-    path: 'signUp', component: SignupComponent,
+    path: 'signup',
+    component: SignupComponent,
+    canActivate: [AppAuthGuard],
+    data: { roles: [] }
   },
   {
-    path: 'admin/:pageNumber', component: AdminPageComponent
+    path: 'admin/:pageNumber',
+    component: AdminPageComponent,
+    canActivate: [AppAuthGuard],
+    data: { roles: ['admin', 'partner-admin'] }
   },
   {
-    path: 'profile/:id', component: ProfileComponent
+    path: 'profile/:id', component: ProfileComponent,
+    canActivate: [AppAuthGuard],
+    data: { roles: ['admin', 'partner-admin', 'owner'] }
   },
   {
-    path: 'logIn', component: LoginComponent
+    path: 'login', component: LoginComponent,
+    canActivate: [AppAuthGuard],
+    data: { roles: ['admin', 'partner-admin', 'owner'] }
   },
   {
-    path:'create', component: CreateComponent
-  },
-  {
-    path:'edit/:id', component: UpdateComponent
-  },
-  {
-    path: 'generate/certificate', component: CreateCertificateComponent
+    path: 'edit/:id', component: UpdateComponent,
+    canActivate: [AppAuthGuard],
+    data: { roles: ['admin', 'partner-admin', 'owner'] }
   }
 ];
 
