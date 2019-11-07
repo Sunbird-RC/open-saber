@@ -1,0 +1,29 @@
+{
+    "ROLES": {
+        "adminRole": [
+            "Developer"
+        ],
+        "profileRole": []
+    },
+    "AvailableRoles": [
+        "BA",
+        "Developer",
+        "Tech Lead",
+        "Project Management",
+        "Design Council",
+        "Designer",
+        "Tech Manager",
+        "DevOps",
+        "Tech Support"
+    ],
+    "ADMINAUTHGARDROLES": [
+        {
+            "roles": [
+                "Developer"
+            ],
+            "roleName": "adminRole",
+            "url": "admin/1",
+            "tab": "adminConsole"
+        }
+    ]
+}

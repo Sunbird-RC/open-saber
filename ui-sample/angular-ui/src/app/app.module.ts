@@ -26,6 +26,7 @@ import { UpdateComponent } from './components/update/update.component';
 import { environment } from '../environments/environment';
 import { ProvidersFeature } from '../../node_modules/@angular/core/src/render3';
 import { KeycloakService, KeycloakAngularModule, KeycloakOptions } from 'keycloak-angular';
+import { PermissionDirective } from './directives/permission/permission.directive';
 
 let keycloakService;
 let moduleOptions = {
@@ -40,7 +41,8 @@ let moduleOptions = {
     ProfileComponent,
     LoginComponent,
     CreateComponent,
-    UpdateComponent  ],
+    UpdateComponent,
+    PermissionDirective],
   imports: [
     BrowserModule,
     AppRoutingModule,
@@ -80,7 +82,7 @@ export class AppModule {
       .catch(error => {
         console.error('KC init failed', error);
       })
-      .finally(()=> {
+      .finally(() => {
         app.bootstrap(AppComponent);
       });
   }

@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
-import {ResourceService} from '../../services/resource/resource.service'
+import { ResourceService } from '../../services/resource/resource.service'
+import { UserService } from 'src/app/services/user/user.service';
+import { PermissionService } from 'src/app/services/permission/permission.service';
+import rolesConfig from '../../services/rolesConfig.json'
 
 declare var jQuery: any;
 
@@ -12,7 +15,7 @@ declare var jQuery: any;
 })
 export class HeaderComponent implements OnInit {
   userProfile = false
-  userLogin = false
+  userLogin: any;
   resourceService: ResourceService;
   avtarMobileStyle = {
     backgroundColor: 'transparent',
@@ -36,16 +39,35 @@ export class HeaderComponent implements OnInit {
     height: '38px',
     width: '38px'
   };
-  constructor(public router: Router, public activatedRoute: ActivatedRoute,  resourceService: ResourceService) { 
+  public userService: UserService;
+  public userName: any;
+  public permissionService: PermissionService;
+  adminConsoleRole: Array<string>;
+
+  constructor(public router: Router, public activatedRoute: ActivatedRoute, resourceService: ResourceService, userService: UserService
+    ,permissionService: PermissionService) {
     this.resourceService = resourceService;
+    this.userService = userService;
+    this.permissionService = permissionService;
   }
 
   ngOnInit() {
+    this.adminConsoleRole = rolesConfig.ROLES.adminRole;
     this.resourceService.getResource();
-    this.userProfile = true;
-    this.userLogin = true;
+    this.userLogin = this.userService.loggedIn;
+    this.userName = this.userService.getUserName;
   }
-showSideBar() {
+  showSideBar() {
     jQuery('.ui.sidebar').sidebar('setting', 'transition', 'overlay').sidebar('toggle');
+  }
+
+  logout()  {
+    window.location.replace('/logoff');
+  }
+  navigateToAdminConsole() {
+    const authroles = this.permissionService.getAdminAuthRoles()
+    if (authroles) {
+      return authroles.url;
+    } 
   }
 }

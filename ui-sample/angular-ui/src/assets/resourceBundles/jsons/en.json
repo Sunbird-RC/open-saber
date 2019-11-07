@@ -13,7 +13,8 @@
                 "download": "Dowload",
                 "SearchIn": "search",
                 "update": "Update",
-                "generate": "Generate"
+                "generate": "Generate",
+                "adminConsole": "AdminConsole"
             },
             "msg": {
                 "logInHead": "Log-in to your account",

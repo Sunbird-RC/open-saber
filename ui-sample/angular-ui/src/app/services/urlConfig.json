@@ -1,11 +1,10 @@
 {
     "URLS": {
-        "BASE_URL": "http://localhost:9000",
+        "BASE_URL": "http://localhost:8081",
         "SEARCH": "/search",
         "READ": "/read",
         "ADD": "/add",
-        "UPDATE": "/update",
-        "GENERTATE_CERT": "/v1/certs/generate"
+        "UPDATE": "/update"
     },
     "PAGE_LIMIT": 20
 }
