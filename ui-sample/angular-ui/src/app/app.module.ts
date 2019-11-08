@@ -27,8 +27,10 @@ import { environment } from '../environments/environment';
 import { ProvidersFeature } from '../../node_modules/@angular/core/src/render3';
 import { KeycloakService, KeycloakAngularModule, KeycloakOptions } from 'keycloak-angular';
 import { PermissionDirective } from './directives/permission/permission.directive';
+import { CacheService } from 'ng2-cache-service';
+import { CacheStorageAbstract } from 'ng2-cache-service/dist/src/services/storage/cache-storage-abstract.service';
+import { CacheSessionStorage } from 'ng2-cache-service/dist/src/services/storage/session-storage/cache-session-storage.service';
 
-let keycloakService;
 let moduleOptions = {
   declarations: [
     AppComponent,
@@ -56,13 +58,16 @@ let moduleOptions = {
     ReactiveFormsModule,
     KeycloakAngularModule
   ],
-  providers: [AppAuthGuard],
+  providers: [AppAuthGuard,
+    CacheService,
+    { provide: CacheStorageAbstract, useClass: CacheSessionStorage }],
   bootstrap: [],
   entryComponents: [AppComponent]
 }
 
 let kcOptions: KeycloakOptions = {
   config: environment.keycloakConfig,
+  loadUserProfileAtStartUp: true,
   bearerExcludedUrls: ['/', '/assets', '/clients/public']
 };
 

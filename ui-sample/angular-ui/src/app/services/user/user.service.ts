@@ -7,22 +7,22 @@ import { KeycloakService } from 'keycloak-angular';
 })
 export class UserService {
 
+  private _authenticated: boolean;
+
   public logIn: boolean;
   public keycloakAngular: KeycloakService;
   public userInfo: any = {};
   constructor(keycloakAngular: KeycloakService) {
     this.keycloakAngular = keycloakAngular;
+    this._authenticated = this.keycloakAngular.getKeycloakInstance().authenticated;
   }
 
 
   /**
  * returns login status.
  */
-  async loggedIn() {
-    await this.keycloakAngular.isLoggedIn().then(login => {
-      this.logIn = login;
-    });
-    return this.logIn;
+  get loggedIn() : boolean{
+    return this._authenticated;
   }
 
   async getUserInfo() {

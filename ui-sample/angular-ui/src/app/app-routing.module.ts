@@ -9,7 +9,6 @@ import { CreateComponent } from './components/create/create.component';
 import { UpdateComponent } from './components/update/update.component';
 import { environment } from '../environments/environment';
 import { AppAuthGuard } from './app.authguard';
-import { HomePageComponent } from './components/home-page/home-page.component';
 
 var routes = [
   {
@@ -26,12 +25,12 @@ var routes = [
     path: 'admin/:pageNumber',
     component: AdminPageComponent,
     canActivate: [AppAuthGuard],
-    data: { roles: ['admin', 'partner-admin'] }
+    data: { roles: 'adminRole' }
   },
   {
     path: 'profile/:id', component: ProfileComponent,
     canActivate: [AppAuthGuard],
-    data: { roles: ['admin', 'partner-admin', 'owner'] }
+    data: { roles: 'profileRole' }
   },
   {
     path: 'login', component: LoginComponent,
@@ -47,10 +46,6 @@ var routes = [
     path: 'edit/:id', component: UpdateComponent,
     canActivate: [AppAuthGuard],
     data: { roles: ['admin', 'partner-admin', 'owner'] }
-  },
-  {
-    path: '',
-    loadChildren: './private/private.module#PrivateModule', canLoad: [AppAuthGuard] // load private module only if logged in
   }
 ];
 

@@ -1,56 +1,67 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { CanActivate, Router, ActivatedRouteSnapshot, RouterStateSnapshot, CanLoad } from '@angular/router';
 import { KeycloakService, KeycloakAuthGuard } from 'keycloak-angular';
+import { UserService } from './services/user/user.service';
+import { Observable } from 'rxjs';
+import { PermissionService } from './services/permission/permission.service';
+import rolesConfig from './services/rolesConfig.json';
 
 @Injectable()
-export class AppAuthGuard implements CanActivate {
+export class AppAuthGuard implements CanActivate, CanLoad {
+
     granted: boolean = false;
 
-    constructor(protected router: Router, protected keycloakAngular: KeycloakService) {
+    public userService: UserService;
+    public permissionService: PermissionService;
+
+    constructor(protected router: Router, protected keycloakAngular: KeycloakService, userService: UserService
+        , permissionService: PermissionService, ) {
         //super(router, keycloakAngular);
+        this.permissionService = permissionService;
         this.keycloakAngular = keycloakAngular;
+        this.userService = userService;
     }
 
-//     isAccessAllowed(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> {
-//         return new Promise(async (resolve, reject) => {
-//             resolve(true)
-//             var isLoggedIn = await this.keycloakAngular.isLoggedIn()
-//             if (!isLoggedIn) {
-//                 this.keycloakAngular.login().then (()=> {
-//                     console.log('isloggedin = ')
-//                     console.log('role restriction given at app-routing.module for this route', route.data.roles);
-//                     var roles: string[] = this.keycloakAngular.getUserRoles()
-//                     console.log('User roles coming after login from keycloak :', );
-//                     const requiredRoles = route.data.roles;
-                    
-//                     if (!requiredRoles || requiredRoles.length === 0) {
-//                         this.granted = true;
-//                     } else {
-//                         for (const requiredRole of requiredRoles) {
-//                             if (roles.indexOf(requiredRole) > -1) {
-//                                 this.granted = true;
-//                                 break;
-//                             }
-//                         }
-//                     }
+    canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
+        return this.getPermission(route.data.roles)
+    }
 
-//                     if (this.granted === false) {
-//                         console.log("Not granted due to required roles =" + requiredRoles)
-//                         this.router.navigateByUrl('/')
-//                     }
-//                     resolve()
-//                 }).catch(()=>{reject()});
-//             } else {
-//                 // Already computed granted. Rethrow it.
-//                 resolve()
-//             }
-//     });
-//    }
+    getPermission(roles) {
+        return Observable.create(observer => {
+            this.permissionService.permissionAvailable$.subscribe(
+                permissionAvailable => {
+                    if (permissionAvailable && permissionAvailable === 'success') {
+                        if (roles && rolesConfig.ROLES[roles]) {
+                            if (this.permissionService.checkRolesPermissions(rolesConfig.ROLES[roles])) {
+                                observer.next(true);
+                            } else {
+                                this.navigateToHome(observer);
+                            }
+                        } else {
+                            this.navigateToHome(observer);
+                        }
+                    } else if (permissionAvailable && permissionAvailable === 'error') {
+                        this.navigateToHome(observer);
+                    } else if(permissionAvailable === undefined) {
+                        this.navigateToHome(observer);
+                    }
+                }
+            );
+        });
+    }
 
-   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Promise<boolean> {
-       return new Promise(async (resolve, reject) => {
-         resolve(true)  
-       });
-   }
-    
+    navigateToHome(observer) {
+        this.router.navigate(['']);
+        observer.next(false);
+        observer.complete();
+    }
+
+    canLoad(): boolean {
+        if (this.userService.loggedIn) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 }

@@ -1,13 +1,11 @@
 <div class="ui fixed main menu bs-0 d-block">
-        <div class="ui container">
+        <div class="ui container p-0">
                 <div class="ui grid padded width-100">
 
-                        <div class="six wide column p-0 d-flex">
+                        <div class="six wide column d-flex">
                                 <!--Logo-->
                                 <a class="d-flex logo" tabindex="0" role="banner">
-                                        <!-- TODO: FIX: Logo is not displayed for some reason, n/w status is cancelled. -->
-                                        <!-- <img src="assets/images/logo.png" class="ui image"/> -->
-                                        EkStep Partner registry
+                                        <img src="assets/images/logo.png" class="ui image"/>
                                 </a>
                                 <!--/Logo-->
                         </div>
@@ -18,11 +16,11 @@
                                         *ngIf="!userLogin">
 
                                         <ng-container>
-                                                <a class="item" [class.active]="router.isActive('/signup')"
+                                                <!-- <a class="item" [class.active]="router.isActive('/signup')"
                                                         routerLink="/signup">
                                                         {{resourceService?.frmelmnts?.btn?.signup}}
-                                                </a>
-                                                <a class="item " routerLink="/login">
+                                                </a> -->
+                                                <a class="item " (click)="logIn()">
                                                         {{resourceService?.frmelmnts?.btn?.logIn}}
                                                 </a>
 
@@ -33,7 +31,7 @@
                                         <ng-container>
                                                 <a class="item" [class.active]="router.isActive('/admin/1')"
                                                         *ngIf='permissionService.permissionAvailable' appPermission
-                                                        [permission]="['Developer']"
+                                                        [permission]="['PartnerAdmin', 'Admin']"
                                                         [routerLink]="[navigateToAdminConsole()]" tabindex="0">
                                                         {{resourceService?.frmelmnts?.btn?.adminConsole}}
                                                 </a>
@@ -50,7 +48,7 @@
                                                                 {{userName}}
                                                         </div>
                                                         <div class="ui divider"></div>
-                                                        <a class="item" routerLink="profile">
+                                                        <a class="item" (click)="navigateToProfilePage()">
                                                                 {{resourceService?.frmelmnts?.btn?.profile}}
                                                         </a>
 

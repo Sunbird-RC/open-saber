@@ -3,6 +3,7 @@ import { BehaviorSubject } from 'rxjs';
 import { UserService } from '../user/user.service';
 import roleConfig from '../rolesConfig.json';
 import * as _ from 'lodash-es';
+import { CacheService } from 'ng2-cache-service'
 
 @Injectable({
   providedIn: 'root'
@@ -29,8 +30,11 @@ export class PermissionService {
    */
   public userService: UserService;
 
-  constructor(userService: UserService) {
+  public cacheService: CacheService;
+
+  constructor(userService: UserService, cacheService: CacheService) {
     this.userService = userService;
+    this.cacheService = cacheService;
   }
   public initialize() {
     this.getPermissionsData();
@@ -56,7 +60,12 @@ export class PermissionService {
    * @param {ServerResponse} data 
    */
   private setCurrentRoleActions(): void {
-    this.userRoles = this.userService.getUserRoles;
+    let userDetails = this.cacheService.get(roleConfig.cacheServiceConfig.cacheVariables.UserKeyCloakData);
+    if (userDetails) {
+      this.userRoles = userDetails.resource_access.portal.roles;
+    } else {
+      this.userRoles = this.userService.getUserRoles;
+    }
     if (this.userRoles != undefined && this.userRoles.length > 0) {
       this.permissionAvailable$.next('success');
       this.permissionAvailable = true;

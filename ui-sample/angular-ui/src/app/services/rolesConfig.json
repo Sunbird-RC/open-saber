@@ -1,29 +1,40 @@
 {
     "ROLES": {
         "adminRole": [
-            "Developer"
+            "Admin",
+            "PartnerAdmin"
         ],
-        "profileRole": []
+        "profileRole": [
+            "Owner",
+            "Admin",
+            "PartnerAdmin"
+        ]
     },
     "AvailableRoles": [
-        "BA",
-        "Developer",
-        "Tech Lead",
-        "Project Management",
-        "Design Council",
-        "Designer",
-        "Tech Manager",
-        "DevOps",
-        "Tech Support"
+        "PartnerAdmin",
+        "Admin",
+        "Owner",
+        "Reporter"
     ],
     "ADMINAUTHGARDROLES": [
         {
             "roles": [
-                "Developer"
+                "Admin",
+                "PartnerAdmin",
+                "Owner"
             ],
             "roleName": "adminRole",
             "url": "admin/1",
             "tab": "adminConsole"
         }
-    ]
+    ],
+    "cacheServiceConfig": {
+        "setTimeInMinutes": 10,
+        "setTimeInSeconds": 60,
+        "cacheVariables": {
+            "UserKeyCloakData": "userKeyCloakData",
+            "UserAuthenticated": "userAuthenticated",
+            "EmployeeDetails": "userInfo"
+        }
+    }
 }

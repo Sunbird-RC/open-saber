@@ -1,6 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { PermissionService } from './services/permission/permission.service';
 import { UserService } from './services/user/user.service';
+import { KeycloakService } from 'keycloak-angular';
+import { CacheService } from 'ng2-cache-service';
+import rolesConfig from './services/rolesConfig.json';
+
+
 
 
 @Component({
@@ -10,14 +15,28 @@ import { UserService } from './services/user/user.service';
 })
 export class AppComponent implements OnInit {
   title = 'open-saber-ui';
-  constructor(private permissionService: PermissionService, public userService: UserService) {
+  public keycloakAngular: KeycloakService;
+  public cacheService: CacheService;
+  private isUserLoggedIn: boolean;
+
+  constructor(private permissionService: PermissionService, public userService: UserService, keycloakAngular: KeycloakService,
+    cacheService: CacheService) {
+    this.keycloakAngular = keycloakAngular;
+    this.cacheService = cacheService;
   }
-  
+
   ngOnInit() {
-    if (this.userService.loggedIn) {
+    let authenticated = this.cacheService.get(rolesConfig.cacheServiceConfig.cacheVariables.UserAuthenticated);
+    if (authenticated) {
+      this.isUserLoggedIn = authenticated.status;
+    } else {
+      this.isUserLoggedIn = this.userService.loggedIn;
+    }
+    if (this.isUserLoggedIn) {
       this.permissionService.initialize();
     }
   }
+
 }
 
 
