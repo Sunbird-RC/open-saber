@@ -49,22 +49,4 @@ export class DefaultTemplateComponent implements OnInit {
     }))
   }
 
-  createUserDetails() {
-    const requestData = {
-      data: {
-        id:"open-saber.registry.create",
-        request:{
-          Employee:{
-            osid:this.userId
-          },
-          includeSignatures: false
-        }
-      },
-      url: urlConfig.URLS.ADD
-    }
-    this.dataService.post(requestData).subscribe(res =>{
-      this.formInputData = res.result.osid;
-    })
-  }
-
 }
