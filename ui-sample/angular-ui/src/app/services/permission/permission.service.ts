@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { UserService } from '../user/user.service';
 import roleConfig from '../rolesConfig.json';
+import appConfig from '../app.config.json';
 import * as _ from 'lodash-es';
 import { CacheService } from 'ng2-cache-service'
 
@@ -60,7 +61,7 @@ export class PermissionService {
    * @param {ServerResponse} data 
    */
   private setCurrentRoleActions(): void {
-    let userDetails = this.cacheService.get(roleConfig.cacheServiceConfig.cacheVariables.UserKeyCloakData);
+    let userDetails = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserKeyCloakData);
     if (userDetails) {
       this.userRoles = userDetails.resource_access.portal.roles;
     } else {
@@ -90,7 +91,12 @@ export class PermissionService {
     return this.mainRoles;
   }
   getAdminAuthRoles() {
-    const authRoles = _.find(roleConfig.ADMINAUTHGARDROLES, (role, key) => {
+    let adminAuthRoles = [{
+      roles: roleConfig.ROLES_MAPPING['adminRole'],
+      url: "admin/1",
+      tab: "adminConsole"
+    }];
+    const authRoles = _.find(adminAuthRoles, (role, key) => {
       if (this.checkRolesPermissions(role.roles)) {
         return role;
       }
@@ -98,3 +104,4 @@ export class PermissionService {
     return authRoles;
   }
 }
+

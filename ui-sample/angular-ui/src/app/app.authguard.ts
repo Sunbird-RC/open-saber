@@ -31,8 +31,8 @@ export class AppAuthGuard implements CanActivate, CanLoad {
             this.permissionService.permissionAvailable$.subscribe(
                 permissionAvailable => {
                     if (permissionAvailable && permissionAvailable === 'success') {
-                        if (roles && rolesConfig.ROLES[roles]) {
-                            if (this.permissionService.checkRolesPermissions(rolesConfig.ROLES[roles])) {
+                        if (roles && rolesConfig.ROLES_MAPPING[roles]) {
+                            if (this.permissionService.checkRolesPermissions(rolesConfig.ROLES_MAPPING[roles])) {
                                 observer.next(true);
                             } else {
                                 this.navigateToHome(observer);
