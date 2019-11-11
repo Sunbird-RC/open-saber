@@ -8,6 +8,7 @@ import { KeycloakService } from 'keycloak-angular';
 import { CacheService } from 'ng2-cache-service';
 import { DataService } from 'src/app/services/data/data.service';
 import urlConfig from '../../services/urlConfig.json';
+import appConfig from '../../services/app.config.json';
 
 
 
@@ -64,12 +65,12 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.adminConsoleRole = rolesConfig.ROLES.adminRole;
+    this.adminConsoleRole = rolesConfig.ROLES_MAPPING.adminRole;
     this.resourceService.getResource();
-    this.userAuthenticated = this.cacheService.get(rolesConfig.cacheServiceConfig.cacheVariables.UserAuthenticated);
+    this.userAuthenticated = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserAuthenticated);
     if (this.userAuthenticated) {
       this.userLogin = this.userAuthenticated.status;
-      this.userName = this.cacheService.get(rolesConfig.cacheServiceConfig.cacheVariables.UserKeyCloakData).given_name;
+      this.userName = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserKeyCloakData).given_name;
     } else {
       if (this.userService.loggedIn) {
         this.userLogin = this.userService.loggedIn;
@@ -97,8 +98,8 @@ export class HeaderComponent implements OnInit {
 
   cacheData() {
     let userDetails = this.keycloakAngular.getKeycloakInstance().tokenParsed;
-    this.cacheService.set(rolesConfig.cacheServiceConfig.cacheVariables.UserKeyCloakData, userDetails, { maxAge: rolesConfig.cacheServiceConfig.setTimeInMinutes * rolesConfig.cacheServiceConfig.setTimeInSeconds });
-    this.cacheService.set(rolesConfig.cacheServiceConfig.cacheVariables.UserAuthenticated, { status: true }, { maxAge: rolesConfig.cacheServiceConfig.setTimeInMinutes * rolesConfig.cacheServiceConfig.setTimeInSeconds });
+    this.cacheService.set(appConfig.cacheServiceConfig.cacheVariables.UserKeyCloakData, userDetails, { maxAge: appConfig.cacheServiceConfig.setTimeInMinutes * appConfig.cacheServiceConfig.setTimeInSeconds });
+    this.cacheService.set(appConfig.cacheServiceConfig.cacheVariables.UserAuthenticated, { status: true }, { maxAge: appConfig.cacheServiceConfig.setTimeInMinutes * appConfig.cacheServiceConfig.setTimeInSeconds });
     if (this.userLogin) {
       this.readUserDetails(this.keycloakAngular.getKeycloakInstance().profile.email)
     }
@@ -111,7 +112,7 @@ export class HeaderComponent implements OnInit {
     }
   }
   navigateToProfilePage() {
-    this.userId = this.cacheService.get(rolesConfig.cacheServiceConfig.cacheVariables.EmployeeDetails).osid;
+    this.userId = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.EmployeeDetails).osid;
     this.router.navigate(['/profile', this.userId])
   }
 
@@ -129,7 +130,7 @@ export class HeaderComponent implements OnInit {
       url: urlConfig.URLS.SEARCH,
     }
     this.dataService.post(requestData).subscribe(response => {
-      this.cacheService.set(rolesConfig.cacheServiceConfig.cacheVariables.EmployeeDetails, response.result.Employee[0], { maxAge: rolesConfig.cacheServiceConfig.setTimeInMinutes * rolesConfig.cacheServiceConfig.setTimeInSeconds });
+      this.cacheService.set(appConfig.cacheServiceConfig.cacheVariables.EmployeeDetails, response.result.Employee[0], { maxAge: appConfig.cacheServiceConfig.setTimeInMinutes * appConfig.cacheServiceConfig.setTimeInSeconds });
       this.userId = response.result.Employee[0].osid;
       this.router.navigate(['/profile', this.userId])
     }, (err => {

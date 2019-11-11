@@ -3,7 +3,7 @@ import { PermissionService } from './services/permission/permission.service';
 import { UserService } from './services/user/user.service';
 import { KeycloakService } from 'keycloak-angular';
 import { CacheService } from 'ng2-cache-service';
-import rolesConfig from './services/rolesConfig.json';
+import appConfig from './services/app.config.json';
 
 
 
@@ -26,7 +26,7 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-    let authenticated = this.cacheService.get(rolesConfig.cacheServiceConfig.cacheVariables.UserAuthenticated);
+    let authenticated = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserAuthenticated);
     if (authenticated) {
       this.isUserLoggedIn = authenticated.status;
     } else {
