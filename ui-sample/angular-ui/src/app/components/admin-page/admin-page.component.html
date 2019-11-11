@@ -1,9 +1,9 @@
 <div class="ui container mt-20">
-    <div class="ui small breadcrumb">
-        <a class="section" routerLink=''>Home</a>
-        <i class="right chevron icon divider"></i>
-        <div class="active section">Admin Console</div>
-      </div>
+  <div class="ui small breadcrumb">
+    <a class="section" routerLink=''>Home</a>
+    <i class="right chevron icon divider"></i>
+    <div class="active section">Admin Console</div>
+  </div>
 </div>
 <div class="ui container py-20 m-20 tac">
   <div class="ui small ui action input primary-search-input" id="search-input-container">
@@ -16,7 +16,7 @@
   </div>
 </div>
 <div class="ui container py-20 ">
-  <table class="ui celled padded table">
+  <!-- <table class="ui celled padded table">
     <thead>
       <tr>
         <th *ngFor="let header of result.headers">{{header}}</th>
@@ -51,5 +51,24 @@
         </th>
       </tr>
     </tfoot>
-  </table>
+  </table> -->
+  <div class="ui grid">
+    <div class="three wide column">
+      <app-data-filter [enrichFilters]="facetsList" (dataDrivenFilter)="getFilters($event)"
+        [pageId]="'library-search'" [ignoreQuery]="['key']" *ngIf="initFilters" [filterEnv]="filterType"
+        [accordionDefaultOpen]=true [isShowFilterLabel]=true></app-data-filter>
+    </div>
+    <div class="nine wide column">
+      <div class="ui grid">
+          <div *ngFor="let content of listOfEmployees">
+              <app-card [data]="content" (clickEvent)="navigateToProfilePage($event)" [data]="content" class="d-block"
+                [class.last-card]="mr-0">
+              </app-card>
+            </div>
+      </div>
+
+    </div>
+
+  </div>
+
 </div>

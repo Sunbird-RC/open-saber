@@ -31,7 +31,7 @@
                                         <ng-container>
                                                 <a class="item" [class.active]="router.isActive('/admin/1')"
                                                         *ngIf='permissionService.permissionAvailable' appPermission
-                                                        [permission]="['PartnerAdmin', 'Admin']"
+                                                        [permission]="adminConsoleRole"
                                                         [routerLink]="[navigateToAdminConsole()]" tabindex="0">
                                                         {{resourceService?.frmelmnts?.btn?.adminConsole}}
                                                 </a>

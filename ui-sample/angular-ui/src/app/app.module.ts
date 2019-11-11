@@ -23,6 +23,8 @@ import { ProfileComponent } from './components/profile/profile.component';
 import { LoginComponent } from './components/login/login.component';
 import { CreateComponent } from './components/create/create.component';
 import { UpdateComponent } from './components/update/update.component';
+import { CardComponent } from './components/card/card.component';
+import { DataFilterComponent } from './components/data-filter/data-filter.component';
 import { environment } from '../environments/environment';
 import { ProvidersFeature } from '../../node_modules/@angular/core/src/render3';
 import { KeycloakService, KeycloakAngularModule, KeycloakOptions } from 'keycloak-angular';
@@ -30,6 +32,7 @@ import { PermissionDirective } from './directives/permission/permission.directiv
 import { CacheService } from 'ng2-cache-service';
 import { CacheStorageAbstract } from 'ng2-cache-service/dist/src/services/storage/cache-storage-abstract.service';
 import { CacheSessionStorage } from 'ng2-cache-service/dist/src/services/storage/session-storage/cache-session-storage.service';
+import { fromEventPattern } from 'rxjs';
 
 let moduleOptions = {
   declarations: [
@@ -44,7 +47,9 @@ let moduleOptions = {
     LoginComponent,
     CreateComponent,
     UpdateComponent,
-    PermissionDirective],
+    CardComponent,
+    PermissionDirective,
+    DataFilterComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,
