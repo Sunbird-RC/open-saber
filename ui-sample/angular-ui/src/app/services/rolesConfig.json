@@ -9,12 +9,5 @@
             "admin",
             "partner-admin"
         ]
-    },
-    "AvailableRoles": [
-        "partner-admin",
-        "admin",
-        "owner",
-        "reporter",
-        "fin-admin"
-    ]
+    }
 }

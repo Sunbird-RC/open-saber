@@ -44,7 +44,7 @@ export class PermissionService {
    * method to fetch roles.
    */
   private getPermissionsData(): void {
-    this.setRolesAndPermissions(roleConfig.AvailableRoles);
+    this.setCurrentRoleActions();
   }
   /**
    * method to process roles 
