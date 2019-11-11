@@ -1,6 +1,4 @@
 import { Component, OnInit, Input, Output, EventEmitter, ChangeDetectorRef, OnChanges, OnDestroy } from '@angular/core';
-import { of, throwError, Subscription } from 'rxjs';
-import { first, mergeMap, map, tap, catchError, filter } from 'rxjs/operators';
 import * as _ from 'lodash-es';
 import { ResourceService } from 'src/app/services/resource/resource.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -15,17 +13,10 @@ import { FormService } from 'src/app/services/forms/form.service';
   styleUrls: ['./data-filter.component.scss']
 })
 export class DataFilterComponent implements OnInit {
-  @Input() filterEnv: string;
   @Input() accordionDefaultOpen: boolean;
   @Input() isShowFilterLabel: boolean;
-  @Input() hashTagId: string;
   @Input() ignoreQuery = [];
   @Input() showSearchedParam = true;
-  @Input() enrichFilters: object;
-  @Input() viewAllMode = false;
-  @Input() pageId: string;
-  @Input() frameworkName: string;
-  @Input() formAction: string;
   @Output() dataDrivenFilter = new EventEmitter();
 
   public showFilters = false;
@@ -36,7 +27,6 @@ export class DataFilterComponent implements OnInit {
 
   public categoryMasterList: Array<any>;
 
-  public framework: string;
   public channelInputLabel: any;
 
   public formInputData: any;
@@ -44,8 +34,8 @@ export class DataFilterComponent implements OnInit {
   public refresh = true;
 
   public isShowFilterPlaceholder = true;
-  telemetryCdata: Array<{}>;
-  resourceDataSubscription: Subscription;
+
+  enrichFilters = {};
 
   constructor(public resourceService: ResourceService, public router: Router, public formService: FormService,
     private activatedRoute: ActivatedRoute, private cacheService: CacheService, private cdr: ChangeDetectorRef,
@@ -58,8 +48,6 @@ export class DataFilterComponent implements OnInit {
       this.formFieldProperties = formFieldProperties.fields;
       this.filtersDetails = _.cloneDeep(formFieldProperties.fields);
       this.dataDrivenFilter.emit(formFieldProperties.fields);
-      console.log(this.filtersDetails)
-
       this.subscribeToQueryParams();
     })
   }
@@ -114,8 +102,6 @@ export class DataFilterComponent implements OnInit {
       this.router.navigate([redirectUrl], { queryParams: queryParams });
     }
   }
-  private setFilterInteractData() {
-  }
 
   public removeFilterSelection(field, item) {
     const itemIndex = this.formInputData[field].indexOf(item);
@@ -128,19 +114,9 @@ export class DataFilterComponent implements OnInit {
 
   public resetFilters() {
     this.formInputData = _.pick(this.formInputData, this.ignoreQuery);
-    if (this.viewAllMode) {
-      const data = this.cacheService.get('viewAllQuery');
-      _.forIn(data, (value, key) => this.formInputData[key] = value);
-    }
-    let redirectUrl; // if pageNumber exist then go to first page every time when filter changes, else go exact path
-    if (this.activatedRoute.snapshot.params.pageNumber) { // when using dataDriven filter should this should be verified
-      redirectUrl = this.router.url.split('?')[0].replace(/[^\/]+$/, '1');
-    } else {
-      redirectUrl = this.router.url.split('?')[0];
-    }
+    let redirectUrl = this.router.url.split('?')[0];
     redirectUrl = decodeURI(redirectUrl);
     this.router.navigate([redirectUrl], { relativeTo: this.activatedRoute.parent, queryParams: this.formInputData });
     this.hardRefreshFilter();
-    this.setFilterInteractData();
   }
 }

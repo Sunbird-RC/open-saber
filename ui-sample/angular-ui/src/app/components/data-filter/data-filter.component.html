@@ -4,7 +4,7 @@
         <div *ngIf="isShowFilterLabel" title class="cursor-text filter-title py-8">
           <span (click)="accordionDefaultOpen = !accordionDefaultOpen" class="cursor-pointer">
             <i alt="Filter" class="icon filter"></i>
-            Filters
+           {{resourceService?.frmelmnts?.label?.filters}}
             <i class="dropdown icon vertical-align-middle"></i>
           </span>
         </div>
@@ -33,7 +33,7 @@
                   <div class="sb-prominent-filter-container">
                       <div *ngFor="let field of filtersDetails" class="sb-prominent-filter-field">
                         <div *ngIf="field.inputType==='select' || field.inputType === 'multi-select'">
-                          <sui-multi-select (ngModelChange)="setFilterInteractData()" id={{field.code}} name={{field.code}}
+                          <sui-multi-select  id={{field.code}} name={{field.code}}
                             defaultSelectionText={{field.label}} zeroSelectionText= "Select" class="ui selection multiselect-square-border dropdown multiple"
                             [(ngModel)]="formInputData[field.code]" [options]="options" [hasLabels]="false" #multiSelect>
                             <sui-select-option *ngFor="let option of field.range" [value]="option.name"></sui-select-option>
@@ -42,9 +42,9 @@
                       </div>
                       <div class="">
                           <button class="ui  mini primary button" (click)="applyFilters()"
-                         >Apply</button>
+                         >{{resourceService?.frmelmnts?.btn?.apply}}</button>
                         <button 
-                        class="ui grey basic mini  button ml-10 mr-0" (click)="resetFilters()">Reset</button>
+                        class="ui grey basic mini  button ml-10 mr-0" (click)="resetFilters()">{{resourceService?.frmelmnts?.btn?.reset}}</button>
                       </div>
                     </div>
               </div>

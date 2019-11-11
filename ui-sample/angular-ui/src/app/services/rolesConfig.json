@@ -1,27 +1,27 @@
 {
     "ROLES": {
         "adminRole": [
-            "Admin",
-            "PartnerAdmin"
+            "admin",
+            "partner-admin"
         ],
         "profileRole": [
-            "Owner",
-            "Admin",
-            "PartnerAdmin"
+            "owner",
+            "admin",
+            "partner-admin"
         ]
     },
     "AvailableRoles": [
-        "PartnerAdmin",
-        "Admin",
-        "Owner",
+        "partner-admin",
+        "admin",
+        "owner",
         "Reporter"
     ],
     "ADMINAUTHGARDROLES": [
         {
             "roles": [
-                "Admin",
-                "PartnerAdmin",
-                "Owner"
+                "admin",
+                "partner-admin",
+                "owner"
             ],
             "roleName": "adminRole",
             "url": "admin/1",

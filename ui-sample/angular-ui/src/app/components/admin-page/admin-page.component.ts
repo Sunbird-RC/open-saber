@@ -1,11 +1,11 @@
-import { Component, OnInit, AfterViewInit, EventEmitter } from '@angular/core';
+import { Component, OnInit, EventEmitter } from '@angular/core';
 import { DataService } from '../../services/data/data.service'
 import urlConfig from '../../services/urlConfig.json'
 import * as _ from 'lodash-es';
 import { ResourceService } from '../../services/resource/resource.service'
 import { Router, ActivatedRoute } from '@angular/router'
 import { ICard } from '../../services/interfaces/Card';
-import { takeUntil, map, mergeMap, first, filter, debounceTime, tap, delay } from 'rxjs/operators';
+import { takeUntil, map, first, debounceTime, delay } from 'rxjs/operators';
 import { combineLatest, Subject } from 'rxjs';
 
 
@@ -30,27 +30,20 @@ export interface IPagination {
 })
 export class AdminPageComponent implements OnInit {
 
-  dataService: DataService
+  dataService: DataService;
   public showLoader = true;
-  aService;
   resourceService: ResourceService;
   router: Router;
-  users: Array<Object>;
-  result: any;
   activatedRoute: ActivatedRoute;
   public paginationDetails: IPagination;
   pageLimit: any
   public dataDrivenFilterEvent = new EventEmitter();
   private listOfEmployees: ICard[];
-  public facets: Array<string>;
   public initFilters = false;
   public dataDrivenFilters: any = {};
-  public inViewLogs = [];
   public queryParams: any;
   public unsubscribe$ = new Subject<void>();
-  public contentList: Array<ICard> = [];
   public key: string;
-  queryParam: any = {};
 
   constructor(dataService: DataService, resourceService: ResourceService, route: Router, activatedRoute: ActivatedRoute) {
     this.dataService = dataService;
@@ -66,7 +59,7 @@ export class AdminPageComponent implements OnInit {
     this.dataDrivenFilterEvent.pipe(first()).
       subscribe((filters: any) => {
         this.dataDrivenFilters = filters;
-        this.fetchContentOnParamChange();
+        this.fetchDataOnParamChange();
         // this.setNoResultMessage();
       });
     this.activatedRoute.queryParams.subscribe(queryParams => {
@@ -177,11 +170,10 @@ export class AdminPageComponent implements OnInit {
     this.dataDrivenFilterEvent.emit(defaultFilters);
   }
 
-  private fetchContentOnParamChange() {
+  private fetchDataOnParamChange() {
     combineLatest(this.activatedRoute.params, this.activatedRoute.queryParams)
       .pipe(debounceTime(5), // wait for both params and queryParams event to change
-        tap(data => this.inView({ inview: [] })), // trigger pageexit if last filter resulted 0 contents
-        delay(10), // to trigger pageexit telemetry event
+        delay(10),
         map(result => ({ params: { pageNumber: Number(result[0].pageNumber) }, queryParams: result[1] })),
         takeUntil(this.unsubscribe$)
       ).subscribe(({ params, queryParams }) => {
@@ -189,11 +181,11 @@ export class AdminPageComponent implements OnInit {
         this.paginationDetails.currentPage = params.pageNumber;
         this.queryParams = { ...queryParams };
         this.listOfEmployees = [];
-        this.fetchContents();
+        this.fetchEmployees();
       });
   }
 
-  private fetchContents() {
+  private fetchEmployees() {
     const option = {
       url: urlConfig.URLS.SEARCH,
       data: {
@@ -208,7 +200,6 @@ export class AdminPageComponent implements OnInit {
     }
     let filters = _.pickBy(this.queryParams, (value: Array<string> | string) => value && value.length);
     filters = _.omit(filters, ['key', 'sort_by', 'sortType', 'appliedFilters']);
-    console.log("fileter", filters)
     option.data.request.filters = this.getFilterObject(filters);
     this.dataService.post(option)
       .subscribe(data => {
@@ -221,30 +212,23 @@ export class AdminPageComponent implements OnInit {
   }
   getFilterObject(filter) {
     let option = {}
-    let filterType = {}
     if (filter) {
       _.forEach(filter, (elem, key) => {
-        filterType['contains'] = elem.join("");
+        let filterType = {}
+        if(_.isArray(elem)) {
+          filterType['or'] = elem;
+        } else {
+          filterType['contains'] = elem;
+        }
         option[key] = filterType;
       });
     }
     //search by name
     if (this.queryParams.key) {
-      filterType["startsWith"] = this.queryParams.key;
-      option["name"] = filterType
+      let filterTypes = {}
+      filterTypes["startsWith"] = this.queryParams.key;
+      option["name"] = filterTypes
     }
     return option;
-  }
-  public inView(event) {
-    _.forEach(event.inview, (elem, key) => {
-      const obj = _.find(this.inViewLogs, { objid: elem.data.metaData.identifier });
-      if (!obj) {
-        this.inViewLogs.push({
-          objid: elem.data.metaData.identifier,
-          objtype: elem.data.metaData.contentType || 'content',
-          index: elem.id
-        });
-      }
-    });
   }
 }

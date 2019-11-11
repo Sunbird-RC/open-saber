@@ -18,7 +18,7 @@
                 "visible": true,
                 "range": [
                     {
-                        "name":"Developer"
+                        "name": "Developer"
                     },
                     {
                         "name": "TechLead"
@@ -111,6 +111,69 @@
                 "index": 2
             },
             {
+                "code": "orgName",
+                "dataType": "text",
+                "name": "Organisation",
+                "label": "Organisation",
+                "description": "Organisation",
+                "editable": true,
+                "inputType": "select",
+                "required": false,
+                "displayProperty": "Editable",
+                "visible": true,
+                "range": [
+                    {
+                        "name": "ILIMI"
+                    },
+                    {
+                        "name": "Tarento"
+                    },
+                    {
+                        "name": "TEKDI"
+                    },
+                    {
+                        "name": "OPTIT"
+                    },
+                    {
+                        "name": "Qualitrix"
+                    },
+                    {
+                        "name": "Framewirk"
+                    },
+                    {
+                        "name": "Consultant"
+                    },
+                    {
+                        "name": "GWL"
+                    },
+                    {
+                        "name": "TurtleBowl"
+                    },
+                    {
+                        "name": "MantraLabs"
+                    },
+                    {
+                        "name": "Zool"
+                    },
+                    {
+                        "name": "Tibil"
+                    },
+                    {
+                        "name": "Lollypop"
+                    },
+                    {
+                        "name": "E&Y"
+                    },
+                    {
+                        "name": "BeyondSquare"
+                    }
+                ],
+                "renderingHints": {
+                    "semanticColumnWidth": "four"
+                },
+                "index": 3
+            },
+            {
                 "code": "workLocation",
                 "dataType": "text",
                 "name": "Location",
@@ -135,7 +198,7 @@
                         "name": "Tarento"
                     }
                 ],
-                "index": 3
+                "index": 4
             }
         ]
     }
