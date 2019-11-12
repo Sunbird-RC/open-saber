@@ -1,5 +1,5 @@
 {
-    "ROLES_MAPPING": {
+    "rolesMapping": {
         "adminRole": [
             "admin",
             "partner-admin"

@@ -92,7 +92,7 @@ export class PermissionService {
   }
   getAdminAuthRoles() {
     let adminAuthRoles = [{
-      roles: roleConfig.ROLES_MAPPING['adminRole'],
+      roles: roleConfig.rolesMapping['adminRole'],
       url: "admin/1",
       tab: "adminConsole"
     }];
