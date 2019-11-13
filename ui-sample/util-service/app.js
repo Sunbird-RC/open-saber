@@ -20,18 +20,21 @@ app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-var itr = 1
 app.post("/register/users", async (req, res) => {
-    req.body.name = "user" + itr++
     createUser(req.body, req.headers, function (err, data) {
-        return res.send(data);
-    })
+        if (err) {
+            // res.statusCode = err.statusCode;
+            return res.send(err.body)
+        } else {
+            return res.send(data);
+        }
+    });
 });
 
 const createUser = (value, header, callback) => {
     async.waterfall([
         function (callback) {
-            addUserToKeycloak(value, header, callback);
+            addUserToKeycloak(value.request, header, callback);
         },
         function (value, header, res, callback2) {
             console.log("Employee successfully added to registry")
@@ -40,8 +43,7 @@ const createUser = (value, header, callback) => {
     ], function (err, result) {
         console.log('Main Callback --> ' + result);
         if (err) {
-            console.log("Erroring out" + err + ":" + result)
-            callback(null, result)
+            callback(err, null)
         } else
             callback(null, result)
     });
@@ -95,6 +97,7 @@ const postCallToRegistry = (value, endPoint, callback) => {
 }
 
 const addEmployeeToRegistry = (value, header, res, callback) => {
+    value['isApproved'] = false;
     let reqBody = {
         "id": "open-saber.registry.create",
         "ver": "1.0",
@@ -121,19 +124,16 @@ const addEmployeeToRegistry = (value, header, res, callback) => {
     }
     if (res.statusCode == 201) {
         request(options, function (err, res, body) {
-            console.log("keycloak add user", res.statusCode);
             if (res.statusCode == 200) {
                 console.log("Employee successfully added to registry")
-                callback(null, res)
+                callback(null, res.body)
             } else {
                 console.log("Employee could not be added to registry" + res.statusCode)
                 callback(res.statusCode, body.errorMessage)
             }
         })
     } else {
-        console.log("keycloak add user", res.statusCode);
-
-        callback(res.body)
+        callback(res, null)
     }
 }
 
@@ -166,11 +166,7 @@ const addUserToKeycloak = (value, headers, callback) => {
         json: true
     }
     request(options, function (err, res, body) {
-        console.log("keycloak add user", res.statusCode, res.body);
-        //if (res.statusCode == 201) {
-        // User resource successfully created
-        callback(null,value, headers, res)
-        //}
+        callback(null, value, headers, res)
     })
 }
 
