@@ -46,8 +46,11 @@ export class DataService {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
     };
-    if (headers) {
-      default_headers['Authorization'] = 'Bearer ' + headers.Authorization
+    if (headers.Authorization) {
+      default_headers['Authorization'] = 'Bearer ' + headers.Authorization;
+    }
+    if(headers.userToken) {
+      default_headers['x-authenticated-user-token'] = headers.userToken
     }
     return { ...default_headers };
   }

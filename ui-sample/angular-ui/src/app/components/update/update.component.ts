@@ -6,6 +6,9 @@ import { DefaultTemplateComponent } from '../default-template/default-template.c
 import { DataService } from 'src/app/services/data/data.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import urlConfig from '../../services/urlConfig.json';
+import { CacheService } from 'ng2-cache-service';
+import appConfig from '../../services/app.config.json';
+import { UserService } from '../../services/user/user.service';
 
 @Component({
   selector: 'app-update',
@@ -22,20 +25,46 @@ export class UpdateComponent implements OnInit {
   router: Router;
   userId: String;
   activatedRoute: ActivatedRoute;
-
-  constructor(resourceService: ResourceService, formService: FormService, dataService: DataService, route: Router, activatedRoute: ActivatedRoute) {
+  userService: UserService;
+  userInfoKeyCloak = {};
+  constructor(resourceService: ResourceService, formService: FormService, dataService: DataService, route: Router, activatedRoute: ActivatedRoute,
+    userService: UserService, public cacheService: CacheService) {
     this.resourceService = resourceService;
     this.formService = formService;
     this.dataService = dataService;
     this.router = route;
     this.activatedRoute = activatedRoute
+    this.userService = userService;
   }
 
   ngOnInit() {
-    this.userId = this.activatedRoute.snapshot.params.id;
-    this.formService.getFormConfig('employee').subscribe(res => {
-      this.formFieldProperties = res.fields;
-    })
+    this.userId = this.activatedRoute.snapshot.queryParams.userId
+    this.userInfoKeyCloak = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserKeyCloakData);
+    if (!this.userInfoKeyCloak) {
+      this.userService.getUserInfo().then(data =>{
+        this.userInfoKeyCloak = data;
+      })
+    }
+    this.getFormTemplate();
+  }
+
+  getFormTemplate() {
+    let token = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserToken);
+    if (!token) {
+      token = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserToken);
+    } 
+    const requestData = {
+      url: urlConfig.URLS.FORM_TEPLATE,
+      header: {
+       userToken: token
+      }
+    }
+    this.dataService.post(requestData).subscribe(res =>{
+      if(res.responseCode === 'OK')
+      {
+        this.formFieldProperties = res.result.formTemplate.data.fields;
+      }
+    });
   }
 
   updateInfo() {

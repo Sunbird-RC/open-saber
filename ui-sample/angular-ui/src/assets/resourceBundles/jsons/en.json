@@ -22,7 +22,9 @@
                 "clearQuery":"Clear Query"
             },
             "label":{
-                "filters":"Filters"
+                "filters":"Filters",
+                "profileInformation":"Profile Information",
+                "updateProfile": "Update Profile"
             },
             "msg": {
                 "logInHead": "Log-in to your account",
