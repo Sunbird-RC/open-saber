@@ -20,51 +20,7 @@
       }
     }
   }
-  .data-driven-filter,
-.prominent-filter {
-  .prominent-filter-heading {
-    font-weight: bold;
-    font-size: 16px;
-  }
-
-  .filter-title {
-    color: #646e79;
-  }
-
-  .field {
-    width: 100%;
-    max-width: 100%;
-
-    // @media screen and (min-width: 768px) {
-    //   max-width: 180px;
-    // }
-    label {
-      font-size: 13px;
-    }
-  }
-
-  .ui.selection.dropdown {
-    width: 100%;
-    max-width: 100%;
-    min-width: 100%;
-
-    .dropdown.icon {
-      padding: 10px 7px;
-    }
-
-    .menu>.item {
-      padding: 9px 7px !important;
-      color: #4a4a4a !important;
-      font-size: 13px !important;
-      line-height: 1.4;
-
-      &.active {
-        color: #024f9d !important;
-        font-weight: bold;
-      }
-    }
-  }
-}
+ 
 
 .mr-5 {
   margin-right: 5px;;
@@ -87,13 +43,7 @@
 }
 }
 
-.data-driven-filter,
-.prominent-filter {
-  .prominent-filter-heading {
-    font-weight: bold;
-    font-size: 16px;
-  }
-
+.sb-prominent-filter {
   .filter-title {
     color: black;
   }
@@ -112,9 +62,7 @@
 
   .ui.selection.dropdown {
     width: 100%;
-    max-width: 100%;
-    min-width: 100%;
-
+    border-color: lightgray;
     .dropdown.icon {
       padding: 10px 7px;
     }
@@ -124,9 +72,10 @@
       color: #4a4a4a !important;
       font-size: 13px !important;
       line-height: 1.4;
+      border-color: lightgray;
 
       &.active {
-        color: blue($color: #000000) !important;
+        color: grey !important;
         font-weight: bold;
       }
     }
@@ -137,7 +86,7 @@
     color: #4a4a4a;
     height: (8px * 4) + 1;
     border-radius: (8px - 5);
-
+    border-color: lightgray;
     .text {
       text-transform: lowercase;
       text-overflow: ellipsis;
@@ -169,6 +118,11 @@
     margin: 7px 0 7px 5px !important;
   }
 }
+
+.ui.selection.dropdown:focus .menu {
+  border-color: lightgray !important;
+}
+
 @media screen and (max-width: 768px) {
   .ui.grid>.wide.column.mobile-p-0 {
     padding: 0 !important;
@@ -191,6 +145,10 @@
 }
 }
 
+.ui.selection.dropdown:focus {
+  border-color: gray !important;
+}
+
 .sb-prominent-filter-container {
   display: flex;
   flex-direction: column;
@@ -201,7 +159,7 @@
     margin: 0;
     margin-bottom: 8px*2;
     padding-right: 8px*2;
-    width: 20%;
+    width: 100%;
 
     &:last-child {
       margin-top: auto;
