@@ -224,6 +224,14 @@
                         "name": "BA"
                     },
                     {
+                        "id": "Tech Lead",
+                        "name": "Tech Lead"
+                    },
+                    {
+                        "id": "Project Management",
+                        "name": "Project Management"
+                    },
+                    {
                         "id": "Developer",
                         "name": "Developer"
                     },

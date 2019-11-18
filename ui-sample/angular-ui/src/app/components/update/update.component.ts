@@ -66,7 +66,7 @@ export class UpdateComponent implements OnInit {
       data: {
         "id": "open-saber.registry.update",
         "request": {
-          "Person": this.formData.formInputData
+          "Employee": this.formData.formInputData
         }
       },
       url: urlConfig.URLS.UPDATE

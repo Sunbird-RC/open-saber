@@ -190,6 +190,14 @@
                         "name": "BA"
                     },
                     {
+                        "id": "Tech Lead",
+                        "name": "Tech Lead"
+                    },
+                    {
+                        "id": "Project Management",
+                        "name": "Project Management"
+                    },
+                    {
                         "id": "Developer",
                         "name": "Developer"
                     },
@@ -416,7 +424,6 @@
                 },
                 "index": 13
             },
-            
             {
                 "code": "workingStyle",
                 "dataType": "text",
@@ -461,24 +468,23 @@
                 },
                 "range": [
                     {
-                      "id": "ES",
-                      "name": "ES"
+                        "id": "ES",
+                        "name": "ES"
                     },
                     {
-                      "id": "SB",
-                      "name": "SB"
+                        "id": "SB",
+                        "name": "SB"
                     },
                     {
-                      "id": "Both",
-                      "name": "Both"
+                        "id": "Both",
+                        "name": "Both"
                     },
                     {
-                      "id": "Not-Eligible",
-                      "name": "Not-Eligible"
+                        "id": "Not-Eligible",
+                        "name": "Not-Eligible"
                     }
-                  ],
-                  "index": 15
-
+                ],
+                "index": 15
             },
             {
                 "code": "repoAccess",
@@ -497,22 +503,22 @@
                 },
                 "range": [
                     {
-                      "id": "ES",
-                      "name": "ES"
+                        "id": "ES",
+                        "name": "ES"
                     },
                     {
-                      "id": "SB",
-                      "name": "SB"
+                        "id": "SB",
+                        "name": "SB"
                     },
                     {
-                      "id": "Both",
-                      "name": "Both"
+                        "id": "Both",
+                        "name": "Both"
                     },
                     {
-                      "id": "Not-Eligible",
-                      "name": "Not-Eligible"
+                        "id": "Not-Eligible",
+                        "name": "Not-Eligible"
                     }
-                  ],
+                ],
                 "index": 16
             },
             {
@@ -532,7 +538,6 @@
                 },
                 "index": 17
             }
-        
         ]
     }
 }
