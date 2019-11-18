@@ -44,6 +44,9 @@ export class AdminPageComponent implements OnInit {
   public queryParams: any;
   public unsubscribe$ = new Subject<void>();
   public key: string;
+  public buttonIcon: string = 'block layout';
+  public buttonText: string = 'grid view'
+  result: { "headers": string; "row": string; };
 
   constructor(dataService: DataService, resourceService: ResourceService, route: Router, activatedRoute: ActivatedRoute) {
     this.dataService = dataService;
@@ -55,6 +58,10 @@ export class AdminPageComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.result = {
+      "headers": '',
+      "row": ''
+    }
     this.initFilters = true;
     this.dataDrivenFilterEvent.pipe(first()).
       subscribe((filters: any) => {
@@ -94,7 +101,15 @@ export class AdminPageComponent implements OnInit {
   navigateToProfilePage(user: any) {
     this.router.navigate(['/profile', user.data.identifier]);
   }
-
+  changeView() {
+    if (this.buttonIcon === 'block layout') {
+      this.buttonIcon = 'list';
+      this.buttonText = 'list view'
+  } else {
+      this.buttonIcon = 'block layout'
+      this.buttonText = 'grid view'
+  }
+  }
 
 
   onEnter(key) {
@@ -181,6 +196,7 @@ export class AdminPageComponent implements OnInit {
         this.paginationDetails.currentPage = params.pageNumber;
         this.queryParams = { ...queryParams };
         this.listOfEmployees = [];
+        
         this.fetchEmployees();
       });
   }
@@ -205,6 +221,10 @@ export class AdminPageComponent implements OnInit {
       .subscribe(data => {
         this.showLoader = false;
         this.listOfEmployees = this.getDataForCard(data.result.Employee);
+        this.result = {
+          "headers": _.keys(data.result.Employee[0]),
+          "row": data.result.Employee
+        }
       }, err => {
         this.showLoader = false;
         this.listOfEmployees = [];

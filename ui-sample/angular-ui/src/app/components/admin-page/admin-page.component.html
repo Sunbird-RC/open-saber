@@ -17,11 +17,16 @@
 </div>
 <div class="ui container py-20 ">
   <div class="ui grid">
+    <div class="row end">
+          <div class="ui toggle button" (click)="changeView()" suiPopup popupText="{{buttonText}}" popupInverted [popupPlacement]="'bottom right'">
+            <i class="icon {{buttonIcon}}"></i>
+          </div>
+    </div>
     <div class="two wide computer three wide tablet twelve wide mobile column">
       <app-data-filter (dataDrivenFilter)="getFilters($event)" [ignoreQuery]="['key']" *ngIf="initFilters"
         [accordionDefaultOpen]=true [isShowFilterLabel]=true></app-data-filter>
     </div>
-    <div class="ten wide computer nine wide tablet twelve wide mobile column">
+    <div class="ten wide computer nine wide tablet twelve wide mobile column" *ngIf="buttonIcon == 'list'">
       <div class="ui grid mt-5">
         <div class="row" *ngIf="showLoader">
           <div class="twelve wide column">
@@ -50,6 +55,44 @@
           </div>
       </div>
 
+    </div>
+    <div class="ten wide computer nine wide tablet twelve wide mobile column table-scroll" *ngIf="buttonIcon == 'block layout'">
+        <table class="ui celled padded table">
+            <thead>
+              <tr>
+                <th *ngFor="let header of result.headers">{{header}}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of result.row" [ngClass]="{positive:user.isApproved===true}">
+                <td *ngFor="let col of result.headers">
+                  {{user[col]}}
+                </td>
+                <td *ngIf="user['isApproved']===false">
+                  <button class="ui inverted green button"
+                    (click)="navigateToProfilePage(user)">{{resourceService?.frmelmnts?.btn?.approve}}</button>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot *ngIf="paginationDetails.totalItems > pageLimit">
+              <tr>
+                <th colspan="5">
+                  <div class="ui right floated pagination menu">
+                    <a class="icon item" (click)="navigateToPage(paginationDetails.currentPage - 1)"
+                      [ngClass]="{active:paginationDetails.currentPage===page}">
+                      <i class="left chevron icon"></i>
+                    </a>
+                    <a *ngFor="let page of paginationDetails.pages" [ngClass]="{active:paginationDetails.currentPage===page}"
+                      (click)="navigateToPage(page)" class="item">{{page}}</a>
+                    <a class="icon item" [ngClass]="{active:paginationDetails.currentPage===page}"
+                      (click)="navigateToPage(paginationDetails.currentPage + 1)">
+                      <i class="right chevron icon"></i>
+                    </a>
+                  </div>
+                </th>
+              </tr>
+            </tfoot>
+          </table>
     </div>
 
   </div>
