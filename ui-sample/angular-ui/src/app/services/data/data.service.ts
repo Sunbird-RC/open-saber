@@ -40,6 +40,26 @@ export class DataService {
         return observableOf(body);
       }));
   }
+
+/**
+   * for making get api calls
+   *
+   * @param requestParam interface
+   */
+  get(requestParam: any): Observable<ServerResponse> {
+    const httpOptions: HttpOptions = {
+      headers: requestParam.header ?  this.getHeader(requestParam.header) : this.getHeader(),
+      params: requestParam.param
+    };
+    return this.http.get(this.baseUrl + requestParam.url, httpOptions).pipe(
+      mergeMap((data: ServerResponse) => {
+        if (data.responseCode !== 'OK') {
+          return observableThrowError(data);
+        }
+        return observableOf(data);
+      }));
+  }
+
   private getHeader(headers?: any) {
     const default_headers = {
       'Accept': 'application/json',

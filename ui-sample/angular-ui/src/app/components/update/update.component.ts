@@ -26,7 +26,6 @@ export class UpdateComponent implements OnInit {
   userId: String;
   activatedRoute: ActivatedRoute;
   userService: UserService;
-  userInfoKeyCloak = {};
   constructor(resourceService: ResourceService, formService: FormService, dataService: DataService, route: Router, activatedRoute: ActivatedRoute,
     userService: UserService, public cacheService: CacheService) {
     this.resourceService = resourceService;
@@ -38,13 +37,7 @@ export class UpdateComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.userId = this.activatedRoute.snapshot.queryParams.userId
-    this.userInfoKeyCloak = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserKeyCloakData);
-    if (!this.userInfoKeyCloak) {
-      this.userService.getUserInfo().then(data =>{
-        this.userInfoKeyCloak = data;
-      })
-    }
+    this.userId = this.activatedRoute.snapshot.queryParams.userId;
     this.getFormTemplate();
   }
 
@@ -59,7 +52,7 @@ export class UpdateComponent implements OnInit {
        userToken: token
       }
     }
-    this.dataService.post(requestData).subscribe(res =>{
+    this.dataService.get(requestData).subscribe(res =>{
       if(res.responseCode === 'OK')
       {
         this.formFieldProperties = res.result.formTemplate.data.fields;

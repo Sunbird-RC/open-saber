@@ -77,8 +77,8 @@ app.post("/registry/update", (req, res, next) => {
     })
 });
 
-app.post("/formTemplates", (req, res, next) => {
-    getFormTemplates(req.body, req.headers, function (err, data) {
+app.get("/formTemplates", (req, res, next) => {
+    getFormTemplates(req.headers, function (err, data) {
         if (err) {
             res.statusCode = 404;
             return res.send(err);
@@ -93,7 +93,7 @@ app.post("/formTemplates", (req, res, next) => {
     })
 });
 
-const getFormTemplates = (value, header, callback) => {
+const getFormTemplates = (header, callback) => {
     let token = header['x-authenticated-user-token'];
     let roles = [];
     var decoded = jwt.decode(token);
