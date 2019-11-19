@@ -44,9 +44,9 @@ export class AdminPageComponent implements OnInit {
   public queryParams: any;
   public unsubscribe$ = new Subject<void>();
   public key: string;
-  public buttonIcon: string = 'block layout';
-  public buttonText: string = 'grid view'
-  result: { "headers": string; "row": string; };
+  public buttonIcon: string = 'list';
+  public buttonText: string = 'list view'
+  result: { "headers": string; "row": {}; };
 
   constructor(dataService: DataService, resourceService: ResourceService, route: Router, activatedRoute: ActivatedRoute) {
     this.dataService = dataService;
@@ -101,14 +101,15 @@ export class AdminPageComponent implements OnInit {
   navigateToProfilePage(user: any) {
     this.router.navigate(['/profile', user.data.identifier]);
   }
+
   changeView() {
-    if (this.buttonIcon === 'block layout') {
-      this.buttonIcon = 'list';
-      this.buttonText = 'list view'
-  } else {
-      this.buttonIcon = 'block layout'
+    if (this.buttonIcon === 'list') {
+      this.buttonIcon = 'block layout';
       this.buttonText = 'grid view'
-  }
+    } else {
+      this.buttonIcon = 'list'
+      this.buttonText = 'list view'
+    }
   }
 
 
@@ -196,7 +197,7 @@ export class AdminPageComponent implements OnInit {
         this.paginationDetails.currentPage = params.pageNumber;
         this.queryParams = { ...queryParams };
         this.listOfEmployees = [];
-        
+
         this.fetchEmployees();
       });
   }
@@ -222,8 +223,8 @@ export class AdminPageComponent implements OnInit {
         this.showLoader = false;
         this.listOfEmployees = this.getDataForCard(data.result.Employee);
         this.result = {
-          "headers": _.keys(data.result.Employee[0]),
-          "row": data.result.Employee
+          "headers": _.keys(this.listOfEmployees[0]),
+          "row": this.listOfEmployees
         }
       }, err => {
         this.showLoader = false;
@@ -235,7 +236,7 @@ export class AdminPageComponent implements OnInit {
     if (filter) {
       _.forEach(filter, (elem, key) => {
         let filterType = {}
-        if(_.isArray(elem)) {
+        if (_.isArray(elem)) {
           filterType['or'] = elem;
         } else {
           filterType['contains'] = elem;
