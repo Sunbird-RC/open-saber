@@ -65,7 +65,7 @@
                                         </div>
                                 </a>
                         </div>
-
+<!-- mobil view -->
                         <div class="mobile only">
                                 <div class="ui sidebar right vertical menu">
                                         <!--Logged in user-->
@@ -89,20 +89,20 @@
                                                         [permission]="createRole" [routerLink]="'/create'" tabindex="0">
                                                         {{resourceService?.frmelmnts?.btn?.onBoard}}
                                                 </a>
-                                                <a class="item" [class.active]="router.isActive('/profile')" (click)="showSideBar()"
-                                                        (click)="showSideBar()" routerLink="/profile">
-                                                        {{resourceService.frmelmnts?.btn?.profile}}
+                                                <a class="item" [class.active]="router.isActive('/profile')" (click)="showSideBar();navigateToProfilePage()"
+                                                        (click)="showSideBar()">
+                                                        {{resourceService.frmelmnts?.btn?.profile | titlecase}}
                                                 </a>
                                                 <a class="item logout-btn" (click)="logout()">
-                                                        {{resourceService.frmelmnts?.btn?.logout}}
+                                                        {{resourceService.frmelmnts?.btn?.logout | titlecase}}
                                                 </a>
                                         </ng-container>
                                         <!--Not Logged in user-->
                                         <ng-container *ngIf="!userLogin">
-                                                <div class="item active">
+                                                <div class="item active dark-gray">
                                                         <i class="close link icon" (click)="showSideBar()" tabindex="0"
                                                                 title="{{resourceService?.frmelmnts?.btn?.close}}"></i>
-                                                        <a (click)="logIn()">
+                                                        <a class="dark-gray" (click)="logIn()">
                                                                 {{resourceService.frmelmnts?.btn?.logIn}}
                                                         </a>
                                                 </div>
