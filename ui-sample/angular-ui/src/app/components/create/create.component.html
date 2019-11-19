@@ -8,13 +8,13 @@
         <div class="ui info message" *ngIf="success == true">
             <i class="close icon" (click)="close()"></i>
             <div class="header">
-                Employee successfully added to registry
+                {{resourceService?.frmelmnts?.msg?.createUserSuccess}}
             </div>
         </div>
         <div class="ui negative message" *ngIf="isError">
             <i class="close icon" (click)="close()"></i>
             <div class="header">
-                Employee regiter unsuccessfull {{errMessage}}
+                {{resourceService?.frmelmnts?.msg?.createUserUnsuccess}} {{errMessage}}
             </div>
         </div>
     </div>

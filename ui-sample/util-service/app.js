@@ -106,6 +106,11 @@ const getFormTemplates = (header, callback) => {
     });
 }
 
+/**
+ * pick the template according to the role, preferences is ordered 
+ * @param {*} roles 
+ */
+//todo get roles from config
 const getTemplateName = (roles) => {
     if (_.includes(roles, 'admin'))
         return templates.formTemplates['admin'];
