@@ -28,7 +28,7 @@ var routes = [
     data: { roles: 'adminRole' }
   },
   {
-    path: 'profile/:id', component: ProfileComponent,
+    path: 'profile/:userId', component: ProfileComponent,
     canActivate: [AppAuthGuard],
     data: { roles: 'profileRole' }
   },
@@ -43,7 +43,7 @@ var routes = [
     data: {roles:'createRole'}
   },
   {
-    path: 'edit', component: UpdateComponent,
+    path: 'edit/:userId', component: UpdateComponent,
     canActivate: [AppAuthGuard],
     data: { roles: 'editProfileRole' }
   }
