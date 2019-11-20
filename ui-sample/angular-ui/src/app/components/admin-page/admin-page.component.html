@@ -53,7 +53,7 @@
       </div>
       <div class="ui grid mt-5" *ngIf="buttonIcon == 'list'">
         <div *ngFor="let content of listOfEmployees">
-          <app-card [data]="content" (clickEvent)="navigateToProfilePage($event)" [data]="content" class="d-block"
+          <app-card [data]="content" (clickEvent)="navigateToProfilePage($event)" class="d-block"
             [class.last-card]="mr-0">
           </app-card>
         </div>
