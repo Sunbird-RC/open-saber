@@ -19,7 +19,8 @@
                 "reset":"Reset",
                 "home":"Home",
                 "onBoard": "OnBoard",
-                "clearQuery":"Clear Query"
+                "clearQuery":"Clear Query",
+                "Close":"Close"
             },
             "label":{
                 "filters":"Filters",
