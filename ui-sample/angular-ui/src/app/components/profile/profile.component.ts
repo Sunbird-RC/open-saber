@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { DataService } from '../../services/data/data.service';
 import { ResourceService } from '../../services/resource/resource.service';
 import { ActivatedRoute, Router } from '@angular/router'
-import urlConfig from '../../services/urlConfig.json';
+import appConfig from '../../services/app.config.json'
 import { DomSanitizer } from '@angular/platform-browser'
 
 @Component({
@@ -49,7 +49,7 @@ export class ProfileComponent implements OnInit {
           "viewTemplateId": "Employee_SearchResult.json",
         }
       },
-      url: urlConfig.URLS.READ,
+      url: appConfig.URLS.READ,
     }
     this.dataService.post(requestData).subscribe(response => {
       console.log(response);

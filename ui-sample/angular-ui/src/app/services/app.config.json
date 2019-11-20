@@ -8,5 +8,36 @@
             "EmployeeDetails": "userInfo",
             "UserToken":"userToken"
         }
-    }
+    },
+    "rolesMapping": {
+        "adminRole": [
+            "admin",
+            "partner-admin"
+        ],
+        "profileRole": [
+            "owner",
+            "admin",
+            "partner-admin"
+        ],
+        "createRole": [
+            "admin",
+            "partner-admin"
+        ],
+        "editProfileRole": [
+            "owner",
+            "admin",
+            "partner-admin"
+        ]
+    },
+    "URLS": {
+        "UTIl_SERVICE_BASE_URL": "http://localhost:8090",
+        "SEARCH": "/registry/search",
+        "READ": "/registry/read",
+        "ADD": "/registry/add",
+        "UPDATE": "/registry/update",
+        "REGISTER":"/register/users",
+        "FORM_TEPLATE":"/formtemplates"
+    },
+    "PAGE_LIMIT": 20
+
 }

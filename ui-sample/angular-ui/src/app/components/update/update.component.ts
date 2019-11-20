@@ -5,7 +5,6 @@ import { from } from 'rxjs';
 import { DefaultTemplateComponent } from '../default-template/default-template.component';
 import { DataService } from 'src/app/services/data/data.service';
 import { Router, ActivatedRoute } from '@angular/router';
-import urlConfig from '../../services/urlConfig.json';
 import { CacheService } from 'ng2-cache-service';
 import appConfig from '../../services/app.config.json';
 import { UserService } from '../../services/user/user.service';
@@ -47,7 +46,7 @@ export class UpdateComponent implements OnInit {
       token = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserToken);
     } 
     const requestData = {
-      url: urlConfig.URLS.FORM_TEPLATE,
+      url: appConfig.URLS.FORM_TEPLATE,
       header: {
        userToken: token
       }
@@ -69,7 +68,7 @@ export class UpdateComponent implements OnInit {
           "Employee": this.formData.formInputData
         }
       },
-      url: urlConfig.URLS.UPDATE
+      url: appConfig.URLS.UPDATE
     };
     this.dataService.post(requestData).subscribe(response => {
       console.log(response)
