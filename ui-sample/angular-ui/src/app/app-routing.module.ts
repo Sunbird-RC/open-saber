@@ -25,17 +25,17 @@ var routes = [
     path: 'admin/:pageNumber',
     component: AdminPageComponent,
     canActivate: [AppAuthGuard],
-    data: { roles: 'adminRole' }
+    data: { roles: 'adminPageViewRole' }
   },
   {
     path: 'profile/:userId', component: ProfileComponent,
     canActivate: [AppAuthGuard],
-    data: { roles: 'profileRole' }
+    data: { roles: 'profilePageViewRole' }
   },
   {
       path: 'profile/:userId/:role', component: ProfileComponent,
       canActivate: [AppAuthGuard],
-      data: { roles: 'profileRole' }
+      data: { roles: 'profilePageViewRole' }
   },
   {
     path: 'login', component: LoginComponent,

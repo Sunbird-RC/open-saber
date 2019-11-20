@@ -10,11 +10,11 @@
         }
     },
     "rolesMapping": {
-        "adminRole": [
+        "adminPageViewRole": [
             "admin",
             "partner-admin"
         ],
-        "profileRole": [
+        "profilePageViewRole": [
             "owner",
             "admin",
             "partner-admin"

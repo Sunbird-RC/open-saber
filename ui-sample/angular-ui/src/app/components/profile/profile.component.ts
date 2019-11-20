@@ -5,7 +5,6 @@ import { ActivatedRoute, Router } from '@angular/router'
 import appConfig from '../../services/app.config.json'
 import { DomSanitizer } from '@angular/platform-browser'
 import { CacheService } from 'ng2-cache-service';
-import appConfig from '../../services/app.config.json';
 import { UserService } from '../../services/user/user.service';
 import _ from 'lodash-es';
 
@@ -46,11 +45,11 @@ export class ProfileComponent implements OnInit {
 
   getFormTemplate() {
     let token = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserToken);
-    if (!token) {
-      token = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserToken);
+    if (_.isEmpty(token)) {
+      token = this.userService.getUserToken;
     }
     const requestData = {
-      url: urlConfig.URLS.FORM_TEPLATE,
+      url: appConfig.URLS.FORM_TEPLATE,
       header: {
         userToken: token,
         role: this.viewOwnerProfile
@@ -99,7 +98,9 @@ export class ProfileComponent implements OnInit {
     this.downloadJsonHref = uri;
   }
   navigateToEditPage() {
-    this.router.navigate(['/edit', this.userId]);
+    this.router.navigate(['/edit', this.userId], {queryParams: {
+      role:this.viewOwnerProfile
+    }});
   }
 }
 
