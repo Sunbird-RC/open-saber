@@ -26,7 +26,9 @@ export class DefaultTemplateComponent implements OnInit {
     this.activatedRoute.params.subscribe((params) => {
       this.userId = params.userId;
     });
+    if(this.userId) {
       this.getUserDetails();
+    }
   }
 
   getUserDetails() {

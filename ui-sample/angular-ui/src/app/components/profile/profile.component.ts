@@ -26,7 +26,7 @@ export class ProfileComponent implements OnInit {
   userService: UserService;
   public formFieldProperties: any;
   public showLoader = true;
-
+  public viewOwnerProfile : string;
 
   constructor(dataService: DataService, resourceService: ResourceService, activatedRoute: ActivatedRoute, private sanitizer: DomSanitizer, router: Router, userService: UserService, public cacheService: CacheService) {
     this.dataService = dataService
@@ -39,6 +39,7 @@ export class ProfileComponent implements OnInit {
   ngOnInit() {
     this.activatedRoute.params.subscribe((params) => {
       this.userId = params.userId;
+      this.viewOwnerProfile = params.role
     });
     this.getFormTemplate();
   }
@@ -51,7 +52,8 @@ export class ProfileComponent implements OnInit {
     const requestData = {
       url: urlConfig.URLS.FORM_TEPLATE,
       header: {
-        userToken: token
+        userToken: token,
+        role: this.viewOwnerProfile
       }
     }
     this.dataService.get(requestData).subscribe(res => {

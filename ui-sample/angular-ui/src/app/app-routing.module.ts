@@ -33,6 +33,11 @@ var routes = [
     data: { roles: 'profileRole' }
   },
   {
+      path: 'profile/:userId/:role', component: ProfileComponent,
+      canActivate: [AppAuthGuard],
+      data: { roles: 'profileRole' }
+  },
+  {
     path: 'login', component: LoginComponent,
     canActivate: [AppAuthGuard],
     data: { roles: ['admin', 'partner-admin', 'owner'] }
