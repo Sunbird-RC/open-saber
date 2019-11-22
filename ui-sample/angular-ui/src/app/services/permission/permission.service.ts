@@ -92,8 +92,8 @@ export class PermissionService {
   getAdminAuthRoles() {
     let adminAuthRoles = [{
       roles: appConfig.rolesMapping['adminPageViewRole'],
-      url: "admin/1",
-      tab: "adminConsole"
+      url: "search/1",
+      tab: "User Directory"
     }];
     const authRoles = _.find(adminAuthRoles, (role, key) => {
       if (this.checkRolesPermissions(role.roles)) {

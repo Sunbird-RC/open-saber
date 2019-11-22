@@ -12,14 +12,19 @@
     "rolesMapping": {
         "adminPageViewRole": [
             "admin",
-            "partner-admin"
+            "partner-admin",
+            "reporter",
+            "owner",
+            "fin-admin"
         ],
         "profilePageViewRole": [
-            "owner",
             "admin",
-            "partner-admin"
+            "partner-admin",
+            "reporter",
+            "owner",
+            "fin-admin"
         ],
-        "createRole": [
+        "onboardEmployee": [
             "admin",
             "partner-admin"
         ],
@@ -27,6 +32,9 @@
             "owner",
             "admin",
             "partner-admin"
+        ],
+        "approveEmployee": [
+            "admin"
         ]
     },
     "URLS": {
@@ -35,9 +43,8 @@
         "READ": "/registry/read",
         "ADD": "/registry/add",
         "UPDATE": "/registry/update",
-        "REGISTER":"/register/users",
-        "FORM_TEPLATE":"/formtemplates"
+        "REGISTER": "/register/users",
+        "FORM_TEPLATE": "/formtemplates"
     },
     "PAGE_LIMIT": 20
-
 }
