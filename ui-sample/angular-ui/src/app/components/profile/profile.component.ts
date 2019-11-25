@@ -52,7 +52,7 @@ export class ProfileComponent implements OnInit {
     const requestData = {
       url: urlConfig.URLS.FORM_TEPLATE,
       header: {
-        userToken: token,
+        Authorization: token,
         role: this.viewOwnerProfile
       }
     }
@@ -69,6 +69,7 @@ export class ProfileComponent implements OnInit {
       if (field.hasOwnProperty('editable')) {
         field['editable'] = false;
         field['required'] = false;
+        field['inputType'] = "text";
       }
     });
     this.showLoader = false;

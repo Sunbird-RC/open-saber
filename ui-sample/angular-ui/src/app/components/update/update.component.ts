@@ -53,7 +53,7 @@ export class UpdateComponent implements OnInit {
     const requestData = {
       url: urlConfig.URLS.FORM_TEPLATE,
       header: {
-       userToken: token
+        Authorization: token
       }
     }
     this.dataService.get(requestData).subscribe(res =>{

@@ -60,6 +60,7 @@ export class DataService {
       }));
   }
 
+  //getting default headers if headers param not passed
   private getHeader(headers?: any) {
     const default_headers = {
       'Accept': 'application/json',
@@ -69,9 +70,6 @@ export class DataService {
     if(headers) {
       if (headers.Authorization) {
         default_headers['Authorization'] = 'Bearer ' + headers.Authorization;
-      }
-      if(headers.userToken) {
-        default_headers['x-authenticated-user-token'] = headers.userToken
       }
       if(headers.role) {
         default_headers['role'] = headers.role
