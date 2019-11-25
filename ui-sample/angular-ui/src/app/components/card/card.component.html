@@ -25,7 +25,7 @@
   <div class="extra content">
     <div *ngIf="permissionService.permissionAvailable" appPermission [permission]="approveEmployee">
       <div class="ui two buttons" *ngIf="!data?.isApproved">
-        <div class="ui basic green button" (click)="onAction(data,{Approve: true})">
+        <div class="ui basic green button" (click)="approveConfirmModal(data?.identifier); $event.stopPropagation()">
           {{resourceService?.frmelmnts?.btn?.approve}}</div>
         <div class="ui basic red button" (click)="onAction(data,{Decline: true})">
           {{resourceService?.frmelmnts?.btn?.decline}}</div>
@@ -41,3 +41,14 @@
     </div>
   </div>
 </div>
+
+<ng-template let-context let-modal="modal" #modalTemplate>
+  <div class="header"> {{resourceService?.frmelmnts?.btn?.approve}}</div>
+  <div class="content">
+      <p>{{ context.data }}</p>
+  </div>
+  <div class="actions">
+      <button class="ui green button" (click)="modal.approve('approved')" autofocus>Yes</button>
+      <button class="ui red button" (click)="modal.deny('denied')">no</button>
+  </div>
+</ng-template>

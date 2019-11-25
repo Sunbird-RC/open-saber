@@ -102,5 +102,9 @@ export class ProfileComponent implements OnInit {
       role:this.viewOwnerProfile
     }});
   }
-}
+
+  navigateToHomePage() {
+    this.router.navigate(['/search/1'])
+  }
+} 
 

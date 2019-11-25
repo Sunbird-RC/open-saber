@@ -1,8 +1,11 @@
-import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
+import { Component, OnInit, Input, EventEmitter, Output, ViewChild } from '@angular/core';
 import { ICard } from '../../services/interfaces/Card';
 import { ResourceService } from '../../services/resource/resource.service';
 import  appConfig  from '../../services/app.config.json';
 import { PermissionService } from 'src/app/services/permission/permission.service';
+import { SuiModalService , TemplateModalConfig, ModalTemplate} from 'ng2-semantic-ui';
+import { Router } from '@angular/router';
+
  
 @Component({
   selector: 'app-card',
@@ -11,6 +14,8 @@ import { PermissionService } from 'src/app/services/permission/permission.servic
 })
 export class CardComponent implements OnInit {
 
+@ViewChild('modalTemplate')
+public modalTemplate: ModalTemplate<{ data: string }, string, string>;
   @Input() data: ICard;
   @Output() clickEvent = new EventEmitter<any>();
   resourceService: ResourceService;
@@ -18,10 +23,12 @@ export class CardComponent implements OnInit {
   public permissionService: PermissionService;
   public approveEmployee: Array<string>;
   public enableViewProfile = true;
+  router: Router;
 
-  constructor(resourceService: ResourceService, permissionService: PermissionService) {
+  constructor(resourceService: ResourceService, permissionService: PermissionService, public modalService: SuiModalService, route: Router) {
     this.resourceService = resourceService;
     this.permissionService = permissionService;
+    this.router = route;
    }
 
   ngOnInit() {
@@ -38,5 +45,22 @@ export class CardComponent implements OnInit {
   }
   public onAction(data, event) {
     this.clickEvent.emit({ 'action': event, 'data': data });
+  }
+  approveConfirmModal(userId) {
+    const config = new TemplateModalConfig<{ data: string }, string, string>(this.modalTemplate);
+    config.isClosable = true;
+    config.size = 'mini';
+    config.context = {
+      data: 'Do you want to view profile ?'
+      };
+    this.modalService
+      .open(config)
+      .onApprove(result => {
+        console.log()
+        this.router.navigate(['/profile', userId])
+      })
+      .onDeny(result => {
+
+      });
   }
 }
