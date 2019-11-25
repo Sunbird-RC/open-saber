@@ -122,7 +122,7 @@ export class AdminPageComponent implements OnInit {
     } else {
       delete this.queryParams['key'];
     }
-    this.router.navigate(["admin/1"], {
+    this.router.navigate(["search/1"], {
       queryParams: this.queryParams
     });
   }

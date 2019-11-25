@@ -46,8 +46,8 @@ export class HeaderComponent implements OnInit {
   public userService: UserService;
   public userName: any;
   public permissionService: PermissionService;
-  adminConsoleRole: Array<string>;
-  createRole: Array<string>;
+  userDirectoryViewRole: Array<string>;
+  onBoardEmployee: Array<string>;
   public keycloakAngular: KeycloakService;
   public dataService: DataService;
   public keyCloakUserDetails: any;
@@ -64,8 +64,8 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.adminConsoleRole = appConfig.rolesMapping.adminPageViewRole;
-    this.createRole = appConfig.rolesMapping.createRole;
+    this.userDirectoryViewRole = appConfig.rolesMapping.adminPageViewRole;
+    this.onBoardEmployee = appConfig.rolesMapping.onboardEmployee;
     this.resourceService.getResource();
     this.userAuthenticated = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserAuthenticated);
     if (this.userAuthenticated) {
