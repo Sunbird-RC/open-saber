@@ -1,12 +1,12 @@
 import { Component, OnInit, EventEmitter, OnDestroy } from '@angular/core';
 import { DataService } from '../../services/data/data.service'
-import urlConfig from '../../services/urlConfig.json'
 import * as _ from 'lodash-es';
 import { ResourceService } from '../../services/resource/resource.service'
 import { Router, ActivatedRoute } from '@angular/router'
 import { ICard } from '../../services/interfaces/Card';
 import { takeUntil, map, first, debounceTime, delay } from 'rxjs/operators';
 import { combineLatest, Subject } from 'rxjs';
+import appConfig from '../../services/app.config.json';
 
 
 
@@ -54,8 +54,8 @@ export class AdminPageComponent implements OnInit, OnDestroy {
     this.resourceService = resourceService;
     this.router = route;
     this.activatedRoute = activatedRoute;
-    this.pageLimit = urlConfig.PAGE_LIMIT;
-    this.paginationDetails = this.getPager(0, 1, urlConfig.PAGE_LIMIT);
+    this.pageLimit = appConfig.PAGE_LIMIT
+    this.paginationDetails = this.getPager(0, 1, appConfig.PAGE_LIMIT);
   }
 
   ngOnInit() {
@@ -79,7 +79,7 @@ export class AdminPageComponent implements OnInit, OnDestroy {
 
   getTotalItems() {
     const option = {
-      url: urlConfig.URLS.SEARCH,
+      url: appConfig.URLS.SEARCH,
       data: {
         id: "open-saber.registry.search",
         request: {
@@ -222,7 +222,7 @@ export class AdminPageComponent implements OnInit, OnDestroy {
 
   private fetchEmployees() {
     const option = {
-      url: urlConfig.URLS.SEARCH,
+      url: appConfig.URLS.SEARCH,
       data: {
         id: "open-saber.registry.search",
         request: {
@@ -241,7 +241,7 @@ export class AdminPageComponent implements OnInit, OnDestroy {
     this.dataService.post(option)
       .subscribe(data => {
         this.showLoader = false;
-        this.paginationDetails = this.getPager(this.totalItems, this.paginationDetails.currentPage, urlConfig.PAGE_LIMIT);
+        this.paginationDetails = this.getPager(this.totalItems, this.paginationDetails.currentPage, appConfig.PAGE_LIMIT);
         this.listOfEmployees = this.getDataForCard(data.result.Employee);
         this.result = {
           "headers": _.keys(this.listOfEmployees[0]),
@@ -250,7 +250,7 @@ export class AdminPageComponent implements OnInit, OnDestroy {
       }, err => {
         this.showLoader = false;
         this.listOfEmployees = [];
-        this.paginationDetails = this.getPager(0, this.paginationDetails.currentPage, urlConfig.PAGE_LIMIT);
+        this.paginationDetails = this.getPager(0, this.paginationDetails.currentPage, appConfig.PAGE_LIMIT);
       });
   }
   getFilterObject(filter) {

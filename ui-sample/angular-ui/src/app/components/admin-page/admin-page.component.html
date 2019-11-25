@@ -58,9 +58,9 @@
             <app-card [data]="content" (clickEvent)="navigateToProfilePage($event)" class="d-block"
               [class.last-card]="mr-0">
             </app-card>
+            </div>
           </div>
-        </div>
-        <div class="ui grid mt-5 table-scroll" *ngIf="buttonIcon == 'block layout'">
+        <div class="ui grid mt-5 table-scroll mb-1" *ngIf="buttonIcon == 'block layout'">
           <table class="ui celled padded table tablet stackable">
             <thead>
               <tr>
@@ -76,7 +76,6 @@
             </tbody>
           </table>
         </div>
-      </div>
       <div class="twelve wide column right aligned">
         <div class="sb-pagination-container flex-jc-flex-end">
           <div *ngIf="paginationDetails.totalItems > pageLimit && !showLoader">
