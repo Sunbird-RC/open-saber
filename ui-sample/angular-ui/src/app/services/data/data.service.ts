@@ -60,7 +60,6 @@ export class DataService {
       }));
   }
 
-  //getting default headers if headers param not passed
   private getHeader(headers?: any) {
     const default_headers = {
       'Accept': 'application/json',
