@@ -2,10 +2,10 @@
   <div class="ui small breadcrumb">
     <a class="section" routerLink=''>{{resourceService?.frmelmnts?.btn?.home}}</a>
     <i class="right chevron icon divider"></i>
-    <div class="active section">{{resourceService?.frmelmnts?.btn?.search}}</div>
+    <div class="active section">{{resourceService?.frmelmnts?.btn?.adminConsole}}</div>
   </div>
 </div>
-<div class="ui container py-20 m-20 tac">
+<div class="ui container pt-10 m-20 tac">
   <div class="ui small ui action input primary-search-input" id="search-input-container">
     <input type="text" id="keyword" name="filter_search" title="Search"
       placeholder="{{resourceService.frmelmnts?.btn?.SearchIn}}" class="searchinput" [(ngModel)]="key"
@@ -15,7 +15,7 @@
     </button>
   </div>
 </div>
-<div class="ui container py-20 ">
+<div class="ui container pt-10">
   <div class="ui grid">
     <div class="row">
       <div class="twelve wide column">
@@ -54,21 +54,21 @@
           </div>
         </div>
         <div class="ui cards mt-5" *ngIf="buttonIcon == 'list'">
-          <div class="mr-1" *ngFor="let content of listOfEmployees">
+          <div class="mr-1" *ngFor="let content of listOfEmployees | paginate: config">
             <app-card [data]="content" (clickEvent)="navigateToProfilePage($event)" class="d-block"
               [class.last-card]="mr-0">
             </app-card>
-            </div>
           </div>
+        </div>
         <div class="ui grid mt-5 table-scroll mb-1" *ngIf="buttonIcon == 'block layout'">
           <table class="ui celled padded table tablet stackable">
             <thead>
               <tr>
-                <th *ngFor="let header of result.headers">{{header}}</th>
+                <th *ngFor="let header of result.headers ">{{header}}</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let user of result.row" [ngClass]="{positive:user.isApproved===true}">
+              <tr [ngClass]="{positive:user.isApproved===true}" *ngFor="let user of result.row | paginate: config">
                 <td *ngFor="let col of result.headers">
                   {{user[col]}}
                 </td>
@@ -76,26 +76,12 @@
             </tbody>
           </table>
         </div>
-      <div class="twelve wide column right aligned">
-        <div class="sb-pagination-container flex-jc-flex-end">
-          <div *ngIf="paginationDetails.totalItems > pageLimit && !showLoader">
-            <div class="ui right floated pagination menu">
-              <a class="icon item" (click)="navigateToPage(paginationDetails.currentPage - 1)"
-                [ngClass]="{active:paginationDetails.currentPage===page}">
-                <i class="left chevron icon"></i>
-              </a>
-              <a *ngFor="let page of paginationDetails.pages" [ngClass]="{active:paginationDetails.currentPage===page}"
-                (click)="navigateToPage(page)" class="item">{{page}}</a>
-              <a class="icon item" [ngClass]="{active:paginationDetails.currentPage===page}"
-                (click)="navigateToPage(paginationDetails.currentPage + 1)">
-                <i class="right chevron icon"></i>
-              </a>
-            </div>
-          </div>
+        <div class="twelve wide column right aligned" *ngIf="listOfEmployees.length > pageLimit && !showLoader">
+          <pagination-controls (pageChange)="pageChanged($event)" autoHide="true">
+          </pagination-controls>
         </div>
       </div>
+
     </div>
 
   </div>
-
-</div>

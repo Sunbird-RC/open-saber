@@ -7,21 +7,8 @@ import { ICard } from '../../services/interfaces/Card';
 import { takeUntil, map, first, debounceTime, delay } from 'rxjs/operators';
 import { combineLatest, Subject } from 'rxjs';
 import appConfig from '../../services/app.config.json';
-
-
-
-
-export interface IPagination {
-  totalItems: number;
-  currentPage: number;
-  pageSize: number;
-  totalPages: number;
-  startPage: number;
-  endPage: number;
-  startIndex: number;
-  endIndex: number;
-  pages: Array<number>;
-}
+import { UserService } from 'src/app/services/user/user.service';
+import { CacheService } from 'ng2-cache-service';
 
 @Component({
   selector: 'app-admin-page',
@@ -31,11 +18,11 @@ export interface IPagination {
 export class AdminPageComponent implements OnInit, OnDestroy {
 
   dataService: DataService;
+  userService: UserService;
   public showLoader = true;
   resourceService: ResourceService;
   router: Router;
   activatedRoute: ActivatedRoute;
-  public paginationDetails: IPagination;
   pageLimit: any
   public dataDrivenFilterEvent = new EventEmitter();
   private listOfEmployees: ICard[] = [];
@@ -48,18 +35,21 @@ export class AdminPageComponent implements OnInit, OnDestroy {
   public buttonText: string = 'list view'
   result: { "headers": string; "row": {}; };
   totalItems: any;
-
-  constructor(dataService: DataService, resourceService: ResourceService, route: Router, activatedRoute: ActivatedRoute) {
+  config = {
+    itemsPerPage: 20,
+    currentPage: 1,
+    totalItems: 1
+  };
+  constructor(dataService: DataService, resourceService: ResourceService, route: Router, activatedRoute: ActivatedRoute, userService: UserService, public cacheService: CacheService) {
     this.dataService = dataService;
+    this.userService = userService
     this.resourceService = resourceService;
     this.router = route;
     this.activatedRoute = activatedRoute;
     this.pageLimit = appConfig.PAGE_LIMIT
-    this.paginationDetails = this.getPager(0, 1, appConfig.PAGE_LIMIT);
   }
 
   ngOnInit() {
-    this.getTotalItems();
     this.result = {
       "headers": '',
       "row": ''
@@ -77,24 +67,6 @@ export class AdminPageComponent implements OnInit, OnDestroy {
     });
   }
 
-  getTotalItems() {
-    const option = {
-      url: appConfig.URLS.SEARCH,
-      data: {
-        id: "open-saber.registry.search",
-        request: {
-          entityType: ["Employee"],
-          filters: {}
-        }
-      }
-    }
-    this.dataService.post(option).subscribe(data => {
-      if (data.result.Employee) {
-        this.totalItems = data.result.Employee.length;
-      }
-    })
-  }
-
   getDataForCard(data) {
     const list: Array<ICard> = [];
     _.forEach(data, (item, key) => {
@@ -110,7 +82,7 @@ export class AdminPageComponent implements OnInit, OnDestroy {
       name: data.name,
       subProjectName: data.Team,
       role: data.Role,
-      isApproved: data.isApproved,
+      isApproved: data.isActive,
       startDate: data.StartDate,
       identifier: data.identifier
     };
@@ -141,60 +113,9 @@ export class AdminPageComponent implements OnInit, OnDestroy {
     } else {
       delete this.queryParams['key'];
     }
-    this.router.navigate(["search/1"], {
+    this.router.navigate(["search", this.activatedRoute.snapshot.params.pageNumber], {
       queryParams: this.queryParams
     });
-  }
-
-
-  getPager(totalItems: number, currentPage: number = 1, pageSize: number = 10, pageStrip: number = 5) {
-    const totalPages = Math.ceil(totalItems / pageSize);
-    let startPage: number, endPage: number;
-    if (totalPages <= pageStrip) {
-      startPage = 1;
-      endPage = totalPages;
-    } else {
-      // when pagination is on the first section
-      if (currentPage <= 1) {
-        startPage = 1;
-        endPage = pageStrip;
-        // when pagination is on the last section
-      } else if (currentPage + (pageStrip - 1) >= totalPages) {
-        startPage = totalPages - (pageStrip - 1);
-        endPage = totalPages;
-        // when pagination is not on the first/last section
-      } else {
-        startPage = currentPage;
-        endPage = currentPage + (pageStrip - 1);
-      }
-    }
-    // calculate start and end item indexes
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = Math.min(startIndex + pageSize - 1, totalItems - 1);
-
-    // create an array of pages to *nFort in the pager control
-    const pages = _.range(startPage, endPage + 1);
-
-    // return object with all pager properties required by the view
-    return {
-      totalItems: totalItems,
-      currentPage: currentPage,
-      pageSize: pageSize,
-      totalPages: totalPages,
-      startPage: startPage,
-      endPage: endPage,
-      startIndex: startIndex,
-      endIndex: endIndex,
-      pages: pages
-    };
-  }
-
-  navigateToPage(page: number): void {
-    if (page < 1 || page > this.paginationDetails.totalPages) {
-      return;
-    }
-    const url = this.router.url.split('?')[0].replace(/.$/, page.toString());
-    this.router.navigate([url]);
   }
 
   public getFilters(filters) {
@@ -212,7 +133,6 @@ export class AdminPageComponent implements OnInit, OnDestroy {
         takeUntil(this.unsubscribe$)
       ).subscribe(({ params, queryParams }) => {
         this.showLoader = true;
-        this.paginationDetails.currentPage = params.pageNumber;
         this.queryParams = { ...queryParams };
         this.listOfEmployees = [];
 
@@ -221,15 +141,19 @@ export class AdminPageComponent implements OnInit, OnDestroy {
   }
 
   private fetchEmployees() {
+    let token = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserToken);
+    if (_.isEmpty(token)) {
+      token = this.userService.getUserToken;
+    }
     const option = {
       url: appConfig.URLS.SEARCH,
+      header: { Authorization: token },
       data: {
         id: "open-saber.registry.search",
         request: {
           entityType: ["Employee"],
           filters: {
           },
-          limit: this.pageLimit,
           viewTemplateId: "Employee_SearchResult.json"
         }
       }
@@ -237,12 +161,16 @@ export class AdminPageComponent implements OnInit, OnDestroy {
     let filters = _.pickBy(this.queryParams, (value: Array<string> | string) => value && value.length);
     filters = _.omit(filters, ['key', 'sort_by', 'sortType', 'appliedFilters']);
     option.data.request.filters = this.getFilterObject(filters);
-    option.data.request['offset'] = (this.paginationDetails.currentPage - 1) * this.pageLimit
+
     this.dataService.post(option)
       .subscribe(data => {
         this.showLoader = false;
-        this.paginationDetails = this.getPager(this.totalItems, this.paginationDetails.currentPage, appConfig.PAGE_LIMIT);
         this.listOfEmployees = this.getDataForCard(data.result.Employee);
+        this.config = {
+          itemsPerPage: this.pageLimit,
+          currentPage: 1,
+          totalItems: this.listOfEmployees.length
+        };
         this.result = {
           "headers": _.keys(this.listOfEmployees[0]),
           "row": this.listOfEmployees
@@ -250,7 +178,7 @@ export class AdminPageComponent implements OnInit, OnDestroy {
       }, err => {
         this.showLoader = false;
         this.listOfEmployees = [];
-        this.paginationDetails = this.getPager(0, this.paginationDetails.currentPage, appConfig.PAGE_LIMIT);
+        this.config = { itemsPerPage: this.pageLimit, currentPage: 1, totalItems: 0 };
       });
   }
   getFilterObject(filter) {
@@ -275,6 +203,10 @@ export class AdminPageComponent implements OnInit, OnDestroy {
     return option;
   }
 
+  pageChanged(event: number) {
+    this.config.currentPage = event;
+  }
+  
   clearQuery() {
     let redirectUrl = this.router.url.split('?')[0];
     redirectUrl = decodeURI(redirectUrl);
