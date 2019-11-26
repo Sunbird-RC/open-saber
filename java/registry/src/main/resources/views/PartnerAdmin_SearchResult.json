@@ -7,8 +7,12 @@
       "display": true
     },
     {
+      "name": "osid",
+      "title": "identifier"
+    },
+    {
       "name": "email",
-      "title": "Email"
+      "title": "email"
     },
     {
       "name": "phone",
@@ -16,19 +20,19 @@
     },
     {
       "name": "orgName",
-      "title": "Organization"
+      "title": "orgName"
     },
     {
       "name": "role",
-      "title": "Role"
+      "title": "role"
     },
     {
       "name": "isActive",
-      "title": "isApproved"
+      "title": "isActive"
     },
     {
       "name": "isInKronos",
-      "title": "Kronos"
+      "title": "isInKronos"
     },
     {
       "name": "nineAMreportTo",
@@ -36,7 +40,7 @@
     },
     {
       "name": "projectName",
-      "title": "Project"
+      "title": "projectName"
     },
     {
       "name": "subProjectName",
@@ -44,39 +48,39 @@
     },
     {
       "name": "startDate",
-      "title": "StartDate"
+      "title": "startDate"
     },
     {
       "name": "endDate",
-      "title": "EndDate"
+      "title": "endDate"
     },
     {
       "name": "repoAccess",
-      "title": "RepoAccess"
+      "title": "repoAccess"
     },
     {
       "name": "slackAccess",
-      "title": "SlackAccess"
+      "title": "slackAccess"
     },
     {
       "name": "workLocation",
-      "title": "WorkLocation"
+      "title": "workLocation"
     },
     {
       "name": "remarks",
-      "title": "Remarks"
+      "title": "remarks"
     },
     {
       "name": "workingStyle",
-      "title": "WorkingStyle"
+      "title": "workingStyle"
     },
     {
       "name": "externalId",
-      "title": "ExternalId"
+      "title": "externalId"
     },
     {
       "name": "externalRole",
-      "title": "ExternalRole"
+      "title": "externalRole"
     }
   ]
 }

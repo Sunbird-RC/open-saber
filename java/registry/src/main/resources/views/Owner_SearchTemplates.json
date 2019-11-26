@@ -7,32 +7,36 @@
       "display": true
     },
     {
+      "name": "osid",
+      "title": "identifier"
+    },
+    {
       "name": "email",
-      "title": "Email"
+      "title": "email"
     },
     {
       "name": "phone",
-      "title": "Phone"
+      "title": "phone"
     },
     {
       "name": "macAddress",
-      "title": "MacAddress"
+      "title": "macAddress"
     },
     {
       "name": "githubId",
-      "title": "GithubId"
+      "title": "githubId"
     },
     {
       "name": "orgName",
-      "title": "Organization"
+      "title": "organization"
     },
     {
       "name": "role",
-      "title": "Role"
+      "title": "role"
     },
     {
       "name": "isActive",
-      "title": "isApproved"
+      "title": "isActive"
     },
     {
       "name": "nineAMreportTo",
@@ -40,27 +44,27 @@
     },
     {
       "name": "projectName",
-      "title": "Project"
+      "title": "projectName"
     },
     {
       "name": "subProjectName",
-      "title": "Team"
+      "title": "subProjectName"
     },
     {
       "name": "startDate",
-      "title": "StartDate"
+      "title": "startDate"
     },
     {
       "name": "endDate",
-      "title": "EndDate"
+      "title": "endDate"
     },
     {
       "name": "externalId",
-      "title": "ExternalId"
+      "title": "externalId"
     },
     {
       "name": "externalRole",
-      "title": "ExternalRole"
+      "title": "externalRole"
     }
   ]
 }

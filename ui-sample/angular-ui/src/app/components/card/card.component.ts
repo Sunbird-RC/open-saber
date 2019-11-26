@@ -1,12 +1,13 @@
 import { Component, OnInit, Input, EventEmitter, Output, ViewChild } from '@angular/core';
 import { ICard } from '../../services/interfaces/Card';
 import { ResourceService } from '../../services/resource/resource.service';
-import  appConfig  from '../../services/app.config.json';
+import appConfig from '../../services/app.config.json';
 import { PermissionService } from 'src/app/services/permission/permission.service';
-import { SuiModalService , TemplateModalConfig, ModalTemplate} from 'ng2-semantic-ui';
+import { SuiModalService, TemplateModalConfig, ModalTemplate } from 'ng2-semantic-ui';
 import { Router } from '@angular/router';
+import { DataService } from 'src/app/services/data/data.service';
 
- 
+
 @Component({
   selector: 'app-card',
   templateUrl: './card.component.html',
@@ -14,8 +15,8 @@ import { Router } from '@angular/router';
 })
 export class CardComponent implements OnInit {
 
-@ViewChild('modalTemplate')
-public modalTemplate: ModalTemplate<{ data: string }, string, string>;
+  @ViewChild('modalTemplate')
+  public modalTemplate: ModalTemplate<{ data: string }, string, string>;
   @Input() data: ICard;
   @Output() clickEvent = new EventEmitter<any>();
   resourceService: ResourceService;
@@ -24,12 +25,15 @@ public modalTemplate: ModalTemplate<{ data: string }, string, string>;
   public approveEmployee: Array<string>;
   public enableViewProfile = true;
   router: Router;
+  public dataService: DataService;
 
-  constructor(resourceService: ResourceService, permissionService: PermissionService, public modalService: SuiModalService, route: Router) {
+  constructor(resourceService: ResourceService, permissionService: PermissionService, public modalService: SuiModalService, route: Router
+    , dataService: DataService) {
     this.resourceService = resourceService;
     this.permissionService = permissionService;
     this.router = route;
-   }
+    this.dataService = dataService;
+  }
 
   ngOnInit() {
     this.approveEmployee = appConfig.rolesMapping.approveEmployee;
@@ -51,16 +55,33 @@ public modalTemplate: ModalTemplate<{ data: string }, string, string>;
     config.isClosable = true;
     config.size = 'mini';
     config.context = {
-      data: 'Do you want to view profile ?'
-      };
+      data: 'Do you want to view profile or approve?'
+    };
     this.modalService
       .open(config)
       .onApprove(result => {
-        console.log()
         this.router.navigate(['/profile', userId])
       })
       .onDeny(result => {
-
+        this.approve(userId)
       });
+  }
+  approve(userId) {
+    const requestData = {
+      data: {
+        "id": "open-saber.registry.update",
+        "request": {
+          "Employee": {
+            osid: userId,
+            isActive: true
+          }
+        }
+      },
+      url: appConfig.URLS.UPDATE
+    };
+    this.dataService.post(requestData).subscribe(response => {
+      this.router.navigate(['/search/1'])
+    }, err => {
+    });
   }
 }

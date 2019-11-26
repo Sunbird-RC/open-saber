@@ -7,6 +7,10 @@
       "display": true
     },
     {
+      "name": "osid",
+      "title": "identifier"
+    },
+    {
       "name": "orgName",
       "title": "Organization"
     },
