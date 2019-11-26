@@ -7,6 +7,7 @@ import { DomSanitizer } from '@angular/platform-browser'
 import { CacheService } from 'ng2-cache-service';
 import { UserService } from '../../services/user/user.service';
 import _ from 'lodash-es';
+import { PermissionService } from 'src/app/services/permission/permission.service';
 
 @Component({
   selector: 'app-profile',
@@ -17,6 +18,7 @@ export class ProfileComponent implements OnInit {
 
   dataService: DataService;
   resourceService: ResourceService;
+  permissionService: PermissionService;
   router: Router;
   activatedRoute: ActivatedRoute;
   userId: String;
@@ -26,20 +28,27 @@ export class ProfileComponent implements OnInit {
   public formFieldProperties: any;
   public showLoader = true;
   public viewOwnerProfile: string;
-
-  constructor(dataService: DataService, resourceService: ResourceService, activatedRoute: ActivatedRoute, private sanitizer: DomSanitizer, router: Router, userService: UserService, public cacheService: CacheService) {
+  public editProfile: Array<string>;
+  enable: boolean = false;
+  constructor(dataService: DataService, resourceService: ResourceService, activatedRoute: ActivatedRoute, private sanitizer: DomSanitizer, router: Router, userService: UserService, public cacheService: CacheService
+    , permissionService: PermissionService) {
     this.dataService = dataService
     this.resourceService = resourceService;
     this.router = router
     this.activatedRoute = activatedRoute;
     this.userService = userService;
+    this.permissionService = permissionService;
   }
 
   ngOnInit() {
+    this.editProfile = appConfig.rolesMapping.editProfileRole;
     this.activatedRoute.params.subscribe((params) => {
       this.userId = params.userId;
       this.viewOwnerProfile = params.role
     });
+    if(_.isEmpty(this.viewOwnerProfile) && this.viewOwnerProfile == undefined) {
+        this.enable = true;
+    } 
     this.getFormTemplate();
   }
 

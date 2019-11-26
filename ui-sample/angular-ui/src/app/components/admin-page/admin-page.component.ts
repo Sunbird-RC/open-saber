@@ -113,7 +113,7 @@ export class AdminPageComponent implements OnInit, OnDestroy {
       name: data.name,
       subProjectName: data.Team,
       role: data.Role,
-      isApproved: data.isApproved,
+      isApproved: data.isActive,
       startDate: data.StartDate,
       identifier: data.identifier
     };

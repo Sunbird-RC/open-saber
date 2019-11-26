@@ -29,7 +29,6 @@
             "partner-admin"
         ],
         "editProfileRole": [
-            "owner",
             "admin",
             "partner-admin"
         ],
