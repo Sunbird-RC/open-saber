@@ -111,11 +111,11 @@ export class AdminPageComponent implements OnInit, OnDestroy {
   processContent(data) {
     const content: any = {
       name: data.name,
-      subProjectName: data.Team,
-      role: data.Role,
+      subProjectName: data.subProjectName,
+      role: data.role,
       isApproved: data.isActive,
-      startDate: data.StartDate,
-      identifier: data.identifier
+      startDate: data.startDate,
+      identifier: data.osid
     };
     return content;
   }

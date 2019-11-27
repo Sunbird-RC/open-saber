@@ -13,7 +13,7 @@
       {{data.name | titlecase}}
     </div>
     <div *ngIf="data.isApproved && data?.startDate != null" class="meta">
-      Since {{data?.startDate | timeAgo}}
+      Since {{data?.startDate | timeAgo | slice:0:-3}}
     </div>
     <div *ngIf="!data.isApproved" class="meta">
       New Member
