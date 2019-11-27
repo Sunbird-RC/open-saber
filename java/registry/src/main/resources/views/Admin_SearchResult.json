@@ -3,76 +3,58 @@
   "fields": [
     {
       "name": "name",
-      "title": "name",
       "display": true
     },
     {
-      "name": "osid",
-      "title": "identifier"
+      "name": "osid"
     },
     {
-      "name": "orgName",
-      "title": "orgName"
+      "name": "orgName"
     },
     {
-      "name": "role",
-      "title": "role"
+      "name": "role"
     },
     {
-      "name": "isActive",
-      "title": "isActive"
+      "name": "isActive"
     },
     {
-      "name": "isInKronos",
-      "title": "isInKronos"
+      "name": "isInKronos"
     },
     {
-      "name": "nineAMreportTo",
-      "title": "nineAMreportTo"
+      "name": "nineAMreportTo"
     },
     {
-      "name": "projectName",
-      "title": "projectName"
+      "name": "projectName"
     },
     {
-      "name": "subProjectName",
-      "title": "subProjectName"
+      "name": "subProjectName"
     },
     {
-      "name": "startDate",
-      "title": "startDate"
+      "name": "startDate"
     },
     {
-      "name": "endDate",
-      "title": "endDate"
+      "name": "endDate"
     },
     {
-      "name": "repoAccess",
-      "title": "repoAccess"
+      "name": "repoAccess"
     },
     {
-      "name": "slackAccess",
-      "title": "slackAccess"
+      "name": "slackAccess"
     },
     {
-      "name": "workLocation",
-      "title": "workLocation"
+      "name": "workLocation"
     },
     {
-      "name": "remarks",
-      "title": "remarks"
+      "name": "remarks"
     },
     {
-      "name": "workingStyle",
-      "title": "workingStyle"
+      "name": "workingStyle"
     },
     {
-      "name": "externalId",
-      "title": "externalId"
+      "name": "externalId"
     },
     {
-      "name": "externalRole",
-      "title": "externalRole"
+      "name": "externalRole"
     }
   ]
 }

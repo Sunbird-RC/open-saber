@@ -3,80 +3,61 @@
   "fields": [
     {
       "name": "name",
-      "title": "name",
       "display": true
     },
     {
-      "name": "osid",
-      "title": "identifier"
+      "name": "osid"
     },
     {
-      "name": "orgName",
-      "title": "Organization"
+      "name": "orgName"
     },
     {
-      "name": "role",
-      "title": "Role"
+      "name": "role"
     },
     {
-      "name": "isActive",
-      "title": "isApproved"
+      "name": "isActive"
     },
     {
-      "name": "proposedBilling",
-      "title": "ProposedBilling"
+      "name": "proposedBilling"
     },
     {
-      "name": "billLocation",
-      "title": "BillLocation"
+      "name": "billLocation"
     },
     {
-      "name": "nineAMreportTo",
-      "title": "nineAMreportTo"
+      "name": "nineAMreportTo"
     },
     {
-      "name": "projectName",
-      "title": "Project"
+      "name": "projectName"
     },
     {
-      "name": "subProjectName",
-      "title": "Team"
+      "name": "subProjectName"
     },
     {
-      "name": "startDate",
-      "title": "StartDate"
+      "name": "startDate"
     },
     {
-      "name": "endDate",
-      "title": "EndDate"
+      "name": "endDate"
     },
     {
-      "name": "repoAccess",
-      "title": "RepoAccess"
+      "name": "repoAccess"
     },
     {
-      "name": "slackAccess",
-      "title": "SlackAccess"
+      "name": "slackAccess"
     },
     {
-      "name": "workLocation",
-      "title": "WorkLocation"
+      "name": "workLocation"
     },
     {
-      "name": "remarks",
-      "title": "Remarks"
+      "name": "remarks"
     },
     {
-      "name": "workingStyle",
-      "title": "WorkingStyle"
+      "name": "workingStyle"
     },
     {
-      "name": "externalId",
-      "title": "ExternalId"
+      "name": "externalId"
     },
     {
-      "name": "externalRole",
-      "title": "ExternalRole"
+      "name": "externalRole"
     }
   ]
 }

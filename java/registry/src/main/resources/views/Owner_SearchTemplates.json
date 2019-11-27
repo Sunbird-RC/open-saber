@@ -3,68 +3,52 @@
   "fields": [
     {
       "name": "name",
-      "title": "name",
       "display": true
     },
     {
-      "name": "osid",
-      "title": "identifier"
+      "name": "osid"
     },
     {
-      "name": "email",
-      "title": "email"
+      "name": "email"
     },
     {
-      "name": "phone",
-      "title": "phone"
+      "name": "phone"
     },
     {
-      "name": "macAddress",
-      "title": "macAddress"
+      "name": "macAddress"
     },
     {
-      "name": "githubId",
-      "title": "githubId"
+      "name": "githubId"
     },
     {
-      "name": "orgName",
-      "title": "organization"
+      "name": "orgName"
     },
     {
-      "name": "role",
-      "title": "role"
+      "name": "role"
     },
     {
-      "name": "isActive",
-      "title": "isActive"
+      "name": "isActive"
     },
     {
-      "name": "nineAMreportTo",
-      "title": "nineAMreportTo"
+      "name": "nineAMreportTo"
     },
     {
-      "name": "projectName",
-      "title": "projectName"
+      "name": "projectName"
     },
     {
-      "name": "subProjectName",
-      "title": "subProjectName"
+      "name": "subProjectName"
     },
     {
-      "name": "startDate",
-      "title": "startDate"
+      "name": "startDate"
     },
     {
-      "name": "endDate",
-      "title": "endDate"
+      "name": "endDate"
     },
     {
-      "name": "externalId",
-      "title": "externalId"
+      "name": "externalId"
     },
     {
-      "name": "externalRole",
-      "title": "externalRole"
+      "name": "externalRole"
     }
   ]
 }
