@@ -55,15 +55,15 @@ export class CardComponent implements OnInit {
     config.isClosable = true;
     config.size = 'mini';
     config.context = {
-      data: 'Do you want to view the profile before approving?'
+      data: 'Do you want to approve before viewing the profile?'
     };
     this.modalService
       .open(config)
       .onApprove(result => {
-        this.router.navigate(['/profile', userId])
+        this.approve(userId);
       })
       .onDeny(result => {
-        this.approve(userId)
+        this.router.navigate(['/profile', userId])
       });
   }
   approve(userId) {

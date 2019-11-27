@@ -63,7 +63,6 @@ app.post("/registry/search", (req, res, next) => {
     if(!_.isEmpty(req.headers.authorization)) {
         req.body.request.viewTemplateId = getViewtemplate(req.headers.authorization);
     }
-    console.log("search templates", req.body.request.viewTemplateId)
     postCallToRegistry(req.body, "/search", function (err, data) {
         return res.send(data);
     });
@@ -73,7 +72,6 @@ app.post("/registry/read", (req, res, next) => {
     if(!_.isEmpty(req.headers.authorization)) {
     req.body.request.viewTemplateId = getViewtemplate(req.headers.authorization);
     }
-    console.log("read templates", req.body)
     postCallToRegistry(req.body, "/read", function (err, data) {
         return res.send(data);
     })
@@ -86,8 +84,6 @@ const getViewtemplate = (authToken) => {
     if (decoded != null && decoded.realm_access) {
         roles = decoded.realm_access.roles;
     }
-    console.log("roles", roles)
-
     var searchTemplate = getTemplateName(roles, 'searchTemplates');
     return searchTemplate;
 }
