@@ -55,7 +55,7 @@ export class CardComponent implements OnInit {
     config.isClosable = true;
     config.size = 'mini';
     config.context = {
-      data: 'Do you want to view profile or approve?'
+      data: 'Do you want to view the profile before approving?'
     };
     this.modalService
       .open(config)
