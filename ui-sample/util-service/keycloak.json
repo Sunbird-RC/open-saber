@@ -1,0 +1,11 @@
+{
+    "realm": "PartnerRegistry",
+    "auth-server-url": "http://localhost:8080/auth",
+    "ssl-required": "none",
+    "resource": "utils",
+    "credentials": {
+        "secret": "9ebc2fc1-ced9-4774-a661-7e2c59991cfe"
+    },
+    "public-client": true
+
+}

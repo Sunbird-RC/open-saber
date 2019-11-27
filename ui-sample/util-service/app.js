@@ -16,7 +16,45 @@ var async = require('async');
 const templates = require('./templates/template.config.json');
 
 
+// const Keycloak = require('keycloak-connect');
+const session = require('express-session');
+const { getKeyCloakClient, memoryStore } = require('./keycloakHelper')
+
+
 const port = process.env.PORT || 8090;
+
+let keycloak = getKeyCloakClient({
+    "realm": "PartnerRegistry",
+    "auth-server-url": "http://localhost:8080/auth",
+    "ssl-required": "none",
+    "resource": "utils",
+    "credentials": {
+        "secret": "9ebc2fc1-ced9-4774-a661-7e2c59991cfe"
+    },
+    "public-client": true,
+    "clientId":"utils"
+});
+
+app.use(keycloak.middleware({ admin: '/callback', logout: '/logout' }))
+                     
+app.use(session({
+    secret: '9ebc2fc1-ced9-4774-a661-7e2c59991cfe',
+    resave: false,
+    saveUninitialized: true,
+    store: memoryStore
+}));
+
+app.use(keycloak.middleware());
+
+
+
+app.get("/users", keycloak.protect(), function (req, res) {
+console.log("df", req)
+    res.render(
+        "test",
+        { title: "Test of the test" }
+    );
+});
 
 app.use(cors())
 app.use(morgan('dev'));
@@ -95,7 +133,7 @@ app.get("/formTemplates", (req, res, next) => {
 
 const getFormTemplates = (header, callback) => {
     let roles = [];
-    var token =  header['authorization'].replace('Bearer ', '');
+    var token = header['authorization'].replace('Bearer ', '');
     var decoded = jwt.decode(token);
     if (header.role) {
         roles = [header.role]
