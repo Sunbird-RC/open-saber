@@ -26,7 +26,7 @@ app.use(bodyParser.json());
 const port = process.env.PORT || 8090;
 
 
-
+//need to fix this middleware not 
 // app.use("/register/users", (req, res, next) => {
 //     res.on("end", function () {
 //         console.log(`${req.method} ${req.originalUrl}`)
@@ -116,6 +116,17 @@ app.post("/registry/read", (req, res, next) => {
     })
 });
 
+const getViewtemplate = (authToken) => {
+    var roles = [];
+    let token = authToken.replace('Bearer ', '');
+    var decoded = jwt.decode(token);
+    if (decoded != null && decoded.realm_access) {
+        roles = decoded.realm_access.roles;
+    }
+    var searchTemplate = getTemplateName(roles, 'searchTemplates');
+    return searchTemplate;
+}
+
 app.post("/registry/update", (req, res, next) => {
     registryService.updateEmployee(req.body, function (err, data) {
         return res.send(data);
@@ -138,6 +149,21 @@ app.get("/formTemplates", (req, res, next) => {
     })
 });
 
+app.get("/owner/formTemplate", (req, res, next) => {
+    readFormTemplate(templateConfig.formTemplates.owner, function (err, data) {
+        if (err) {
+            res.statusCode = 404;
+            return res.send(err);
+        } else {
+            const json = {
+                result: { formTemplate: data },
+                responseCode: 'OK'
+            }
+            return res.send(json)
+        }
+    });
+})
+
 const getFormTemplates = (header, callback) => {
     let roles = [];
     var token = header['authorization'].replace('Bearer ', '');
@@ -147,7 +173,7 @@ const getFormTemplates = (header, callback) => {
     } else if (decoded.realm_access) {
         roles = decoded.realm_access.roles;
     }
-    readFormTemplate(getTemplateName(roles), function (err, data) {
+    readFormTemplate(getTemplateName(roles, 'formTemplates'), function (err, data) {
         if (err) callback(err, null);
         else callback(null, data);
     });
@@ -158,15 +184,15 @@ const getFormTemplates = (header, callback) => {
  * @param {*} roles 
  */
 //todo get roles from config
-const getTemplateName = (roles) => {
-    if (_.includes(roles, 'admin'))
-        return templates.formTemplates['admin'];
-    if (_.includes(roles, 'partner-admin'))
-        return templates.formTemplates['partner-admin'];
-    if (_.includes(roles, 'fin-admin'))
-        return templates.formTemplates['fin-admin'];
-    if (_.includes(roles, 'owner'))
-        return templates.formTemplates['owner']
+const getTemplateName = (roles, templateName) => {
+    if (_.includes(roles, templateConfig.roles.admin))
+        return templateConfig[templateName][templateConfig.roles.admin];
+    if (_.includes(roles, templateConfig.roles.partnerAdmin))
+        return templateConfig[templateName][templateConfig.roles.partnerAdmin];
+    if (_.includes(roles, templateConfig.roles.finAdmin))
+        return templateConfig[templateName][templateConfig.roles.finAdmin];
+    if (_.includes(roles, templateConfig.roles.owner))
+        return templateConfig[templateName][templateConfig.roles.owner]
 }
 
 const readFormTemplate = (value, callback) => {
