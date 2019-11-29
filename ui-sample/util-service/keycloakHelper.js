@@ -1,43 +1,60 @@
 
-const Keycloak = require('keycloak-connect')
-const session = require('express-session')
-const async = require('async')
-let memoryStore = new session.MemoryStore()
+var keyCloakAuthUtils = require('keycloak-auth-utils');
+let request = require('request')
+const realmName = process.env.keycloak_realmName || "PartnerRegistry"
+const keyCloakHost = process.env.keycloak_url || "http://localhost:8080/auth/admin/realms/" + realmName;
 
+let keyCloak_config = {
+    "realm": "PartnerRegistry",
+    "auth-server-url": "http://localhost:8080/auth",
+    "resource": "utils",
+    "credentials": {
+        "secret": "9ebc2fc1-ced9-4774-a661-7e2c59991cfe"
+    },
+    "bearerOnly": true,
+    "clientId": "utils"
+};
 
-const getKeyCloakClient = (config, store) => {
-    console.log("config", config)
-    const keycloak = new Keycloak({ store: store || memoryStore }, config);
-    keycloak.authenticated = authenticated;
-    return keycloak
+function ApiInterceptor() {
+    this.config = keyCloak_config;
+    this.keyCloakConfig = new keyCloakAuthUtils.Config(this.config);
+    this.grantManager = new keyCloakAuthUtils.GrantManager(this.keyCloakConfig);
+
 }
-const deauthenticated = function (request) {
-    delete request.session.userId
-    if (request.session) {
-        request.session.sessionEvents = request.session.sessionEvents || []
-    }
-}
-const authenticated = function (request) {
-    
-    console.log("request",request)
+
+ApiInterceptor.prototype.getToken = async function (callback) {
+    var self = this;
     try {
-        grant = keycloak.grantManager.obtainDirectly("sysadmin@ekstep.org", 'utils', undefined, 'openid')
-        console.log("grant", grant);
-        var userId = request.kauth.grant.access_token.content.sub.split(':')
-        request.session.userId = userId[userId.length - 1];
-        request.session.save();
-    } catch (err) {
-        console.log('userId conversation error', request.kauth.grant.access_token.content.sub, err);
+        let grant = await self.grantManager.obtainDirectly("sysadmin@ekstep.org", 'password1', undefined, 'openid')
+        return callback(null, grant);
+    } catch (error) {
+        console.log("error", error)
     }
-    async.series({
-    
-    }, function (err, results) {
-        if (err) {
-            console.log('err', err)
+}
+
+ApiInterceptor.prototype.getUserByRole = async function (role, token, callback) {
+
+    var headers = {
+        'content-type': 'application/json',
+        'authorization': 'Bearer ' + token
+    }
+    try {
+        const options = {
+            method: 'GET',
+            url: keyCloakHost + '/roles/' + role + '/users',
+            json: true,
+            headers: headers
         }
-    })
+        request(options, function (err, res, body) {
+            if (res.body && res.statusCode == 200) {
+                callback(null, res.body)
+            } else {
+
+            }
+        });
+    } catch (err) {
+
+    }
 }
-module.exports = {
-    getKeyCloakClient,
-    memoryStore
-}
+
+module.exports = ApiInterceptor;

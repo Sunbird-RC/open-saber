@@ -14,52 +14,57 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 var async = require('async');
 const templates = require('./templates/template.config.json');
-
-
-// const Keycloak = require('keycloak-connect');
-const session = require('express-session');
-const { getKeyCloakClient, memoryStore } = require('./keycloakHelper')
-
-
-const port = process.env.PORT || 8090;
-
-let keycloak = getKeyCloakClient({
-    "realm": "PartnerRegistry",
-    "auth-server-url": "http://localhost:8080/auth",
-    "ssl-required": "none",
-    "resource": "utils",
-    "credentials": {
-        "secret": "9ebc2fc1-ced9-4774-a661-7e2c59991cfe"
-    },
-    "public-client": true,
-    "clientId":"utils"
-});
-
-app.use(keycloak.middleware({ admin: '/callback', logout: '/logout' }))
-                     
-app.use(session({
-    secret: '9ebc2fc1-ced9-4774-a661-7e2c59991cfe',
-    resave: false,
-    saveUninitialized: true,
-    store: memoryStore
-}));
-
-app.use(keycloak.middleware());
-
-
-
-app.get("/users", keycloak.protect(), function (req, res) {
-console.log("df", req)
-    res.render(
-        "test",
-        { title: "Test of the test" }
-    );
-});
-
+let ApiInterceptor = require('./keycloakHelper')
+let ruleSet = require('./notifyRuleSet.json')
+let notification = require('./notification.js')
 app.use(cors())
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+const port = process.env.PORT || 8090;
+
+
+
+app.use("/register/users",(req, res, next) => {
+    res.on("end", function () {
+        console.log(`${req.method} ${req.originalUrl}`)
+        if (req.originalUrl === ruleSet.registerUsers.url) {
+            getAdminUserEmailId();
+        }
+    })
+})
+
+
+const getAdminUserEmailId = async () => {
+    let tokenDetails = await getTokenDetails();
+    var apiInterceptor = new ApiInterceptor()
+    if (tokenDetails) {
+        apiInterceptor.getUserByRole('admin', tokenDetails.access_token.token, function (err, data) {
+            notify(data[0].email);
+        });
+    }
+}
+
+
+const notify = (email) => {
+    notification(email);
+}
+
+
+const getTokenDetails = () => {
+    return new Promise((resolve, reject) => {
+        var apiInterceptor = new ApiInterceptor()
+        apiInterceptor.getToken(function (err, token) {
+            if (token) {
+                resolve(token)
+            } else {
+                reject(err)
+            }
+        })
+    })
+}
+
 
 app.post("/register/users", (req, res) => {
     createUser(req.body, req.headers, function (err, data) {
