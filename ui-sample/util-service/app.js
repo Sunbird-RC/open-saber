@@ -5,7 +5,6 @@ var bodyParser = require("body-parser");
 var cors = require("cors")
 const morgan = require("morgan");
 const server = http.createServer(app);
-const registryHost = process.env.registry_url || "http://localhost:8081";
 const realmName = process.env.keycloak_realmName || "PartnerRegistry"
 const keyCloakHost = process.env.keycloak_url || "http://localhost:8080/auth/admin/realms/" + realmName + "/users";
 const request = require('request')
@@ -17,6 +16,8 @@ const templates = require('./templates/template.config.json');
 let ApiInterceptor = require('./keycloakHelper')
 let ruleSet = require('./notifyRuleSet.json')
 let notification = require('./notification.js')
+const registryService = require('./registryService.js')
+const keycloakHelper = require('./keycloakHelper.js')
 app.use(cors())
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -26,21 +27,20 @@ const port = process.env.PORT || 8090;
 
 
 
-app.use("/register/users",(req, res, next) => {
-    res.on("end", function () {
-        console.log(`${req.method} ${req.originalUrl}`)
-        if (req.originalUrl === ruleSet.registerUsers.url) {
-            getAdminUserEmailId();
-        }
-    })
-})
+// app.use("/register/users", (req, res, next) => {
+//     res.on("end", function () {
+//         console.log(`${req.method} ${req.originalUrl}`)
+//         if (req.originalUrl === ruleSet.registerUsers.url) {
+//             getAdminUserEmailId();
+//         }
+//     })
+// })
 
 
 const getAdminUserEmailId = async () => {
     let tokenDetails = await getTokenDetails();
-    var apiInterceptor = new ApiInterceptor()
     if (tokenDetails) {
-        apiInterceptor.getUserByRole('admin', tokenDetails.access_token.token, function (err, data) {
+        keycloakHelper.getUserByRole('admin', tokenDetails.access_token.token, function (err, data) {
             notify(data[0].email);
         });
     }
@@ -69,7 +69,7 @@ const getTokenDetails = () => {
 app.post("/register/users", (req, res) => {
     createUser(req.body, req.headers, function (err, data) {
         if (err) {
-            // res.statusCode = err.statusCode;
+            res.statusCode = err.statusCode;
             return res.send(err.body)
         } else {
             return res.send(data);
@@ -80,9 +80,11 @@ app.post("/register/users", (req, res) => {
 const createUser = (value, header, callback) => {
     async.waterfall([
         function (callback) {
-            addUserToKeycloak(value.request, header, callback);
+            keycloakHelper.registerUserToKeycloak(value.request, header, callback)
         },
         function (value, header, res, callback2) {
+            if (res.statusCode == 201) {
+            }
             console.log("Employee successfully added to registry")
             addEmployeeToRegistry(value, header, res, callback2)
         }
@@ -97,25 +99,25 @@ const createUser = (value, header, callback) => {
 
 
 app.post("/registry/add", (req, res, next) => {
-    postCallToRegistry(req.body, "/add", function (err, data) {
+    registryService.addEmployee(req.body, function (err, data) {
         return res.send(data);
-    });
+    })
 });
 
 app.post("/registry/search", (req, res, next) => {
-    postCallToRegistry(req.body, "/search", function (err, data) {
+    registryService.searchEmployee(req.body, function (err, data) {
         return res.send(data);
-    });
+    })
 });
 
 app.post("/registry/read", (req, res, next) => {
-    postCallToRegistry(req.body, "/read", function (err, data) {
+    registryService.readEmployee(req.body, function (err, data) {
         return res.send(data);
     })
 });
 
 app.post("/registry/update", (req, res, next) => {
-    postCallToRegistry(req.body, "/update", function (err, data) {
+    registryService.updateEmployee(req.body, function (err, data) {
         return res.send(data);
     })
 });
@@ -177,62 +179,17 @@ const readFormTemplate = (value, callback) => {
     });
 }
 
-const postCallToRegistry = (value, endPoint, callback) => {
-    const options = {
-        method: 'POST',
-        url: registryHost + endPoint,
-        json: true,
-        headers: {
-            'content-type': 'application/json',
-            'accept': 'application/json'
-        },
-        body: value,
-        json: true
-    }
-    request(options, function (err, res) {
-        if (res.body.responseCode === 'OK') {
-            callback(null, res.body)
-        }
-        else {
-            callback(new Error(_.get(res, 'params.errmsg') || _.get(res, 'params.err')), res.body);
-        }
-    });
-}
 
 const addEmployeeToRegistry = (value, header, res, callback) => {
-    value['isApproved'] = false;
-    let reqBody = {
-        "id": "open-saber.registry.create",
-        "ver": "1.0",
-        "ets": "11234",
-        "params": {
-            "did": "",
-            "key": "",
-            "msgid": ""
-        },
-        "request": {
-            "Employee": value
-        }
-    }
-    const options = {
-        method: 'POST',
-        url: registryHost + '/add',
-        json: true,
-        headers: {
-            'content-type': 'application/json',
-            'accept': 'application/json'
-        },
-        body: reqBody,
-        json: true
-    }
     if (res.statusCode == 201) {
-        request(options, function (err, res, body) {
+        console.log("value", value)
+        registryService.addEmployee(value, function (err, res) {
             if (res.statusCode == 200) {
                 console.log("Employee successfully added to registry")
                 callback(null, res.body)
             } else {
                 console.log("Employee could not be added to registry" + res.statusCode)
-                callback(res.statusCode, body.errorMessage)
+                callback(res.statusCode, res.errorMessage)
             }
         })
     } else {
