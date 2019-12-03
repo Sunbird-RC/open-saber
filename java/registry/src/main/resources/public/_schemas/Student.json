@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "Student": {
+      "$ref": "#/definitions/Student"
+    }
+  },
+  "title": "Student",
+  "required": [
+    "Student"
+  ],
+  "definitions": {
+    "Student": {
+      "$id": "#/properties/Student",
+      "type": "object",
+      "title": "Student",
+      "properties": {
+        "traineeName": {
+          "$id": "#/properties/TraineeName",
+          "type": "string",
+          "title": "Name"
+        },
+        "rollno": {
+          "$id": "#/properties/RollNo",
+          "type": "string",
+          "title": "Roll Number"
+        },
+        "dob": {
+          "$id": "#/properties/dob",
+          "type": "string",
+          "title": "DOB"
+        },
+        "gender": {
+          "$id": "#/properties/Gender",
+          "type": "string",
+          "enum": [
+            "M",
+            "F",
+            "O",
+            "No data"
+          ],
+          "title": "Gender"
+        },
+        "uidNumber": {
+          "$id": "#/properties/uidNumber",
+          "type": "string",
+          "title": "UIDNumber"
+        },
+        "permanentState": {
+          "$id": "#/properties/permanentState",
+          "type": "string",
+          "title": "PermanentState"
+        },
+        "correspondenceState": {
+          "$id": "#/properties/correspondenceState",
+          "type": "string",
+          "title": "correspondenceState"
+        },
+        "admissionDate": {
+          "$id": "#/properties/admissionDate",
+          "type": "string",
+          "title": "AdmissionDate"
+        },
+        "session": {
+          "$id": "#/properties/session",
+          "type": "string",
+          "title": "ExamSession"
+        },
+        "trade": {
+          "$id": "#/properties/trade",
+          "type": "string",
+          "title": "Trade"
+        },
+        "shift": {
+          "$id": "#/properties/shift",
+          "type": "string",
+          "title": "Shift"
+        },
+        "sector": {
+          "$id": "#/properties/sector",
+          "type": "string",
+          "title": "Sector"
+        },
+        "traineeType": {
+          "$id": "#/properties/traineeType",
+          "type": "string",
+          "title": "Type"
+        },
+        "qualification": {
+          "$id": "#/properties/qualification",
+          "type": "string",
+          "title": "Qualification"
+        }
+      }
+    }
+  }
+}

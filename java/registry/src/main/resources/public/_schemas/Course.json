@@ -14,30 +14,50 @@
     "Course": {
       "$id": "#/properties/Course",
       "type": "object",
-      "title": "The Course Schema",
       "required": [
-          "name",
-          "duration",
-          "scheme"
+
       ],
+      "title": "The Course Schema",
       "properties": {
-        "name": {
-          "$id": "#properties/name",
+        "courseName": {
+          "$id": "#properties/CourseName",
           "type": "string",
           "title": "CourseName"
         },
-        "scheme": {
-          "$id": "#properties/scheme",
+        "courseCode": {
+          "$id": "#/properties/courseCode",
           "type": "string",
-          "enum": [
-            "PMKVY", "DDUGKY", "ITI"
-          ],
+          "title": "Code"
+        },
+        "seat": {
+          "$id": "#/properties/Seat",
+          "type": "string",
+          "title": "Seat"
+        },
+        "courseLevel": {
+          "$id": "#/properties/CourseLevel",
+          "type": "string",
+          "title": "CourseLevel(NSQF LEVEL)"
+        },
+        "affiliatingBody": {
+          "$id": "#/properties/AffiliatingBody",
+          "type": "string",
+          "title": "AffiliatingBody"
+        },
+        "courseDuration": {
+          "$id": "#/properties/CourseDuration",
+          "type": "string",
+          "title": "CourseDuration(In Year)"
+        },
+        "scheme": {
+          "$id": "#/properties/Scheme",
+          "type": "string",
           "title": "Scheme"
         },
-        "duration": {
-          "$id": "#properties/duration",
+        "minimumAge": {
+          "$id": "#/properties/MinimumAge",
           "type": "string",
-          "title": "Duration"
+          "title": "MinimumAge"
         }
       }
     }

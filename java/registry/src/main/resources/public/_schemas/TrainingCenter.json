@@ -16,10 +16,10 @@
       "type": "object",
       "title": "The TrainingCenter Schema",
       "properties": {
-        "awardingBodyName": {
-          "$id": "#properties/TrainingCenterAwardingBodyName",
+        "awardingBody": {
+          "$id": "#properties/AwardingBody",
           "type": "string",
-          "title": "AwardingBodyName",
+          "title": "AwardingBody",
           "$comment": "Who awarded this training center"
         },
         "trainingPartnerName": {
@@ -27,15 +27,15 @@
           "type": "string",
           "title": "TrainingPartnerName"
         },
-        "trainingPartnerPan": {
-          "$id": "#properties/TrainingPartnerPan",
-          "type": "string",
-          "title": "TrainingPartnerPan"
-        },
-        "name": {
+        "trainingCenterName": {
           "$id": "#/properties/TrainingCenterName",
           "type": "string",
           "title": "Training Center Name"
+        },
+        "code": {
+          "$id": "#/properties/TrainingCenterCode",
+          "type": "string",
+          "title": "TrainingCenterCode"
         },
         "address": {
           "$id": "#/properties/TrainingCenterAddress",
@@ -67,26 +67,24 @@
           "type": "number",
           "title": "TrainingCenterLongitude"
         },
-        "pan": {
-          "$id": "#/properties/TrainingCenterPan",
-          "type": "string",
-          "title": "TrainingCenterPan"
-        },
         "photograph": {
           "$id": "#/properties/TrainingCenterPhotograph",
           "type": "string",
           "title": "TrainingCenterPhotograph"
         },
         "contactNumber": {
-          "$id": "#/properties/TrainigCenterContactNumber",
+          "$id": "#/properties/TrainingCenterContactNumber",
           "type": "string",
           "title": "TrainingCenterContactNumber"
         },
         "centerType": {
           "$id": "#/properties/TrainingCenterType",
           "type": "string",
-          "title": "TrainingCenterType",
-          "$comment": "This must become an enum."
+          "enum": [
+            "government",
+            "private"
+          ],
+          "title": "TrainingCenterType"
         },
         "fee": {
           "$id": "#/properties/TrainingCenterFeeStructure",
@@ -157,9 +155,6 @@
         "course": {
           "$id": "#/properties/TrainingCenterCourses",
           "type": "array",
-          "items": {
-            "$ref": "Course.json#/definitions/Course"
-          },
           "title": "TrainingCenterCourses"
         },
         "sector": {
