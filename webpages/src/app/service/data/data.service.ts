@@ -15,9 +15,9 @@ export class DataService {
   baseUrl: string;
   portNumber = {
     TrainingCenter: 8080,
-    Course:8082,
-    Teacher:8083,
-    Student: 8084
+    Course:8081,
+    Teacher:8082,
+    Student: 8083
     
   }
 
