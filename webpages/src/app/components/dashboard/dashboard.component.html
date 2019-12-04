@@ -1,74 +1,75 @@
 <div class="container mt-5">
-  <div class="main-panel">
-    <div class="content-wrapper">
-      <h4 class="mb-4">Dashboard</h4>
-      <div class="row">
-        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 grid-margin stretch-card">
-          <div class="card card-statistics">
-            <div class="card-body">
-              <div class="clearfix">
-                <div class="float-left">
-                  <i class="fa fa-2x text-danger fa-university" aria-hidden="true"></i>
-                  <i class="mdi mdi-cube text-danger icon-lg"></i>
-                </div>
-                <div class="float-right">
-                  <p class="mb-0 text-right">Training Center</p>
-                  <div class="fluid-container">
-                    <h3 class="font-weight-medium text-right mb-0">{{dashBoarddata.TrainingCenter.total}}</h3>
+    <div class="main-panel">
+      <h4 class="mb-4">Registry info</h4>
+      <div class="content-wrapper">
+        <div class="row">
+          <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 grid-margin stretch-card">
+            <div class="card count-card card-statistics">
+              <div class="card-body">
+                <div class="clearfix">
+                  <div class="float-left">
+                    <i class="fa fa-2x text-danger fa-university" aria-hidden="true"></i>
+                    <i class="mdi mdi-cube text-danger icon-lg"></i>
+                  </div>
+                  <div class="float-right">
+                    <p class="mb-0 text-right">Training Centers</p>
+                    <div class="fluid-container">
+                      <h3 class="font-weight-medium text-right mb-0">{{dashBoarddata.TrainingCenter.total}}</h3>
+                    </div>
                   </div>
                 </div>
+                <p class="text-muted mt-3 mb-0">
               </div>
-              <p class="text-muted mt-3 mb-0">
             </div>
           </div>
-        </div>
-        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 grid-margin stretch-card">
-          <div class="card card-statistics">
-            <div class="card-body">
-              <div class="clearfix">
-                <div class="float-left">
-                  <i class="fa fa-2x  text-secondary fa-book" aria-hidden="true"></i>
-                </div>
-                <div class="float-right">
-                  <p class="mb-0 text-right">Course</p>
-                  <div class="fluid-container">
-                    <h3 class="font-weight-medium text-right mb-0">{{dashBoarddata.Course.total}}</h3>
+          <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 grid-margin stretch-card">
+            <div class="card count-card card-statistics">
+              <div class="card-body">
+                <div class="clearfix">
+                  <div class="float-left">
+                    <i class="fa fa-2x  text-secondary fa-book" aria-hidden="true"></i>
+                  </div>
+                  <div class="float-right">
+                    <p class="mb-0 text-right">Courses</p>
+                    <div class="fluid-container">
+                      <h3 class="font-weight-medium text-right mb-0">{{dashBoarddata.Course.total}}</h3>
+                    </div>
                   </div>
                 </div>
+                <p class="text-muted mt-3 mb-0">
               </div>
-              <p class="text-muted mt-3 mb-0">
             </div>
           </div>
-        </div>
-        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 grid-margin stretch-card">
-          <div class="card card-statistics">
-            <div class="card-body">
-              <div class="clearfix">
-                <div class="float-left">
-                  <i class="fas fa-2x text-info fa-chalkboard-teacher"></i>
-                </div>
-                <div class="float-right">
-                  <p class="mb-0 text-right">Teacher</p>
-                  <div class="fluid-container">
-                    <h3 class="font-weight-medium text-right mb-0">{{dashBoarddata.Teacher.total}}</h3>
+          <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 grid-margin stretch-card">
+            <div class="card count-card card-statistics">
+              <div class="card-body">
+                <div class="clearfix">
+                  <div class="float-left">
+                    <i class="fas fa-2x text-info fa-chalkboard-teacher"></i>
+                  </div>
+                  <div class="float-right">
+                    <p class="mb-0 text-right">Teachers</p>
+                    <div class="fluid-container">
+                      <h3 class="font-weight-medium text-right mb-0">{{dashBoarddata.Teacher.total}}</h3>
+                    </div>
                   </div>
                 </div>
+                <p class="text-muted mt-3 mb-0">
               </div>
-              <p class="text-muted mt-3 mb-0">
             </div>
           </div>
-        </div>
-        <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 grid-margin stretch-card">
-          <div class="card card-statistics">
-            <div class="card-body">
-              <div class="clearfix">
-                <div class="float-left">
-                  <i class="fa fa-2x text-success fa-users" aria-hidden="true"></i>
-                </div>
-                <div class="float-right">
-                  <p class="mb-0 text-right">{{dashBoarddata.Student.total}}</p>
-                  <div class="fluid-container">
-                    <h3 class="font-weight-medium text-right mb-0">65,650</h3>
+          <div class="col-xl-3 col-lg-3 col-md-3 col-sm-6 grid-margin stretch-card">
+            <div class="card count-card card-statistics">
+              <div class="card-body">
+                <div class="clearfix">
+                  <div class="float-left">
+                    <i class="fa fa-2x text-success fa-user" aria-hidden="true"></i>
+                  </div>
+                  <div class="float-right">
+                    <p class="mb-0 text-right">Students</p>
+                    <div class="fluid-container">
+                      <h3 class="font-weight-medium text-right mb-0">{{dashBoarddata.Student.total}}</h3>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -76,4 +77,40 @@
           </div>
         </div>
       </div>
+      <h4 class="mb-4">Usage info</h4>
+      <div class="content-wrapper">
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="card ">
+              <div class="card-body">
+                <div class="float-left">
+                  <i class="fas fa-2x fa-user" aria-hidden="true"></i>
+                </div>
+                <div class="float-right">
+                  <h5 class="mb-0 text-right">via Portal</h5>
+                  <p class="card-text">N/A
+                    <span class="fa">&nbsp; Coming soon! </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="card">
+              <div class="card-body">
+                <div class="float-left">
+                  <i class="fa fa-2x fa-code" aria-hidden="true"></i>
+                </div>
+                <div class="float-right">
+                  <h5 class="mb-0 text-right">via APIs</h5>
+                  <p class="card-text">N/A
+                      <span class="fa">&nbsp; Coming soon! </span>
+                    </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
