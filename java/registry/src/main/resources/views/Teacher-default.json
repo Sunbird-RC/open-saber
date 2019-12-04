@@ -1,0 +1,17 @@
+{
+  "subject": "Teacher",
+  "fields": [
+    {
+      "name": "name"
+    },
+    {
+      "name": "employmentType"
+    },
+    {
+      "name": "qualification"
+    },
+    {
+      "name": "languageKnown"
+    }
+  ]
+}

@@ -1,0 +1,171 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "TrainingCenter": {
+      "$ref": "#/definitions/TrainingCenter"
+    }
+  },
+  "title": "TrainingCenter",
+  "required": [
+    "TrainingCenter"
+  ],
+  "definitions": {
+    "TrainingCenter": {
+      "$id": "#/properties/TrainingCenter",
+      "type": "object",
+      "title": "The TrainingCenter Schema",
+      "properties": {
+        "awardingBody": {
+          "$id": "#properties/AwardingBody",
+          "type": "string",
+          "title": "AwardingBody",
+          "$comment": "Who awarded this training center"
+        },
+        "trainingPartnerName": {
+          "$id": "#properties/TrainingPartnerName",
+          "type": "string",
+          "title": "TrainingPartnerName"
+        },
+        "trainingCenterName": {
+          "$id": "#/properties/TrainingCenterName",
+          "type": "string",
+          "title": "Training Center Name"
+        },
+        "code": {
+          "$id": "#/properties/TrainingCenterCode",
+          "type": "string",
+          "title": "TrainingCenterCode"
+        },
+        "address": {
+          "$id": "#/properties/TrainingCenterAddress",
+          "type": "string",
+          "title": "TrainingCenterAddress"
+        },
+        "district": {
+          "$id": "#/properties/TrainingCenterDistrict",
+          "type": "string",
+          "title": "TrainingCenterDistrict"
+        },
+        "state": {
+          "$id": "#/properties/TrainingCenterState",
+          "type": "string",
+          "title": "TrainingCenterState"
+        },
+        "pincode": {
+          "$id": "#/properties/TrainingCenterPincode",
+          "type": "integer",
+          "title": "TrainingCenterPincode"
+        },
+        "latitude": {
+          "$id": "#/properties/TrainingCenterLatitude",
+          "type": "number",
+          "title": "TrainingCenterLatitude"
+        },
+        "longitude": {
+          "$id": "#/properties/TrainingCenterLongitude",
+          "type": "number",
+          "title": "TrainingCenterLongitude"
+        },
+        "photograph": {
+          "$id": "#/properties/TrainingCenterPhotograph",
+          "type": "string",
+          "title": "TrainingCenterPhotograph"
+        },
+        "contactNumber": {
+          "$id": "#/properties/TrainingCenterContactNumber",
+          "type": "string",
+          "title": "TrainingCenterContactNumber"
+        },
+        "centerType": {
+          "$id": "#/properties/TrainingCenterType",
+          "type": "string",
+          "enum": [
+            "government",
+            "private"
+          ],
+          "title": "TrainingCenterType"
+        },
+        "fee": {
+          "$id": "#/properties/TrainingCenterFeeStructure",
+          "type": "string",
+          "enum": [
+            "free", "paid", "govt-subsidised", "partially-funded"
+          ],
+          "title": "TrainingCenterFeeStructure",
+          "$comment": "partially-funded indicates fee sharing by govt and student. govt-subsidised indicates reduction of fees, but borne by student"
+        },
+        "website": {
+          "$id": "#/properties/TrainingCenterWebsite",
+          "type": "string",
+          "title": "TrainingCenterWebsite"
+        },
+        "principalName": {
+          "$id": "#/properties/TrainingCenterPrincipalName",
+          "type": "string",
+          "title": "TrainingCenterPrincipalName"
+        },
+        "principalContactNumber": {
+          "$id": "#/properties/TrainingCenterPrincipalContactNumber",
+          "type": "string",
+          "title": "TrainingCenterPrincipalContactNumber"
+        },
+        "principalEmail": {
+          "$id": "#/properties/TrainingCenterPrincipalEmail",
+          "type": "string",
+          "title": "TrainingCenterPrincipalEmail"
+        },
+        "isWomenOnly": {
+          "$id": "#/properties/TrainingCenterWomen",
+          "type": "boolean",
+          "title": "TrainingCenterWomen"
+        },
+        "isActive": {
+          "$id": "#/properties/TrainingCenterActive",
+          "type": "boolean",
+          "title": "TrainingCenterActive"
+        },
+        "rating": {
+          "$id": "#/properties/TrainingCenterRating",
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5,
+          "title": "TrainingCenterRating",
+          "$comment": "5 being excellent, 1 being low. Decimal rating allowed."
+        },
+        "nAlumni": {
+          "$id": "#/properties/TrainingCenterTrainedStudent",
+          "type": "integer",
+          "title": "TrainingCenterTrainedStudent",
+          "$comment": "Total number of students passed out from this training center"
+        },
+        "feedback": {
+          "$id": "#/properties/TrainingCenterFeedback",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "TrainingCenterFeedback"
+        },
+        "closestTransit": {
+          "$id": "#/properties/TrainingCenterClosestTransit",
+          "type": "string",
+          "title": "TrainingCenterClosestTransit"
+        },
+        "course": {
+          "$id": "#/properties/TrainingCenterCourses",
+          "type": "array",
+          "title": "TrainingCenterCourses"
+        },
+        "sector": {
+          "$id": "#/properties/sector",
+          "type": "string",
+          "enum": [
+            "Automobile", "IT", "Textile", "Aeronautic", "Other"
+          ],
+          "title": "Industry/Sector"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "Course": {
+      "$ref": "#/definitions/Course"
+    }
+  },
+  "title": "Course",
+  "required": [
+    "Course"
+  ],
+  "definitions": {
+    "Course": {
+      "$id": "#/properties/Course",
+      "type": "object",
+      "required": [
+
+      ],
+      "title": "The Course Schema",
+      "properties": {
+        "courseName": {
+          "$id": "#properties/CourseName",
+          "type": "string",
+          "title": "CourseName"
+        },
+        "courseCode": {
+          "$id": "#/properties/courseCode",
+          "type": "string",
+          "title": "Code"
+        },
+        "seat": {
+          "$id": "#/properties/Seat",
+          "type": "string",
+          "title": "Seat"
+        },
+        "courseLevel": {
+          "$id": "#/properties/CourseLevel",
+          "type": "string",
+          "title": "CourseLevel(NSQF LEVEL)"
+        },
+        "affiliatingBody": {
+          "$id": "#/properties/AffiliatingBody",
+          "type": "string",
+          "title": "AffiliatingBody"
+        },
+        "courseDuration": {
+          "$id": "#/properties/CourseDuration",
+          "type": "string",
+          "title": "CourseDuration(In Year)"
+        },
+        "scheme": {
+          "$id": "#/properties/Scheme",
+          "type": "string",
+          "title": "Scheme"
+        },
+        "minimumAge": {
+          "$id": "#/properties/MinimumAge",
+          "type": "string",
+          "title": "MinimumAge"
+        }
+      }
+    }
+  }
+}

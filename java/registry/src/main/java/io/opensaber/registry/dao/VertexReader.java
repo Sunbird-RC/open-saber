@@ -317,7 +317,13 @@ public class VertexReader {
                         Map.Entry<String, JsonNode> item = entryIterator.next();
                         JsonNode ar = item.getValue();
                         for (JsonNode node : ar) {
-                            String osidVal = ArrayHelper.unquoteString(node.get(uuidPropertyName).asText());
+                            String osidVal = "";
+                            try {
+                                osidVal = ArrayHelper.unquoteString(node.get(uuidPropertyName).asText());
+                            } catch (Exception e) {
+                                // TODO: fix check - plain array objects have double quotes and not have uuidPropertyName?
+                                osidVal = ArrayHelper.unquoteString(node.asText());
+                            }
                             ObjectNode ovalue = uuidNodeMap.getOrDefault(osidVal, null);
                             if (ovalue != null) {
                                 resultArr.add(ovalue);

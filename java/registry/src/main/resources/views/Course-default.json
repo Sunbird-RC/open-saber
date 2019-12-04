@@ -1,0 +1,26 @@
+{
+  "subject": "Course",
+  "fields": [
+    {
+      "name": "courseCode"
+    },
+    {
+      "name": "courseName"
+    },
+    {
+      "name": "courseDuration"
+    },
+    {
+      "name": "courseLevel"
+    },
+    {
+      "name": "minimumAge"
+    },
+    {
+      "name": "scheme"
+    },
+    {
+      "name": "seat"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "subject": "User",
+  "fields": [
+    {
+      "name": "code"
+    },
+    {
+      "name": "trainingCenterName"
+    },
+    {
+      "name": "district"
+    },
+    {
+      "name": "state"
+    },
+    {
+      "name": "sector"
+    },
+    {
+      "name": "website"
+    }
+  ]
+}

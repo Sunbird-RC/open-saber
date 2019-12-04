@@ -1,0 +1,29 @@
+{
+  "subject": "Student",
+  "fields": [
+    {
+      "name": "rollno"
+    },
+    {
+      "name": "traineeName"
+    },
+    {
+      "name": "gender"
+    },
+    {
+      "name": "qualification"
+    },
+    {
+      "name": "trade"
+    },
+    {
+      "name": "admissionDate"
+    },
+    {
+      "name": "correspondenceState"
+    },
+    {
+      "name": "session"
+    }
+  ]
+}
