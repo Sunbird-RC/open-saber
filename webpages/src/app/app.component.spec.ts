@@ -20,10 +20,10 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'msd-registry'`, () => {
+  it(`should have as title 'msde-registry'`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.debugElement.componentInstance;
-    expect(app.title).toEqual('msd-registry');
+    expect(app.title).toEqual('msde-registry');
   });
 
   it('should render title in a h1 tag', () => {
