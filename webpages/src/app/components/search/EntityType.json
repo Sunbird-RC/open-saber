@@ -1,0 +1,14 @@
+{
+    "entityTypes":{
+        "trainingCenter":"TrainingCenter",
+        "course":"Course",
+        "teacher":"Teacher",
+        "student":"Student"
+    },
+    "searchParam": {
+        "TrainingCenter":"trainingCenterName",
+        "Course":"courseName",
+        "Teacher":"name",
+        "Student":"name"
+    }
+}

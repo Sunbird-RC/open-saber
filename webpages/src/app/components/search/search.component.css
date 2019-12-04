@@ -1,0 +1,104 @@
+.mt-10 {
+    margin-top: 2rem;
+}
+
+.dataTables_paginate a {
+    padding: 6px 9px !important;
+    background: #54c5e6 !important;
+    border-color: #2196F3 !important;
+}
+
+header.text-center {
+    background: url(https://bharatskills.gov.in/img/bg.jpg);
+    background-repeat: no-repeat;
+    background-size: 100%;
+    padding: 0 2em 2em;
+    color: #fff;
+}
+
+.navbar {
+    border-radius: 0px;
+    margin-bottom: 0px;
+}
+
+header h1 {
+    font-size: 3em;
+    text-transform: uppercase;
+    color: #f07901;
+    font-weight: bold;
+}
+
+header h4 {
+    color: #0fb751;
+    font-size: 1.7em;
+    padding-top: .5em;
+}
+
+.resp-tabs-list li:hover {
+    background: #2438ad;
+    color: #fff;
+}
+
+
+@media(max-width:1040px) {
+    .top_header .title li, .top_header .userdetails li {
+        font-size: 12px;
+    }
+
+    .top_header .nav > li > a {
+        padding: 10px 5px;
+    }
+}
+
+@media(max-width:980px) {
+    header.text-center {
+        padding: 1em 2em !important;
+        background-size: cover !important;
+    }
+
+    header h1 {
+        font-size: 2em !important;
+    }
+
+
+
+    header h4 {
+        font-size: 1.4em !important;
+    }
+
+    .events .circle-shape {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+.events {
+    padding-top: 2em !important;
+}
+
+    .events .square1 a {
+        font-size: 1.2em;
+    }
+    .dgt {
+        font-size: 1em;
+        letter-spacing: 1px;
+        padding-top: 10px;
+        margin-bottom: 1em;
+        font-weight: bold;
+    }
+
+
+.main {
+    width: 50%;
+    margin: 50px auto;
+}
+
+.form-control:focus {
+    outline: none;
+    box-shadow: none;
+}
+.form-control::placeholder {
+    font-size: 0.95rem;
+    color: #aaa;
+    font-style: italic;
+  }

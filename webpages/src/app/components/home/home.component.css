@@ -1,0 +1,126 @@
+
+header.text-center {
+    background: url(https://bharatskills.gov.in/img/bg.jpg);
+    background-repeat: no-repeat;
+    background-size: 100%;
+    padding: 0 2em 2em;
+    color: #fff;
+}
+
+.navbar {
+    border-radius: 0px;
+    margin-bottom: 0px;
+}
+
+header h1 {
+    font-size: 3em;
+    text-transform: uppercase;
+    color: #f07901;
+    font-weight: bold;
+}
+
+header h4 {
+    color: #0fb751;
+    font-size: 1.7em;
+    padding-top: .5em;
+}
+
+.resp-tabs-list li:hover {
+    background: #2438ad;
+    color: #fff;
+}
+
+
+@media(max-width:1040px) {
+    .top_header .title li, .top_header .userdetails li {
+        font-size: 12px;
+    }
+
+    .top_header .nav > li > a {
+        padding: 10px 5px;
+    }
+}
+
+@media(max-width:980px) {
+    header.text-center {
+        padding: 1em 2em !important;
+        background-size: cover !important;
+    }
+
+    header h1 {
+        font-size: 2em !important;
+    }
+
+
+
+    header h4 {
+        font-size: 1.4em !important;
+    }
+
+    .events .circle-shape {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+.events {
+    padding-top: 2em !important;
+}
+
+.box-shadow {
+    box-shadow: 0 0 8px 0 rgba(17,22,26,.16), 0 4px 8px 0 rgba(17,22,26,.08), 0 8px 16px 0 rgba(17,22,26,.08);
+}
+
+.card-image {
+    height: 54px;
+    width: 54px;
+    position: absolute;
+    top: -28px;
+    left: 112px;
+    -webkit-filter: drop-shadow(0 5px 11px rgba(0, 0, 0, .15));
+    filter: drop-shadow(0 5px 11px rgba(0, 0, 0, .15));
+
+}
+    .events .square1 a {
+        font-size: 1.2em;
+    }
+    .dgt {
+        font-size: 1em;
+        letter-spacing: 1px;
+        padding-top: 10px;
+        margin-bottom: 1em;
+        font-weight: bold;
+    }
+
+    .ls-item {
+        text-align: justify;
+    }
+    .ls-item .h3 {
+        text-align: center;
+    }
+
+    .ls-item ol {
+        line-height: 2rem;
+    }
+    .ls-item ol li {
+         margin: 10px 0;
+    }
+
+    .jumbotron {
+        padding: 2rem 2rem;
+    }
+    .centered {
+        justify-content: center;
+    }
+
+    @media screen and (min-width: 30rem) {
+        .card-image {
+            top: -15.5px;
+            left: 0;
+            position: relative;
+            margin: 0 auto;
+        }
+    }
+.jumbotron {
+    background-color: white;
+}

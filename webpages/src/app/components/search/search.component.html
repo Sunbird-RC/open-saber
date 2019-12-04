@@ -1,0 +1,121 @@
+<header class="text-center">
+  <p class="hidden-xs pt-5">MSDE has opted to publish Registries of Training Centers, Courses, Teachers, and Students.
+  </p>
+  <p class="dgt"> Electronic Registries of training centers, courses, teachers, testing agencies, etc. allow the
+    Ministry of Skill Development to create a single source of truth on key skilling data for the ecosystem.</p>
+  <div class="search-container">
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-3 col-sm-3 col-xs-3 theater">
+        <div class="square1">
+          <a (click)="fetchContentOnParamChange(config.trainingCenter)">
+            <div class="circle-shape visual-art-circle">
+              <div class="circle-shape-description">
+                <i class="fa fa-3x fa-university" aria-hidden="true"></i>
+              </div>
+            </div>
+            Training Center
+          </a>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-3 col-xs-3 theater">
+        <div class="square1">
+          <a (click)="fetchContentOnParamChange(config.course)">
+            <div class="circle-shape">
+              <div class="circle-shape-description">
+                <i class="fa fa-3x fa-book" aria-hidden="true"></i>
+              </div>
+            </div>
+            Course
+          </a>
+        </div>
+      </div>
+      <div class="col-md-3 col-sm-3 col-xs-3 theater">
+        <div class="square1">
+          <a (click)="fetchContentOnParamChange(config.teacher)">
+            <div class="circle-shape dance-circle">
+              <div class="circle-shape-description">
+                <i class="fas fa-3x fa-chalkboard-teacher"></i>
+              </div>
+            </div>
+            Teacher
+          </a>
+        </div>
+      </div>
+
+      <div class="col-md-3 col-sm-3 col-xs-3 theater">
+        <div class="square1">
+          <a (click)="fetchContentOnParamChange(config.student)">
+            <div class="circle-shape theater-circle">
+              <div class="circle-shape-description">
+                <i class="fa fa-3x fa-users" aria-hidden="true"></i>
+              </div>
+            </div>
+            Student
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+<div class="container mt-10">
+  <div class="container py-20 m-20 tac" *ngIf="entityType">
+    <div class="row mb-5">
+      <div class="col-lg-8 mx-auto">
+        <div class="p-1 bg-light rounded rounded-pill shadow-sm mb-4">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <button id="button-addon2" type="submit" class="btn btn-link text-info"><i class="fa fa-search"
+                  (click)="onEnter(key)"></i></button>
+            </div>
+            <input type="search" placeholder="Search by {{entityType}} name" aria-describedby="button-addon2"
+              [(ngModel)]="key" (keyup.enter)="onEnter(key)" class="form-control border-0 bg-light">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="jumbotron text-center" *ngIf="showResultNotFound">
+      <i class="fa fa-search fa-4x text-info pb-3"></i>
+      <h3 class="mb-4">We don't have any documents matching your query</h3>
+    </div>
+  </div>
+  <div class="row" *ngIf="result.row.length > 0">
+    <div class="col-sm-12">
+      <h6 class="mb-4">Search results for {{entityType}}</h6>
+      <div class="table-responsive">
+        <table class="table  table-bordered table-hover">
+          <thead>
+            <tr class="table-primary">
+              <th>#</th>
+              <th scope="col" *ngFor="let header of result.headers">{{header | titlecase}}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr scope="row" *ngFor="let row of result.row; let i = index">
+              <td>{{i+1}}</td>
+              <td *ngFor="let col of result.headers">
+                {{row[col] ? row[col] : '-'}}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-sm-12" *ngIf="!key && (entityType == config.course || entityType == config.trainingCenter)">
+      <nav aria-label="Page navigation" class="float-right">
+        <ul class="pagination">
+          <li class="page-item" [ngClass]="{ 'disabled': previousBtn}">
+            <span class="page-link" (click)="previous()">Previous</span>
+          </li>
+          <li class="page-item" [ngClass]="{ 'disabled': nextBtn}">
+            <span class="page-link" (click)="next(offset)">Next</span>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+</div>
