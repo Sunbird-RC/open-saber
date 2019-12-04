@@ -1,0 +1,57 @@
+/* You can add global styles to this file, and also import other style files */
+
+
+.circle-shape {
+    background: #d05085;
+}
+
+    .circle-shape.dance-circle {
+        background: #3db389;
+    }
+
+    .circle-shape.visual-art-circle {
+        background: #0aa1b4;
+    }
+
+    .circle-shape.theater-circle {
+        background: #cd8174;
+    }
+    .circle-shape.training-circle {
+        background: #0aa1b4;
+    }
+
+.circle-shape {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    font-weight: bold;
+    margin: 0 auto;
+    text-align: center;
+    font-size: 18px;
+    letter-spacing: 5px;
+    font-family: Melbourne_reg;
+    text-align: center;
+    display: table;
+}
+
+.circle-shape-description {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+ .circle-shape-description img {
+        margin: 0 auto;
+        }
+
+   .square1 a{ color: #fff;
+    font-size: 1.2em;
+}
+.square1 a:hover {
+    text-decoration: none;
+    cursor: pointer;
+}
+.circle-shape:hover {
+    -ms-transform: scale(1.05, 1.05);
+    -webkit-transform: scale(1.05, 1.05);
+    transform: scale(1.05, 1.05);
+}

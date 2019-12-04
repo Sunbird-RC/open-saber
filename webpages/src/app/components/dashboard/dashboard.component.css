@@ -1,0 +1,64 @@
+.clearfix::after {
+    display: block;
+    clear: both;
+    content: "";
+ }
+ .main-panel {
+    transition: width 0.25s ease, margin 0.25s ease;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+}
+ 
+.content-wrapper {
+    background: #fafafd;
+    padding: 1.5rem 1.7rem;
+    width: 100%;
+    -webkit-box-flex: 1;
+    -ms-flex-positive: 1;
+    flex-grow: 1;
+}
+.card {
+    box-shadow: 0px 0px 8px 6px rgba(0, 0, 0, 0.02);
+    border: none;
+}
+    /* Dashboard */
+.card-statistics .highlight-icon {
+    height: 53px;
+    width: 53px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    border-radius: 50px; 
+}
+ .card-statistics .highlight-icon i {
+      font-size: 27px; 
+ }
+  
+.grid-margin {
+        margin-bottom: 25px;
+ }
+ .stretch-card {
+            display: -webkit-box;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-align: stretch;
+            -ms-flex-align: stretch;
+            align-items: stretch;
+            -webkit-box-pack: stretch;
+            -ms-flex-pack: stretch;
+            justify-content: center; }
+            .stretch-card > .card {
+              width: 201px;
+              min-width: 60%;
+   }
