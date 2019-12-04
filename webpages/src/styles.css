@@ -1,5 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
 
+@font-face {
+    font-family: 'Melbourne_reg';
+    src: url('fonts/Melbourne_reg.eot');
+    src: url('fonts/Melbourne_reg.eot') format('embedded-opentype'), url('fonts/Melbourne_reg.woff') format('woff'), url('fonts/Melbourne_reg.ttf') format('truetype');
+}
 
 .circle-shape {
     background: #d05085;

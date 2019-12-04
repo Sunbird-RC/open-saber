@@ -16,16 +16,13 @@ ul {
 }
 
 
+.top_header .title {
+    font-family: 'Melbourne_reg';
+}
 
 section {
     display: block;
 }
-
-body {
-    line-height: 1;
-    font-family: 'Melbourne_reg';
-}
-
 ol,
 ul {
     list-style: none;

@@ -17,19 +17,22 @@ header h1 {
     text-transform: uppercase;
     color: #f07901;
     font-weight: bold;
+    margin-bottom: 0px;
+    font-family: 'Melbourne_reg';
 }
 
 header h4 {
     color: #0fb751;
     font-size: 1.7em;
     padding-top: .5em;
+    margin-bottom: 0px;
+    font-family: 'Melbourne_reg';
 }
 
 .resp-tabs-list li:hover {
     background: #2438ad;
     color: #fff;
 }
-
 
 @media(max-width:1040px) {
     .top_header .title li, .top_header .userdetails li {
@@ -87,9 +90,10 @@ header h4 {
     .dgt {
         font-size: 1em;
         letter-spacing: 1px;
-        padding-top: 10px;
         margin-bottom: 1em;
         font-weight: bold;
+        font-family: 'Melbourne_reg';
+
     }
 
     .ls-item {
@@ -97,13 +101,6 @@ header h4 {
     }
     .ls-item .h3 {
         text-align: center;
-    }
-
-    .ls-item ol {
-        line-height: 2rem;
-    }
-    .ls-item ol li {
-         margin: 10px 0;
     }
 
     .jumbotron {
