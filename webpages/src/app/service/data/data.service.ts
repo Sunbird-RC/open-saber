@@ -14,16 +14,16 @@ export class DataService {
   http: HttpClient;
   baseUrl: string;
   portNumber = {
-    TrainingCenter: 8080,
-    Course:8081,
-    Teacher:8082,
-    Student: 8083
+    TrainingCenter: 9145,
+    Course:9145,
+    Teacher:9145,
+    Student: 9145
     
   }
 
   constructor(http: HttpClient) {
     this.http = http;
-    this.baseUrl = "http://localhost:";
+    this.baseUrl = "http://127.0.0.1:";
   }
 
   post(requestParam: any, entityType: string): Observable<any> {
