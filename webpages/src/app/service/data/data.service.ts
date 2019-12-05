@@ -23,7 +23,7 @@ export class DataService {
 
   constructor(http: HttpClient) {
     this.http = http;
-    this.baseUrl = "http://127.0.0.1:";
+    this.baseUrl = "http://127.0.0.1:9145";
   }
 
   post(requestParam: any, entityType: string): Observable<any> {
@@ -31,7 +31,7 @@ export class DataService {
       headers: requestParam.header ? this.getHeader(requestParam.header) : this.getHeader(),
       params: requestParam.param
     }
-    return this.http.post(this.baseUrl + this.portNumber[entityType] + requestParam.url, requestParam.data, httpOptions).pipe(
+    return this.http.post(this.baseUrl + "/" + entityType + requestParam.url, requestParam.data, httpOptions).pipe(
       mergeMap((data: any) => {
         console.log("body", data)
         if (data.responseCode !== 'OK') {

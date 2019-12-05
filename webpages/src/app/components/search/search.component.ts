@@ -24,8 +24,8 @@ export class SearchComponent implements OnInit, OnDestroy {
   nextBtn = false;
   currentOffset: any;
   intialOffset = 0;
-  limit = 10;
-  offset = 10;
+  limit = 50;
+  offset = 50;
   public unsubscribe$ = new Subject<void>();
   public key: string;
   showResultNotFound = false;
