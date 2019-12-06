@@ -19,18 +19,20 @@ let keyCloak_config = {
 
 
 const getToken = async (callback)  => {
+    let adminId = process.env.systemAdminId || "sysadmin@ekstep.org";
+    let adminPassword = process.env.systemAdminPassword || "password1";
     this.config = keyCloak_config;
     this.keyCloakConfig = new keyCloakAuthUtils.Config(this.config);
     this.grantManager = new keyCloakAuthUtils.GrantManager(this.keyCloakConfig);
     try {
-        let grant = await self.grantManager.obtainDirectly("sysadmin@ekstep.org", 'password1', undefined, 'openid')
+        let grant = await this.grantManager.obtainDirectly(adminId, adminPassword, undefined, 'openid')
         return callback(null, grant);
     } catch (error) {
         console.log("error", error)
     }
 }
 
-const getUserByRole = async function (role, token, callback) {
+const getUserByRole = function (role, token, callback) {
 
     var headers = {
         'content-type': 'application/json',

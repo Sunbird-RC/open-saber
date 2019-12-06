@@ -5,19 +5,15 @@ var bodyParser = require("body-parser");
 var cors = require("cors")
 const morgan = require("morgan");
 const server = http.createServer(app);
-const realmName = process.env.keycloak_realmName || "PartnerRegistry"
-const keyCloakHost = process.env.keycloak_url || "http://localhost:8080/auth/admin/realms/" + realmName + "/users";
-const request = require('request')
 const _ = require('lodash')
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 var async = require('async');
-const templates = require('./templates/template.config.json');
-let ApiInterceptor = require('./keycloakHelper')
-let ruleSet = require('./notifyRuleSet.json')
+const templateConfig = require('./templates/template.config.json');
 let notification = require('./notification.js')
 const registryService = require('./registryService.js')
-const keycloakHelper = require('./keycloakHelper.js')
+const keycloakHelper = require('./keycloakHelper.js');
+const notificationRules = require('./notiyRulesSet.json')
 app.use(cors())
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -26,45 +22,16 @@ app.use(bodyParser.json());
 const port = process.env.PORT || 8090;
 
 
-//need to fix this middleware not 
-// app.use("/register/users", (req, res, next) => {
-//     res.on("end", function () {
-//         console.log(`${req.method} ${req.originalUrl}`)
-//         if (req.originalUrl === ruleSet.registerUsers.url) {
-//             getAdminUserEmailId();
-//         }
-//     })
-// })
-
-
-const getAdminUserEmailId = async () => {
-    let tokenDetails = await getTokenDetails();
-    if (tokenDetails) {
-        keycloakHelper.getUserByRole('admin', tokenDetails.access_token.token, function (err, data) {
-            notify(data[0].email);
-        });
+app.use(function (req, res, next) {
+    console.log(`${req.method} ${req.originalUrl}`)
+    if (req.originalUrl === '/hello') {
     }
+    next();
+});
+
+const notify = (roles) => {
+    notification(roles);
 }
-
-
-const notify = (email) => {
-    notification(email);
-}
-
-
-const getTokenDetails = () => {
-    return new Promise((resolve, reject) => {
-        var apiInterceptor = new ApiInterceptor()
-        apiInterceptor.getToken(function (err, token) {
-            if (token) {
-                resolve(token)
-            } else {
-                reject(err)
-            }
-        })
-    })
-}
-
 
 app.post("/register/users", (req, res) => {
     createUser(req.body, req.headers, function (err, data) {
@@ -72,6 +39,7 @@ app.post("/register/users", (req, res) => {
             res.statusCode = err.statusCode;
             return res.send(err.body)
         } else {
+            notify(notificationRules.create.roles)
             return res.send(data);
         }
     });
@@ -83,8 +51,6 @@ const createUser = (value, header, callback) => {
             keycloakHelper.registerUserToKeycloak(value.request, header, callback)
         },
         function (value, header, res, callback2) {
-            if (res.statusCode == 201) {
-            }
             console.log("Employee successfully added to registry")
             addEmployeeToRegistry(value, header, res, callback2)
         }
@@ -92,11 +58,27 @@ const createUser = (value, header, callback) => {
         console.log('Main Callback --> ' + result);
         if (err) {
             callback(err, null)
-        } else
-            callback(null, result)
+        } else {
+            callback(null, result);
+        }
     });
 }
 
+const addEmployeeToRegistry = (value, header, res, callback) => {
+    if (res.statusCode == 201) {
+        registryService.addEmployee(value, function (err, res) {
+            if (res.statusCode == 200) {
+                console.log("Employee successfully added to registry")
+                callback(null, res.body)
+            } else {
+                console.log("Employee could not be added to registry" + res.statusCode)
+                callback(res.statusCode, res.errorMessage)
+            }
+        })
+    } else {
+        callback(res, null)
+    }
+}
 
 app.post("/registry/add", (req, res, next) => {
     registryService.addEmployee(req.body, function (err, data) {
@@ -105,6 +87,9 @@ app.post("/registry/add", (req, res, next) => {
 });
 
 app.post("/registry/search", (req, res, next) => {
+    if (!_.isEmpty(req.headers.authorization)) {
+        req.body.request.viewTemplateId = getViewtemplate(req.headers.authorization);
+    }
     registryService.searchEmployee(req.body, function (err, data) {
         return res.send(data);
     })
@@ -126,12 +111,31 @@ const getViewtemplate = (authToken) => {
     var searchTemplate = getTemplateName(roles, 'searchTemplates');
     return searchTemplate;
 }
+//need to notify users based on updated attributes
+//for example notify fin-admin when mac address updated
 
 app.post("/registry/update", (req, res, next) => {
     registryService.updateEmployee(req.body, function (err, data) {
-        return res.send(data);
+        if (data) {
+            notifyUserBasedOnAttributes(req);
+            return res.send(data);
+        } else {
+            return res.send(err);
+        }
     })
 });
+
+//if they updated both githubId and macAddress
+//I need to update both the  ids for example;
+const notifyUserBasedOnAttributes = (req) => {
+    let params = req.body.Employee;
+    _.forEach(notificationRules.update.attributes, function (value) {
+        if (_.includes(_.keys(params), value)) {
+            let roles = notificationRules.update[value].roles;
+            notify(roles);
+        }
+    });
+}
 
 app.get("/formTemplates", (req, res, next) => {
     getFormTemplates(req.headers, function (err, data) {
@@ -204,59 +208,6 @@ const readFormTemplate = (value, callback) => {
         }
     });
 }
-
-
-const addEmployeeToRegistry = (value, header, res, callback) => {
-    if (res.statusCode == 201) {
-        console.log("value", value)
-        registryService.addEmployee(value, function (err, res) {
-            if (res.statusCode == 200) {
-                console.log("Employee successfully added to registry")
-                callback(null, res.body)
-            } else {
-                console.log("Employee could not be added to registry" + res.statusCode)
-                callback(res.statusCode, res.errorMessage)
-            }
-        })
-    } else {
-        callback(res, null)
-    }
-}
-
-const addUserToKeycloak = (value, headers, callback) => {
-    const options = {
-        method: 'POST',
-        url: keyCloakHost,
-        json: true,
-        headers: {
-            'content-type': 'application/json',
-            'accept': 'application/json',
-            'Authorization': headers.authorization
-        },
-        body: {
-            username: value.email,
-            enabled: true,
-            emailVerified: false,
-            firstName: value.name,
-            email: value.email,
-            requiredActions: [
-                "UPDATE_PASSWORD"
-            ],
-            credentials: [
-                {
-                    "value": "password",
-                    "type": "password"
-                }
-            ]
-        },
-        json: true
-    }
-    request(options, function (err, res, body) {
-        callback(null, value, headers, res)
-    })
-}
-
-
 
 startServer = () => {
     server.listen(port, function () {

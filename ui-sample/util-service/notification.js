@@ -1,7 +1,8 @@
-const request = require('request')
-const notificationHost = "http://localhost:9000/v1/notification/send/sync"
+const httpUtil = require('./httpUtils.js');
+const notificationHost = process.env.notificationUrl || "http://localhost:9000/v1/notification/send/sync"
+const keycloakHelper = require('./keycloakHelper.js');
 
-const notify = (email) => {
+const sendNotifications = (mailIds) => {
     const reqBody = {
         id: "notification.message.send",
         ver: "1.0",
@@ -17,7 +18,7 @@ const notify = (email) => {
                     mode: "email",
                     deliveryType: "message",
                     config: { "subject": "Welcome to Ekstep" },
-                    ids: [email],
+                    ids: mailIds,
                     template: {
                         data: "Hello, thanks for completing",
                     }
@@ -28,19 +29,54 @@ const notify = (email) => {
     const option = {
         method: 'POST',
         url: notificationHost,
-        json: true,
         headers: {
             'content-type': 'application/json',
             'accept': 'application/json'
         },
         body: reqBody,
-        json: true
     }
-    request(option, function (err, res) {
+    httpUtil.post(option, function (err, res) {
         if (res) {
-            console.log("res", res.body)
+            callback(null, res.body)
+        } else {
+            callback(err)
         }
-    })
+    });
+}
+
+const getUserMailId = (roles) => {
+    let tokenDetails;
+    getTokenDetails(function (err, token) {
+        let emailIds = []
+        if (token) {
+            tokenDetails = token;
+            _.forEach(roles, function (value) {
+                keycloakHelper.getUserByRole(value, tokenDetails.access_token.token, function (err, data) {
+                    if (data) {
+                        _.forEach(data, function (value) {
+                            emailIds.push(value);
+                        })
+                    }
+                });
+                sendNotifications(emailIds);
+            });
+        }
+    });
+}
+
+
+const getTokenDetails = (callback) => {
+    keycloakHelper.getToken(function (err, token) {
+        if (token) {
+            callback(null, token);
+        } else {
+            callback(err)
+        }
+    });
+}
+
+const notify = (roles) => {
+    getUserMailId(roles);
 }
 
 module.exports = notify;

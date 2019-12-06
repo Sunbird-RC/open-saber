@@ -1,0 +1,13 @@
+{
+        "create":{
+            "role":["admin"],
+            "template":"Onboard new user $userName",
+            "url":"/registry/users"
+        },
+        "updates":{
+            "attributes":["macAddress", "gitHubId"],
+            "macAdress":{
+                "role":["fin-admin"]
+            }
+        }
+}
