@@ -1,6 +1,0 @@
-{
-    "registerUsers":{
-        "url":"/users",
-        "role":"admin"
-    }
-}

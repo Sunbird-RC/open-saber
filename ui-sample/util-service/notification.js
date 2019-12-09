@@ -1,6 +1,7 @@
 const httpUtil = require('./httpUtils.js');
 const notificationHost = process.env.notificationUrl || "http://localhost:9000/v1/notification/send/sync"
 const keycloakHelper = require('./keycloakHelper.js');
+const _ = require('lodash')
 
 const sendNotifications = (mailIds) => {
     const reqBody = {
@@ -44,21 +45,23 @@ const sendNotifications = (mailIds) => {
     });
 }
 
-const getUserMailId = (roles) => {
+const  getUserMailId = async (roles) => {
     let tokenDetails;
     getTokenDetails(function (err, token) {
-        let emailIds = []
+        let emailIds = [];
         if (token) {
             tokenDetails = token;
             _.forEach(roles, function (value) {
-                keycloakHelper.getUserByRole(value, tokenDetails.access_token.token, function (err, data) {
+             keycloakHelper.getUserByRole(value, tokenDetails.access_token.token, function (err, data) {
                     if (data) {
                         _.forEach(data, function (value) {
-                            emailIds.push(value);
-                        })
+                            emailIds.push(value.email);
+                        });
                     }
                 });
-                sendNotifications(emailIds);
+                if (emailIds.length > 0) {
+                    sendNotifications(emailIds);
+                }
             });
         }
     });

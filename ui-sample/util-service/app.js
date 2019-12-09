@@ -13,7 +13,7 @@ const templateConfig = require('./templates/template.config.json');
 let notification = require('./notification.js')
 const registryService = require('./registryService.js')
 const keycloakHelper = require('./keycloakHelper.js');
-const notificationRules = require('./notiyRulesSet.json')
+const notificationRules = require('./notifyRulesSet.json')
 app.use(cors())
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -39,7 +39,7 @@ app.post("/register/users", (req, res) => {
             res.statusCode = err.statusCode;
             return res.send(err.body)
         } else {
-            notify(notificationRules.create.roles)
+            notify(notificationRules.create.role)
             return res.send(data);
         }
     });

@@ -49,7 +49,7 @@ const getUserByRole = function (role, token, callback) {
             if (res.body && res.statusCode == 200) {
                 callback(null, res.body)
             } else {
-
+                callback(err)
             }
         });
     } catch (err) {
