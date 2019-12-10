@@ -18,7 +18,7 @@ let keyCloak_config = {
 
 
 
-const getToken = (callback) => {
+const getToken = async (callback) => {
     let adminId = process.env.systemAdminId || "sysadmin@ekstep.org";
     let adminPassword = process.env.systemAdminPassword || "password1";
     this.config = keyCloak_config;
