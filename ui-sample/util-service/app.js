@@ -14,6 +14,7 @@ let notification = require('./notification.js')
 const registryService = require('./registryService.js')
 const keycloakHelper = require('./keycloakHelper.js');
 const notificationRules = require('./notifyRulesSet.json')
+const WorkFlowFactory = require('./workFlowFactory.js');
 app.use(cors())
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -21,13 +22,19 @@ app.use(bodyParser.json());
 
 const port = process.env.PORT || 8090;
 
+
+const workFlowCall = (req) => {
+    WorkFlowFactory.invoke(req);
+}
+
 app.post("/register/users", (req, res) => {
     createUser(req.body, req.headers, function (err, data) {
         if (err) {
             res.statusCode = err.statusCode;
             return res.send(err.body)
         } else {
-            notify(notificationRules.create.role)
+            workFlowCall(req);
+            // notify(notificationRules.create.role)
             return res.send(data);
         }
     });
