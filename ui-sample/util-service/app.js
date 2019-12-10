@@ -21,10 +21,6 @@ app.use(bodyParser.json());
 
 const port = process.env.PORT || 8090;
 
-const notify = (roles) => {
-    notification(roles);
-}
-
 app.post("/register/users", (req, res) => {
     createUser(req.body, req.headers, function (err, data) {
         if (err) {
@@ -193,6 +189,57 @@ const readFormTemplate = (value, callback) => {
         else {
             let jsonData = JSON.parse(data);
             callback(null, jsonData);
+        }
+    });
+}
+
+const notify = (roles) => {
+    getUserMailId(roles);
+}
+
+const getUserMailId = (roles) => {
+    let tokenDetails;
+    let emailIds = [];
+    getTokenDetails(function (err, token) {
+        if (token) {
+            tokenDetails = token;
+            for (let i = 0; i < roles.length; i++) {
+                getUser(roles[i], tokenDetails, function (err, data) {
+                    if (data.length > 0) {
+                        emailIds.push(...data)
+                        if (i == roles.length - 1) {
+                            let unique = _.uniq(emailIds);
+                            notification(unique);
+                        }
+                    }
+                });
+            }
+
+        }
+    });
+}
+
+const getTokenDetails = (callback) => {
+    keycloakHelper.getToken(function (err, token) {
+        if (token) {
+            callback(null, token);
+        } else {
+            callback(err)
+        }
+    });
+}
+
+function getUser(value, tokenDetails, callback) {
+    let emailIds = [];
+    keycloakHelper.getUserByRole(value, tokenDetails.access_token.token, function (err, data) {
+        if (data) {
+            _.forEach(data, function (value) {
+                emailIds.push(value.email);
+            });
+            callback(null, emailIds)
+        }
+        else {
+            callback(err)
         }
     });
 }
