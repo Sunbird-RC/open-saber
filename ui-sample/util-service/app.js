@@ -21,14 +21,6 @@ app.use(bodyParser.json());
 
 const port = process.env.PORT || 8090;
 
-
-app.use(function (req, res, next) {
-    console.log(`${req.method} ${req.originalUrl}`)
-    if (req.originalUrl === '/hello') {
-    }
-    next();
-});
-
 const notify = (roles) => {
     notification(roles);
 }
