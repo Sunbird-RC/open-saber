@@ -18,7 +18,7 @@ let keyCloak_config = {
 
 
 
-const getToken = async (callback)  => {
+const getToken = (callback) => {
     let adminId = process.env.systemAdminId || "sysadmin@ekstep.org";
     let adminPassword = process.env.systemAdminPassword || "password1";
     this.config = keyCloak_config;
@@ -82,7 +82,7 @@ const registerUserToKeycloak = (value, headers, callback) => {
             ]
         }
     }
-    httpUtil.post(options, function(err, res) {
+    httpUtil.post(options, function (err, res) {
         callback(null, value, headers, res)
     });
 

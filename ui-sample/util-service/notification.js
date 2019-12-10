@@ -38,31 +38,47 @@ const sendNotifications = (mailIds) => {
     }
     httpUtil.post(option, function (err, res) {
         if (res) {
-            callback(null, res.body)
+            console.log("notification has been sucessfully sent", res.body)
+            // callback(null, res.body)
         } else {
-            callback(err)
+            // callback(err)
         }
     });
 }
 
-const  getUserMailId = async (roles) => {
+const getUserMailId = async (roles) => {
     let tokenDetails;
+    let emailIds = [];
     getTokenDetails(function (err, token) {
-        let emailIds = [];
         if (token) {
             tokenDetails = token;
-            _.forEach(roles, function (value) {
-             keycloakHelper.getUserByRole(value, tokenDetails.access_token.token, function (err, data) {
-                    if (data) {
-                        _.forEach(data, function (value) {
-                            emailIds.push(value.email);
-                        });
+            for (let i = 0; i < roles.length; i++) {
+                getUser(roles[i], tokenDetails, function (err, data) {
+                    if (data.length > 0) {
+                        emailIds.push(...data)
+                        if (i == roles.length - 1) {
+                            let unique = _.uniq(emailIds);
+                            sendNotifications(unique);
+                        }
                     }
                 });
-                if (emailIds.length > 0) {
-                    sendNotifications(emailIds);
-                }
+            }
+
+        }
+    });
+}
+
+function getUser(value, tokenDetails, callback) {
+    let emailIds = [];
+    keycloakHelper.getUserByRole(value, tokenDetails.access_token.token, function (err, data) {
+        if (data) {
+            _.forEach(data, function (value) {
+                emailIds.push(value.email);
             });
+            callback(null, emailIds)
+        }
+        else {
+            callback(err)
         }
     });
 }

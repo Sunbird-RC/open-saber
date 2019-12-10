@@ -111,8 +111,6 @@ const getViewtemplate = (authToken) => {
     var searchTemplate = getTemplateName(roles, 'searchTemplates');
     return searchTemplate;
 }
-//need to notify users based on updated attributes
-//for example notify fin-admin when mac address updated
 
 app.post("/registry/update", (req, res, next) => {
     registryService.updateEmployee(req.body, function (err, data) {
@@ -125,13 +123,11 @@ app.post("/registry/update", (req, res, next) => {
     })
 });
 
-//if they updated both githubId and macAddress
-//I need to update both the  ids for example;
 const notifyUserBasedOnAttributes = (req) => {
-    let params = req.body.Employee;
+    let params = _.keys(req.body.request.Employee);
     _.forEach(notificationRules.update.attributes, function (value) {
-        if (_.includes(_.keys(params), value)) {
-            let roles = notificationRules.update[value].roles;
+        if (_.includes(params, value)) {
+            let roles = notificationRules.update[value].role;
             notify(roles);
         }
     });
