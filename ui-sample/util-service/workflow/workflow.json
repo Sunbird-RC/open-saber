@@ -10,11 +10,11 @@
                 "sendNotifications"
             ]
         },
-       "/registry/update": {
+        "/registry/update": {
             "url": "registry/update",
             "method": "post",
             "actions": [
-                "notifyUsers"
+                "notifyUsersBasedOnAttributes"
             ]
         }
     }

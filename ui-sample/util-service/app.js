@@ -10,11 +10,9 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 var async = require('async');
 const templateConfig = require('./templates/template.config.json');
-let notification = require('./notification.js')
 const registryService = require('./registryService.js')
 const keycloakHelper = require('./keycloakHelper.js');
-const notificationRules = require('./notifyRulesSet.json')
-const WorkFlowFactory = require('./workFlowFactory.js');
+const WorkFlowFactory = require('./workflow/workFlowFactory.js');
 app.use(cors())
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -23,7 +21,7 @@ app.use(bodyParser.json());
 const port = process.env.PORT || 8090;
 
 
-const workFlowCall = (req) => {
+const workFlowFunctions = (req) => {
     WorkFlowFactory.invoke(req);
 }
 
@@ -33,8 +31,7 @@ app.post("/register/users", (req, res) => {
             res.statusCode = err.statusCode;
             return res.send(err.body)
         } else {
-            workFlowCall(req);
-            // notify(notificationRules.create.role)
+            workFlowFunctions(req);
             return res.send(data);
         }
     });
@@ -110,23 +107,13 @@ const getViewtemplate = (authToken) => {
 app.post("/registry/update", (req, res, next) => {
     registryService.updateEmployee(req.body, function (err, data) {
         if (data) {
-            notifyUserBasedOnAttributes(req);
+            workFlowFunctions(req);
             return res.send(data);
         } else {
             return res.send(err);
         }
     })
 });
-
-const notifyUserBasedOnAttributes = (req) => {
-    let params = _.keys(req.body.request.Employee);
-    _.forEach(notificationRules.update.attributes, function (value) {
-        if (_.includes(params, value)) {
-            let roles = notificationRules.update[value].role;
-            notify(roles);
-        }
-    });
-}
 
 app.get("/formTemplates", (req, res, next) => {
     getFormTemplates(req.headers, function (err, data) {
@@ -196,57 +183,6 @@ const readFormTemplate = (value, callback) => {
         else {
             let jsonData = JSON.parse(data);
             callback(null, jsonData);
-        }
-    });
-}
-
-const notify = (roles) => {
-    getUserMailId(roles);
-}
-
-const getUserMailId = (roles) => {
-    let tokenDetails;
-    let emailIds = [];
-    getTokenDetails(function (err, token) {
-        if (token) {
-            tokenDetails = token;
-            for (let i = 0; i < roles.length; i++) {
-                getUser(roles[i], tokenDetails, function (err, data) {
-                    if (data.length > 0) {
-                        emailIds.push(...data)
-                        if (i == roles.length - 1) {
-                            let unique = _.uniq(emailIds);
-                            notification(unique);
-                        }
-                    }
-                });
-            }
-
-        }
-    });
-}
-
-const getTokenDetails = (callback) => {
-    keycloakHelper.getToken(function (err, token) {
-        if (token) {
-            callback(null, token);
-        } else {
-            callback(err)
-        }
-    });
-}
-
-function getUser(value, tokenDetails, callback) {
-    let emailIds = [];
-    keycloakHelper.getUserByRole(value, tokenDetails.access_token.token, function (err, data) {
-        if (data) {
-            _.forEach(data, function (value) {
-                emailIds.push(value.email);
-            });
-            callback(null, emailIds)
-        }
-        else {
-            callback(err)
         }
     });
 }

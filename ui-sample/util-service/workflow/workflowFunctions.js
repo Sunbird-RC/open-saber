@@ -1,7 +1,7 @@
-const keycloakHelper = require('./keycloakHelper.js');
+const keycloakHelper = require('../keycloakHelper.js');
 const _ = require('lodash')
-const notificationRules = require('./notifyRulesSet.json')
-const notify = require('./notification.js')
+const notify = require('../notification.js')
+var async = require('async');
 
 
 class WorkFlowFunctions {
@@ -13,21 +13,23 @@ class WorkFlowFunctions {
         // Provide a property bag for any data exchange between workflow functions.
         this.placeholders = {};
 
-        this.emailIds = [];
+        this.attributes = ["macAddress", "githubId"]
     }
 
     /**
-     * get users by role , where role = 'admin'
+     * get users where user role is admin
      * 
      * @param {*} callback 
      */
     getAdminUsers(callback) {
         this.getUserMailId('admin', (err, data) => {
             if (data) {
+                let emailIds = [];
                 if (data.length > 0) {
                     _.forEach(data, (value) => {
-                        this.emailIds.push(value.email);
+                        emailIds.push(value.email);
                     });
+                    this.placeholders['emailIds'] = emailIds;
                     callback(null, data)
                 }
             } else {
@@ -39,10 +41,13 @@ class WorkFlowFunctions {
     getPartnerAdminUsers(callback) {
         this.getUserMailId('partner-admin', (err, data) => {
             if (data) {
+                let emailIds = [];
                 if (data.length > 0) {
                     _.forEach(data, (value) => {
-                        this.emailIds.push(value.email);
+                        emailIds.push(value.email);
                     });
+                    console.log("pa", this.placeholders)
+                    this.placeholders['emailIds'] = emailIds;
                     callback(null, data)
                 }
             } else {
@@ -54,7 +59,14 @@ class WorkFlowFunctions {
     getFinAdminUsers(callback) {
         this.getUserMailId('fin-admin', (err, data) => {
             if (data) {
-                callback(null, data)
+                let emailIds = [];
+                if (data.length > 0) {
+                    _.forEach(data, (value) => {
+                        emailIds.push(value.email);
+                    });
+                    this.placeholders['emailIds'] = emailIds;
+                    callback(null, data)
+                }
             } else {
                 callback(err)
             }
@@ -63,7 +75,14 @@ class WorkFlowFunctions {
     getReporterUsers(callback) {
         this.getUserMailId('reporter', (err, data) => {
             if (data) {
-                callback(null, data)
+                let emailIds = [];
+                if (data.length > 0) {
+                    _.forEach(data, (value) => {
+                        emailIds.push(value.email);
+                    });
+                    this.placeholders['emailIds'] = emailIds;
+                    callback(null, data)
+                }
             } else {
                 callback(err)
             }
@@ -72,7 +91,14 @@ class WorkFlowFunctions {
     getOwnerUsers(callback) {
         this.getUserMailId('owner', (err, data) => {
             if (data) {
-                callback(null, data)
+                let emailIds = [];
+                if (data.length > 0) {
+                    _.forEach(data, (value) => {
+                        emailIds.push(value.email);
+                    });
+                    this.placeholders['emailIds'] = emailIds;
+                    callback(null, data)
+                }
             } else {
                 callback(err)
             }
@@ -84,27 +110,44 @@ class WorkFlowFunctions {
      * @param {*} callback 
      */
     sendNotifications(callback) {
-        notify(this.emailIds);
+        notify(this.placeholders.emailIds);
     }
 
 
     notifyUsersBasedOnAttributes(callback) {
         let params = _.keys(this.request.body.request.Employee);
-        _.forEach(notificationRules.update.attributes, (value) => {
-
+        _.forEach(this.attributes, (value) => {
+            if (_.includes(params, value)) {
+                this.getActions(value);
+            }
         });
     }
 
-    notifyUsers(attribute, callback) {
+    getActions(attribute, callback) {
+        let actions = []
         switch (attribute) {
             case 'githubId':
-                callback(null, 'getFinAdminUsers');
+                actions = ['getFinAdminUsers', 'sendNotifications'];
+                this.invoke(actions)
                 break;
             case 'macAddress':
-                callback(null, 'fin-admin')
+                actions = ['getReporterUsers', 'sendNotifications'];
+                this.invoke(actions)
                 break;
             default:
                 callback('no attribute found')
+        }
+    }
+
+    invoke(actions, callback) {
+        if (actions.length > 0) {
+            async.forEachSeries(actions, (value, callback) => {
+                this[value]((err, data) => {
+                    if (data) {
+                        callback()
+                    }
+                })
+            });
         }
     }
 
