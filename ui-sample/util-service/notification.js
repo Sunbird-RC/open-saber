@@ -3,7 +3,6 @@ const notificationHost = process.env.notificationUrl || "http://localhost:9000/v
 const _ = require('lodash')
 
 const sendNotifications = (mailIds) => {
-    console.log("ma", mailIds)
     const reqBody = {
         id: "notification.message.send",
         ver: "1.0",

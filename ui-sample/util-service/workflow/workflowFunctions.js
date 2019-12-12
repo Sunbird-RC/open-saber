@@ -15,12 +15,7 @@ class WorkFlowFunctions {
 
         this.attributes = ["macAddress", "githubId"]
     }
-
-    /**
-     * get users where user role is admin
-     * 
-     * @param {*} callback 
-     */
+    
     getAdminUsers(callback) {
         this.getUserMailId('admin', (err, data) => {
             if (data) {
@@ -46,7 +41,6 @@ class WorkFlowFunctions {
                     _.forEach(data, (value) => {
                         emailIds.push(value.email);
                     });
-                    console.log("pa", this.placeholders)
                     this.placeholders['emailIds'] = emailIds;
                     callback(null, data)
                 }
@@ -143,9 +137,7 @@ class WorkFlowFunctions {
         if (actions.length > 0) {
             async.forEachSeries(actions, (value, callback) => {
                 this[value]((err, data) => {
-                    if (data) {
-                        callback()
-                    }
+                    callback()
                 })
             });
         }

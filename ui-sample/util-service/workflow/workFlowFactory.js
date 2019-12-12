@@ -11,13 +11,13 @@ class WorkFlowFactory {
     invoke(request) {
         let config = workFlowJson.config[request.url];
         let workflow = new WorkFlowFunctions(request);
-        async.forEachSeries(config.actions, function (value, callback) {
-            workflow[value]((err, data) => {
-                if (data) {
-                    callback()
-                }
-            })
-        })
+        if(config) {
+            async.forEachSeries(config.actions, function (value, callback) {
+                workflow[value]((err, data) => {
+                        callback()
+                });
+            });
+        }
     }
 }
 

@@ -25,13 +25,18 @@ const workFlowFunctions = (req) => {
     WorkFlowFactory.invoke(req);
 }
 
+app.use((req, res, next) => {
+    console.log("pre api interceptor")
+    workFlowFunctions(req);
+    next();
+});
+
 app.post("/register/users", (req, res) => {
     createUser(req.body, req.headers, function (err, data) {
         if (err) {
             res.statusCode = err.statusCode;
             return res.send(err.body)
         } else {
-            workFlowFunctions(req);
             return res.send(data);
         }
     });
@@ -107,7 +112,6 @@ const getViewtemplate = (authToken) => {
 app.post("/registry/update", (req, res, next) => {
     registryService.updateEmployee(req.body, function (err, data) {
         if (data) {
-            workFlowFunctions(req);
             return res.send(data);
         } else {
             return res.send(err);
