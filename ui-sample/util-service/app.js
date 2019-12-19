@@ -13,6 +13,7 @@ const templateConfig = require('./templates/template.config.json');
 const registryService = require('./registryService.js')
 const keycloakHelper = require('./keycloakHelper.js');
 const WorkFlowFactory = require('./workflow/workFlowFactory.js');
+const logger = require('./log4j.js');
 app.use(cors())
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -21,17 +22,23 @@ app.use(bodyParser.json());
 const port = process.env.PORT || 8090;
 
 
-const workFlowFunctions = (req) => {
-    WorkFlowFactory.invoke(req);
+const workFlowFunctionPre = (req) => {
+    WorkFlowFactory.preInvoke(req);
+}
+
+const workFlowFunctionPost = (req) => {
+    WorkFlowFactory.postInvoke(req);
 }
 
 app.use((req, res, next) => {
-    console.log("pre api interceptor")
-    workFlowFunctions(req);
+    logger.info('pre api request interceptor');
+    workFlowFunctionPre(req);
     next();
+    logger.info("post api request interceptor");
+    workFlowFunctionPost(req);
 });
 
-app.post("/register/users", (req, res) => {
+app.post("/register/users", (req, res, next) => {
     createUser(req.body, req.headers, function (err, data) {
         if (err) {
             res.statusCode = err.statusCode;
@@ -48,11 +55,11 @@ const createUser = (value, header, callback) => {
             keycloakHelper.registerUserToKeycloak(value.request, header, callback)
         },
         function (value, header, res, callback2) {
-            console.log("Employee successfully added to registry")
+            logger.info("Employee successfully added to registry")
             addEmployeeToRegistry(value, header, res, callback2)
         }
     ], function (err, result) {
-        console.log('Main Callback --> ' + result);
+        logger.info('Main Callback --> ' + result);
         if (err) {
             callback(err, null)
         } else {
@@ -65,10 +72,10 @@ const addEmployeeToRegistry = (value, header, res, callback) => {
     if (res.statusCode == 201) {
         registryService.addEmployee(value, function (err, res) {
             if (res.statusCode == 200) {
-                console.log("Employee successfully added to registry")
+                logger.info("Employee successfully added to registry")
                 callback(null, res.body)
             } else {
-                console.log("Employee could not be added to registry" + res.statusCode)
+                logger.debug("Employee could not be added to registry" + res.statusCode)
                 callback(res.statusCode, res.errorMessage)
             }
         })
@@ -193,7 +200,7 @@ const readFormTemplate = (value, callback) => {
 
 startServer = () => {
     server.listen(port, function () {
-        console.log("util service listening on port " + port);
+        logger.info("util service listening on port " + port);
     })
 };
 

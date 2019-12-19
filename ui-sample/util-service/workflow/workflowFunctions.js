@@ -1,4 +1,5 @@
 const keycloakHelper = require('../keycloakHelper.js');
+const registryService = require('../registryService.js');
 const _ = require('lodash')
 const notify = require('../notification.js')
 var async = require('async');
@@ -13,9 +14,11 @@ class WorkFlowFunctions {
         // Provide a property bag for any data exchange between workflow functions.
         this.placeholders = {};
 
-        this.attributes = ["macAddress", "githubId"]
+        this.userData = {};
+
+        this.attributes = ["macAddress", "githubId", "isActive"]
     }
-    
+
     getAdminUsers(callback) {
         this.getUserMailId('admin', (err, data) => {
             if (data) {
@@ -99,14 +102,38 @@ class WorkFlowFunctions {
         });
     }
 
+    getUserByid(callback) {
+        let req = this.request.body;
+        req.id = "open-saber.registry.read"
+        req.request.Employee.osid = this.request.body.request.Employee.osid;
+        registryService.readEmployee(req, (err, data) => {
+            if (data) {
+                this.userData = data.result.Employee;
+                this.getTemplateparams()
+                callback(null, data.result.Employee)
+            }
+        });
+    }
+
     /**
      * calls notification send api 
      * @param {*} callback 
      */
     sendNotifications(callback) {
-        notify(this.placeholders.emailIds);
+        notify(this.placeholders, (err, data) => {
+            if (data) {
+                callback(null, data);
+            }
+        });
     }
 
+    getTemplateparams() {
+        let params = {};
+        params.name = this.userData['name'];
+        params.logo = "https://ekstep.org/img/logo.png";
+        this.placeholders.emailIds = [this.userData.email];
+        this.placeholders.templateParams = params;
+    }
 
     notifyUsersBasedOnAttributes(callback) {
         let params = _.keys(this.request.body.request.Employee);
@@ -121,15 +148,19 @@ class WorkFlowFunctions {
         let actions = []
         switch (attribute) {
             case 'githubId':
-                actions = ['getFinAdminUsers', 'sendNotifications'];
+                actions = ['getUserByid', 'getFinAdminUsers', 'sendNotifications'];
+                this.placeholders.templateId = "updateTemplate";
                 this.invoke(actions)
                 break;
             case 'macAddress':
                 actions = ['getReporterUsers', 'sendNotifications'];
+                this.placeholders.templateId = "updateTemplate";
                 this.invoke(actions)
                 break;
-            default:
-                callback('no attribute found')
+            case 'isActive':
+                actions = ['getUserByid', 'sendNotifications', 'getAdminUsers', 'sendNotifications'];
+                this.placeholders.templateId = "onboardtemplate";
+                this.invoke(actions);
         }
     }
 
