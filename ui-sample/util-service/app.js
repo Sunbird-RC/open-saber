@@ -85,7 +85,7 @@ const addEmployeeToRegistry = (value, header, res, callback) => {
 }
 
 app.post("/registry/add", (req, res, next) => {
-    registryService.addEmployee(req.body, function (err, data) {
+    registryService.addEmployee(req, function (err, data) {
         return res.send(data);
     })
 });
@@ -94,13 +94,13 @@ app.post("/registry/search", (req, res, next) => {
     if (!_.isEmpty(req.headers.authorization)) {
         req.body.request.viewTemplateId = getViewtemplate(req.headers.authorization);
     }
-    registryService.searchEmployee(req.body, function (err, data) {
+    registryService.searchEmployee(req, function (err, data) {
         return res.send(data);
     })
 });
 
 app.post("/registry/read", (req, res, next) => {
-    registryService.readEmployee(req.body, function (err, data) {
+    registryService.readEmployee(req, function (err, data) {
         return res.send(data);
     })
 });
@@ -117,7 +117,7 @@ const getViewtemplate = (authToken) => {
 }
 
 app.post("/registry/update", (req, res, next) => {
-    registryService.updateEmployee(req.body, function (err, data) {
+    registryService.updateEmployee(req, function (err, data) {
         if (data) {
             return res.send(data);
         } else {

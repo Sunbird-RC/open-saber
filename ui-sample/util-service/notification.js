@@ -23,7 +23,7 @@ const sendNotifications = (placeholder, callback) => {
                     ids: placeholder.emailIds,
                     template: {
                         id: placeholder.templateId,
-                        params: placeholder.params
+                        params: placeholder.templateParams
                     },
                 }
             ]

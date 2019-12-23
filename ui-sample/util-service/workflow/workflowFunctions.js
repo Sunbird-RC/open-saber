@@ -3,6 +3,7 @@ const registryService = require('../registryService.js');
 const _ = require('lodash')
 const notify = require('../notification.js')
 var async = require('async');
+const logger = require('../log4j.js');
 
 
 class WorkFlowFunctions {
@@ -20,6 +21,7 @@ class WorkFlowFunctions {
     }
 
     getAdminUsers(callback) {
+        logger.info("get admin users method invoked")
         this.getUserMailId('admin', (err, data) => {
             if (data) {
                 let emailIds = [];
@@ -37,6 +39,7 @@ class WorkFlowFunctions {
     }
 
     getPartnerAdminUsers(callback) {
+        logger.info("get partner-admin users method invoked")
         this.getUserMailId('partner-admin', (err, data) => {
             if (data) {
                 let emailIds = [];
@@ -54,6 +57,7 @@ class WorkFlowFunctions {
     }
 
     getFinAdminUsers(callback) {
+        logger.info("get fin-admin users method invoked")
         this.getUserMailId('fin-admin', (err, data) => {
             if (data) {
                 let emailIds = [];
@@ -70,6 +74,7 @@ class WorkFlowFunctions {
         });
     }
     getReporterUsers(callback) {
+        logger.info("get reporter users method invoked")
         this.getUserMailId('reporter', (err, data) => {
             if (data) {
                 let emailIds = [];
@@ -86,6 +91,7 @@ class WorkFlowFunctions {
         });
     }
     getOwnerUsers(callback) {
+        logger.info("get owner users method invoked")
         this.getUserMailId('owner', (err, data) => {
             if (data) {
                 let emailIds = [];
@@ -103,13 +109,16 @@ class WorkFlowFunctions {
     }
 
     getUserByid(callback) {
-        let req = this.request.body;
-        req.id = "open-saber.registry.read"
-        req.request.Employee.osid = this.request.body.request.Employee.osid;
+        logger.info("get user by id method invoked ", this.request.body)
+        let req = {};
+        req.body = this.request.body;
+        req.body.id = "open-saber.registry.read"
+        req.body.request.Employee.osid = this.request.body.request.Employee.osid;
+        req.headers = this.request.headers;
         registryService.readEmployee(req, (err, data) => {
             if (data) {
                 this.userData = data.result.Employee;
-                this.getTemplateparams()
+                this.getTemplateparams();
                 callback(null, data.result.Employee)
             }
         });
@@ -120,6 +129,7 @@ class WorkFlowFunctions {
      * @param {*} callback 
      */
     sendNotifications(callback) {
+        console.log(this.placeholders)
         notify(this.placeholders, (err, data) => {
             if (data) {
                 callback(null, data);
@@ -129,16 +139,18 @@ class WorkFlowFunctions {
 
     getTemplateparams() {
         let params = {};
-        params.name = this.userData['name'];
-        params.logo = "https://ekstep.org/img/logo.png";
-        this.placeholders.emailIds = [this.userData.email];
+        params = this.userData;
         this.placeholders.templateParams = params;
+        this.placeholders.templateParams.paramName = this.placeholders.paramName;
+        this.placeholders.templateParams.paramValue = this.placeholders.paramValue;
     }
 
     notifyUsersBasedOnAttributes(callback) {
         let params = _.keys(this.request.body.request.Employee);
         _.forEach(this.attributes, (value) => {
             if (_.includes(params, value)) {
+                this.placeholders.paramName = value
+                this.placeholders.paramValue = this.request.body.request.Employee[value]
                 this.getActions(value);
             }
         });
@@ -149,12 +161,12 @@ class WorkFlowFunctions {
         switch (attribute) {
             case 'githubId':
                 actions = ['getUserByid', 'getFinAdminUsers', 'sendNotifications'];
-                this.placeholders.templateId = "updateTemplate";
+                this.placeholders.templateId = "updateParamTemplate";
                 this.invoke(actions)
                 break;
             case 'macAddress':
                 actions = ['getReporterUsers', 'sendNotifications'];
-                this.placeholders.templateId = "updateTemplate";
+                this.placeholders.templateId = "updateParamTemplate";
                 this.invoke(actions)
                 break;
             case 'isActive':

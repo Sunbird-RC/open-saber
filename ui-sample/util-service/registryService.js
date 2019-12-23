@@ -18,10 +18,7 @@ const addEmployee = (value, callback) => {
     }
     const options = {
         url: registryHost + "/add",
-        headers: {
-            'content-type': 'application/json',
-            'accept': 'application/json'
-        },
+        headers: getDefaultHeaders(value.headers),
         body: reqBody
     }
     httpUtil.post(options, function (err, res) {
@@ -37,11 +34,8 @@ const addEmployee = (value, callback) => {
 const updateEmployee = (value, callback) => {
     const options = {
         url: registryHost + "/update",
-        headers: {
-            'content-type': 'application/json',
-            'accept': 'application/json'
-        },
-        body: value
+        headers: getDefaultHeaders(value.headers),
+        body: value.body
     }
     httpUtil.post(options, function (err, res) {
         if (res) {
@@ -56,11 +50,8 @@ const updateEmployee = (value, callback) => {
 const readEmployee = (value, callback) => {
     const options = {
         url: registryHost + "/read",
-        headers: {
-            'content-type': 'application/json',
-            'accept': 'application/json'
-        },
-        body: value
+        headers: getDefaultHeaders(value.headers),
+        body: value.body
     }
     httpUtil.post(options, function (err, res) {
         if (res) {
@@ -74,11 +65,8 @@ const readEmployee = (value, callback) => {
 const searchEmployee = (value, callback) => {
     const options = {
         url: registryHost + "/search",
-        headers: {
-            'content-type': 'application/json',
-            'accept': 'application/json'
-        },
-        body: value
+        headers: getDefaultHeaders(value.headers),
+        body: value.body
     }
     httpUtil.post(options, function (err, res) {
         if (res) {
@@ -87,6 +75,16 @@ const searchEmployee = (value, callback) => {
             callback(err)
         }
     })
+}
+
+const getDefaultHeaders = (reqHeaders) => {
+    var token = reqHeaders.authorization.replace('Bearer ', '');
+    let headers = {
+        'content-type': 'application/json',
+        'accept': 'application/json',
+        'x-authenticated-user-token': token
+    }
+    return headers;
 }
 
 exports.addEmployee = addEmployee
