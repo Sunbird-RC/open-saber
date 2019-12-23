@@ -85,7 +85,7 @@ export class AdminPageComponent implements OnInit, OnDestroy {
       name: data.name,
       subProjectName: data.subProjectName,
       role: data.role,
-      isActive: data.isActive,
+      isOnboarded: data.isOnboarded,
       startDate: data.startDate,
       identifier: data.osid
     };
