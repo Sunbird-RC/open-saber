@@ -29,7 +29,7 @@ const sendNotifications = (placeholder, callback) => {
             ]
         }
     }
-    logger.info("resbogdy of notification", JSON.stringify(reqBody));
+    logger.info("request body of notification request", JSON.stringify(reqBody));
     const option = {
         method: 'POST',
         url: notificationHost,

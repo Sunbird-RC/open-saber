@@ -39,7 +39,7 @@ app.use((req, res, next) => {
 });
 
 app.post("/register/users", (req, res, next) => {
-    createUser(req.body, req.headers, function (err, data) {
+    createUser(req, function (err, data) {
         if (err) {
             res.statusCode = err.statusCode;
             return res.send(err.body)
@@ -49,14 +49,14 @@ app.post("/register/users", (req, res, next) => {
     });
 });
 
-const createUser = (value, header, callback) => {
+const createUser = (req, callback) => {
     async.waterfall([
         function (callback) {
-            keycloakHelper.registerUserToKeycloak(value.request, header, callback)
+            keycloakHelper.registerUserToKeycloak(req, callback)
         },
-        function (value, header, res, callback2) {
+        function (req, res, callback2) {
             logger.info("Employee successfully added to registry")
-            addEmployeeToRegistry(value, header, res, callback2)
+            addEmployeeToRegistry(req, res, callback2)
         }
     ], function (err, result) {
         logger.info('Main Callback --> ' + result);
@@ -68,9 +68,25 @@ const createUser = (value, header, callback) => {
     });
 }
 
-const addEmployeeToRegistry = (value, header, res, callback) => {
+const addEmployeeToRegistry = (req, res, callback) => {
     if (res.statusCode == 201) {
-        registryService.addEmployee(value, function (err, res) {
+        let reqParam = req.body.request;
+        reqParam['isOnboarded'] = false;
+        let reqBody = {
+            "id": "open-saber.registry.create",
+            "ver": "1.0",
+            "ets": "11234",
+            "params": {
+                "did": "",
+                "key": "",
+                "msgid": ""
+            },
+            "request": {
+                "Employee": reqParam
+            }
+        }
+        req.body = reqBody;
+        registryService.addEmployee(req, function (err, res) {
             if (res.statusCode == 200) {
                 logger.info("Employee successfully added to registry")
                 callback(null, res.body)
@@ -86,7 +102,7 @@ const addEmployeeToRegistry = (value, header, res, callback) => {
 
 app.post("/registry/add", (req, res, next) => {
     registryService.addEmployee(req, function (err, data) {
-        return res.send(data);
+        return res.send(data.body);
     })
 });
 

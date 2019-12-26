@@ -2,24 +2,10 @@ const registryHost = process.env.registry_url || "http://localhost:8081";
 const httpUtil = require('./httpUtils.js')
 
 const addEmployee = (value, callback) => {
-    value['isApproved'] = false;
-    let reqBody = {
-        "id": "open-saber.registry.create",
-        "ver": "1.0",
-        "ets": "11234",
-        "params": {
-            "did": "",
-            "key": "",
-            "msgid": ""
-        },
-        "request": {
-            "Employee": value
-        }
-    }
     const options = {
         url: registryHost + "/add",
         headers: getDefaultHeaders(value.headers),
-        body: reqBody
+        body: value.body
     }
     httpUtil.post(options, function (err, res) {
         if (res) {

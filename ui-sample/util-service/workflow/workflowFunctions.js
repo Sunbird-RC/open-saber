@@ -129,7 +129,8 @@ class WorkFlowFunctions {
      * @param {*} callback 
      */
     sendNotifications(callback) {
-        console.log(this.placeholders)
+        this.getTemplateparams();
+        logger.info("send notifications");
         notify(this.placeholders, (err, data) => {
             if (data) {
                 callback(null, data);
@@ -137,7 +138,8 @@ class WorkFlowFunctions {
         });
     }
 
-    getTemplateparams() {
+    getTemplateparams(callback) {
+        logger.info("get template params");
         let params = {};
         params = this.userData;
         this.placeholders.templateParams = params;
@@ -145,43 +147,67 @@ class WorkFlowFunctions {
         this.placeholders.templateParams.paramValue = this.placeholders.paramValue;
     }
 
+    onBoardNewUserTemplate(callback) {
+        logger.info("get onBoardNewUserTemplate template params");
+        this.placeholders.templateParams = this.request.body.request;
+        this.placeholders.templateId = "newUserOnboard";
+    }
+
     notifyUsersBasedOnAttributes(callback) {
+        logger.info("notifiy user based on attribute updated");
         let params = _.keys(this.request.body.request.Employee);
-        _.forEach(this.attributes, (value) => {
+        async.forEachSeries(this.attributes, (value, callback) => {
             if (_.includes(params, value)) {
                 this.placeholders.paramName = value
-                this.placeholders.paramValue = this.request.body.request.Employee[value]
-                this.getActions(value);
+                this.placeholders.paramValue = this.request.body.request.Employee[value];
+                this.getActions(value, (err, data) => {
+                    if (data) {
+                        callback();
+                    }
+                });
             }
         });
     }
 
     getActions(attribute, callback) {
+        logger.info("calling get actions function", attribute);
         let actions = []
         switch (attribute) {
             case 'githubId':
-                actions = ['getUserByid', 'getFinAdminUsers', 'sendNotifications'];
+                actions = ['getUserByid', 'sendNotifications', 'getFinAdminUsers', 'sendNotifications'];
                 this.placeholders.templateId = "updateParamTemplate";
-                this.invoke(actions)
+                this.invoke(actions, (err, data) => {
+                    callback(null, data)
+                });
                 break;
             case 'macAddress':
                 actions = ['getReporterUsers', 'sendNotifications'];
                 this.placeholders.templateId = "updateParamTemplate";
-                this.invoke(actions)
+                this.invoke(actions, (err, data) => {
+                    callback(null, data)
+                });
                 break;
             case 'isActive':
                 actions = ['getUserByid', 'sendNotifications', 'getAdminUsers', 'sendNotifications'];
                 this.placeholders.templateId = "onboardtemplate";
-                this.invoke(actions);
+                this.invoke(actions, (err, data) => {
+                    callback(null, data)
+                });
+                break;
         }
     }
 
-    invoke(actions, callback) {
+    invoke(actions, callback2) {
         if (actions.length > 0) {
+            let count = 0;
             async.forEachSeries(actions, (value, callback) => {
+                count++;
                 this[value]((err, data) => {
                     callback()
-                })
+                });
+                if (count == actions.length) {
+                    callback2(null, actions);
+                }
             });
         }
     }
