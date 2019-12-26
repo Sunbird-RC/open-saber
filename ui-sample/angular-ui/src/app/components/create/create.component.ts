@@ -43,7 +43,7 @@ export class CreateComponent implements OnInit {
   }
 
   /**
-   * validats required fields
+   * validates required fields
    */
   validate() {
     let emptyFields = [];

@@ -64,13 +64,15 @@
           <table class="ui celled padded table tablet stackable">
             <thead>
               <tr>
+                <th>#</th>
                 <th *ngFor="let header of result.headers">{{header}}</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let user of result.row" [ngClass]="{positive:user.isApproved===true}">
+              <tr *ngFor="let user of result.row;let i=index" [ngClass]="{positive:user.isApproved===true}">
+                <td>{{i+1}}</td>
                 <td *ngFor="let col of result.headers">
-                  {{user[col]}}
+                  {{user[col]? user[col]: '-'}}
                 </td>
               </tr>
             </tbody>

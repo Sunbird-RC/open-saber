@@ -13,7 +13,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { HttpModule } from '@angular/http'
 import {
   SuiSelectModule, SuiModalModule, SuiAccordionModule, SuiPopupModule, SuiDropdownModule, SuiProgressModule,
-  SuiRatingModule, SuiCollapseModule, SuiCheckboxModule, SuiModalService
+  SuiRatingModule, SuiCollapseModule, SuiCheckboxModule, SuiModalService, SuiTabsModule
 } from 'ng2-semantic-ui';
 import { RouterModule } from '@angular/router';
 import { DefaultTemplateComponent } from './components/default-template/default-template.component';
@@ -64,7 +64,8 @@ let moduleOptions = {
     FormsModule,
     ReactiveFormsModule,
     KeycloakAngularModule,
-    Ng2IziToastModule
+    Ng2IziToastModule,
+    SuiTabsModule
   ],
   providers: [AppAuthGuard,
     CacheService,

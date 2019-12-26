@@ -29,7 +29,8 @@ export class UpdateComponent implements OnInit {
   userService: UserService;
   public showLoader = true;
   viewOwnerProfile: string;
-
+  categories: any = {};
+  sections = []
   constructor(resourceService: ResourceService, formService: FormService, dataService: DataService, route: Router, activatedRoute: ActivatedRoute,
     userService: UserService, public cacheService: CacheService, public toasterService: ToasterService) {
     this.resourceService = resourceService;
@@ -66,8 +67,20 @@ export class UpdateComponent implements OnInit {
       if (res.responseCode === 'OK') {
         this.showLoader = false;
         this.formFieldProperties = res.result.formTemplate.data.fields;
+        this.categories = res.result.formTemplate.data.categories;
+
+        this.getCategory() ;
       }
     });
+  }
+  getCategory() {
+    _.map(this.categories, (value, key) => {
+      var filtered_people = _.filter(this.formFieldProperties, function (field) {
+        return _.includes(value, field.code);
+      });
+      this.sections.push({ name: key, fields: filtered_people });
+    });
+    console.log(this.sections)
   }
 
   /**

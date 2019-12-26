@@ -1,33 +1,58 @@
 <div class="ui container mt-20">
-    <div class="ui small breadcrumb">
-       <a class="section" routerLink=''>{{resourceService?.frmelmnts?.btn?.home}}</a>
-        <i class="right chevron icon divider"></i>
-        <div class="active section">{{resourceService?.frmelmnts?.label?.profileInformation}}</div>
-    </div>
+  <div class="ui small breadcrumb">
+    <a class="section" routerLink=''>{{resourceService?.frmelmnts?.btn?.home}}</a>
+    <i class="right chevron icon divider"></i>
+    <div class="active section">{{resourceService?.frmelmnts?.label?.profileInformation}}</div>
+  </div>
 </div>
 
-  <div class="ui segment" *ngIf="showLoader">
-      <div class="ui raised shadow container segment mb-30 width-50">
-      <div class="ui active medium inline loader"></div>
-    </div>
+<div class="ui segment" *ngIf="showLoader">
+  <div class="ui raised shadow container segment mb-30 width-50">
+    <div class="ui active medium inline loader"></div>
   </div>
-  <div class="ui raised shadow container segment mb-30 width-50" *ngIf="!showLoader">
-    <div class="d-flex flex-jc-center mb-30" *ngIf="formFieldProperties">
-      <app-default-template #formData [formFieldProperties]="formFieldProperties">
-      </app-default-template>
-    </div>
-    <div class="twelve wide column">
-    <div class="d-flex flex-jc-center">
-        <button class="ui primary button" *ngIf="permissionService.permissionAvailable && enable == true" appPermission [permission]="editProfile" (click)="navigateToEditPage()">
-          {{resourceService?.frmelmnts?.btn?.edit}}
-        </button>
-        <button class="ui primary button" *ngIf="viewOwnerProfile =='owner'" (click)="navigateToEditPage()">
-            {{resourceService?.frmelmnts?.btn?.edit}}
-          </button>
-        <button class="ui button" (click)="navigateToHomePage()">
-          {{resourceService?.frmelmnts?.btn?.cancel}}
-        </button>
+</div>
+<div class="ui raised shadow container segment mb-30" *ngIf="!showLoader">
+  <!-- <div  *ngFor="let section of sections">
+    <div class="ui raised shadow container segment" *ngIf="section.fields.length > 0">
+      <h4 style="color: grey;" *ngIf="section.fields.length > 0">{{section.name | titlecase}} section</h4>
+      <div class="row">
+        <app-default-template #formData [formFieldProperties]="section.fields">
+        </app-default-template>
       </div>
     </div>
+  </div> -->
+
+  <sui-tabset>
+    <div class="ui stackable grid">
+      <div class="three wide column pt-0">
+        <div class="ui left attached vertical tabular menu">
+          <a class="item" *ngFor="let section of sections; let i = index"
+            [(isActive)]="active[i]" [suiTabHeader]="i">{{ section.name }}</a>
+        </div>
+      </div>
+      <div class="nine wide column pt-0">
+        <div class="ui right attached segment" *ngFor="let section of sections; let i = index" [suiTabContent]="i">
+          <app-default-template #formData [formFieldProperties]="section.fields">
+          </app-default-template>
+        </div>
+      </div>
+      
+</div>
+</sui-tabset>
+
+
+<div class="twelve wide column">
+  <div class="d-flex flex-jc-center">
+    <button class="ui primary button" *ngIf="permissionService.permissionAvailable && enable == true" appPermission
+      [permission]="editProfile" (click)="navigateToEditPage()">
+      {{resourceService?.frmelmnts?.btn?.edit}}
+    </button>
+    <button class="ui primary button" *ngIf="viewOwnerProfile =='owner'" (click)="navigateToEditPage()">
+      {{resourceService?.frmelmnts?.btn?.edit}}
+    </button>
+    <button class="ui button" (click)="navigateToHomePage()">
+      {{resourceService?.frmelmnts?.btn?.cancel}}
+    </button>
   </div>
-  
+</div>
+</div>

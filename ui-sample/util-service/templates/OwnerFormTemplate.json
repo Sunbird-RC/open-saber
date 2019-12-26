@@ -4,6 +4,14 @@
     "data": {
         "templateName": "defaultTemplate",
         "action": "create",
+        "categories":{
+            "owner":["name", "orgName","externalId", "externalRole","email", "phone"],
+            "partner-admin":["role", "projectName","subProjectName"],
+            "reporter":["nineAMreportTo", "remarks"],
+            "admin":["isActive", "slackAccess", "repoAccess"],
+            "fin-admin":["proposedBilling", "workLocation"],
+            "others":["startDate", "endDate", "workLocation", "workingStyle"]
+        },
         "fields": [
             {
                 "code": "name",
