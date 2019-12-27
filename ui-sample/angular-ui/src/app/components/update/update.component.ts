@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ɵConsole } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ResourceService } from '../../services/resource/resource.service'
 import { FormService } from '../../services/forms/form.service'
 import { from } from 'rxjs';
@@ -31,6 +31,9 @@ export class UpdateComponent implements OnInit {
   viewOwnerProfile: string;
   categories: any = {};
   sections = []
+  formInputData = {}
+  userInfo: string;
+
   constructor(resourceService: ResourceService, formService: FormService, dataService: DataService, route: Router, activatedRoute: ActivatedRoute,
     userService: UserService, public cacheService: CacheService, public toasterService: ToasterService) {
     this.resourceService = resourceService;
@@ -46,7 +49,33 @@ export class UpdateComponent implements OnInit {
       this.userId = params.userId;
       this.viewOwnerProfile = params.role;
     });
+    this.getUserDetails();
     this.getFormTemplate();
+  }
+
+  getUserDetails() {
+    let token = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserToken);
+    if (_.isEmpty(token)) {
+      token = this.userService.getUserToken;
+    }
+    const requestData = {
+      header: { Authorization: token },
+      data: {
+        id: "open-saber.registry.read",
+        request: {
+          Employee: {
+            osid: this.userId
+          },
+        }
+      },
+      url: appConfig.URLS.READ,
+    }
+    this.dataService.post(requestData).subscribe(response => {
+      this.formInputData = response.result.Employee;
+      this.userInfo = JSON.stringify(response.result.Employee)
+    }, (err => {
+      console.log(err)
+    }))
   }
 
   getFormTemplate() {
@@ -65,11 +94,10 @@ export class UpdateComponent implements OnInit {
     }
     this.dataService.get(requestData).subscribe(res => {
       if (res.responseCode === 'OK') {
-        this.showLoader = false;
         this.formFieldProperties = res.result.formTemplate.data.fields;
         this.categories = res.result.formTemplate.data.categories;
-
-        this.getCategory() ;
+        this.showLoader = false;
+        this.getCategory();
       }
     });
   }
@@ -80,14 +108,13 @@ export class UpdateComponent implements OnInit {
       });
       this.sections.push({ name: key, fields: filtered_people });
     });
-    console.log(this.sections)
   }
 
   /**
    * to validate requried fields
    */
   validate() {
-    const userData = JSON.parse(this.formData.userInfo);
+    const userData = JSON.parse(this.userInfo);
     //get only updated fields
     const diffObj = Object.keys(userData).filter(i => userData[i] !== this.formData.formInputData[i]);
     const updatedFields = {}

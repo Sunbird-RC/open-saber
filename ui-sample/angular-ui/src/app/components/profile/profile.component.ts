@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { DataService } from '../../services/data/data.service';
 import { ResourceService } from '../../services/resource/resource.service';
 import { ActivatedRoute, Router } from '@angular/router'
@@ -32,8 +32,10 @@ export class ProfileComponent implements OnInit {
   enable: boolean = false;
   categories: any = {};
   sections = []
-  public active: boolean[] = [];
-  constructor(dataService: DataService, resourceService: ResourceService, activatedRoute: ActivatedRoute, private sanitizer: DomSanitizer, router: Router, userService: UserService, public cacheService: CacheService
+  formInputData = {};
+  userInfo: string;
+
+  constructor(dataService: DataService, resourceService: ResourceService, activatedRoute: ActivatedRoute, router: Router, userService: UserService, public cacheService: CacheService
     , permissionService: PermissionService, public toastService: ToasterService) {
     this.dataService = dataService
     this.resourceService = resourceService;
@@ -54,8 +56,9 @@ export class ProfileComponent implements OnInit {
       this.enable = true;
     }
     this.getFormTemplate();
+    this.getUserDetails();
   }
-  
+
   getFormTemplate() {
     var requestData = {}
     if (this.viewOwnerProfile === 'owner') {
@@ -78,7 +81,6 @@ export class ProfileComponent implements OnInit {
       if (res.responseCode === 'OK') {
         this.formFieldProperties = res.result.formTemplate.data.fields;
         this.categories = res.result.formTemplate.data.categories;
-        console.log(this.categories)
         this.disableEditMode()
       }
     });
@@ -115,6 +117,32 @@ export class ProfileComponent implements OnInit {
 
   navigateToHomePage() {
     this.router.navigate(['/search'])
+  }
+
+  getUserDetails() {
+    let token = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserToken);
+    if (_.isEmpty(token)) {
+      token = this.userService.getUserToken;
+    }
+    const requestData = {
+      header: { Authorization: token },
+      data: {
+        id: "open-saber.registry.read",
+        request: {
+          Employee: {
+            osid: this.userId
+          },
+          includeSignatures: true,
+        }
+      },
+      url: appConfig.URLS.READ,
+    }
+    this.dataService.post(requestData).subscribe(response => {
+      this.formInputData = response.result.Employee;
+      this.userInfo = JSON.stringify(response.result.Employee)
+    }, (err => {
+      console.log(err)
+    }))
   }
 }
 

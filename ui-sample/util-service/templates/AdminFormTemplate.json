@@ -5,12 +5,10 @@
         "templateName": "defaultTemplate",
         "action": "create",
         "categories":{
-            "owner":["name", "orgName","externalId", "externalRole","email", "phone"],
-            "partner-admin":["role", "projectName","subProjectName"],
-            "reporter":["nineAMreportTo", "remarks"],
-            "admin":["isActive", "slackAccess", "repoAccess"],
-            "fin-admin":["proposedBilling", "workLocation"],
-            "others":["startDate", "endDate", "workLocation", "workingStyle"]
+            "Personal information":["name", "orgName","externalId", "externalRole","email", "phone"],
+            "General":["slackAccess", "repoAccess", "startDate", "endDate", "workLocation", "workingStyle", "macAddress"],
+            "Admin information":["role", "isActive","projectName","subProjectName", "nineAMreportTo", "remarks"],
+            "Billing":["proposedBilling"]
         },
         "fields": [
             {
