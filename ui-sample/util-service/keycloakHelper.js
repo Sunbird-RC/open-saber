@@ -3,11 +3,11 @@ var keyCloakAuthUtils = require('keycloak-auth-utils');
 let request = require('request')
 const httpUtil = require('./httpUtils.js');
 const realmName = process.env.keycloak_realmName || "PartnerRegistry"
-const keyCloakHost = process.env.keycloak_url || "http://localhost:8080/auth/admin/realms/" + realmName;
+const keyCloakHost = process.env.keycloak_url || "http://localhost:8443/auth/admin/realms/" + realmName;
 
 let keyCloak_config = {
-    "realm": "PartnerRegistry",
-    "auth-server-url": "http://localhost:8080/auth",
+    "realm": process.env.keycloak_realmName,
+    "auth-server-url": "http://localhost:8443/auth",
     "resource": "utils",
     "credentials": {
         "secret": "9ebc2fc1-ced9-4774-a661-7e2c59991cfe"
