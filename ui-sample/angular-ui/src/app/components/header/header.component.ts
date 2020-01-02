@@ -85,8 +85,7 @@ export class HeaderComponent implements OnInit {
   }
 
   logout() {
-    //this should come from env
-    this.keycloakAngular.logout("http://localhost:9182");
+    this.keycloakAngular.logout();
     window.localStorage.clear();
     this.cacheService.removeAll();
   }

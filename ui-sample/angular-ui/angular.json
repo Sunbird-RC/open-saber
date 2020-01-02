@@ -78,7 +78,7 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
             "browserTarget": "open-saber-ui:build",
-            "port": 9182
+            "port": 9082
           },
           "configurations": {
             "production": {
