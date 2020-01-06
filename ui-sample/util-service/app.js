@@ -14,13 +14,15 @@ const registryService = require('./registryService.js')
 const keycloakHelper = require('./keycloakHelper.js');
 const WorkFlowFactory = require('./workflow/workFlowFactory.js');
 const logger = require('./log4j.js');
+const httpUtils = require('./httpUtils.js')
 app.use(cors())
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-const port = process.env.PORT || 8090;
+const port = process.env.PORT || 9181;
 
+const eprHost = "http://localhost:9081"
 
 const workFlowFunctionPre = (req) => {
     WorkFlowFactory.preInvoke(req);
@@ -57,6 +59,9 @@ const createUser = (req, callback) => {
         function (req, res, callback2) {
             logger.info("Employee successfully added to registry")
             addEmployeeToRegistry(req, res, callback2)
+        },
+        function (res, callback3) {
+            pushToEPR(req, callback3);
         }
     ], function (err, result) {
         logger.info('Main Callback --> ' + result);
@@ -67,6 +72,26 @@ const createUser = (req, callback) => {
         }
     });
 }
+const pushToEPR = (req, callback) => {
+    // var token = req.headers.authorization.replace('Bearer ', '');
+    const options = {
+        url: eprHost + "/register/users",
+        headers: {
+            'content-type': 'application/json',
+            'accept': 'application/json',
+            // 'Authorization': req.headers.authorization
+        },
+        body: req.body
+    }
+    httpUtils.post(options, function (err, res) {
+        if (res) {
+            console.log(res.body)
+            callback(null, res.body)
+        } else {
+            callback(err)
+        }
+    });
+};
 
 const addEmployeeToRegistry = (req, res, callback) => {
     if (res.statusCode == 201) {

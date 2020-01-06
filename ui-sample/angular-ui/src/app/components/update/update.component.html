@@ -11,7 +11,7 @@
       <div class="ui active medium inline loader"></div>
     </div>
     <div *ngFor="let section of sections">
-      <div class="ui header tas" *ngIf="section.fields.length > 0">{{section.name | titlecase}} section</div>
+      <div class="ui header tas" *ngIf="section.fields.length > 0">{{section.name | titlecase}}</div>
       <div class="ui segment mb-20" *ngIf="section.fields.length > 0">
         <div class="row">
           <app-default-template #formData [formFieldProperties]="section.fields" [formInputData]="formInputData">

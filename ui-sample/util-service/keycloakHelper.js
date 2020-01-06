@@ -2,15 +2,15 @@
 var keyCloakAuthUtils = require('keycloak-auth-utils');
 let request = require('request')
 const httpUtil = require('./httpUtils.js');
-const realmName = process.env.keycloak_realmName || "PartnerRegistry"
-const keyCloakHost = process.env.keycloak_url || "http://localhost:8080/auth/admin/realms/" + realmName;
+const realmName = process.env.keycloak_realmName || "NIITRegistry"
+const keyCloakHost = process.env.keycloak_url || "http://localhost:8443/auth/admin/realms/" + realmName;
 
 let keyCloak_config = {
-    "realm": "PartnerRegistry",
-    "auth-server-url": "http://localhost:8080/auth",
+    "realm": "NIITRegistry",
+    "auth-server-url": "http://localhost:8443/auth",
     "resource": "utils",
     "credentials": {
-        "secret": "9ebc2fc1-ced9-4774-a661-7e2c59991cfe"
+        "secret": "2c9b9206-fd91-4a46-a1f9-30a1a57039f1"
     },
     "bearerOnly": true,
     "clientId": "utils"
@@ -19,8 +19,8 @@ let keyCloak_config = {
 
 
 const getToken = async (callback) => {
-    let adminId = process.env.systemAdminId || "sysadmin@ekstep.org";
-    let adminPassword = process.env.systemAdminPassword || "password1";
+    let adminId = process.env.systemAdminId || "sysadmin@niit.in";
+    let adminPassword = process.env.systemAdminPassword || "password";
     this.config = keyCloak_config;
     this.keyCloakConfig = new keyCloakAuthUtils.Config(this.config);
     this.grantManager = new keyCloakAuthUtils.GrantManager(this.keyCloakConfig);

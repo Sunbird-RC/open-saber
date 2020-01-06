@@ -4,11 +4,11 @@
 import { KeycloakConfig } from 'keycloak-angular';
 
 let keycloakConfiguration: KeycloakConfig = {
-  url: 'http://localhost:8080/auth',
-  realm: 'PartnerRegistry',
+  url: 'http://localhost:8443/auth',
+  realm: 'NIITRegistry',
   clientId: 'portal',
   "credentials": {
-    "secret": ""
+    "secret": "f10df2d6-be1a-4db9-a337-cec2b950dc4b"
   }  
 };
 
