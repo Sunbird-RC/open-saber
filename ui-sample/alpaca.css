@@ -7,12 +7,7 @@
 /** Added to every field outer element **/
 .alpaca-field
 {
-    width: 100%
-}
-
-.alpaca-form-buttons-container {
-    display: flex;
-justify-content: center;
+    width: 50%
 }
 
 .btn
@@ -255,7 +250,7 @@ justify-content: center;
     border-color: #adadad;
     background-color: #e0e0e0;
     background-position: 0 -15px;
-    margin: 1rem
+    float: left;
 }
 
 /** ************************************** **/
@@ -660,4 +655,3 @@ table.dt-rowReorder-float .alpaca-table-reorder-draggable-cell
 {
     color: #aaa;
 }
-
