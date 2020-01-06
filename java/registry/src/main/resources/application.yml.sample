@@ -9,12 +9,12 @@ spring:
   output:
     ansi:
       enabled: ALWAYS
-name: dev-yaml
+name: dev-yam
 enviroment: development
 
 server:
   # Change this port number if you want to run it on another.
-  port: ${server_port:8080}
+  port: ${server_port:9180}
 
 cors:
   # By default, allowing all domains to access this service. Choose a particular domain,
@@ -94,10 +94,18 @@ database:
       #     ** Example - Postgres - jdbc:postgresql://localhost:5432/yourdb
       #     * 3. NoSQL  databases (Cassandra)
       #     ** Example - cassandra - jdbc:cassandra://localhost:9160/yourdb
-      uri: ${connectionInfo_uri:jdbc:postgresql://localhost:5432/osdemo2}
+      uri: ${connectionInfo_uri:jdbc:postgresql://localhost:5432/NIITRegistryDb}
 
-      username: ${connectionInfo_username:postgres}
-      password: ${connectionInfo_password:postgres1!}
+      username: ${connectionInfo_username:aishwarya}
+      password: ${connectionInfo_password:aishu@123}
+
+      # Any other shard information follows...
+    #-
+      #shardId: shard2
+      #shardLabel: 2
+      #uri: ${connectionInfo_uri:bolt://localhost:7688
+      #username: ${connectionInfo_username:neo4j}
+      #password: ${connectionInfo_password:}
 
 ##################################################################################
 # Uncomment the following section to use Cassandra as backend store              #
@@ -119,7 +127,7 @@ frame:
   file: ${frame_file:frame.json}
 
 encryption:
-  enabled: ${encryption_enabled:true}
+  enabled: ${encryption_enabled:false}
   base: ${encryption_base:http://localhost:8013}
   uri: ${encryption_uri:http://localhost:8013/encrypt}
   batch:
@@ -131,7 +139,7 @@ decryption:
     uri: ${decryption_batch_uri:http://localhost:8013/decrypt/obj}
 
 signature:
-  enabled: ${signature_enabled:true}
+  enabled: ${signature_enabled:false}
   healthCheckURL: ${sign_health_check_url:http://localhost:8013/}
   signURL: ${sign_url:http://localhost:8013/sign}
   verifyURL: ${verify_url:http://localhost:8013/verify}
@@ -147,13 +155,10 @@ signature:
     #file: ${audit_frame_file:audit_frame.json}
 
 authentication:
-  enabled: ${authentication_enabled:false}
-
-keycloak:
-  sso:
-    publicKey:  ${sunbird_sso_publickey}
-    realm:  ${sunbird_sso_realm}
-    auth_server_url:  ${sunbird_sso_url}
+  enabled: ${authentication_enabled:true}
+  publicKey:  ${authentication_publickey:MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs50czuk9xI6wPq1zgumvvOG7z9muJ6zctQVGazm/s8/zynX/ZkwTB9nV8CNxg54zbxBlljgK0Er4H2fnhOpQycrfvH4dj5lCjVVA9uXEnHwmwZR0CozOXchxlcPG54UsLqcTY9vja+tBJ9dwb++LOcejWUp8AxYBjVOvDx3c1hfZO3fBR3nYmKlW5qmfEo4Y3JqRr/C+BloBrBLZ942oaml6JbTCyHIZhAQzDVlUK32EWeQ1Z02QY++kMPRooNDfudNHTuTfnctzLHeCtrHjKgJrmaQ7IaRk0eGhBPetTVRDqaY8Y6BkC6IW6lXhYtOlj3EXIwIgNO0gvnTzBGK65QIDAQAB}
+  realm:  ${authentication_realm:NIITRegistry}
+  url:  ${authentication_url:http://localhost:8443/auth/}
 
 validation:
   enabled: ${validation_enabled:true}

@@ -29,7 +29,7 @@ public class JsonValidationServiceImpl implements IValidate {
                 JSONObject rawSchema = new JSONObject(definitionContent);
 
 				SchemaLoader schemaLoader = SchemaLoader.builder().schemaJson(rawSchema).draftV7Support()
-						.resolutionScope("http://localhost:9180/_schemas/").build();
+						.resolutionScope("http://localhost:980/_schemas/").build();
 				schema = schemaLoader.load().build();
 				entitySchemaMap.put(entityType, schema);
 			} catch (Exception ioe) {

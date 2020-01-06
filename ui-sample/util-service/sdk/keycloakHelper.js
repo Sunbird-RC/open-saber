@@ -3,19 +3,15 @@ var keyCloakAuthUtils = require('keycloak-auth-utils');
 let request = require('request')
 const httpUtil = require('./httpUtils.js');
 const realmName = process.env.keycloak_realmName || "NIITRegistry"
-const keyCloakHost = process.env.keycloak_url || "http://localhost:8443/auth/admin/realms/" + realmName;
+const keyCloakHost = process.env.keycloak_url || "http://localhost:8443/auth/admin/realms/"  + "/auth/admin/realms/" + realmName;
 
 let keyCloak_config = {
-    "realm": "NIITRegistry",
-    "auth-server-url": "http://localhost:8443/auth",
+    "realm": realmName,
+    "auth-server-url": keyCloakHost,
     "resource": "utils",
-    "credentials": {
-        "secret": "2c9b9206-fd91-4a46-a1f9-30a1a57039f1"
-    },
     "bearerOnly": true,
     "clientId": "utils"
 };
-
 
 
 const getToken = async (callback) => {
@@ -58,7 +54,6 @@ const getUserByRole = function (role, token, callback) {
 }
 
 const registerUserToKeycloak = (req, callback) => {
-    const value = req.body.request;
     const options = {
         url: keyCloakHost + "/users",
         headers: {
