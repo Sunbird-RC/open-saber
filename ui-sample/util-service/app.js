@@ -16,8 +16,8 @@ const keycloakHelper = require('./sdk/keycloakHelper');
 const WfEngineFactory = require('./workflow/EngineFactory');
 const logger = require('./sdk/log4j');
 const port = process.env.PORT || 9181;
-const httpUtils = require('./httpUtils.js');
-const eprHost = "http://localhost:9081"
+const httpUtils = require('./sdk/httpUtils.js');
+const partnerRegistryHost = process.env.partnerRegistryHost || "http://localhost:9081"
 
 
 app.use(cors())
@@ -58,11 +58,7 @@ const createUser = (req, callback) => {
             keycloakHelper.registerUserToKeycloak(req, callback)
         },
         function (req, res, callback2) {
-            logger.info("Employee successfully added to registry")
             addEmployeeToRegistry(req, res, callback2)
-        },
-        function (res, callback3) {
-            pushToEPR(req, callback3);
         }
     ], function (err, result) {
         logger.info('Main Callback --> ' + result);
@@ -73,28 +69,10 @@ const createUser = (req, callback) => {
         }
     });
 }
-const pushToEPR = (req, callback) => {
-    // var token = req.headers.authorization.replace('Bearer ', '');
-    const options = {
-        url: eprHost + "/register/users",
-        headers: {
-            'content-type': 'application/json',
-            'accept': 'application/json',
-            // 'Authorization': req.headers.authorization
-        },
-        body: req.body
-    }
-    httpUtils.post(options, function (err, res) {
-        if (res) {
-            console.log(res.body)
-            callback(null, res.body)
-        } else {
-            callback(err)
-        }
-    });
-};
+
 
 const addEmployeeToRegistry = (req, res, callback) => {
+    var eprReq = Object.assign({}, req);
     if (res.statusCode == 201) {
         let reqParam = req.body.request;
         reqParam['isOnboarded'] = false;
@@ -115,6 +93,7 @@ const addEmployeeToRegistry = (req, res, callback) => {
         registryService.addEmployee(req, function (err, res) {
             if (res.statusCode == 200) {
                 logger.info("Employee successfully added to registry")
+                pushToEPR(eprReq);
                 callback(null, res.body)
             } else {
                 logger.debug("Employee could not be added to registry" + res.statusCode)
@@ -125,6 +104,27 @@ const addEmployeeToRegistry = (req, res, callback) => {
         callback(res, null)
     }
 }
+
+const pushToEPR = (req) => {
+    _.omit(req.body.request, ['clientInfo', 'role'])
+    req.body.request.orgName = "ILIMI";
+    delete req.headers.authorization;
+    const options = {
+        url: partnerRegistryHost + "/register/users",
+        headers: {
+            'content-type': 'application/json',
+            'accept': 'application/json',
+        },
+        body: req.body
+    }
+    httpUtils.post(options, function (err, res) {
+        if (res.statusCode == 200) {
+            logger.info("Employee successfully added to Partner Registry")
+        } else {
+            logger.debug("Employee could not be added to Partner registry" + res.body + res.statusCode)
+        }
+    });
+};
 
 app.post("/registry/add", (req, res, next) => {
     registryService.addEmployee(req, function (err, data) {
