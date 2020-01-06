@@ -86,6 +86,7 @@
                                     cookedVal["id"] = "open-saber.registry.create";
                                     cookedVal["request"]["Person"] = value;
                                     console.log(JSON.stringify(cookedVal));
+
                                     $.ajax({url: "http://localhost:8080/add", 
                                             type: "post", 
                                             dataType: "application/json",
