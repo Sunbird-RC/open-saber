@@ -29,9 +29,6 @@ export class CreateComponent implements OnInit {
   isError = false;
   errMessage: string;
   formInputData = {}
-  categories: any = {};
-  sections = [];
-  clientInfo: any;
   constructor(resourceService: ResourceService, formService: FormService, dataService: DataService, route: Router, public userService: UserService, private cacheService: CacheService,
     public toasterService: ToasterService) {
     this.resourceService = resourceService;
@@ -43,11 +40,11 @@ export class CreateComponent implements OnInit {
   ngOnInit() {
     this.formService.getFormConfig("employee").subscribe(res => {
       this.formFieldProperties = res.fields;
-      this.callFunction();
+      this.createSubObjectForFormInput();
     });
   }
 
-  callFunction() {
+  createSubObjectForFormInput() {
     _.map(this.formFieldProperties, field => {
       if (field.inputType === 'object')
         this.formInputData[field.code] = {};
