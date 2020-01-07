@@ -2,6 +2,7 @@ const keycloakHelper = require('../sdk/keycloakHelper.js');
 const _ = require('lodash')
 const notify = require('../sdk/notification.js')
 var async = require('async');
+const logger = require('../sdk/log4j.js')
 
 
 class Functions {
@@ -13,9 +14,9 @@ class Functions {
         // Provide a property bag for any data exchange between workflow functions.
         this.placeholders = {};
 
-        this.attributes = ["macAddress", "githubId"]
+        this.attributes = ["macAddress", "githubId", "isOnboarded"]
     }
-    
+
     getAdminUsers(callback) {
         logger.info("get admin users method invoked")
         this.getUserMailId('admin', (err, data) => {
