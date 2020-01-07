@@ -1,7 +1,9 @@
 const keycloakHelper = require('../sdk/keycloakHelper.js');
+const registryService = require('../sdk/registryService.js');
 const _ = require('lodash')
 const notify = require('../sdk/notification.js')
 var async = require('async');
+const logger = require('../sdk/log4j.js')
 
 
 class Functions {
@@ -115,6 +117,7 @@ class Functions {
         registryService.readEmployee(req, (err, data) => {
             if (data) {
                 this.userData = data.result.Employee;
+                this.placeholders['emailIds'] = [data.result.Employee.email]
                 this.getTemplateparams();
                 callback(null, data.result.Employee)
             }
@@ -160,8 +163,9 @@ class Functions {
                 this.getActions(value, (err, data) => {
                     if (data) {
                         callback();
-                    }
-                });
+                    }});
+            } else{
+                callback();
             }
         });
     }
