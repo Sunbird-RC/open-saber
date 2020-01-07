@@ -7,7 +7,10 @@ const keyCloakHost = process.env.keycloak_url || "http://localhost:8443" + "/aut
 
 let keyCloak_config = {
     "realm": realmName,
-    "auth-server-url": keyCloakHost,
+    "auth-server-url": process.env.keycloak_url || "http://localhost:8443" + "/auth",
+    "credentials": {
+        "secret": "9ebc2fc1-ced9-4774-a661-7e2c59991cfe"
+    },
     "resource": "utils",
     "bearerOnly": true,
     "clientId": "utils"
