@@ -1,4 +1,5 @@
 const keycloakHelper = require('../sdk/keycloakHelper.js');
+const registryService = require('../sdk/registryService.js');
 const _ = require('lodash')
 const notify = require('../sdk/notification.js')
 var async = require('async');
@@ -115,6 +116,7 @@ class Functions {
         registryService.readEmployee(req, (err, data) => {
             if (data) {
                 this.userData = data.result.Employee;
+                this.placeholders['emailIds'] = [data.result.Employee.email]
                 this.getTemplateparams();
                 callback(null, data.result.Employee)
             }
@@ -160,8 +162,9 @@ class Functions {
                 this.getActions(value, (err, data) => {
                     if (data) {
                         callback();
-                    }
-                });
+                    }});
+            } else{
+                callback();
             }
         });
     }
@@ -184,9 +187,9 @@ class Functions {
                     callback(null, data)
                 });
                 break;
-            case 'isActive':
+            case 'isOnboarded':
                 actions = ['getUserByid', 'sendNotifications', 'getAdminUsers', 'sendNotifications'];
-                this.placeholders.templateId = "onboardtemplate";
+                this.placeholders.templateId = "onboardSuccesstemplate";
                 this.invoke(actions, (err, data) => {
                     callback(null, data)
                 });
