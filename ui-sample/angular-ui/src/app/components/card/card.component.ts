@@ -85,7 +85,7 @@ export class CardComponent implements OnInit {
         request: {
           Employee: {
             osid: userId,
-            isOnboarded: true
+            isActive: true
           }
         }
       },
@@ -93,6 +93,7 @@ export class CardComponent implements OnInit {
     };
     this.dataService.post(requestData).subscribe(response => {
       if (response.params.status === "SUCCESSFUL") {
+        this.clickEvent.emit({ 'action': event, 'data': response.params.status });
         this.toasterService.success(this.data.name + " " + this.resourceService.frmelmnts.msg.OnboardedSuccess);
         this.router.navigate(['/search']);
       }

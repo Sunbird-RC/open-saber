@@ -41,6 +41,11 @@
           "type": "string",
           "$comment": "MAC Address"
         },
+        "isActive": {
+          "$id": "#/properties/isActive",
+          "type": "boolean",
+          "$comment": "isActive"
+        },
         "role": {
           "$id": "#/properties/role",
           "type": "string",

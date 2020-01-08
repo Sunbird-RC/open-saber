@@ -2,7 +2,7 @@ export interface ICard {
     name: string;
     role: string;
     subProjectName: string;
-    isOnboarded: string;
+    isActive: string;
     startDate: string;
     identifier:string;
    

@@ -55,7 +55,6 @@ export class ProfileComponent implements OnInit {
     if (_.isEmpty(this.viewOwnerProfile) && this.viewOwnerProfile == undefined) {
       this.enable = true;
     }
-    this.getFormTemplate();
     this.getUserDetails();
   }
 
@@ -139,6 +138,7 @@ export class ProfileComponent implements OnInit {
     }
     this.dataService.post(requestData).subscribe(response => {
       this.formInputData = response.result.Employee;
+      this.getFormTemplate();
       this.userInfo = JSON.stringify(response.result.Employee)
     }, (err => {
       console.log(err)
