@@ -8,8 +8,9 @@
   },
   "dependencies": {
     "async": "^2.6.1",
-    "request": "^2.87.0",
-    "csvjson": "5.1.0"
+    "csvjson": "5.1.0",
+    "lodash": "^4.17.15",
+    "request": "^2.87.0"
   },
   "author": "indrajra",
   "license": "MIT"

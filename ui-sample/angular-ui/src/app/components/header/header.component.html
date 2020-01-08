@@ -5,7 +5,7 @@
                         <div class="six wide column d-flex">
                                 <!--Logo-->
                                 <a class="d-flex logo" tabindex="0" role="banner">
-                                        <img src="assets/images/logo.png" class="ui image"/>
+                                        <img src="assets/images/NIIT-Logo.png" class="ui image"/>
                                 </a>
                                 <!--/Logo-->
                         </div>
@@ -38,7 +38,7 @@
                                                 <a class="item" [class.active]="router.isActive('create')"
                                                         *ngIf='permissionService.permissionAvailable' appPermission
                                                         [permission]="onBoardEmployee" [routerLink]="'/create'" tabindex="0">
-                                                        {{resourceService?.frmelmnts?.btn?.onBoard}}
+                                                        {{resourceService?.frmelmnts?.btn?.create}}
                                                 </a>
                                         </ng-container>
                                 </div>
@@ -87,7 +87,7 @@
                                                 <a class="item" [class.active]="router.isActive('create')" (click)="showSideBar()"
                                                         *ngIf='permissionService.permissionAvailable' appPermission
                                                         [permission]="onBoardEmployee" [routerLink]="'/create'" tabindex="0">
-                                                        {{resourceService?.frmelmnts?.btn?.onBoard}}
+                                                        {{resourceService?.frmelmnts?.btn?.create}}
                                                 </a>
                                                 <a class="item" [class.active]="router.isActive('/profile')" (click)="showSideBar();navigateToProfilePage()"
                                                         (click)="showSideBar()">

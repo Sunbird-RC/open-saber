@@ -10,24 +10,27 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 var async = require('async');
 const templateConfig = require('./templates/template.config.json');
-const registryService = require('./registryService.js')
-const keycloakHelper = require('./keycloakHelper.js');
-const WorkFlowFactory = require('./workflow/workFlowFactory.js');
-const logger = require('./log4j.js');
+const engineConfig = require('./engineConfig.json')
+const registryService = require('./sdk/registryService')
+const keycloakHelper = require('./sdk/keycloakHelper');
+const WfEngineFactory = require('./workflow/EngineFactory');
+const logger = require('./sdk/log4j');
+const port = process.env.PORT || 9181;
+const httpUtils = require('./sdk/httpUtils.js');
+const partnerRegistryHost = process.env.partnerRegistryHost || "http://localhost:9081"
+
+
 app.use(cors())
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-const port = process.env.PORT || 8090;
-
-
 const workFlowFunctionPre = (req) => {
-    WorkFlowFactory.preInvoke(req);
+    wfEngine.preInvoke(req);
 }
 
 const workFlowFunctionPost = (req) => {
-    WorkFlowFactory.postInvoke(req);
+    wfEngine.postInvoke(req);
 }
 
 app.use((req, res, next) => {
@@ -55,7 +58,6 @@ const createUser = (req, callback) => {
             keycloakHelper.registerUserToKeycloak(req, callback)
         },
         function (req, res, callback2) {
-            logger.info("Employee successfully added to registry")
             addEmployeeToRegistry(req, res, callback2)
         }
     ], function (err, result) {
@@ -68,10 +70,12 @@ const createUser = (req, callback) => {
     });
 }
 
+
 const addEmployeeToRegistry = (req, res, callback) => {
+    var eprReq = Object.assign({}, req);
     if (res.statusCode == 201) {
         let reqParam = req.body.request;
-        reqParam['isOnboarded'] = false;
+        reqParam['isActive'] = false;
         let reqBody = {
             "id": "open-saber.registry.create",
             "ver": "1.0",
@@ -89,6 +93,7 @@ const addEmployeeToRegistry = (req, res, callback) => {
         registryService.addEmployee(req, function (err, res) {
             if (res.statusCode == 200) {
                 logger.info("Employee successfully added to registry")
+                pushToEPR(eprReq);
                 callback(null, res.body)
             } else {
                 logger.debug("Employee could not be added to registry" + res.statusCode)
@@ -99,6 +104,27 @@ const addEmployeeToRegistry = (req, res, callback) => {
         callback(res, null)
     }
 }
+
+const pushToEPR = (req) => {
+    _.omit(req.body.request, ['clientInfo', 'role'])
+    req.body.request.orgName = "ILIMI";
+    delete req.headers.authorization;
+    const options = {
+        url: partnerRegistryHost + "/register/users",
+        headers: {
+            'content-type': 'application/json',
+            'accept': 'application/json',
+        },
+        body: req.body
+    }
+    httpUtils.post(options, function (err, res) {
+        if (res.statusCode == 200) {
+            logger.info("Employee successfully added to Partner Registry")
+        } else {
+            logger.debug("Employee could not be added to Partner registry" + res.body + res.statusCode)
+        }
+    });
+};
 
 app.post("/registry/add", (req, res, next) => {
     registryService.addEmployee(req, function (err, data) {
@@ -219,5 +245,10 @@ startServer = () => {
         logger.info("util service listening on port " + port);
     })
 };
+
+
+// Init the workflow engine.
+const wfEngine = WfEngineFactory.getEngine(engineConfig)
+wfEngine.init()
 
 startServer();

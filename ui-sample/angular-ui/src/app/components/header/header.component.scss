@@ -11,7 +11,7 @@
 }
  
 .ui.menu.fixed {
-    background: #2c3e50!important;
+    background: whitesmoke!important;
     position: -webkit-sticky;
     position: -moz-sticky;
     position: -ms-sticky;
@@ -19,12 +19,12 @@
     position: sticky;
     z-index: 999;
     border: 0;
-    border-bottom: 0.5px solid #ddd !important;
+    // border-bottom: 0.5px solid #ddd !important;
     margin-bottom: -1px;
   
     .logo {
       img {
-        height: 45px;
+        height: 35px;
         max-height: 56px;
       }
   
@@ -61,15 +61,15 @@
     &.text {
       .item {
         padding: 8px 16px;
-        color: white;
+        color: black;
         &:hover {
           font-size: 1.2rem;
           outline: none;
         }
   
         &.active {
-          font-weight: 700;
-          color: white ;;
+          font-weight: 800;
+          color:  black ;;
           outline: none;
           &:hover,
           &:focus {

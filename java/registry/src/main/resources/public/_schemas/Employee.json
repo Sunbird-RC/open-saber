@@ -16,22 +16,11 @@
       "type": "object",
       "title": "The Employee Schema",
       "required": [
-        "orgName",
         "name",
         "email",
         "phone"
       ],
       "properties": {
-        "orgName": {
-          "$id": "#/properties/orgName",
-          "type": "string",
-          "enum": [
-            "ILIMI", "Tarento", "TEKDI", "OPTIT", "Qualitrix", "Framewirk",
-            "Consultant", "GWL", "TurtleBowl", "MantraLabs", "Zool", "Tibil",
-            "Lollypop", "E&Y", "BeyondSquare"
-          ],
-          "title": "Organisation name"
-        },
         "name": {
           "$id": "#/properties/name",
           "type": "string",
@@ -52,144 +41,32 @@
           "type": "string",
           "$comment": "MAC Address"
         },
-        "role": {
-          "$id": "#/properties/username",
-          "type": "string",
-          "enum": [
-            "BA", "Developer", "Tech Lead", "Project Management",
-            "Design Council", "Designer", "Tech Manager", "DevOps",
-            "Tech Support"
-          ],
-          "title": "EkStep role"
-        },
-        "externalId": {
-          "$id": "#/properties/externalId",
-          "type": "string",
-          "$comment": "Org specific identifier"
-        },
-        "externalRole": {
-          "$id": "#/properties/externalId",
-          "type": "string",
-          "$comment": "Org specific role"
-        },
         "isActive": {
           "$id": "#/properties/isActive",
           "type": "boolean",
-          "title": "isActive"
+          "$comment": "isActive"
         },
-        "isOnboarded": {
-          "$id": "#/properties/isOnboarded",
-          "type": "boolean",
-          "title": "isOnboarded",
-          "default": false
-        },
-        "isInKronos": {
-          "$id": "#/properties/isInKronos",
-          "type": "boolean",
-          "title": "isInKronos"
-        },
-        "nineAMreportTo":{
-          "$id": "#/properties/nineAMreportTo",
-          "type": "string",
-          "title": "nineAMreportTo"
-        },
-        "subProjectName":{
-          "$id": "#/properties/subProjectName",
+        "role": {
+          "$id": "#/properties/role",
           "type": "string",
           "enum": [
-            "User Platform", "Mobile", "Implementation",
-            "Project Management", "Design Council", "DIKSHA UX",
-            "Content Framework", "Portal", "Infra & DevOps",
-            "DIKSHA Liasion", "Learning Platform", "DIKSHA Tech Support",
-            "Courses Platform", "DIKSHA Analytics"
+            "TECH LEAD", "SENIOR SOFTWARE ENGINEER", "SENIOR DATA SCIENTIST", "TECHNICAL MANAGER", "PRINCIPAL ENGINEER", "DATA SCIENTIST", "TECHNICAL ARCHITECT", "SOFTWARE ENGINEER", "TECHNICAL WRITER", "HEAD - ENGINEERING"
           ],
-          "title": "Sub-project name"
+          "title": "Employee role"
         },
-        "projectName":{
-          "$id": "#/properties/projectName",
+        "code": {
+          "$id": "#/properties/code",
           "type": "string",
-          "enum": [
-            "DIKSHA", "Learning platform",
-            "Sunbird + DIKSHA"
-          ],
-          "title": "Project name"
-        },
-        "proposedBilling":{
-          "$id": "#/properties/proposedBilling",
-          "type": "string",
-          "enum": [
-            "Analytics",
-            "DIKSHA Services",
-            "Engineering",
-            "Solution",
-            "Support",
-            "UX"
-          ],
-          "title": "Proposed billing"
-        },
-        "billLocation":{
-          "$id": "#/properties/billLocation",
-          "type": "string",
-          "default": "Bangalore",
-          "title": "Billing location"
-        },
-        "startDate":{
-          "type": "string",
-          "format": "date",
-          "$comment": "YYYY-MM-DD format",
-          "examples": [
-            "1990-12-01"
-          ]
-        },
-        "endDate":{
-          "type": "string",
-          "format": "date",
-          "$comment": "YYYY-MM-DD format",
-          "examples": [
-            "1990-12-01"
-          ]
+          "$comment": "Employee identifier"
         },
         "githubId":{
           "$id": "#/properties/githubId",
           "type": "string",
           "title": "Github identifier"
         },
-        "repoAccess":{
-          "$id": "#/properties/repoAccess",
-          "type": "string",
-          "enum": [
-            "ES", "SB", "Both", "Not-Eligible"
-          ],
-          "title": "Code repo access"
-        },
-        "slackAccess":{
-          "$id": "#/properties/slackAccess",
-          "type": "string",
-          "enum": [
-            "ES", "SB", "Both", "Not-Eligible"
-          ],
-          "title": "Slack access"
-        },
-        "workLocation":{
-          "$id": "#/properties/workLocation",
-          "type": "string",
-          "enum": [
-            "EkStep", "Ilimi", "Tarento"
-          ],
-          "title": "Place of work"
-        },
-        "remarks":{
-          "$id": "#/properties/remarks",
-          "type": "string",
-          "title": "Remarks"
-        },
-        "workingStyle":{
-          "$id": "#/properties/workLocation",
-          "type": "string",
-          "enum": [
-            "part-time", "full-time"
-          ],
-          "title": "Working style"
+        "clientInfo": {
+          "$id": "#/properties/clientInfo",
+          "$ref": "ClientInfo.json#/definitions/ClientInfo"
         }
       }
     }

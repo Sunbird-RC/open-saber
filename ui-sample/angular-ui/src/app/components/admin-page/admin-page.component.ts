@@ -85,9 +85,8 @@ export class AdminPageComponent implements OnInit, OnDestroy {
   processContent(data) {
     const content: any = {
       name: data.name,
-      subProjectName: data.subProjectName,
       role: data.role,
-      isOnboarded: data.isOnboarded,
+      isActive: data.isActive,
       startDate: data.startDate,
       identifier: data.osid
     };
@@ -95,7 +94,11 @@ export class AdminPageComponent implements OnInit, OnDestroy {
   }
 
   navigateToProfilePage(user: any) {
-    this.router.navigate(['/profile', user.data.identifier]);
+    if (user.data.status === "SUCCESSFUL") {
+      this.fetchEmployees(this.paginationDetails.currentOffset)
+    } else {
+      this.router.navigate(['/profile', user.data.identifier]);
+    }
   }
 
   changeView() {

@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-/schema",
+  "type": "object",
+  "properties": {
+    "ClientInfo": {
+      "$ref": "#/definitions/ClientInfo"
+    }
+  },
+  "title":"ClientInfo",
+  "required": [
+    "ClientInfo"
+  ],
+  "definitions": {
+    "ClientInfo": {
+      "$id": "#/properties/ClientInfo",
+      "type": "object",
+      "title": "The Client info Schema for the registry",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "clientName": {
+          "$id": "#/properties/name",
+          "type": "string",
+          "enum": [
+            "Ekstep",
+            "Others"
+          ],
+          "$comment": "Client name"
+        },
+        "startDate": {
+          "$id": "#/properties/startDate",
+          "type": "string",
+          "$comment": "startDate"
+        },
+        "endDate": {
+          "$id": "#/properties/endDate",
+          "type": "string",
+          "$comment": "endDate"
+        }
+      },
+      "_osConfig": {
+        "osComment": "Refer to _osconfig $comment section of Employee.json",
+        "privateFields": [],
+        "signedFields": []
+      }
+    }
+  }
+}

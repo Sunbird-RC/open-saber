@@ -3,12 +3,13 @@
  * and spit out "code -> osid" map
  */
 
-// @ts-check
 var request = require("request")
 var async = require("async")
 var fs = require("fs");
 var path = require("path");
 var csvjson = require('csvjson');
+var _ = require('lodash');
+var keys = require('./keys.json')
 
 var invoke_add = function (nIter, payload, callback) {
     var addSuffix = "add"
@@ -22,7 +23,6 @@ var invoke_add = function (nIter, payload, callback) {
         callback(null, nIter)
     } else {
         //console.log("#" + nIter + " Invoking " + url + " with payload " + payload)
-    
         request(url, {
             method: "POST",
             body: payload,
@@ -57,11 +57,22 @@ var addToArr = function (arr, val, cb) {
  */
 var populate_add_tasks = function (tasks, entityType, static_payload, arrDynamicData, someEntity) {
     var allPayloads = []
-
-    for (var itr = 0; itr < arrDynamicData.length; itr++) {
+    //to match keys of sechema and csv
+    const arrayWithValidKeys = [];
+    arrDynamicData.map(item => {
+        arrayWithValidKeys.push(
+            _.mapKeys(item, (value, key) => {
+                let newKey = keys[key];
+                if (newKey)
+                    return newKey;
+                else return key
+            })
+        )
+    });
+   for (var itr = 0; itr < arrayWithValidKeys.length; itr++) {
         //async.eachSeries(arrDynamicData, function (oneCSVRow, callback) {
         var completePayload = JSON.parse(JSON.stringify(static_payload))
-        var oneCSVRow = JSON.parse(JSON.stringify(arrDynamicData[itr]))
+        var oneCSVRow = JSON.parse(JSON.stringify(arrayWithValidKeys[itr]))
         //console.log("PAYLOAD Complete", JSON.stringify(static_payload))
         //console.log("one row = " + JSON.stringify(oneCSVRow))
 
@@ -99,10 +110,21 @@ var populate_add_tasks = function (tasks, entityType, static_payload, arrDynamic
             }
 
             // If there are field specific code, set here.
-            // if (field === 'phone') {
-            //     var phone = parseInt(dataPortion[field]) * 100
-            //     dataPortion[field] = phone + (itr + 1)
-            // }
+            if (field === 'isActive') {
+                // Yes-No fields.
+                if(dataPortion[field] === 'No' || dataPortion[field] === 'Inactive') {
+                    dataPortion[field] === 0
+                } else {
+                    dataPortion[field] === 1
+                }
+            }
+
+            if (field === 'phone' || field === 'isOnboarded' || field === 'isInKronos') {
+                if(dataPortion[field] === '1')
+                dataPortion[field] = true;
+                else if(dataPortion[field] === '0')
+                dataPortion[field] = false;
+            }
         }
 
         // Any extra column to delete from the csv goes here

@@ -18,7 +18,7 @@
 <div class="ui container py-2">
   <div class="ui grid">
     <div class="row">
-      <div class="twelve wide column">
+      <div class="twelve wide column"  *ngIf="listOfEmployees.length > 0 && !showLoader">
         <div class="ui toggle button end" (click)="changeView()" suiPopup popupText="{{buttonText}}" popupInverted
           [popupPlacement]="'bottom right'">
           <i class="icon {{buttonIcon}}"></i>
@@ -77,10 +77,10 @@
           </table>
         </div>
         <div class="twelve wide column right aligned" *ngIf="!queryParams.appliedFilters && !key">
-          <div class="ui right floated pagination menu">
-            <a class="item bl-1" [ngClass]="{'disabled': paginationDetails.previousBtn }"
+          <div class="ui right floated ui buttons">
+            <a class="ui button bl-1" [ngClass]="{'disabled': paginationDetails.previousBtn }"
               (click)="previous()">Previous</a>
-            <a class="item bl-1" [ngClass]="{'disabled': paginationDetails.nextBtn}"
+            <a class="ui button bl-1" [ngClass]="{'disabled': paginationDetails.nextBtn}"
               (click)="next(paginationDetails.offset)">Next</a>
           </div>
         </div>

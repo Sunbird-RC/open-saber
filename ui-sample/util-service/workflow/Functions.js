@@ -1,12 +1,12 @@
-const keycloakHelper = require('../keycloakHelper.js');
-const registryService = require('../registryService.js');
+const keycloakHelper = require('../sdk/keycloakHelper.js');
+const registryService = require('../sdk/registryService.js');
 const _ = require('lodash')
-const notify = require('../notification.js')
+const notify = require('../sdk/notification.js')
 var async = require('async');
-const logger = require('../log4j.js');
+const logger = require('../sdk/log4j.js')
 
 
-class WorkFlowFunctions {
+class Functions {
 
     constructor(request) {
         // Provide access to the request object to all actions.
@@ -15,11 +15,10 @@ class WorkFlowFunctions {
         // Provide a property bag for any data exchange between workflow functions.
         this.placeholders = {};
 
-        this.userData = {};
-
         this.attributes = ["macAddress", "githubId", "isActive"]
     }
-
+    
+   
     getAdminUsers(callback) {
         logger.info("get admin users method invoked")
         this.getUserMailId('admin', (err, data) => {
@@ -118,6 +117,7 @@ class WorkFlowFunctions {
         registryService.readEmployee(req, (err, data) => {
             if (data) {
                 this.userData = data.result.Employee;
+                this.placeholders['emailIds'] = [data.result.Employee.email]
                 this.getTemplateparams();
                 callback(null, data.result.Employee)
             }
@@ -163,8 +163,9 @@ class WorkFlowFunctions {
                 this.getActions(value, (err, data) => {
                     if (data) {
                         callback();
-                    }
-                });
+                    }});
+            } else{
+                callback();
             }
         });
     }
@@ -244,4 +245,4 @@ class WorkFlowFunctions {
 
 }
 
-module.exports = WorkFlowFunctions;
+module.exports = Functions;

@@ -3,7 +3,7 @@ import { ResourceService } from '../../services/resource/resource.service';
 import { FormService } from '../../services/forms/form.service'
 import { DefaultTemplateComponent } from '../default-template/default-template.component';
 import { DataService } from '../../services/data/data.service';
-import { Router, ActivatedRoute } from '@angular/router'
+import { Router } from '@angular/router';
 import { UserService } from 'src/app/services/user/user.service';
 import { CacheService } from 'ng2-cache-service';
 import appConfig from '../../services/app.config.json';
@@ -28,7 +28,7 @@ export class CreateComponent implements OnInit {
   success = false;
   isError = false;
   errMessage: string;
-  formInputDta = {}
+  formInputData = {}
   constructor(resourceService: ResourceService, formService: FormService, dataService: DataService, route: Router, public userService: UserService, private cacheService: CacheService,
     public toasterService: ToasterService) {
     this.resourceService = resourceService;
@@ -40,7 +40,15 @@ export class CreateComponent implements OnInit {
   ngOnInit() {
     this.formService.getFormConfig("employee").subscribe(res => {
       this.formFieldProperties = res.fields;
-    })
+      this.createSubObjectForFormInput();
+    });
+  }
+
+  createSubObjectForFormInput() {
+    _.map(this.formFieldProperties, field => {
+      if (field.inputType === 'object')
+        this.formInputData[field.code] = {};
+    });
   }
 
   /**
@@ -93,13 +101,4 @@ export class CreateComponent implements OnInit {
   navigateToProfilePage(id: String) {
     this.router.navigate(['/profile', id])
   }
-
-  close() {
-    $(".close.icon").click(function () {
-      $(this).parent().hide();
-    });
-    this.isError = false;
-    this.success = false;
-  }
-
 }

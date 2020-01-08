@@ -2,36 +2,77 @@
   <div class="ui grid">
     <div *ngFor="let field of formFieldProperties;let i = index"
       class="{{field.renderingHints.semanticColumnWidth || 'twelve'}} wide computer twelve wide mobile column">
-      <div *ngIf="field.inputType==='text' || field.inputType==='number'" class="field"
-        [ngClass]="{'required':field.required}">
-        <label>
-          {{field.label}}
-        </label>
-        <div class="field" [ngClass]="{ 'disabled':!field.editable}">
-          <input name={{field.code}} type={{field.inputType}} [(ngModel)]="formInputData[field.code]"
-            placeholder={{field.placeholder}}>
+      <div *ngIf="field.inputType === 'object';then thenBlock else elseBlock"></div>
+      <ng-template #thenBlock>
+        <div class="ui grid">
+          <div *ngFor="let atr of field.attributes;let j = index"
+            class="{{atr.renderingHints.semanticColumnWidth || 'twelve'}} wide computer twelve wide mobile column">
+            <div *ngIf="atr.inputType==='text' || atr.inputType==='number'" class="field"
+              [ngClass]="{'required':atr.required}">
+              <label>
+                {{atr.label}}
+              </label>
+              <div class="field" [ngClass]="{ 'disabled':!atr.editable}">
+                <input name={{atr.code}} type={{atr.inputType}} [(ngModel)]="formInputData[field.code][atr.code]"
+                  placeholder={{atr.placeholder}}>
+              </div>
+            </div>
+            <div *ngIf="atr.inputType==='boolean'" class="field"
+              [ngClass]="{ 'disabled':!atr.editable, 'required':atr.required}">
+              <sui-checkbox [(ngModel)]="formInputData[field.code][atr.code]">{{atr.label}}</sui-checkbox>
+            </div>
+            <div *ngIf="atr.inputType==='password'" class="field"
+              [ngClass]="{ 'disabled':!atr.editable, 'required':atr.required}">
+              <label>
+                {{atr.label}}
+              </label>
+              <input name="{{atr.code}}" type="{{atr.inputType}}" [(ngModel)]="formInputData[field.code][atr.code]">
+            </div>
+            <div *ngIf="atr.inputType==='select'" class="field" [ngClass]="{'required':atr.required}">
+              <label>{{atr.label}}</label>
+              <div class="field" [ngClass]="{ 'disabled':!field.editable}">
+                <sui-select class="selection" [(ngModel)]="formInputData[field.code][atr.code]" [isSearchable]="true"
+                  [options]="options" #select>
+                  <sui-select-option *ngFor="let option of atr.range" [value]="option.name"></sui-select-option>
+                </sui-select>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div *ngIf="field.inputType==='boolean'" class="field"
-        [ngClass]="{ 'disabled':!field.editable, 'required':field.required}">
-        <sui-checkbox [(ngModel)]="formInputData[field.code]">{{field.label}}</sui-checkbox>
-      </div>
-      <div *ngIf="field.inputType==='password'" class="field"
-        [ngClass]="{ 'disabled':!field.editable, 'required':field.required}">
-        <label>
-          {{field.label}}
-        </label>
-        <input name="{{field.code}}" type="{{field.inputType}}" [(ngModel)]="formInputData[field.code]">
-      </div>
-      <div *ngIf="field.inputType==='select'" class="field" [ngClass]="{'required':field.required}">
-        <label>{{field.label}}</label>
-        <div class="field" [ngClass]="{ 'disabled':!field.editable}">
-          <sui-select class="selection" [(ngModel)]="formInputData[field.code]" [isSearchable]="true"
-            [options]="options" #select>
-            <sui-select-option *ngFor="let option of field.range" [value]="option.name"></sui-select-option>
-          </sui-select>
+
+      </ng-template>
+      <ng-template #elseBlock>
+        <div *ngIf="field.inputType==='text' || field.inputType==='number'" class="field"
+          [ngClass]="{'required':field.required}">
+          <label>
+            {{field.label}}
+          </label>
+          <div class="field" [ngClass]="{ 'disabled':!field.editable}">
+            <input name={{field.code}} type={{field.inputType}} [(ngModel)]="formInputData[field.code]"
+              placeholder={{field.placeholder}}>
+          </div>
         </div>
-      </div>
+        <div *ngIf="field.inputType==='boolean'" class="field"
+          [ngClass]="{ 'disabled':!field.editable, 'required':field.required}">
+          <sui-checkbox [(ngModel)]="formInputData[field.code]">{{field.label}}</sui-checkbox>
+        </div>
+        <div *ngIf="field.inputType==='password'" class="field"
+          [ngClass]="{ 'disabled':!field.editable, 'required':field.required}">
+          <label>
+            {{field.label}}
+          </label>
+          <input name="{{field.code}}" type="{{field.inputType}}" [(ngModel)]="formInputData[field.code]">
+        </div>
+        <div *ngIf="field.inputType==='select'" class="field" [ngClass]="{'required':field.required}">
+          <label>{{field.label}}</label>
+          <div class="field" [ngClass]="{ 'disabled':!field.editable}">
+            <sui-select class="selection" [(ngModel)]="formInputData[field.code]" [isSearchable]="true"
+              [options]="options" #select>
+              <sui-select-option *ngFor="let option of field.range" [value]="option.name"></sui-select-option>
+            </sui-select>
+          </div>
+        </div>
+      </ng-template>
     </div>
   </div>
 </div>

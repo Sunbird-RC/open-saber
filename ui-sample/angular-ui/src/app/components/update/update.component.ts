@@ -50,21 +50,16 @@ export class UpdateComponent implements OnInit {
       this.userId = params.userId;
       this.viewOwnerProfile = params.role;
     });
-    this.getUserDetails();
     this.userToken = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserToken);
     if (_.isEmpty(this.userToken )) {
       this.userToken = this.userService.getUserToken;
     }
-    this.getFormTemplate();
+    this.getUserDetails();
   }
 
   getUserDetails() {
-    let token = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserToken);
-    if (_.isEmpty(token)) {
-      token = this.userService.getUserToken;
-    }
     const requestData = {
-      header: { Authorization: token },
+      header: { Authorization: this.userToken },
       data: {
         id: "open-saber.registry.read",
         request: {
@@ -77,6 +72,7 @@ export class UpdateComponent implements OnInit {
     }
     this.dataService.post(requestData).subscribe(response => {
       this.formInputData = response.result.Employee;
+      this.getFormTemplate();
       this.userInfo = JSON.stringify(response.result.Employee)
     }, (err => {
       console.log(err)
@@ -97,7 +93,6 @@ export class UpdateComponent implements OnInit {
       if (res.responseCode === 'OK') {
         this.formFieldProperties = res.result.formTemplate.data.fields;
         this.categories = res.result.formTemplate.data.categories;
-        this.showLoader = false;
         this.getCategory();
       }
     });
@@ -109,6 +104,7 @@ export class UpdateComponent implements OnInit {
       });
       this.sections.push({ name: key, fields: filtered_people });
     });
+    this.showLoader = false;
   }
 
   /**
@@ -117,7 +113,7 @@ export class UpdateComponent implements OnInit {
   validate() {
     const userData = JSON.parse(this.userInfo);
     //get only updated fields
-    const diffObj = Object.keys(userData).filter(i => userData[i] !== this.formData.formInputData[i]);
+    const diffObj = Object.keys(userData).filter(i => !_.isEqual(userData[i],this.formData.formInputData[i]));
     const updatedFields = {}
     let emptyFields = [];
     if (diffObj.length > 0) {
