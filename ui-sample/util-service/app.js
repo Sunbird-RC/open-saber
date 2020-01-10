@@ -10,20 +10,25 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 var async = require('async');
 const templateConfig = require('./templates/template.config.json');
-const engineConfig = require('./engineConfig.json')
 const registryService = require('./sdk/registryService')
 const keycloakHelper = require('./sdk/keycloakHelper');
-const WfEngineFactory = require('./workflow/EngineFactory');
 const logger = require('./sdk/log4j');
 const port = process.env.PORT || 9081;
+let wfEngine = undefined
+var CacheManager = require('./sdk/cacheManager.js');
+var cache_config = {
+    store: 'memory',
+    ttl: 1800
+}
+var cacheManager = new CacheManager(cache_config);
 
 app.use(cors())
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-const workFlowFunctionPre = (req) => {
-    wfEngine.preInvoke(req);
+const workFlowFunctionPre =  (req) => {
+     wfEngine.preInvoke(req);
 }
 
 const workFlowFunctionPost = (req) => {
@@ -60,7 +65,6 @@ const createUser = (req, callback) => {
             keycloakHelper.registerUserToKeycloak(req, callback)
         },
         function (req, res, callback2) {
-            logger.info("Employee successfully added to registry")
             addEmployeeToRegistry(req, res, callback2)
         }
     ], function (err, result) {
@@ -75,15 +79,24 @@ const createUser = (req, callback) => {
 
 const getTokenDetails = (req, callback) => {
     if (!req.headers.authorization) {
-        keycloakHelper.getToken(function (err, token) {
-            if (token) {
-                callback(null, 'Bearer ' + token.access_token.token);
+        cacheManager.get('usertoken', function (err, tokenData) {
+            if (err || !tokenData) {
+                logger.info("token is not present in cache memory");
+                keycloakHelper.getToken(function (err, token) {
+                    if (token) {
+                        cacheManager.set({ key: 'usertoken', value: { authToken: token } }, function (err, res) { });
+                        callback(null, 'Bearer ' + token.access_token.token);
+                    } else {
+                        callback(err);
+                    }
+                });
             } else {
-                callback(err)
+                logger.info("token is present in cache memeory");
+                callback(null, 'Bearer ' + tokenData.authToken.access_token.token);
             }
         });
     } else {
-        callback(null, req.headers.authorization)
+        callback(null, req.headers.authorization);
     }
 }
 
@@ -233,15 +246,14 @@ const readFormTemplate = (value, callback) => {
     });
 }
 
-startServer = () => {
+const setEngine = (engine) => {
+    wfEngine = engine
+}
+
+module.exports.startServer = (engine) => {
+    setEngine(engine)
+
     server.listen(port, function () {
         logger.info("util service listening on port " + port);
     })
 };
-
-
-// Init the workflow engine.
-const wfEngine = WfEngineFactory.getEngine(engineConfig)
-wfEngine.init()
-
-startServer();
