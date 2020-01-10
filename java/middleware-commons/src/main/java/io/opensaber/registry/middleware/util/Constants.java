@@ -7,7 +7,6 @@ public class Constants {
 	public static final String TOKEN_OBJECT = "x-authenticated-user-token";
 	public static final String LD_JSON_MEDIA_TYPE = "application/ld+json";
 
-
 	public static final String OPENSABER_REGISTRY_API_NAME = "opensaber-registry-api";
 	public static final String SUNBIRD_ENCRYPTION_SERVICE_NAME = "sunbird.encryption.service";
 	public static final String SUNBIRD_SIGNATURE_SERVICE_NAME = "sunbird.signature.service";
@@ -28,18 +27,16 @@ public class Constants {
 	// JSON LD specific
 	public static final String CONTEXT_KEYWORD = "@context";
 	public static final String TYPE_STR_JSON_LD = "@type";
-	
+
 	// Parent Vertex Properies
 	public static final String INDEX_FIELDS = "indexFields";
 	public static final String UNIQUE_INDEX_FIELDS = "uniqueIndexFields";
-
 
 	// Configuration constants
 	public static final String FIELD_CONFIG_SCEHEMA_FILE = "config.schema.file";
 	public static final String DATABASE_PROVIDER = "database.provider";
 	public static final String NEO4J_DIRECTORY = "database.neo4j.database_directory";
 	public static final String ORIENTDB_DIRECTORY = "orientdb.directory";
-
 
 	public static final String TEST_ENVIRONMENT = "test";
 	public static final String INTEGRATION_TEST_BASE_URL = "http://localhost:8080/";
@@ -66,12 +63,20 @@ public class Constants {
 	public static final String REGISTRY_SEARCH_ENDPOINT = "/search";
 	public static final String SIGNATURE_SIGN_ENDPOINT = "/utils/sign";
 	public static final String SIGNATURE_VERIFY_ENDPOINT = "/utils/verify";
-	
-	//class path for json resources from _schemas folder
+	public static final String REGISTRY_AUDIT_ENDPOINT="/audit";
+
+	// class path for json resources from _schemas folder
 	public static final String RESOURCE_LOCATION = "classpath*:public/_schemas/*.json";
 
-	//elastic search document type
+	public static final String AUDIT_FRAME_RESOURCE_LOCATION = "classpath*:audit_frame.json";
+
+	public static final String AUDIT_SCHEMA_RESOURCE_LOCATION = "audit_schema/";
+	// elastic search document type
 	public static final String ES_DOC_TYPE = "_doc";
+
+	public static final String FILE_STORE = "FILE";
+	public static final String DATABSE_STORE = "DATABASE";
+	public static final String ELASTIC_STORE = "ELASTIC";
 
 	public static final String AUDIT_ACTION_READ = "READ";
 	public static final String AUDIT_ACTION_ADD = "ADD";
@@ -105,15 +110,16 @@ public class Constants {
 	}
 
 	public enum GraphParams {
-		properties, userId, operationType, label, requestId, nodeId, removedRelations, addedRelations, ets, createdAt, transactionData, CREATE, UPDATE, DELETE
+		properties, userId, operationType, label, requestId, nodeId, removedRelations, addedRelations, ets, createdAt,
+		transactionData, CREATE, UPDATE, DELETE
 	}
 
-	public enum Direction {	
+	public enum Direction {
 		IN, OUT
 	}
-	
+
 	public enum SchemaType {
-	    JSON
+		JSON
 	}
 
 	public static class JsonldConstants {
