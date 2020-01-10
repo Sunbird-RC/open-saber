@@ -33,7 +33,7 @@ class Functions {
     }
 
     /**
-     * Returns users in role 
+     * 
      * @param {String} roleName 
      * @param {fun(err, data)} callback 
      */
@@ -93,23 +93,8 @@ class Functions {
         });
     }
 
-    getTemplateparams(callback) {
-        logger.info("get template params");
-        let params = {};
-        params = this.userData;
-        this._placeholders.templateParams = params;
-        this._placeholders.templateParams.paramName = this._placeholders.paramName;
-        this._placeholders.templateParams.paramValue = this._placeholders.paramValue;
-    }
-
-    onBoardNewUserTemplate(callback) {
-        logger.info("get onBoardNewUserTemplate template params");
-        this._placeholders.templateParams = this.request.body.request;
-        this._placeholders.templateId = "newUserOnboard";
-    }
-
     /**
-     * to get user token and caching
+     * 
      * @param {*} callback 
      */
     getTokenDetails(callback) {

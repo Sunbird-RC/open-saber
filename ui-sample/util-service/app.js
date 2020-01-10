@@ -81,7 +81,6 @@ const getTokenDetails = (req, callback) => {
     if (!req.headers.authorization) {
         cacheManager.get('usertoken', function (err, tokenData) {
             if (err || !tokenData) {
-                logger.info("token is not present in cache memory");
                 keycloakHelper.getToken(function (err, token) {
                     if (token) {
                         cacheManager.set({ key: 'usertoken', value: { authToken: token } }, function (err, res) { });
@@ -91,7 +90,6 @@ const getTokenDetails = (req, callback) => {
                     }
                 });
             } else {
-                logger.info("token is present in cache memeory");
                 callback(null, 'Bearer ' + tokenData.authToken.access_token.token);
             }
         });
