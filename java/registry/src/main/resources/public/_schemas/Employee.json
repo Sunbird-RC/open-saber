@@ -101,7 +101,7 @@
             "Product Management",
             "Intern",
             "QA Lead",
-            "Principle Engineer"
+            "Principal Engineer"
           ],
           "title": "EkStep role"
         },
@@ -293,10 +293,10 @@
     "indexFields": [],
     "uniqueIndexFields": [],
     "systemFields": [
-      "_osCreatedAt",
-      "_osUpdatedAt",
-      "_osCreatedBy",
-      "_osUpdatedBy"
+      "osCreatedAt",
+      "osUpdatedAt",
+      "osCreatedBy",
+      "osUpdatedBy"
     ]
   }
 }
