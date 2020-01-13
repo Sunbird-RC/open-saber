@@ -2,8 +2,8 @@ const _ = require('lodash')
 const async = require('async');
 
 const keycloakHelper = require('../sdk/keycloakHelper.js');
-const Notification = require('../sdk/notification.js')
-const registryService = require('../sdk/registryService.js');
+const Notification = require('../sdk/Notification.js')
+const RegistryService = require('../sdk/RegistryService.js');
 const logger = require('../sdk/log4j.js')
 var CacheManager = require('../sdk/cacheManager.js');
 var cache_config = {
@@ -11,6 +11,7 @@ var cache_config = {
     ttl: 1800
 }
 var cacheManager = new CacheManager(cache_config);
+const registryService = new RegistryService('Employee');
 
 class Functions {
     constructor() {
@@ -68,11 +69,9 @@ class Functions {
             body: this.request.body
         };
         req.body.id = "open-saber.registry.read",
-        req.body.request.Employee.osid = this.request.body.request.Employee.osid;
-        registryService.readEmployee(req, (err, data) => {
+        registryService.readRecord(req, (err, data) => {
             if (data) {
-                this.userData = data.result.Employee;
-                callback(null, data.result.Employee)
+                callback(null, data)
             } else {
                 callback(err);
             }

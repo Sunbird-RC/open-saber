@@ -10,7 +10,7 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 var async = require('async');
 const templateConfig = require('./templates/template.config.json');
-const registryService = require('./sdk/registryService')
+const RegistryService = require('./sdk/RegistryService')
 const keycloakHelper = require('./sdk/keycloakHelper');
 const logger = require('./sdk/log4j');
 const port = process.env.PORT || 9081;
@@ -21,7 +21,7 @@ var cache_config = {
     ttl: 1800
 }
 var cacheManager = new CacheManager(cache_config);
-
+const registryService = new RegistryService('Employee')
 app.use(cors())
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -116,7 +116,7 @@ const addEmployeeToRegistry = (req, res, callback) => {
             }
         }
         req.body = reqBody;
-        registryService.addEmployee(req, function (err, res) {
+        registryService.addRecord(req, function (err, res) {
             if (res.statusCode == 200) {
                 logger.info("Employee successfully added to registry")
                 callback(null, res.body)
@@ -131,7 +131,7 @@ const addEmployeeToRegistry = (req, res, callback) => {
 }
 
 app.post("/registry/add", (req, res, next) => {
-    registryService.addEmployee(req, function (err, data) {
+    registryService.addRecord(req, function (err, data) {
         return res.send(data.body);
     })
 });
@@ -140,13 +140,13 @@ app.post("/registry/search", (req, res, next) => {
     if (!_.isEmpty(req.headers.authorization)) {
         req.body.request.viewTemplateId = getViewtemplate(req.headers.authorization);
     }
-    registryService.searchEmployee(req, function (err, data) {
+    registryService.searchRecord(req, function (err, data) {
         return res.send(data);
     })
 });
 
 app.post("/registry/read", (req, res, next) => {
-    registryService.readEmployee(req, function (err, data) {
+    registryService.readRecord(req, function (err, data) {
         return res.send(data);
     })
 });
@@ -163,7 +163,7 @@ const getViewtemplate = (authToken) => {
 }
 
 app.post("/registry/update", (req, res, next) => {
-    registryService.updateEmployee(req, function (err, data) {
+    registryService.updateRecord(req, function (err, data) {
         if (data) {
             return res.send(data);
         } else {

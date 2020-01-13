@@ -1,79 +1,84 @@
 const registryHost = process.env.registry_url || "http://localhost:9080";
 const httpUtil = require('./httpUtils.js')
 
-const addEmployee = (value, callback) => {
-    const options = {
-        url: registryHost + "/add",
-        headers: getDefaultHeaders(value.headers),
-        body: value.body
+class RegistryService {
+
+    constructor(entityType) {
+        this.entityType = entityType;
     }
-    httpUtil.post(options, function (err, res) {
-        if (res) {
-            callback(null, res)
-        } else {
-            callback(err)
+
+    addRecord(value, callback) {
+        const options = {
+            url: registryHost + "/add",
+            headers: this.getDefaultHeaders(value.headers),
+            body: value.body
         }
-    });
+        httpUtil.post(options, function (err, res) {
+            if (res) {
+                callback(null, res)
+            } else {
+                callback(err)
+            }
+        });
 
-}
-
-const updateEmployee = (value, callback) => {
-    const options = {
-        url: registryHost + "/update",
-        headers: getDefaultHeaders(value.headers),
-        body: value.body
     }
-    httpUtil.post(options, function (err, res) {
-        if (res) {
-            callback(null, res.body)
-        } else {
-            callback(err)
+
+    updateRecord(value, callback) {
+        const options = {
+            url: registryHost + "/update",
+            headers: this.getDefaultHeaders(value.headers),
+            body: value.body
         }
-    })
+        httpUtil.post(options, function (err, res) {
+            if (res) {
+                callback(null, res.body)
+            } else {
+                callback(err)
+            }
+        })
 
-}
-
-const readEmployee = (value, callback) => {
-    const options = {
-        url: registryHost + "/read",
-        headers: getDefaultHeaders(value.headers),
-        body: value.body
     }
-    httpUtil.post(options, function (err, res) {
-        if (res) {
-            callback(null, res.body)
-        } else {
-            callback(err)
+
+    readRecord(value, callback) {
+        const options = {
+            url: registryHost + "/read",
+            headers: this.getDefaultHeaders(value.headers),
+            body: value.body
         }
-    })
-}
-
-const searchEmployee = (value, callback) => {
-    const options = {
-        url: registryHost + "/search",
-        headers: getDefaultHeaders(value.headers),
-        body: value.body
+        httpUtil.post(options, function (err, res) {
+            if (res) {
+                callback(null, res.body)
+            } else {
+                callback(err)
+            }
+        })
     }
-    httpUtil.post(options, function (err, res) {
-        if (res) {
-            callback(null, res.body)
-        } else {
-            callback(err)
+
+    searchRecord(value, callback) {
+        const options = {
+            url: registryHost + "/search",
+            headers: this.getDefaultHeaders(value.headers),
+            body: value.body
         }
-    })
-}
-
-const getDefaultHeaders = (reqHeaders) => {
-    var token = reqHeaders.authorization.replace('Bearer ', '');
-    let headers = {
-        'content-type': 'application/json',
-        'accept': 'application/json',
-        'x-authenticated-user-token': token
+        httpUtil.post(options, function (err, res) {
+            if (res) {
+                callback(null, res.body)
+            } else {
+                callback(err)
+            }
+        })
     }
-    return headers;
+
+    getDefaultHeaders(reqHeaders) {
+        var token = reqHeaders.authorization.replace('Bearer ', '');
+        let headers = {
+            'content-type': 'application/json',
+            'accept': 'application/json',
+            'x-authenticated-user-token': token
+        }
+        return headers;
+    }
 }
 
-exports.addEmployee = addEmployee
-exports.updateEmployee = updateEmployee
-exports.readEmployee = readEmployee
-exports.searchEmployee = searchEmployee
+
+module.exports = RegistryService;
