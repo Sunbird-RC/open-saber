@@ -17,11 +17,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import io.opensaber.registry.exception.CustomException;
+import io.opensaber.registry.exception.audit.EmptyArrayException;
+import io.opensaber.registry.exception.audit.EntityTypeMissingException;
+import io.opensaber.registry.exception.audit.InvalidArguementException;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.service.ISearchService;
+import io.opensaber.registry.util.ViewTemplateManager;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles(Constants.TEST_ENVIRONMENT)
@@ -39,6 +44,9 @@ public class RegistryHelperTest {
 
 	@Mock
 	private ISearchService searchService;
+	
+	@Mock
+	private ViewTemplateManager viewTemplateManager;
 
 	@Before
 	public void initialize() throws IOException {
@@ -62,6 +70,7 @@ public class RegistryHelperTest {
 		resultNode = objectMapper.readTree(result);
 
 		Mockito.when(searchService.search(ArgumentMatchers.any())).thenReturn(resultNode);
+		Mockito.when(viewTemplateManager.getViewTemplate(ArgumentMatchers.any())).thenReturn(null);
 		JsonNode node = registerHelper.getAuditLog(jsonNode);
 		Assert.assertEquals(jsonNode.get("id"), node.get("Teacher_Audit").get(0).get("recordId"));
 	}
@@ -70,7 +79,7 @@ public class RegistryHelperTest {
 	public void getAuditLog_entitytype_missing() throws Exception {
 		String inputJson = "{ \"id\":\"09d9c84a-0696-400f-8e5a-65fb30333ce5\", \"action\":\"ADD\", \"startDate\":1578393274000, \"limit\": 3, \"offset\": 0 }";
 		JsonNode jsonNode = objectMapper.readTree(inputJson);
-		exception.expect(NullPointerException.class);
+		exception.expect(EntityTypeMissingException.class);
 		exception.expectMessage("entityType cannot be null");
 		registerHelper.getAuditLog(jsonNode);
 
@@ -80,7 +89,7 @@ public class RegistryHelperTest {
 	public void getAuditLog_entitytype_not_an_array() throws Exception {
 		String inputJson = "{\"entityType\": \"Teacher\", \"id\":\"09d9c84a-0696-400f-8e5a-65fb30333ce5\", \"action\":\"ADD\", \"startDate\":1578393274000, \"limit\": 3, \"offset\": 0 }";
 		JsonNode jsonNode = objectMapper.readTree(inputJson);
-		exception.expect(CustomException.class);
+		exception.expect(InvalidArguementException.class);
 		exception.expectMessage("entityType should be an array");
 		registerHelper.getAuditLog(jsonNode);
 
@@ -90,7 +99,7 @@ public class RegistryHelperTest {
 	public void getAuditLog_entitytype_empty_array() throws Exception {
 		String inputJson = "{\"entityType\": [], \"id\":\"09d9c84a-0696-400f-8e5a-65fb30333ce5\", \"action\":\"ADD\", \"startDate\":1578393274000, \"limit\": 3, \"offset\": 0 }";
 		JsonNode jsonNode = objectMapper.readTree(inputJson);
-		exception.expect(CustomException.class);
+		exception.expect(EmptyArrayException.class);
 		exception.expectMessage("entityType should not be an empty array");
 		registerHelper.getAuditLog(jsonNode);
 

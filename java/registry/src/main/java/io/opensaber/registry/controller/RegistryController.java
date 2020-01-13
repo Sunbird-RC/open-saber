@@ -157,6 +157,11 @@ public class RegistryController {
 				responseParams.setStatus(Response.Status.UNSUCCESSFUL);
 				responseParams.setErrmsg(e.getMessage());
 			}
+		}else {
+			response.setResult("");
+			responseParams.setStatus(Response.Status.UNSUCCESSFUL);
+			responseParams.setErrmsg("Audit is not enabled or file is chosen to store the audit");
+			return new ResponseEntity<>(response, HttpStatus.METHOD_NOT_ALLOWED);
 		}
 
 		return new ResponseEntity<>(response, HttpStatus.OK);

@@ -14,6 +14,7 @@ import io.opensaber.registry.service.ISearchService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.sink.shard.ShardManager;
+import io.opensaber.registry.util.AuditHelper;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.ReadConfiguratorFactory;
 import io.opensaber.registry.util.RecordIdentifier;
@@ -189,79 +190,19 @@ public class RegistryHelper {
 
 	public JsonNode getAuditLog(JsonNode inputJson) throws Exception {
 		logger.debug("get audit log starts");
-		JsonNode auditNode = getSearchQueryNodeForAudit(inputJson);
+		JsonNode auditNode = AuditHelper.getSearchQueryNodeForAudit(inputJson, uuidPropertyName);
 		JsonNode resultNode = searchService.search(auditNode);
+		ViewTemplate viewTemplate = viewTemplateManager.getViewTemplate(inputJson);
+		if (viewTemplate != null) {
+			ViewTransformer vTransformer = new ViewTransformer();
+			resultNode = vTransformer.transform(viewTemplate, resultNode);
+		}
+		logger.debug("get audit log ends");
 		return resultNode;
 
 	}
 
-	private JsonNode getSearchQueryNodeForAudit(JsonNode inputJson) throws Exception {
-
-		ObjectMapper mapper = new ObjectMapper();
-
-		JsonNode entityTypeNodeArr = inputJson.get("entityType");
-		if(null == entityTypeNodeArr) {
-			throw new NullPointerException("entityType cannot be null");
-		}
-		if (!entityTypeNodeArr.isArray()) {
-			throw new CustomException("entityType should be an array");
-		}
-		if (entityTypeNodeArr.size() <= 0) {
-			throw new CustomException("entityType should not be an empty array");
-		}
-		ArrayNode newEntityArrNode = mapper.createArrayNode();
-		for (JsonNode entity : entityTypeNodeArr) {
-			newEntityArrNode.add(entity.asText() + "_Audit");
-		}
-		ObjectNode searchNode = mapper.createObjectNode();
-
-		searchNode.set("entityType", newEntityArrNode);
-		ObjectNode filterNode = mapper.createObjectNode();
-
-		if (null != inputJson.get("action") && !inputJson.get("action").asText().isEmpty()) {
-			ObjectNode actionNode = mapper.createObjectNode();
-			String action = inputJson.get("action").asText();
-			actionNode.put("eq", action);
-			filterNode.set("action", actionNode);
-		}
-
-		if (null != inputJson.get("id") && !inputJson.get("id").asText().isEmpty()) {
-			ObjectNode idNode = mapper.createObjectNode();
-			String id = inputJson.get("id").asText();
-			idNode.put("eq", id);
-			filterNode.set("recordId", idNode);
-		}
-
-		if (null != inputJson.get("startDate") && !inputJson.get("startDate").asText().isEmpty()) {
-			ObjectNode startDateNode = mapper.createObjectNode();
-			JsonNode startDate = inputJson.get("startDate");
-			startDateNode.set("gte",startDate);
-			filterNode.set("date", startDateNode);
-		}
-		if (null != inputJson.get("endDate") && !inputJson.get("endDate").asText().isEmpty()) {
-			ObjectNode endDateNode = mapper.createObjectNode();
-			JsonNode endDate = inputJson.get("endDate");
-			endDateNode.set("lte", endDate);
-			filterNode.set("date", endDateNode);
-		}
-		if (null != inputJson.get("limit") && null != inputJson.get("offset")) {
-			searchNode.set("limit", inputJson.get("limit"));
-			searchNode.set("offset", inputJson.get("offset"));
-
-		}
-
-		if (null != inputJson.get(uuidPropertyName) && !inputJson.get(uuidPropertyName).asText().isEmpty()) {
-			ObjectNode uuidNode = mapper.createObjectNode();
-			String uuid = inputJson.get(uuidPropertyName).asText();
-			uuidNode.put("eq", uuid);
-			filterNode.set(uuidPropertyName, uuidNode);
-		}
-
-		searchNode.set("filters", filterNode);
-
-		return searchNode;
-
-	}
+	
 
 }
 

@@ -28,6 +28,15 @@ public class Constants {
 	//Audit Data Store Type
 	public static final String FILE="FILE";
 	public static final String DATABASE="DATABASE";
+	
+	//Audit Fields Constant
+	public static final String ACTION="action";
+	public static final String ID="id";
+	public static final String START_DATE="startDate";
+	public static final String END_DATE="endDate";
+	public static final String LIMIT="limit";
+	public static final String OFFSET="offset";
+
 	// JSON LD specific
 	public static final String CONTEXT_KEYWORD = "@context";
 	public static final String TYPE_STR_JSON_LD = "@type";
