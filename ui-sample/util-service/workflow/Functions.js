@@ -5,7 +5,7 @@ const keycloakHelper = require('../sdk/keycloakHelper.js');
 const Notification = require('../sdk/notification.js')
 const registryService = require('../sdk/registryService.js');
 const logger = require('../sdk/log4j.js')
-var CacheManager = require('../sdk/cacheManager.js');
+var CacheManager = require('../sdk/CacheManager.js');
 var cacheManager = new CacheManager();
 
 class Functions {
@@ -80,7 +80,8 @@ class Functions {
      * @param {*} callback 
      */
     sendNotifications(callback) {
-        const notification = new Notification(null, null, this._placeholders);
+        const notification = new Notification(null, null, this._placeholders, this._placeholders.subject, 
+            this._placeholders.templateId, this._placeholders.templateParams, this._placeholders.emailIds);
         notification.sendNotifications((err, data) => {
             if (data) {
                 callback(null, data);

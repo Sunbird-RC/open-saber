@@ -3,17 +3,24 @@ const notificationHost = process.env.notificationUrl || "http://localhost:9012/v
 const _ = require('lodash')
 const logger = require('./log4j.js');
 
-/**
- * Param 1) mode : mode in which notification sent (for example email, phone or device).
- * 2) deliveryType: can be message, otp, whatsapp or call.
- * 3) placeHolder:  Provide a property bag for any data exchange between workflow functions(placeHoder object should contain
- * subject of email, array of emailIds to which notification is to be sent, template ID and TemplateParams).
- */
+
 class Notification {
-    constructor(mode, deliveryType, placeholder) {
+    /**
+     * 
+     * @param {string} mode in which notification sent (for example email, phone or device).
+     * @param {string} deliveryType can be message, otp, whatsapp or call
+     * @param {string} subject - subject of the mail
+     * @param {string} templateId - preexist vm template file name
+     * @param {object} templateParams - dynamic data for params present in the given templateId
+     * @param {Array} emailIds to which notification is to be sent.
+     */
+    constructor(mode, deliveryType, subject, templateId, templateParams, emailIds) {
         this.deliveryType = deliveryType ? deliveryType : 'message';
         this.mode = mode ? mode : 'email';
-        this.placeholder = placeholder;
+        this.subject = subject;
+        this.templateId = templateId;
+        this.templateParams = templateParams;
+        this.emailIds = emailIds;
     }
 
     sendNotifications(callback) {
@@ -31,11 +38,11 @@ class Notification {
                     {
                         mode: this.mode,
                         deliveryType: this.deliveryType,
-                        config: { subject: this.placeholder.subject },
-                        ids: this.placeholder.emailIds,
+                        config: { subject: this.subject },
+                        ids: this.emailIds,
                         template: {
-                            id: this.placeholder.templateId,
-                            params: this.placeholder.templateParams
+                            id: this.templateId,
+                            params: this.templateParams
                         },
                     }
                 ]

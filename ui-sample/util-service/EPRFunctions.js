@@ -9,50 +9,45 @@ class EPRFunctions extends Functions {
 
     getAdminUsers(callback) {
         this.getUsersByRole('admin', (err, data) => {
-            this.addEmailToPlaceHolder(data);
-            callback();
+            this.addEmailToPlaceHolder(data, callback);
         });
     }
 
     getPartnerAdminUsers(callback) {
         this.getUsersByRole('partner-admin', (err, data) => {
-            this.addEmailToPlaceHolder(data);
-            callback();
+            this.addEmailToPlaceHolder(data, callback);
         })
     }
 
     getFinAdminUsers(callback) {
         this.getUsersByRole('fin-admin', (err, data) => {
-            this.addEmailToPlaceHolder(data);
-            callback();
+            this.addEmailToPlaceHolder(data, callback);
         });
     }
 
     getReporterUsers(callback) {
         this.getUsersByRole('reporter', (err, data) => {
-            this.addEmailToPlaceHolder(data);
-            callback();
+            this.addEmailToPlaceHolder(data, callback);
         });
     }
 
     getOwnerUsers(callback) {
         this.getUsersByRole('owner', (err, data) => {
-            this.addEmailToPlaceHolder(data);
-            callback();
+            this.addEmailToPlaceHolder(data, callback);
         });
     }
 
     getRegistryUsersMailId(callback) {
         this.getUserByid((err, data) => {
             if (data) {
-                this.addEmailToPlaceHolder([data]);
-                callback();
+                this.addEmailToPlaceHolder([data], callback);
             }
         })
     }
 
-    addEmailToPlaceHolder(data) {
+    addEmailToPlaceHolder(data, callback) {
         this.addToPlaceholders('emailIds', _.map(data, 'email'));
+        callback();
     }
 
     notifyUsersBasedOnAttributes(callback) {

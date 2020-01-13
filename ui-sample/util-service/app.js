@@ -15,7 +15,7 @@ const keycloakHelper = require('./sdk/keycloakHelper');
 const logger = require('./sdk/log4j');
 const port = process.env.PORT || 9081;
 let wfEngine = undefined
-var CacheManager = require('./sdk/cacheManager.js');
+var CacheManager = require('./sdk/CacheManager.js');
 var cacheManager = new CacheManager();
 
 app.use(cors())
