@@ -7,7 +7,7 @@ const logger = require('./log4j.js');
  * Param 1) mode : mode in which notification sent (for example email, phone or device).
  * 2) deliveryType: can be message, otp, whatsapp or call.
  * 3) placeHolder:  Provide a property bag for any data exchange between workflow functions(placeHoder object should contain
- * subject of email, array of emailIds to which notification is sent, template ID and TemplateParams).
+ * subject of email, array of emailIds to which notification is to be sent, template ID and TemplateParams).
  */
 class Notification {
     constructor(mode, deliveryType, placeholder) {
