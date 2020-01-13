@@ -9,35 +9,35 @@ class EPRFunctions extends Functions {
 
     getAdminUsers(callback) {
         this.getUsersByRole('admin', (err, data) => {
-            this.addToPlaceholders('emailIds', _.map(data, 'email'))
+            this.addEmailToPlaceHolder(data);
             callback();
         });
     }
 
     getPartnerAdminUsers(callback) {
         this.getUsersByRole('partner-admin', (err, data) => {
-            this.addToPlaceholders('emailIds', _.map(data, 'email'))
+            this.addEmailToPlaceHolder(data);
             callback();
         })
     }
 
     getFinAdminUsers(callback) {
         this.getUsersByRole('fin-admin', (err, data) => {
-            this.addToPlaceholders('emailIds', _.map(data, 'email'))
+            this.addEmailToPlaceHolder(data);
             callback();
         });
     }
 
     getReporterUsers(callback) {
         this.getUsersByRole('reporter', (err, data) => {
-            this.addToPlaceholders('emailIds', _.map(data, 'email'))
+            this.addEmailToPlaceHolder(data);
             callback();
         });
     }
 
     getOwnerUsers(callback) {
         this.getUsersByRole('owner', (err, data) => {
-            this.addToPlaceholders('emailIds', _.map(data, 'email'))
+            this.addEmailToPlaceHolder(data);
             callback();
         });
     }
@@ -45,10 +45,14 @@ class EPRFunctions extends Functions {
     getRegistryUsersMailId(callback) {
         this.getUserByid((err, data) => {
             if (data) {
-                this.addToPlaceholders('emailIds', [data.email]);
+                this.addEmailToPlaceHolder([data]);
                 callback();
             }
         })
+    }
+
+    addEmailToPlaceHolder(data) {
+        this.addToPlaceholders('emailIds', _.map(data, 'email'));
     }
 
     notifyUsersBasedOnAttributes(callback) {
@@ -98,16 +102,16 @@ class EPRFunctions extends Functions {
         }
     }
 
-    invoke(actions, callback2) {
+    invoke(actions, callback) {
         if (actions.length > 0) {
             let count = 0;
-            async.forEachSeries(actions, (value, callback) => {
+            async.forEachSeries(actions, (value, callback2) => {
                 count++;
                 this[value]((err, data) => {
-                    callback()
+                    callback2()
                 });
                 if (count == actions.length) {
-                    callback2(null, actions);
+                    callback(null, actions);
                 }
             });
         }

@@ -16,11 +16,7 @@ const logger = require('./sdk/log4j');
 const port = process.env.PORT || 9081;
 let wfEngine = undefined
 var CacheManager = require('./sdk/cacheManager.js');
-var cache_config = {
-    store: 'memory',
-    ttl: 1800
-}
-var cacheManager = new CacheManager(cache_config);
+var cacheManager = new CacheManager();
 
 app.use(cors())
 app.use(morgan('dev'));

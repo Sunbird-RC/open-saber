@@ -6,8 +6,21 @@ var cacheManager = require('cache-manager');
  * ttl is seconds
  */
 function CacheManager(config) {
-    this.ttl = config.ttl || 3600;
-    this.store = config.store || 'memory';
+    this.ttl = 3600;
+    this.store = 'memory';
+    this.cache = cacheManager.caching({
+        store: this.store,
+        ttl: this.ttl
+    });
+}
+
+/**
+ * Sets the cache config
+ * config takes ttl(in seconds) and store
+ */
+CacheManager.prototype.setConfig = function (config) {
+    this.ttl = config.ttl;
+    this.store = config.store;
     this.cache = cacheManager.caching({
         store: this.store,
         ttl: this.ttl

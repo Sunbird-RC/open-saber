@@ -3,6 +3,12 @@ const notificationHost = process.env.notificationUrl || "http://localhost:9012/v
 const _ = require('lodash')
 const logger = require('./log4j.js');
 
+/**
+ * Param 1) mode : mode in which notification sent (for example email, phone or device).
+ * 2) deliveryType: can be message, otp, whatsapp or call.
+ * 3) placeHolder:  Provide a property bag for any data exchange between workflow functions(placeHoder object should contain
+ * subject of email, array of emailIds to which notification is sent, template ID and TemplateParams).
+ */
 class Notification {
     constructor(mode, deliveryType, placeholder) {
         this.deliveryType = deliveryType ? deliveryType : 'message';
@@ -11,7 +17,6 @@ class Notification {
     }
 
     sendNotifications(callback) {
-        logger.info("email ids to send notifications", this.placeholder);
         const reqBody = {
             id: "notification.message.send",
             ver: "1.0",
@@ -36,7 +41,6 @@ class Notification {
                 ]
             }
         }
-        logger.info("request body of notification request", JSON.stringify(reqBody));
         const option = {
             method: 'POST',
             url: notificationHost,

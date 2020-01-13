@@ -6,11 +6,7 @@ const Notification = require('../sdk/notification.js')
 const registryService = require('../sdk/registryService.js');
 const logger = require('../sdk/log4j.js')
 var CacheManager = require('../sdk/cacheManager.js');
-var cache_config = {
-    store: 'memory',
-    ttl: 1800
-}
-var cacheManager = new CacheManager(cache_config);
+var cacheManager = new CacheManager();
 
 class Functions {
     constructor() {
@@ -84,7 +80,6 @@ class Functions {
      * @param {*} callback 
      */
     sendNotifications(callback) {
-        logger.info("send notifications", this._placeholders);
         const notification = new Notification(null, null, this._placeholders);
         notification.sendNotifications((err, data) => {
             if (data) {
