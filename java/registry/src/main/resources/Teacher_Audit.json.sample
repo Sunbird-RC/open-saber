@@ -71,7 +71,7 @@
       "systemFields: Optional; list of fields names used for system standard information like created, updated timestamps and userid"],
 
 
-      "systemFields": ["_osCreatedAt", "_osUpdatedAt"]
+      "systemFields": ["osCreatedAt", "osUpdatedAt"]
 
     
   }
