@@ -12,15 +12,15 @@ class Notification {
      * @param {string} subject - subject of the mail
      * @param {string} templateId - preexist vm template file name
      * @param {object} templateParams - dynamic data for params present in the given templateId
-     * @param {Array} emailIds to which notification is to be sent.
+     * @param {Array} ids to which notification is to be sent.
      */
-    constructor(mode, deliveryType, subject, templateId, templateParams, emailIds) {
+    constructor(mode, deliveryType, templateId, templateParams, ids, subject) {
         this.deliveryType = deliveryType ? deliveryType : 'message';
         this.mode = mode ? mode : 'email';
-        this.subject = subject;
         this.templateId = templateId;
         this.templateParams = templateParams;
-        this.emailIds = emailIds;
+        this.ids = ids;
+        this.subject = subject;
     }
 
     sendNotifications(callback) {
@@ -39,7 +39,7 @@ class Notification {
                         mode: this.mode,
                         deliveryType: this.deliveryType,
                         config: { subject: this.subject },
-                        ids: this.emailIds,
+                        ids: this.ids,
                         template: {
                             id: this.templateId,
                             params: this.templateParams
