@@ -13,6 +13,7 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +27,12 @@ public class DefinitionsManager {
     
     @Autowired
     private ResourceLoader resourceLoader;
+    
+    @Value("${audit.enabled}")
+	private Boolean auditEnabled;
+    
+    @Value("${audit.frame.store}")
+	private String auditStoreType;
 
     /**
      * Loads the definitions from the _schemas folder
@@ -37,6 +44,9 @@ public class DefinitionsManager {
         osResourceLoader = new OSResourceLoader(resourceLoader);
         osResourceLoader.loadResource(Constants.RESOURCE_LOCATION);
 
+        if(auditEnabled && Constants.DATABASE.equals(auditStoreType)) {
+        	osResourceLoader.loadResource(Constants.AUDIT_RESOURCE_LOCATION);
+        }
         for(Entry<String, String> entry : osResourceLoader.getNameContent().entrySet()){
             JsonNode jsonNode = mapper.readTree(entry.getValue());
             Definition definition = new Definition(jsonNode);

@@ -25,6 +25,8 @@ public class Constants {
 	public static final String INTERNAL_TYPE_KEYWORD = "_intType";
 	public static final String ROOT_KEYWORD = "_osroot";
 
+	//AUdit Type
+	public static final String DATABASE="DATABASE";
 	// JSON LD specific
 	public static final String CONTEXT_KEYWORD = "@context";
 	public static final String TYPE_STR_JSON_LD = "@type";
@@ -69,6 +71,8 @@ public class Constants {
 	
 	//class path for json resources from _schemas folder
 	public static final String RESOURCE_LOCATION = "classpath*:public/_schemas/*.json";
+
+	public static final String AUDIT_RESOURCE_LOCATION = "classpath*:public/_schemas/_audit/*.json";
 
 	//elastic search document type
 	public static final String ES_DOC_TYPE = "_doc";
