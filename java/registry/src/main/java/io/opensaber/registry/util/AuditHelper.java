@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,12 +23,14 @@ import io.opensaber.pojos.FilterOperators;
 @Component
 public class AuditHelper {
 
+	@Autowired
+	private ObjectMapper mapper;
+
 	private static Logger logger = LoggerFactory.getLogger(AuditHelper.class);
 
 	public JsonNode getSearchQueryNodeForAudit(JsonNode inputJson, String uuidPropertyName)
 			throws AuditException {
 
-		ObjectMapper mapper = new ObjectMapper();
 
 		JsonNode entityTypeNodeArr = inputJson.get("entityType");
 		if (entityTypeNodeArr == null) {
@@ -49,6 +52,13 @@ public class AuditHelper {
 			logger.error("entityType is empty , entityType :{}", entityTypeNodeArr);
 			throw new EmptyArrayException("entityType should not be an empty array");
 		}
+		ObjectNode searchNode = getFilterNode(inputJson, uuidPropertyName, newEntityArrNode);
+
+		return searchNode;
+
+	}
+
+	private ObjectNode getFilterNode(JsonNode inputJson, String uuidPropertyName, ArrayNode newEntityArrNode) {
 		ObjectNode searchNode = mapper.createObjectNode();
 
 		searchNode.set("entityType", newEntityArrNode);
@@ -106,8 +116,6 @@ public class AuditHelper {
 		}
 
 		searchNode.set("filters", filterNode);
-
 		return searchNode;
-
 	}
 }

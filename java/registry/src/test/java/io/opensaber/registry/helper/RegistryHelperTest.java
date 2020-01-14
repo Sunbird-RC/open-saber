@@ -1,9 +1,6 @@
 package io.opensaber.registry.helper;
 
-import java.io.IOException;
-
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -16,10 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
-import io.opensaber.registry.exception.CustomException;
-import io.opensaber.registry.exception.audit.EmptyArrayException;
-import io.opensaber.registry.exception.audit.EntityTypeMissingException;
-import io.opensaber.registry.exception.audit.InvalidArguementException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
