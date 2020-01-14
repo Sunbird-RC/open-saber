@@ -34,8 +34,8 @@
           "type": "array",
           "$comment": "transaction id of the commit"
         },
-        "auditJson": {
-          "$id": "#/properties/auditJson",
+        "auditInfo": {
+          "$id": "#/properties/auditInfo",
           "type": "string",
           "$comment": "Json difference after update"
         },
