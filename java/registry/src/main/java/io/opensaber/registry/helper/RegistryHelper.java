@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.opensaber.pojos.OpenSaberInstrumentation;
 import io.opensaber.registry.exception.CustomException;
+import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.service.DecryptionHelper;
 import io.opensaber.registry.service.IReadService;
@@ -64,6 +65,9 @@ public class RegistryHelper {
 
     @Autowired
     private ObjectMapper objectMapper;
+    
+    @Autowired
+    private AuditHelper auditHelper;
     
     @Value("${database.uuidPropertyName}")
     public String uuidPropertyName;
@@ -149,7 +153,7 @@ public class RegistryHelper {
      */
     public JsonNode searchEntity(JsonNode inputJson) throws Exception {
         logger.debug("searchEntity starts");
-        JsonNode resultNode = searchService.search(inputJson);
+        JsonNode resultNode = searchService.search(inputJson, Constants.AUDIT_ACTION_SEARCH);
         ViewTemplate viewTemplate = viewTemplateManager.getViewTemplate(inputJson);
         if (viewTemplate != null) {
             ViewTransformer vTransformer = new ViewTransformer();
@@ -190,8 +194,8 @@ public class RegistryHelper {
 
 	public JsonNode getAuditLog(JsonNode inputJson) throws Exception {
 		logger.debug("get audit log starts");
-		JsonNode auditNode = AuditHelper.getSearchQueryNodeForAudit(inputJson, uuidPropertyName);
-		JsonNode resultNode = searchService.search(auditNode);
+		JsonNode auditNode = auditHelper.getSearchQueryNodeForAudit(inputJson, uuidPropertyName);
+		JsonNode resultNode = searchService.search(auditNode, Constants.AUDIT_ACTION_AUDIT);
 		ViewTemplate viewTemplate = viewTemplateManager.getViewTemplate(inputJson);
 		if (viewTemplate != null) {
 			ViewTransformer vTransformer = new ViewTransformer();

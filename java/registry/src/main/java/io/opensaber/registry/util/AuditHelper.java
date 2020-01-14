@@ -5,6 +5,7 @@ import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,11 +19,12 @@ import io.opensaber.registry.exception.audit.InvalidArguementException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.pojos.FilterOperators;
 
+@Component
 public class AuditHelper {
 
 	private static Logger logger = LoggerFactory.getLogger(AuditHelper.class);
 
-	public static JsonNode getSearchQueryNodeForAudit(JsonNode inputJson, String uuidPropertyName)
+	public JsonNode getSearchQueryNodeForAudit(JsonNode inputJson, String uuidPropertyName)
 			throws AuditException {
 
 		ObjectMapper mapper = new ObjectMapper();

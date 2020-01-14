@@ -26,11 +26,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.service.ISearchService;
+import io.opensaber.registry.util.AuditHelper;
 import io.opensaber.registry.util.ViewTemplateManager;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles(Constants.TEST_ENVIRONMENT)
-@SpringBootTest(classes = { ObjectMapper.class })
+@SpringBootTest(classes = { ObjectMapper.class})
 public class RegistryHelperTest {
 
 	@Rule
@@ -48,10 +49,8 @@ public class RegistryHelperTest {
 	@Mock
 	private ViewTemplateManager viewTemplateManager;
 
-	@Before
-	public void initialize() throws IOException {
-
-	}
+	@Mock
+	private AuditHelper auditHelper;
 
 	@Test
 	public void getAuditLogTest() throws Exception {
@@ -69,41 +68,13 @@ public class RegistryHelperTest {
 		jsonNode = objectMapper.readTree(inputJson);
 		resultNode = objectMapper.readTree(result);
 
-		Mockito.when(searchService.search(ArgumentMatchers.any())).thenReturn(resultNode);
+		Mockito.when(auditHelper.getSearchQueryNodeForAudit(jsonNode, Constants.AUDIT_ACTION_AUDIT)).thenReturn(jsonNode);
+		Mockito.when(searchService.search(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(resultNode);
 		Mockito.when(viewTemplateManager.getViewTemplate(ArgumentMatchers.any())).thenReturn(null);
 		JsonNode node = registerHelper.getAuditLog(jsonNode);
 		Assert.assertEquals(jsonNode.get("id"), node.get("Teacher_Audit").get(0).get("recordId"));
 	}
 
-	@Test
-	public void getAuditLog_entitytype_missing() throws Exception {
-		String inputJson = "{ \"id\":\"09d9c84a-0696-400f-8e5a-65fb30333ce5\", \"action\":\"ADD\", \"startDate\":1578393274000, \"limit\": 3, \"offset\": 0 }";
-		JsonNode jsonNode = objectMapper.readTree(inputJson);
-		exception.expect(EntityTypeMissingException.class);
-		exception.expectMessage("entityType cannot be null");
-		registerHelper.getAuditLog(jsonNode);
-
-	}
-
-	@Test
-	public void getAuditLog_entitytype_not_an_array() throws Exception {
-		String inputJson = "{\"entityType\": \"Teacher\", \"id\":\"09d9c84a-0696-400f-8e5a-65fb30333ce5\", \"action\":\"ADD\", \"startDate\":1578393274000, \"limit\": 3, \"offset\": 0 }";
-		JsonNode jsonNode = objectMapper.readTree(inputJson);
-		exception.expect(InvalidArguementException.class);
-		exception.expectMessage("entityType should be an array");
-		registerHelper.getAuditLog(jsonNode);
-
-	}
-
-	@Test
-	public void getAuditLog_entitytype_empty_array() throws Exception {
-		String inputJson = "{\"entityType\": [], \"id\":\"09d9c84a-0696-400f-8e5a-65fb30333ce5\", \"action\":\"ADD\", \"startDate\":1578393274000, \"limit\": 3, \"offset\": 0 }";
-		JsonNode jsonNode = objectMapper.readTree(inputJson);
-		exception.expect(EmptyArrayException.class);
-		exception.expectMessage("entityType should not be an empty array");
-		registerHelper.getAuditLog(jsonNode);
-
-	}
 
 
 

@@ -72,7 +72,7 @@ public class NativeSearchService implements ISearchService {
 	private int limit;
 
 	@Override
-	public JsonNode search(JsonNode inputQueryNode) throws IOException {
+	public JsonNode search(JsonNode inputQueryNode, String actionSearch) throws IOException {
 		AuditRecord auditRecord = null;
 		List<Integer> transaction = new LinkedList<>();
 		List<AuditInfo> auditInfoLst = new LinkedList<>();
@@ -127,12 +127,12 @@ public class NativeSearchService implements ISearchService {
 		auditRecord = new AuditRecord();
 		for (String entity : searchQuery.getEntityTypes()) {
 			AuditInfo auditInfo = new AuditInfo();
-			auditInfo.setOp(Constants.AUDIT_ACTION_SEARCH_OP);
+			auditInfo.setOp(actionSearch.toLowerCase());
 			auditInfo.setPath(entity);
 			auditInfoLst.add(auditInfo);
 		}
 		auditRecord.setAuditInfo(auditInfoLst);
-		auditRecord.setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_SEARCH).setTransactionId(transaction);
+		auditRecord.setUserId(apiMessage.getUserID()).setAction(actionSearch).setTransactionId(transaction);
 		auditService.audit(auditRecord);
 		return buildResultNode(searchQuery, result);
 	}
