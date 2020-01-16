@@ -1,6 +1,8 @@
 let Functions = require("./workflow/Functions");
 const _ = require('lodash')
 const async = require('async');
+const entityType = 'Employee';
+
 
 class EPRFunctions extends Functions {
     EPRFunctions() {
@@ -9,55 +11,54 @@ class EPRFunctions extends Functions {
 
     getAdminUsers(callback) {
         this.getUsersByRole('admin', (err, data) => {
-            this.addToPlaceholders('emailIds', _.map(data, 'email'))
-            callback();
+            this.addEmailToPlaceHolder(data, callback);
         });
     }
 
     getPartnerAdminUsers(callback) {
         this.getUsersByRole('partner-admin', (err, data) => {
-            this.addToPlaceholders('emailIds', _.map(data, 'email'))
-            callback();
+            this.addEmailToPlaceHolder(data, callback);
         })
     }
 
     getFinAdminUsers(callback) {
         this.getUsersByRole('fin-admin', (err, data) => {
-            this.addToPlaceholders('emailIds', _.map(data, 'email'))
-            callback();
+            this.addEmailToPlaceHolder(data, callback);
         });
     }
 
     getReporterUsers(callback) {
         this.getUsersByRole('reporter', (err, data) => {
-            this.addToPlaceholders('emailIds', _.map(data, 'email'))
-            callback();
+            this.addEmailToPlaceHolder(data, callback);
         });
     }
 
     getOwnerUsers(callback) {
         this.getUsersByRole('owner', (err, data) => {
-            this.addToPlaceholders('emailIds', _.map(data, 'email'))
-            callback();
+            this.addEmailToPlaceHolder(data, callback);
         });
     }
 
     getRegistryUsersMailId(callback) {
         this.getUserByid((err, data) => {
             if (data) {
-                this.addToPlaceholders('emailIds', [data.email]);
-                callback();
+                this.addEmailToPlaceHolder([data.result[entityType]], callback);
             }
         })
     }
 
+    addEmailToPlaceHolder(data, callback) {
+        this.addToPlaceholders('emailIds', _.map(data, 'email'));
+        callback();
+    }
+
     notifyUsersBasedOnAttributes(callback) {
-        let params = _.keys(this.request.body.request.Employee);
+        let params = _.keys(this.request.body.request[entityType]);
         async.forEachSeries(this.attributes, (value, callback) => {
             if (_.includes(params, value)) {
                 let params = {
                     paramName: value,
-                    paramValue: this.request.body.request.Employee[value]
+                    paramValue: this.request.body.request[entityType][value]
                 }
                 this.addToPlaceholders('templateParams', params)
                 this.getActions(value, (err, data) => {
@@ -98,16 +99,16 @@ class EPRFunctions extends Functions {
         }
     }
 
-    invoke(actions, callback2) {
+    invoke(actions, callback) {
         if (actions.length > 0) {
             let count = 0;
-            async.forEachSeries(actions, (value, callback) => {
+            async.forEachSeries(actions, (value, callback2) => {
                 count++;
                 this[value]((err, data) => {
-                    callback()
+                    callback2()
                 });
                 if (count == actions.length) {
-                    callback2(null, actions);
+                    callback(null, actions);
                 }
             });
         }

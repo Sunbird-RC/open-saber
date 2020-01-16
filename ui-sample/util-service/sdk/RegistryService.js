@@ -3,8 +3,7 @@ const httpUtil = require('./httpUtils.js')
 
 class RegistryService {
 
-    constructor(entityType) {
-        this.entityType = entityType;
+    constructor() {
     }
 
     addRecord(value, callback) {
