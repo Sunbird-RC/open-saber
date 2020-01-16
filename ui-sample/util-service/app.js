@@ -95,6 +95,7 @@ const getTokenDetails = (req, callback) => {
     }
 }
 
+//ToDo this must move to workflow functions 
 const addRecordToRegistry = (req, res, callback) => {
     if (res.statusCode == 201) {
         let reqParam = req.body.request;
