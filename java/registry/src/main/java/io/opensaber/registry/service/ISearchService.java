@@ -20,7 +20,7 @@ public interface ISearchService {
 
     static Logger logger = LoggerFactory.getLogger(ISearchService.class);
 
-    JsonNode search(JsonNode inputQueryNode, String actionSearch) throws IOException;
+    JsonNode search(JsonNode inputQueryNode) throws IOException;
     
     /**
      * Building SearchQuery from given input search json

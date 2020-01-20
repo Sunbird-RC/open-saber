@@ -54,7 +54,7 @@ public class ElasticSearchService implements ISearchService {
     private String uuidPropertyName;
 
     @Override
-    public JsonNode search(JsonNode inputQueryNode, String actionSearch) throws IOException {
+    public JsonNode search(JsonNode inputQueryNode) throws IOException {
         logger.debug("search request body = " + inputQueryNode);
         AuditRecord auditRecord = new AuditRecord();
         List<AuditInfo> auditInfoLst = new LinkedList<>();
@@ -78,7 +78,7 @@ public class ElasticSearchService implements ISearchService {
                 resultNode.set(indexName, node);
                 if(node !=  null) {
                     AuditInfo auditInfo = new AuditInfo();
-                    auditInfo.setOp(actionSearch.toLowerCase());
+                    auditInfo.setOp(Constants.AUDIT_ACTION_SEARCH_OP);
                     auditInfo.setPath(indexName);
                     auditInfoLst.add(auditInfo);
                 }
@@ -88,7 +88,7 @@ public class ElasticSearchService implements ISearchService {
             }
 
         }
-        auditRecord.setAuditInfo(auditInfoLst).setUserId(apiMessage.getUserID()).setAction(actionSearch).
+        auditRecord.setAuditInfo(auditInfoLst).setUserId(apiMessage.getUserID()).setAction(Constants.AUDIT_ACTION_SEARCH).
                 setAuditId(UUID.randomUUID().toString()).setTimeStamp(DateUtil.getTimeStamp());
         auditService.audit(auditRecord);
         return resultNode;

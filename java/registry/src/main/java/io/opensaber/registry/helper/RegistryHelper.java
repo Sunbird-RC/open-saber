@@ -149,7 +149,7 @@ public class RegistryHelper {
      */
     public JsonNode searchEntity(JsonNode inputJson) throws Exception {
         logger.debug("searchEntity starts");
-        JsonNode resultNode = searchService.search(inputJson, Constants.AUDIT_ACTION_SEARCH);
+        JsonNode resultNode = searchService.search(inputJson);
         ViewTemplate viewTemplate = viewTemplateManager.getViewTemplate(inputJson);
         if (viewTemplate != null) {
             ViewTransformer vTransformer = new ViewTransformer();
@@ -191,7 +191,7 @@ public class RegistryHelper {
 	public JsonNode getAuditLog(JsonNode inputJson) throws Exception {
 		logger.debug("get audit log starts");
 		JsonNode auditNode = auditHelper.getSearchQueryNodeForAudit(inputJson, uuidPropertyName);
-		JsonNode resultNode = searchService.search(auditNode, Constants.AUDIT_ACTION_AUDIT);
+		JsonNode resultNode = searchService.search(auditNode);
 		ViewTemplate viewTemplate = viewTemplateManager.getViewTemplate(inputJson);
 		if (viewTemplate != null) {
 			ViewTransformer vTransformer = new ViewTransformer();
