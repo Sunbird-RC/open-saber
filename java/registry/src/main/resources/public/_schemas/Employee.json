@@ -52,7 +52,8 @@
             "PosteroTech",
             "EkStep",
             "Funtoot",
-            "Kuliza"
+            "Kuliza",
+            "Unknown"
           ],
           "title": "Organisation name"
         },
@@ -101,7 +102,13 @@
             "Product Management",
             "Intern",
             "QA Lead",
-            "Principal Engineer"
+            "Principal Engineer",
+            "Analyst",
+            "Account Manager",
+            "Tester",
+            "Documentation",
+            "Adoption",
+            "Unknown"
           ],
           "title": "EkStep role"
         },
@@ -134,6 +141,12 @@
           "$id": "#/properties/subProjectName",
           "type": "string",
           "enum": [
+            "Sunbird Platform",
+            "Knowledge Platform",
+            "TPM & RM",
+            "NLP",
+            "Societal Platform",
+            "NOC Team",
             "User Platform",
             "Mobile",
             "Implementation",
@@ -166,7 +179,16 @@
             "Genie",
             "UI",
             "Ekstep Portal",
-            "Plugin"
+            "Plugin",
+            "Unknown",
+            "AILP",
+            "SDK",
+            "DIKSHA",
+            "Sunbird Adoption",
+            "EkStep Portal",
+            "DIKSHA Documentation",
+            "Communities",
+            "NA"
           ],
           "title": "Sub-project name"
         },
@@ -176,14 +198,27 @@
           "enum": [
             "DIKSHA",
             "Learning platform",
-            "Sunbird + DIKSHA",
+            "Sunbird+DIKSHA",
             "Ekstep Platform",
             "Sunbird",
             "SB+DS",
             "ES+DS",
+            "ES+SB",
+            "NLP",
             "SB2",
             "Plugins",
-            "Non DIKSHA"
+            "Non DIKSHA",
+            "Societal Platform",
+            "PISA Dashboard",
+            "Testing",
+            "Open SABER",
+            "UX",
+            "AILP",
+            "Learning Platform",
+            "Infra & DevOps",
+            "EkStep",
+            "Adoption",
+            "Unknown"
           ],
           "title": "Project name"
         },
@@ -191,6 +226,7 @@
           "$id": "#/properties/proposedBilling",
           "type": "string",
           "enum": [
+            "PISA",
             "Analytics",
             "Engineering",
             "Solutions",
@@ -199,7 +235,13 @@
             "Diksha Services",
             "Documentation",
             "SB2",
-            "Non Diksha"
+            "Non Diksha",
+            "NOC Team",
+            "NA",
+            "Adoption",
+            "DIKSHA Services",
+            "EkStep Community Portal",
+            "Unknown"
           ],
           "title": "Proposed billing"
         },
@@ -237,7 +279,9 @@
             "ES",
             "SB",
             "Both",
-            "Not-Eligible"
+            "No Account",
+            "Deactivated",
+            "Unknown"
           ],
           "title": "Code repo access"
         },
@@ -248,7 +292,9 @@
             "ES",
             "SB",
             "Both",
-            "Not-Eligible"
+            "No Account",
+            "Deactivated",
+            "Unknown"
           ],
           "title": "Slack access"
         },
@@ -258,7 +304,11 @@
           "enum": [
             "EkStep",
             "Ilimi",
-            "Tarento"
+            "Tarento",
+            "OPTIT",
+            "Pune",
+            "Remotely",
+            "Unknown"
           ],
           "title": "Place of work"
         },
@@ -271,8 +321,9 @@
           "$id": "#/properties/workLocation",
           "type": "string",
           "enum": [
-            "Half-time",
-            "Full-time"
+            "Part Time",
+            "Full Time",
+            "Unknown"
           ],
           "title": "Working style"
         }
@@ -291,7 +342,7 @@
     "privateFields": [],
     "signedFields": [],
     "indexFields": [],
-    "uniqueIndexFields": [],
+    "uniqueIndexFields": ["email"],
     "systemFields": [
       "osCreatedAt",
       "osUpdatedAt",
