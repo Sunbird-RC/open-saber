@@ -342,7 +342,7 @@
     ],
     "privateFields": [],
     "signedFields": [],
-    "indexFields": [],
+    "indexFields": ["(email, orgName, startDate)"],
     "uniqueIndexFields": [],
     "systemFields": [
       "osCreatedAt",
