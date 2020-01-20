@@ -343,7 +343,7 @@
     "privateFields": [],
     "signedFields": [],
     "indexFields": [],
-    "uniqueIndexFields": ["email"],
+    "uniqueIndexFields": [],
     "systemFields": [
       "osCreatedAt",
       "osUpdatedAt",
