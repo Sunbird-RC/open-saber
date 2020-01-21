@@ -13,12 +13,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import io.opensaber.pojos.FilterOperators;
 import io.opensaber.registry.exception.audit.AuditException;
-import io.opensaber.registry.exception.audit.EmptyArrayException;
 import io.opensaber.registry.exception.audit.EntityTypeMissingException;
 import io.opensaber.registry.exception.audit.InvalidArguementException;
 import io.opensaber.registry.middleware.util.Constants;
-import io.opensaber.pojos.FilterOperators;
 
 @Component
 public class AuditHelper {
@@ -28,29 +27,22 @@ public class AuditHelper {
 
 	private static Logger logger = LoggerFactory.getLogger(AuditHelper.class);
 
-	public JsonNode getSearchQueryNodeForAudit(JsonNode inputJson, String uuidPropertyName)
-			throws AuditException {
+	public JsonNode getSearchQueryNodeForAudit(JsonNode inputJson, String uuidPropertyName) throws AuditException {
 
-
-		JsonNode entityTypeNodeArr = inputJson.get("entityType");
-		if (entityTypeNodeArr == null) {
-			logger.error("entityType is null , entityType :{}", entityTypeNodeArr);
+		JsonNode entityTypeNode = inputJson.get("entityType");
+		if (entityTypeNode == null) {
+			logger.error("entityType is null , entityType :{}", entityTypeNode);
 			throw new EntityTypeMissingException("entityType cannot be null");
-		}
-		if (!entityTypeNodeArr.isArray()) {
-			logger.error("entityType is not an array , entityType :{}", entityTypeNodeArr);
-			throw new InvalidArguementException("entityType should be an array");
 		}
 
 		ArrayNode newEntityArrNode = mapper.createArrayNode();
-		for (JsonNode entity : entityTypeNodeArr) {
-			if (entity.asText().length() > 1) {
-				newEntityArrNode.add(entity.asText() + "_Audit");
-			}
+		if (entityTypeNode.asText().length() > 1) {
+			newEntityArrNode.add(entityTypeNode.asText() + "_Audit");
 		}
+
 		if (newEntityArrNode.size() < 1) {
-			logger.error("entityType is empty , entityType :{}", entityTypeNodeArr);
-			throw new EmptyArrayException("entityType should not be an empty array");
+			logger.error("entityType is empty , entityType :{}", entityTypeNode);
+			throw new InvalidArguementException("entityType should not be an empty");
 		}
 		ObjectNode searchNode = getFilterNode(inputJson, uuidPropertyName, newEntityArrNode);
 

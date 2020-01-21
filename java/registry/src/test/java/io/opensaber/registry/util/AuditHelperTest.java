@@ -16,7 +16,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.opensaber.registry.exception.audit.AuditException;
-import io.opensaber.registry.exception.audit.EmptyArrayException;
 import io.opensaber.registry.exception.audit.EntityTypeMissingException;
 import io.opensaber.registry.exception.audit.InvalidArguementException;
 
@@ -35,7 +34,7 @@ public class AuditHelperTest {
 	
 	@Test
 	public void getSearchQueryNodeForAuditTest() throws IOException, AuditException {
-		String inputJson = "{ \"entityType\": [\"Teacher\"], \"id\":\"09d9c84a-0696-400f-8e5a-65fb30333ce5\", \"action\":\"ADD\", \"startDate\":1578393274000, \"limit\": 3, \"offset\": 0 }";
+		String inputJson = "{ \"entityType\": \"Teacher\", \"id\":\"09d9c84a-0696-400f-8e5a-65fb30333ce5\", \"action\":\"ADD\", \"startDate\":1578393274000, \"limit\": 3, \"offset\": 0 }";
 
 		JsonNode jsonNode = null;
 		jsonNode = objectMapper.readTree(inputJson);
@@ -53,22 +52,14 @@ public class AuditHelperTest {
 
 	}
 
+	
+
 	@Test
-	public void getSearchQueryNodeForAuditEntitytypeNotAnArray() throws Exception {
-		String inputJson = "{\"entityType\": \"Teacher\", \"id\":\"09d9c84a-0696-400f-8e5a-65fb30333ce5\", \"action\":\"ADD\", \"startDate\":1578393274000, \"limit\": 3, \"offset\": 0 }";
+	public void getAuditLogEntitytypeEmpty() throws Exception {
+		String inputJson = "{\"entityType\": \"\", \"id\":\"09d9c84a-0696-400f-8e5a-65fb30333ce5\", \"action\":\"ADD\", \"startDate\":1578393274000, \"limit\": 3, \"offset\": 0 }";
 		JsonNode jsonNode = objectMapper.readTree(inputJson);
 		exception.expect(InvalidArguementException.class);
-		exception.expectMessage("entityType should be an array");
-		auditHelper.getSearchQueryNodeForAudit(jsonNode,"tid");
-
-	}
-
-	@Test
-	public void getAuditLogEntitytypeEmptyArray() throws Exception {
-		String inputJson = "{\"entityType\": [], \"id\":\"09d9c84a-0696-400f-8e5a-65fb30333ce5\", \"action\":\"ADD\", \"startDate\":1578393274000, \"limit\": 3, \"offset\": 0 }";
-		JsonNode jsonNode = objectMapper.readTree(inputJson);
-		exception.expect(EmptyArrayException.class);
-		exception.expectMessage("entityType should not be an empty array");
+		exception.expectMessage("entityType should not be an empty");
 		auditHelper.getSearchQueryNodeForAudit(jsonNode,"tid");
 
 	}

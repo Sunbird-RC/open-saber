@@ -60,9 +60,9 @@ public class RegistryHelperTest {
 		JsonNode resultNode = null;
 		jsonNode = objectMapper.readTree(inputJson);
 		resultNode = objectMapper.readTree(result);
-
-		Mockito.when(auditHelper.getSearchQueryNodeForAudit(jsonNode, Constants.AUDIT_ACTION_AUDIT)).thenReturn(jsonNode);
-		Mockito.when(searchService.search(ArgumentMatchers.any(), ArgumentMatchers.any())).thenReturn(resultNode);
+        
+		Mockito.when(auditHelper.getSearchQueryNodeForAudit(jsonNode,"osid" )).thenReturn(jsonNode);
+		Mockito.when(searchService.search(ArgumentMatchers.any())).thenReturn(resultNode);
 		Mockito.when(viewTemplateManager.getViewTemplate(ArgumentMatchers.any())).thenReturn(null);
 		JsonNode node = registerHelper.getAuditLog(jsonNode);
 		Assert.assertEquals(jsonNode.get("id"), node.get("Teacher_Audit").get(0).get("recordId"));
