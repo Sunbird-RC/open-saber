@@ -342,8 +342,8 @@
     ],
     "privateFields": [],
     "signedFields": [],
-    "indexFields": ["(email, orgName, startDate)"],
-    "uniqueIndexFields": [],
+    "indexFields": [],
+    "uniqueIndexFields": ["(name, orgName, startDate)"],
     "systemFields": [
       "osCreatedAt",
       "osUpdatedAt",
