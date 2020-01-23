@@ -129,7 +129,7 @@ public class NativeSearchService implements ISearchService {
 		        if(auditEnabled) {
 		        	String operation = Constants.AUDIT_ACTION_SEARCH_OP;
 		        	String action = Constants.AUDIT_ACTION_SEARCH;
-		        	if(!(searchQuery.getEntityTypes().get(0).contains(auditSuffix))) {
+		        	if(searchQuery.getEntityTypes().get(0).contains(auditSuffix)) {
 		        		operation = Constants.AUDIT_ACTION_AUDIT_OP;
 		        		action = Constants.AUDIT_ACTION_AUDIT;
 		        	}

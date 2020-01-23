@@ -25,10 +25,6 @@ public class Constants {
 	public static final String INTERNAL_TYPE_KEYWORD = "_intType";
 	public static final String ROOT_KEYWORD = "_osroot";
 	
-	//Audit Data Store Type
-	public static final String FILE="FILE";
-	public static final String DATABASE="DATABASE";
-	
 	//Audit Fields Constant
 	public static final String ACTION="action";
 	public static final String ID="id";

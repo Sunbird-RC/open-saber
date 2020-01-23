@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -26,6 +27,13 @@ public class AuditHelper {
 	private ObjectMapper mapper;
 
 	private static Logger logger = LoggerFactory.getLogger(AuditHelper.class);
+	
+    @Value("${audit.frame.suffix}")
+    private String auditSuffix;
+
+    @Value("${audit.frame.suffixSeparator}")
+    private String auditSuffixSeparator;
+
 
 	public JsonNode getSearchQueryNodeForAudit(JsonNode inputJson, String uuidPropertyName) throws AuditException {
 
@@ -37,7 +45,7 @@ public class AuditHelper {
 
 		ArrayNode newEntityArrNode = mapper.createArrayNode();
 		if (entityTypeNode.asText().length() > 1) {
-			newEntityArrNode.add(entityTypeNode.asText() + "_Audit");
+			newEntityArrNode.add(entityTypeNode.asText() + auditSuffixSeparator + auditSuffix);
 		}
 
 		if (newEntityArrNode.size() < 1) {
