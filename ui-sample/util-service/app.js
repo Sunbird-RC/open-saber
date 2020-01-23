@@ -18,10 +18,7 @@ const vars = require('./sdk/vars').getAllVars(process.env.NODE_ENV);
 const appConfig = require('./sdk/appConfig');
 const port = process.env.PORT || 9081;
 let wfEngine = undefined
-var CacheManager = require('./sdk/CacheManager.js');
-var cacheManager = new CacheManager();
 const registryService = new RegistryService();
-const keycloakHelper = new KeycloakHelper(vars.keycloak);
 const nerKeycloakHelper = new KeycloakHelper(vars.keycloak_ner);
 const entityType = 'Employee';
 
@@ -40,99 +37,11 @@ const workFlowFunctionPost = (req) => {
 
 app.use((req, res, next) => {
     logger.info('pre api request interceptor');
-    workFlowFunctionPre(req);
+    // workFlowFunctionPre(req);
     next();
     logger.info("post api request interceptor");
-    workFlowFunctionPost(req);
+    // workFlowFunctionPost(req);
 });
-
-app.post("/register/users", (req, res, next) => {
-    createUser(req, function (err, data) {
-        if (err) {
-            res.statusCode = err.statusCode;
-            return res.send(err.body)
-        } else {
-            return res.send(data);
-        }
-    });
-});
-
-const createUser = (req, callback) => {
-    async.waterfall([
-        function (callback) {
-            //if auth token is not given , this function is used get access token
-            getTokenDetails(req, callback);
-        },
-        function (token, callback) {
-            req.headers['authorization'] = token;
-            keycloakHelper.registerUserToKeycloak(req, callback)
-        },
-        function (req, res, callback2) {
-            addRecordToRegistry(req, res, callback2)
-        }
-    ], function (err, result) {
-        logger.info('Main Callback --> ' + result);
-        if (err) {
-            callback(err, null)
-        } else {
-            callback(null, result);
-        }
-    });
-}
-
-const getTokenDetails = (req, callback) => {
-    if (!req.headers.authorization) {
-        cacheManager.get('usertoken', function (err, tokenData) {
-            if (err || !tokenData) {
-                keycloakHelper.getToken(function (err, token) {
-                    if (token) {
-                        cacheManager.set({ key: 'usertoken', value: { authToken: token } }, function (err, res) { });
-                        callback(null, 'Bearer ' + token.access_token.token);
-                    } else {
-                        callback(err);
-                    }
-                });
-            } else {
-                callback(null, 'Bearer ' + tokenData.authToken.access_token.token);
-            }
-        });
-    } else {
-        callback(null, req.headers.authorization);
-    }
-}
-
-//ToDo this must move to workflow functions 
-const addRecordToRegistry = (req, res, callback) => {
-    if (res.statusCode == 201) {
-        let reqParam = req.body.request;
-        reqParam['isOnboarded'] = false;
-        let reqBody = {
-            "id": appConfig.APP_ID.CREATE,
-            "ver": "1.0",
-            "ets": "11234",
-            "params": {
-                "did": "",
-                "key": "",
-                "msgid": ""
-            },
-            "request": {
-                [entityType]: reqParam
-            }
-        }
-        req.body = reqBody;
-        registryService.addRecord(req, function (err, res) {
-            if (res.statusCode == 200) {
-                logger.info("record successfully added to registry")
-                callback(null, res.body)
-            } else {
-                logger.debug("record could not be added to registry" + res.statusCode)
-                callback(res.statusCode, res.errorMessage)
-            }
-        })
-    } else {
-        callback(res, null)
-    }
-}
 
 app.post("/registry/add", (req, res, next) => {
     registryService.addRecord(req, function (err, data) {
@@ -169,7 +78,7 @@ const getViewtemplate = (authToken) => {
 app.post("/registry/update", (req, res, next) => {
     registryService.updateRecord(req, function (err, data) {
         if (data) {
-            updateRecordOfDifferentClient(req, data);
+            updateRecordOfClientRegistry(req, data);
             return res.send(data);
         } else {
             return res.send(err);
@@ -178,10 +87,10 @@ app.post("/registry/update", (req, res, next) => {
 });
 
 /**
- * used to update record in the which exits client registry
+ * 
  * @param {*} req 
  */
-const updateRecordOfDifferentClient = (req, res) => {
+const updateRecordOfClientRegistry = (req, res) => {
     if (res.params.status === appConfig.STATUS.SUCCESSFULL) {
         logger.debug("updating record in client registry started")
         let updateReq = _.cloneDeep(req);
@@ -189,21 +98,22 @@ const updateRecordOfDifferentClient = (req, res) => {
             function (callback) {
                 req.body.id = appConfig.APP_ID.READ;
                 registryService.readRecord(req, function (err, data) {
-                    if (data && data.params.status === appConfig.STATUS.SUCCESSFULL && data.result[entityType].orgName === 'ILIMI') {
-                        callback(null, data);
-                    } else {
+                    if (data && data.params.status === appConfig.STATUS.SUCCESSFULL) {
+                        if (data.result[entityType].orgName === 'ILIMI')
+                            callback(null, data);
+                        else
+                            callback("record does not belongs to the ILIMI org")
+                    } else
                         callback(err)
-                    }
                 });
             },
-            function (readRes, callback) {
+            function (readResponse, callback) {
                 nerKeycloakHelper.getToken((err, token) => {
-                    if (token)
-                        callback(null, readRes, token.access_token.token);
+                    if (token) callback(null, readResponse, token.access_token.token);
                     else callback(err)
                 });
             },
-            function (readRes, token, callback) {
+            function (readResponse, token, callback) {
                 const headers = {
                     'content-type': 'application/json',
                     authorization: "Bearer " + token
@@ -213,50 +123,51 @@ const updateRecordOfDifferentClient = (req, res) => {
                         id: appConfig.APP_ID.SEARCH,
                         request: {
                             entityType: [entityType],
-                            filters: { email: { eq: readRes.result[entityType].email } }
+                            filters: { email: { eq: readResponse.result[entityType].email } }
                         }
                     },
                     headers: headers,
-                    url: vars.nerRegistryUrl + appConfig.UTILS_URL_CONFIG.SEARCH
+                    url: vars.nerUtilServiceUrl + appConfig.UTILS_URL_CONFIG.SEARCH
                 }
-                httpUtils.post(searchReq, (err, data) => {
-                    callback(null, data.body, headers);
+                httpUtils.post(searchReq, (err, res) => {
+                    if (res.body.params.status === appConfig.STATUS.SUCCESSFULL && res.body.result[entityType].length > 0) {
+                        callback(null, res.body, headers);
+                    } else if (res.body.result[entityType].length <= 0) {
+                        callback("error: record is not present in the client regitry");
+                    }
                 });
             },
             function (searchRes, headers, callback) {
-                if (searchRes && searchRes.params.status === appConfig.STATUS.SUCCESSFULL && searchRes.result[entityType].length > 0) {
-                    updateReq.body.request[entityType].osid = searchRes.result[entityType][0].osid;
-                    let option = {
-                        body: updateReq.body,
-                        headers: headers,
-                        url: vars.nerRegistryUrl + appConfig.UTILS_URL_CONFIG.UPDATE
-                    }
-                    httpUtils.post(option, (err, res) => {
-                        if (res)
-                            callback(null, res.body);
-                        else callback(err)
-                    });
-                } else {
-                    callback("error: record is not present in the client regitry")
+                updateReq.body.request[entityType].osid = searchRes.result[entityType][0].osid;
+                let option = {
+                    body: updateReq.body,
+                    headers: headers,
+                    url: vars.nerUtilServiceUrl + appConfig.UTILS_URL_CONFIG.NOTIFICATIONS
                 }
+                httpUtils.post(option, (err, res) => {
+                    if (res)
+                        callback(null, res.body);
+                    else
+                        callback(err)
+                });
             }
         ], function (err, result) {
-            if (result) logger.debug("Updating record in client registry is ended", result);
-            else logger.debug(err)
+            if (result)
+                logger.debug("Updating record in client registry is completed", result);
+            else
+                logger.debug(err)
         });
     }
 }
 
 app.post("/notifications", (req, res, next) => {
-    if (req.url === "/registry/update") {
-        registryService.updateRecord(req, function (err, data) {
-            if (data) {
-                return res.send(data);
-            } else {
-                return res.send(err);
-            }
-        });
-    }
+    registryService.updateRecord(req, function (err, data) {
+        if (data) {
+            return res.send(data);
+        } else {
+            return res.send(err);
+        }
+    });
 });
 
 app.get("/formTemplates", (req, res, next) => {
@@ -342,3 +253,6 @@ module.exports.startServer = (engine) => {
         logger.info("util service listening on port " + port);
     })
 };
+
+// Expose the app object for adopters to add new endpoints.
+module.exports.theApp = app
