@@ -37,10 +37,10 @@ const workFlowFunctionPost = (req) => {
 
 app.use((req, res, next) => {
     logger.info('pre api request interceptor');
-    // workFlowFunctionPre(req);
+    workFlowFunctionPre(req);
     next();
     logger.info("post api request interceptor");
-    // workFlowFunctionPost(req);
+    workFlowFunctionPost(req);
 });
 
 app.post("/registry/add", (req, res, next) => {
