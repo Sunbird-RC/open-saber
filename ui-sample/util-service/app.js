@@ -11,13 +11,19 @@ const fs = require('fs');
 var async = require('async');
 const templateConfig = require('./templates/template.config.json');
 const RegistryService = require('./sdk/registryService')
-const keycloakHelper = require('./sdk/keycloakHelper');
+const KeycloakHelper = require('./sdk/KeycloakHelper');
 const logger = require('./sdk/log4j');
+const httpUtils = require('./sdk/httpUtils.js');
+const vars = require('./sdk/vars').getAllVars(process.env.NODE_ENV);
+const appConfig = require('./sdk/appConfig');
 const port = process.env.PORT || 9081;
 let wfEngine = undefined
 var CacheManager = require('./sdk/CacheManager.js');
 var cacheManager = new CacheManager();
 const registryService = new RegistryService();
+const keycloakHelper = new KeycloakHelper(vars.keycloak);
+const nerKeycloakHelper = new KeycloakHelper(vars.keycloak_ner);
+const entityType = 'Employee';
 
 app.use(cors())
 app.use(morgan('dev'));
@@ -101,7 +107,7 @@ const addRecordToRegistry = (req, res, callback) => {
         let reqParam = req.body.request;
         reqParam['isOnboarded'] = false;
         let reqBody = {
-            "id": "open-saber.registry.create",
+            "id": appConfig.APP_ID.CREATE,
             "ver": "1.0",
             "ets": "11234",
             "params": {
@@ -110,7 +116,7 @@ const addRecordToRegistry = (req, res, callback) => {
                 "msgid": ""
             },
             "request": {
-                "Employee": reqParam
+                [entityType]: reqParam
             }
         }
         req.body = reqBody;
@@ -163,11 +169,94 @@ const getViewtemplate = (authToken) => {
 app.post("/registry/update", (req, res, next) => {
     registryService.updateRecord(req, function (err, data) {
         if (data) {
+            updateRecordOfDifferentClient(req, data);
             return res.send(data);
         } else {
             return res.send(err);
         }
     })
+});
+
+/**
+ * used to update record in the which exits client registry
+ * @param {*} req 
+ */
+const updateRecordOfDifferentClient = (req, res) => {
+    if (res.params.status === appConfig.STATUS.SUCCESSFULL) {
+        logger.debug("updating record in client registry started")
+        let updateReq = _.cloneDeep(req);
+        async.waterfall([
+            function (callback) {
+                req.body.id = appConfig.APP_ID.READ;
+                registryService.readRecord(req, function (err, data) {
+                    if (data && data.params.status === appConfig.STATUS.SUCCESSFULL && data.result[entityType].orgName === 'ILIMI') {
+                        callback(null, data);
+                    } else {
+                        callback(err)
+                    }
+                });
+            },
+            function (readRes, callback) {
+                nerKeycloakHelper.getToken((err, token) => {
+                    if (token)
+                        callback(null, readRes, token.access_token.token);
+                    else callback(err)
+                });
+            },
+            function (readRes, token, callback) {
+                const headers = {
+                    'content-type': 'application/json',
+                    authorization: "Bearer " + token
+                }
+                const searchReq = {
+                    body: {
+                        id: appConfig.APP_ID.SEARCH,
+                        request: {
+                            entityType: [entityType],
+                            filters: { email: { eq: readRes.result[entityType].email } }
+                        }
+                    },
+                    headers: headers,
+                    url: vars.nerRegistryUrl + appConfig.UTILS_URL_CONFIG.SEARCH
+                }
+                httpUtils.post(searchReq, (err, data) => {
+                    callback(null, data.body, headers);
+                });
+            },
+            function (searchRes, headers, callback) {
+                if (searchRes && searchRes.params.status === appConfig.STATUS.SUCCESSFULL && searchRes.result[entityType].length > 0) {
+                    updateReq.body.request[entityType].osid = searchRes.result[entityType][0].osid;
+                    let option = {
+                        body: updateReq.body,
+                        headers: headers,
+                        url: vars.nerRegistryUrl + appConfig.UTILS_URL_CONFIG.UPDATE
+                    }
+                    httpUtils.post(option, (err, res) => {
+                        if (res)
+                            callback(null, res.body);
+                        else callback(err)
+                    });
+                } else {
+                    callback("error: record is not present in the client regitry")
+                }
+            }
+        ], function (err, result) {
+            if (result) logger.debug("Updating record in client registry is ended", result);
+            else logger.debug(err)
+        });
+    }
+}
+
+app.post("/notifications", (req, res, next) => {
+    if (req.url === "/registry/update") {
+        registryService.updateRecord(req, function (err, data) {
+            if (data) {
+                return res.send(data);
+            } else {
+                return res.send(err);
+            }
+        });
+    }
 });
 
 app.get("/formTemplates", (req, res, next) => {
