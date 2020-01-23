@@ -1,5 +1,17 @@
 package io.opensaber.registry.middleware.util;
 
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -13,16 +25,6 @@ import com.github.jsonldjava.utils.JsonUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class JSONUtil {
 
@@ -37,6 +39,20 @@ public class JSONUtil {
 		Gson gson = new Gson();
 		String result = gson.toJson(object);
 		return gson.fromJson(result, stringObjMapType);
+	}
+
+	public static String convertObjectJsonString(Object object) {
+		Gson gson = new Gson();
+		String result = gson.toJson(object);
+		return result;
+	}
+
+	public static JsonNode convertObjectJsonNode(Object object) throws IOException {
+		Gson gson = new Gson();
+		String result = gson.toJson(object);
+		
+		JsonNode inputNode = new ObjectMapper().readTree(result);
+		return inputNode;
 	}
 
 	public static Map<String, Object> convertJsonNodeToMap(JsonNode object) {
