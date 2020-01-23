@@ -112,7 +112,7 @@ public class RegistryHelper {
             includePrivateFields = viewTemplateManager.isPrivateFieldEnabled(viewTemplate,entityType);
         }
         configurator.setIncludeEncryptedProp(includePrivateFields);
-        resultNode =  readService.getEntity(shard, userId, recordId.getUuid(), entityType, configurator);
+        resultNode =  readService.getEntity(inputJson, shard, userId, recordId.getUuid(), entityType, configurator);
         if (viewTemplate != null) {
             ViewTransformer vTransformer = new ViewTransformer();
             resultNode = includePrivateFields ? decryptionHelper.getDecryptedJson(resultNode) : resultNode;
