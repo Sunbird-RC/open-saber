@@ -84,16 +84,10 @@ public class AuditServiceImpl implements IAuditService {
 	 *
 	 */
     @Override
-    public void doAudit(String userId, JsonNode readNode, JsonNode mergedNode, String operation, String auditAction, String id,
-    		List<String> entityTypes, String entityRootId, List<Integer> transactionId, Shard shard)   {
+    public void doAudit(AuditRecord auditRecord, String userId, JsonNode mergedNode, String operation, List<String> entityTypes, String entityRootId, Shard shard)   {
         logger.debug("doAudit started");
        
         try {
-		        AuditRecord auditRecord = createAuditRecord(userId, auditAction, id, transactionId);
-
-		        List<AuditInfo> auditItemDetails = createAuditInfo(operation, auditAction, readNode, mergedNode, entityTypes);
-		        auditRecord.setAuditInfo(auditItemDetails);
-
 		        // If the audit is stored as file, fetchAudit from audit entity will not come to this point.
 	    		if(Constants.FILE.equalsIgnoreCase(auditFrameStore)) {
 	    			
@@ -123,7 +117,7 @@ public class AuditServiceImpl implements IAuditService {
         }
         logger.debug("doAudit ends");
     }
-    
+    @Override
     public AuditRecord createAuditRecord(String userId, String auditAction, String id,
     		List<Integer> transactionId) throws JsonProcessingException {
     	
@@ -135,7 +129,7 @@ public class AuditServiceImpl implements IAuditService {
         
         return auditRecord;
     }
-    
+    @Override
     public List<AuditInfo> createAuditInfo(String operation, String auditAction, JsonNode readNode, JsonNode mergedNode, List<String> entityTypes ) throws JsonProcessingException  {
     	
     	List<AuditInfo> auditItemDetails = null;

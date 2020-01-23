@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import io.opensaber.pojos.AuditRecord;
 import io.opensaber.pojos.ComponentHealthInfo;
 import io.opensaber.pojos.HealthCheckResponse;
 import io.opensaber.registry.dao.IRegistryDao;
@@ -156,7 +157,10 @@ public class RegistryServiceImpl implements RegistryService {
                 if(auditEnabled) {
 	                List<Integer> transactionId = new LinkedList<>(Arrays.asList(tx.hashCode()));
 	                List<String> entityTypes = new LinkedList<>(Arrays.asList(index));
-	                auditService.doAudit(userId,null,null,Constants.AUDIT_ACTION_DELETE_OP, Constants.AUDIT_ACTION_DELETE,uuid,entityTypes,uuid,transactionId,shard);
+	                
+			        AuditRecord auditRecord = auditService.createAuditRecord(userId, Constants.AUDIT_ACTION_DELETE, uuid, transactionId);
+			        auditRecord.setAuditInfo(auditService.createAuditInfo(Constants.AUDIT_ACTION_DELETE_OP, Constants.AUDIT_ACTION_DELETE, null, null, entityTypes));
+	                auditService.doAudit(auditRecord, userId, null, Constants.AUDIT_ACTION_DELETE_OP, entityTypes, uuid, shard);
                 }else {
                 	logger.debug("audit is not enabled");
                 }
@@ -211,7 +215,10 @@ public class RegistryServiceImpl implements RegistryService {
             
             //if Audit enabled in configuration yml file
             if(auditEnabled) {
-            	auditService.doAudit(userId,null,rootNode,Constants.AUDIT_ACTION_ADD_OP, Constants.AUDIT_ACTION_ADD,entityId,entityTypes,entityId,transactionId,shard);
+		        AuditRecord auditRecord = auditService.createAuditRecord(userId, Constants.AUDIT_ACTION_ADD, entityId, transactionId);
+		        auditRecord.setAuditInfo(auditService.createAuditInfo(Constants.AUDIT_ACTION_ADD_OP, Constants.AUDIT_ACTION_ADD, null, rootNode, entityTypes));
+
+            	auditService.doAudit(auditRecord, userId, rootNode, Constants.AUDIT_ACTION_ADD_OP, entityTypes, entityId, shard);
             }else {
             	logger.debug("audit is not enabled");
             }
@@ -302,8 +309,9 @@ public class RegistryServiceImpl implements RegistryService {
 	            List<Integer> transactionId = new LinkedList<>(Arrays.asList(tx.hashCode()));
 	            List<String> entityTypes = new LinkedList<>(Arrays.asList(entityType));
 	            
-	            // elastic-search and audit akka calls starts here
-	            auditService.doAudit(userId,readNode,mergedNode,Constants.AUDIT_ACTION_UPDATE_OP,Constants.AUDIT_ACTION_UPDATE,id,entityTypes,rootId,transactionId, shard);
+		        AuditRecord auditRecord = auditService.createAuditRecord(userId, Constants.AUDIT_ACTION_UPDATE, id, transactionId);
+		        auditRecord.setAuditInfo(auditService.createAuditInfo(Constants.AUDIT_ACTION_UPDATE_OP, Constants.AUDIT_ACTION_UPDATE, readNode, mergedNode, entityTypes));
+		        auditService.doAudit(auditRecord, userId, mergedNode, Constants.AUDIT_ACTION_UPDATE_OP, entityTypes, rootId, shard);
             }else {
             	logger.debug("audit is not enabled");
             }

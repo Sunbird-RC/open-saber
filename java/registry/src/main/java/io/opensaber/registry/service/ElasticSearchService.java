@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.opensaber.elastic.IElasticService;
 import io.opensaber.pojos.APIMessage;
+import io.opensaber.pojos.AuditRecord;
 import io.opensaber.pojos.Filter;
 import io.opensaber.pojos.SearchQuery;
 import io.opensaber.registry.middleware.util.Constants;
@@ -88,7 +89,10 @@ public class ElasticSearchService implements ISearchService {
         		operation = Constants.AUDIT_ACTION_AUDIT_OP;
         		action = Constants.AUDIT_ACTION_AUDIT;
         	}
-	        auditService.doAudit(apiMessage.getUserID(),null,inputQueryNode,operation, action,null,searchQuery.getEntityTypes(),null,null,null);
+        	
+	        AuditRecord auditRecord = auditService.createAuditRecord(apiMessage.getUserID(), action, null, null);
+	        auditRecord.setAuditInfo(auditService.createAuditInfo(operation, action, null, inputQueryNode, searchQuery.getEntityTypes()));
+	        auditService.doAudit(auditRecord, apiMessage.getUserID(), inputQueryNode, operation, searchQuery.getEntityTypes(), null, null);
         }else {
         	logger.debug("audit is not enabled");
         }

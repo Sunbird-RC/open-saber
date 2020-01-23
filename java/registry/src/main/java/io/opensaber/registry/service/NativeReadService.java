@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import io.opensaber.pojos.AuditRecord;
 import io.opensaber.registry.dao.IRegistryDao;
 import io.opensaber.registry.dao.RegistryDaoImpl;
 import io.opensaber.registry.middleware.util.Constants;
@@ -79,7 +80,10 @@ public class NativeReadService implements IReadService {
 	        if(auditEnabled) {
 				List<Integer> transaction = new LinkedList<>(Arrays.asList(tx.hashCode()));
 				List<String> entityTypes = new LinkedList<>(Arrays.asList(entityType));
-				auditService.doAudit(userId,null,null,Constants.AUDIT_ACTION_READ_OP, Constants.AUDIT_ACTION_READ,id,entityTypes,id,transaction, shard);
+				
+		        AuditRecord auditRecord = auditService.createAuditRecord(userId, Constants.AUDIT_ACTION_READ, id, transaction);
+		        auditRecord.setAuditInfo(auditService.createAuditInfo(Constants.AUDIT_ACTION_READ_OP, Constants.AUDIT_ACTION_READ, null,null, entityTypes));
+				auditService.doAudit(auditRecord, userId, null, Constants.AUDIT_ACTION_READ_OP, entityTypes, id, shard);
 	        }else {
 	        	logger.debug("audit is not enabled");
 	        }

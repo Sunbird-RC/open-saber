@@ -5,6 +5,7 @@ import java.util.List;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import io.opensaber.pojos.AuditInfo;
 import io.opensaber.pojos.AuditRecord;
 import io.opensaber.registry.sink.shard.Shard;
 
@@ -15,7 +16,10 @@ public interface IAuditService {
      *
      * 
      */
-    public void doAudit(String userId, JsonNode readNode, JsonNode mergedNode, String operation, String auditAction, String id,
-    		List<String> entityTypes, String entityRootId, List<Integer> transactionId, Shard shard);
+    public void doAudit(AuditRecord auditRecord, String userId, JsonNode mergedNode, String operation, List<String> entityTypes, String entityRootId, Shard shard);
     public void auditToFile(AuditRecord auditRecord) throws JsonProcessingException;
+	AuditRecord createAuditRecord(String userId, String auditAction, String id, List<Integer> transactionId)
+			throws JsonProcessingException;
+	List<AuditInfo> createAuditInfo(String operation, String auditAction, JsonNode readNode, JsonNode mergedNode,
+			List<String> entityTypes) throws JsonProcessingException;
 }

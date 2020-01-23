@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.opensaber.elastic.IElasticService;
+import io.opensaber.pojos.AuditRecord;
 import io.opensaber.registry.exception.RecordNotFoundException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
@@ -74,8 +75,11 @@ public class ElasticReadService implements IReadService {
         //if Audit enabled in configuration yml file
         if(auditEnabled) {
 	        	
-	        List<String> entityTypes = new LinkedList<>(Arrays.asList(entityType));		
-	        auditService.doAudit(userId,null,null, Constants.AUDIT_ACTION_READ_OP, Constants.AUDIT_ACTION_READ,id,entityTypes,id,null,shard);
+	        List<String> entityTypes = new LinkedList<>(Arrays.asList(entityType));	
+
+	        AuditRecord auditRecord = auditService.createAuditRecord(userId, Constants.AUDIT_ACTION_READ, id, null);
+	        auditRecord.setAuditInfo(auditService.createAuditInfo(Constants.AUDIT_ACTION_READ_OP, Constants.AUDIT_ACTION_READ, null, null, entityTypes));
+	        auditService.doAudit(auditRecord, userId, null, Constants.AUDIT_ACTION_READ_OP, entityTypes, id, shard);
         
         }else {
         	logger.debug("audit is not enabled");
