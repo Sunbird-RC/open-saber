@@ -107,9 +107,14 @@ public class AuditServiceImpl implements IAuditService {
 	    		}	
     		
     			String entityType = entityTypes.get(0);    			
-	    		boolean elasticSearchEnabled = (searchProvider.equals("io.opensaber.registry.service.ElasticSearchService"));
+	    		boolean elasticSearchEnabled = ("io.opensaber.registry.service.ElasticSearchService".equals(searchProvider));
+	    		
+	    		JsonNode inputNode = null;
+	    		if(mergedNode!=null) {
+	    			inputNode = mergedNode.get(entityType);
+	    		}
 	 	        MessageProtos.Message message = MessageFactory.instance().createOSActorMessage(elasticSearchEnabled, operation,
-	 	        		entityType, entityRootId, mergedNode.get(entityType), auditRecord);
+	 	        		entityType, entityRootId, inputNode, auditRecord);
 	 	        ActorCache.instance().get(Router.ROUTER_NAME).tell(message, null);
         }catch(AuditFailedException ae) {
         	logger.error("Error in saving audit log : {}" + ae);
@@ -157,7 +162,7 @@ public class AuditServiceImpl implements IAuditService {
     }
 	
 	@Async("auditExecutor")
-	public void auditToDB(AuditRecord auditRecord,String userId, String vertexLabel, Shard shard) throws IOException, AuditFailedException{
+	public void auditToDB(AuditRecord auditRecord,String userId, String entityType, Shard shard) throws IOException, AuditFailedException{
 		
 		String entityId = "auditPlaceholderId";
 		JsonNode jsonN = JSONUtil.convertObjectJsonNode(auditRecord);
@@ -172,7 +177,8 @@ public class AuditServiceImpl implements IAuditService {
 		
 		//Creating root node with vertex label
 		//by appending the entity name with _Audit
-		if(!(vertexLabel.contains(auditSuffixSeparator+auditSuffix))) {
+		String vertexLabel = entityType;
+		if( null != entityType && !(entityType.contains(auditSuffixSeparator+auditSuffix))) {
 			vertexLabel = vertexLabel+auditSuffixSeparator+auditSuffix;
 		}
 		ObjectNode root = JsonNodeFactory.instance.objectNode();

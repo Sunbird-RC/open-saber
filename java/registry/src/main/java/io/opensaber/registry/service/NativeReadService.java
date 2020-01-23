@@ -59,7 +59,7 @@ public class NativeReadService implements IReadService {
 	 * @throws Exception
 	 */
 	@Override
-	public JsonNode getEntity(JsonNode inputJson, Shard shard, String userId, String id, String entityType, ReadConfigurator configurator) throws Exception {
+	public JsonNode getEntity(Shard shard, String userId, String id, String entityType, ReadConfigurator configurator) throws Exception {
 		DatabaseProvider dbProvider = shard.getDatabaseProvider();
 		IRegistryDao registryDao = new RegistryDaoImpl(dbProvider, definitionsManager, uuidPropertyName);
 		try (OSGraph osGraph = dbProvider.getOSGraph()) {
@@ -79,7 +79,7 @@ public class NativeReadService implements IReadService {
 	        if(auditEnabled) {
 				List<Integer> transaction = new LinkedList<>(Arrays.asList(tx.hashCode()));
 				List<String> entityTypes = new LinkedList<>(Arrays.asList(entityType));
-				auditService.doAudit(userId,null,inputJson,Constants.AUDIT_ACTION_READ_OP, Constants.AUDIT_ACTION_READ,id,entityTypes,id,transaction, shard);
+				auditService.doAudit(userId,null,null,Constants.AUDIT_ACTION_READ_OP, Constants.AUDIT_ACTION_READ,id,entityTypes,id,transaction, shard);
 	        }else {
 	        	logger.debug("audit is not enabled");
 	        }

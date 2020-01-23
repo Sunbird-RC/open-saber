@@ -7,6 +7,6 @@ import io.opensaber.registry.util.ReadConfigurator;
 
 public interface IReadService {
 
-    JsonNode getEntity(JsonNode inputJson, Shard shard, String userId, String id, String entityType, ReadConfigurator configurator) throws Exception;
+    JsonNode getEntity(Shard shard, String userId, String id, String entityType, ReadConfigurator configurator) throws Exception;
 
 }

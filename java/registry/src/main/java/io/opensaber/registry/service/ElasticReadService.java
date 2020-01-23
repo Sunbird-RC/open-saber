@@ -55,7 +55,7 @@ public class ElasticReadService implements IReadService {
      * @throws Exception
      */
     @Override
-    public JsonNode getEntity(JsonNode inputJson, Shard shard, String userId, String id, String entityType, ReadConfigurator configurator) throws Exception {
+    public JsonNode getEntity(Shard shard, String userId, String id, String entityType, ReadConfigurator configurator) throws Exception {
         JsonNode result = null;
         Map<String, Object> response = null;
         try {
@@ -75,7 +75,7 @@ public class ElasticReadService implements IReadService {
         if(auditEnabled) {
 	        	
 	        List<String> entityTypes = new LinkedList<>(Arrays.asList(entityType));		
-	        auditService.doAudit(userId,null,inputJson, Constants.AUDIT_ACTION_READ_OP, Constants.AUDIT_ACTION_READ,id,entityTypes,id,null,shard);
+	        auditService.doAudit(userId,null,null, Constants.AUDIT_ACTION_READ_OP, Constants.AUDIT_ACTION_READ,id,entityTypes,id,null,shard);
         
         }else {
         	logger.debug("audit is not enabled");

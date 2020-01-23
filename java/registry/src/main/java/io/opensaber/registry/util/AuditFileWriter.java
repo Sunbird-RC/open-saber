@@ -24,7 +24,6 @@ public class AuditFileWriter {
 	@Async("auditExecutor")
 	public void auditToFile(AuditRecord auditRecord) throws JsonProcessingException {
 		
-		objectMapper = new ObjectMapper();
 		String auditString = objectMapper.writeValueAsString(auditRecord);
 		logger.info("{}", auditString);
 	}
