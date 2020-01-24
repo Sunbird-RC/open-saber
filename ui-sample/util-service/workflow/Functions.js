@@ -24,6 +24,10 @@ class Functions {
         this.request = request
     }
 
+    setResponse(response) {
+        this.response = response;
+    }
+
     addToPlaceholders(anyKey, anyValue) {
         this._placeholders[anyKey] = anyValue
     }
