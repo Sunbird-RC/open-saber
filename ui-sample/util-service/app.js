@@ -8,10 +8,9 @@ const server = http.createServer(app);
 const _ = require('lodash')
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
-var async = require('async');
+var interceptor = require('express-interceptor');
 const templateConfig = require('./templates/template.config.json');
 const RegistryService = require('./sdk/registryService')
-const KeycloakHelper = require('./sdk/KeycloakHelper');
 const logger = require('./sdk/log4j');
 const port = process.env.PORT || 9081;
 let wfEngine = undefined
@@ -34,8 +33,21 @@ app.use((req, res, next) => {
     logger.info('pre api request interceptor');
     workFlowFunctionPre(req);
     next();
-    workFlowFunctionPost(req, res);
 });
+
+app.use(interceptor(function (req, res) {
+    return {
+        isInterceptable: function () {
+            return true;
+        },
+        intercept: (body, send) => {
+            send(body)
+        },
+        afterSend(oldResBody, newResBody) {
+            workFlowFunctionPost(req, newResBody)
+        }
+    }
+}));
 
 app.post("/registry/add", (req, res, next) => {
     registryService.addRecord(req, function (err, data) {
