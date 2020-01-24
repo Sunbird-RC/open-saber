@@ -1,4 +1,4 @@
-const vars = require('./vars').getAllVars(process.env.NODE_ENV);
+const vars = require('./vars').getAllVars(process.env.NODE_ENV)
 const registryUrl = vars['registryUrl']
 const httpUtil = require('./httpUtils.js')
 

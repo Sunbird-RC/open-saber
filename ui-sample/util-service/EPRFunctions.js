@@ -15,7 +15,6 @@ var registryService = new RegistryService();
 class EPRFunctions extends Functions {
     EPRFunctions() {
         setRequest(undefined)
-        setResponse(undefined)
     }
 
     getAdminUsers(callback) {
