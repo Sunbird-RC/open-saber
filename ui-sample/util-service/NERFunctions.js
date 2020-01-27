@@ -12,8 +12,8 @@ const eprKeycloakHelper = new KeycloakHelper(vars.keycloak_epr);
 var registryService = new RegistryService();
 
 
-class EPRFunctions extends Functions {
-    EPRFunctions() {
+class NERFunctions extends Functions {
+    NERFunctions() {
         setRequest(undefined)
     }
 
@@ -212,4 +212,4 @@ class EPRFunctions extends Functions {
 
 }
 
-module.exports = EPRFunctions
+module.exports = NERFunctions
