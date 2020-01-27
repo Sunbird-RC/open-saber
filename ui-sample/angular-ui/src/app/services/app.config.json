@@ -30,7 +30,9 @@
         ],
         "editProfileRole": [
             "admin",
-            "partner-admin",
+            "partner-admin"
+        ],
+        "editOwnProfileRole": [
             "owner"
         ],
         "approveEmployee": [

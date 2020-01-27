@@ -88,6 +88,7 @@
       "osUpdatedAt",
       "osCreatedBy",
       "osUpdatedBy"
-    ]
+    ],
+    "additionalProperties": false
   }
 }

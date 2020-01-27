@@ -47,7 +47,6 @@ export class ProfileComponent implements OnInit {
 
   ngOnInit() {
     this.editProfile = appConfig.rolesMapping.editProfileRole;
-    _.pull(this.editProfile, 'owner')
     this.activatedRoute.params.subscribe((params) => {
       this.userId = params.userId;
       this.viewOwnerProfile = params.role
@@ -107,6 +106,7 @@ export class ProfileComponent implements OnInit {
     });
   }
   navigateToEditPage() {
+    console.log(this.viewOwnerProfile)
     if (this.viewOwnerProfile) {
       this.router.navigate(['/edit', this.userId, this.viewOwnerProfile]);
     } else {

@@ -212,6 +212,10 @@ export class AdminPageComponent implements OnInit, OnDestroy {
             this.paginationDetails.nextBtn = true;
           }
         } else {
+          this.result = {
+            "headers": '',
+            "row": ''
+          }
           this.showLoader = false;
           this.paginationDetails.nextBtn = true
         }
