@@ -106,7 +106,6 @@ export class ProfileComponent implements OnInit {
     });
   }
   navigateToEditPage() {
-    console.log(this.viewOwnerProfile)
     if (this.viewOwnerProfile) {
       this.router.navigate(['/edit', this.userId, this.viewOwnerProfile]);
     } else {
