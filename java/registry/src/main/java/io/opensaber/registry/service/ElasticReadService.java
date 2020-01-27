@@ -79,10 +79,7 @@ public class ElasticReadService implements IReadService {
 
 	        AuditRecord auditRecord = auditService.createAuditRecord(userId, Constants.AUDIT_ACTION_READ, id, null);
 	        auditRecord.setAuditInfo(auditService.createAuditInfo(Constants.AUDIT_ACTION_READ_OP, Constants.AUDIT_ACTION_READ, null, null, entityTypes));
-	        auditService.doAudit(auditRecord, userId, null, Constants.AUDIT_ACTION_READ_OP, entityTypes, id, shard);
-        
-        }else {
-        	logger.debug("audit is not enabled");
+	        auditService.doAudit(auditRecord, null, entityTypes, id, shard);
         }
         ObjectNode resultNode = JsonNodeFactory.instance.objectNode();
         resultNode.set(entityType, result);

@@ -83,9 +83,7 @@ public class NativeReadService implements IReadService {
 				
 		        AuditRecord auditRecord = auditService.createAuditRecord(userId, Constants.AUDIT_ACTION_READ, id, transaction);
 		        auditRecord.setAuditInfo(auditService.createAuditInfo(Constants.AUDIT_ACTION_READ_OP, Constants.AUDIT_ACTION_READ, null,null, entityTypes));
-				auditService.doAudit(auditRecord, userId, null, Constants.AUDIT_ACTION_READ_OP, entityTypes, id, shard);
-	        }else {
-	        	logger.debug("audit is not enabled");
+				auditService.doAudit(auditRecord, null, entityTypes, id, shard);
 	        }
 	 
 			return result;

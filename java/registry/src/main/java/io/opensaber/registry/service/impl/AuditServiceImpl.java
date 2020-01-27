@@ -84,10 +84,11 @@ public class AuditServiceImpl implements IAuditService {
 	 *
 	 */
     @Override
-    public void doAudit(AuditRecord auditRecord, String userId, JsonNode mergedNode, String operation, List<String> entityTypes, String entityRootId, Shard shard)   {
+    public void doAudit(AuditRecord auditRecord, JsonNode mergedNode,  List<String> entityTypes, String entityRootId, Shard shard)   {
         logger.debug("doAudit started");
        
         try {
+        		String operation = auditRecord.getAuditInfo().get(0).getOp();
 		        // If the audit is stored as file, fetchAudit from audit entity will not come to this point.
 	    		if(Constants.FILE.equalsIgnoreCase(auditFrameStore)) {
 	    			
@@ -96,7 +97,7 @@ public class AuditServiceImpl implements IAuditService {
 	    		// Shard will be null in case of elastic search, so we are not storing audit info in such cases
 	    		}else if(Constants.DATABASE.equalsIgnoreCase(auditFrameStore) && shard != null) {    
 	    			for(String entityType : entityTypes){
-	    				auditToDB(auditRecord, userId, entityType, shard);
+	    				auditToDB(auditRecord, entityType, shard);
 	    			}
 	    		}	
     		
@@ -118,8 +119,7 @@ public class AuditServiceImpl implements IAuditService {
         logger.debug("doAudit ends");
     }
     @Override
-    public AuditRecord createAuditRecord(String userId, String auditAction, String id,
-    		List<Integer> transactionId) throws JsonProcessingException {
+    public AuditRecord createAuditRecord(String userId, String auditAction, String id, List<Integer> transactionId) throws JsonProcessingException {
     	
     	AuditRecord auditRecord = new AuditRecord();    	 
     	//Transaction id is null incase of elastic read service
@@ -156,7 +156,7 @@ public class AuditServiceImpl implements IAuditService {
     }
 	
 	@Async("auditExecutor")
-	public void auditToDB(AuditRecord auditRecord,String userId, String entityType, Shard shard) throws IOException, AuditFailedException{
+	public void auditToDB(AuditRecord auditRecord, String entityType, Shard shard) throws IOException, AuditFailedException{
 		
 		String entityId = "auditPlaceholderId";
 		JsonNode jsonN = JSONUtil.convertObjectJsonNode(auditRecord);
@@ -182,7 +182,7 @@ public class AuditServiceImpl implements IAuditService {
 		((ObjectNode)root.get(vertexLabel)).put("auditInfo", json);
 		JsonNode rootNode  =  root;
 			
-		systemFieldsHelper.ensureCreateAuditFields(vertexLabel, rootNode.get(vertexLabel), userId);
+		systemFieldsHelper.ensureCreateAuditFields(vertexLabel, rootNode.get(vertexLabel), auditRecord.getUserId());
 		
 		Transaction tx = null;
 		DatabaseProvider dbProvider = shard.getDatabaseProvider();

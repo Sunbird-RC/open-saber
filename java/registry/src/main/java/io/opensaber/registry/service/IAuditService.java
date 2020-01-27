@@ -16,7 +16,7 @@ public interface IAuditService {
      *
      * 
      */
-    public void doAudit(AuditRecord auditRecord, String userId, JsonNode mergedNode, String operation, List<String> entityTypes, String entityRootId, Shard shard);
+    public void doAudit(AuditRecord auditRecord, JsonNode mergedNode, List<String> entityTypes, String entityRootId, Shard shard);
     public void auditToFile(AuditRecord auditRecord) throws JsonProcessingException;
 	AuditRecord createAuditRecord(String userId, String auditAction, String id, List<Integer> transactionId)
 			throws JsonProcessingException;

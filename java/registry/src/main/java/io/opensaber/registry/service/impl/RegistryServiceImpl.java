@@ -160,9 +160,7 @@ public class RegistryServiceImpl implements RegistryService {
 	                
 			        AuditRecord auditRecord = auditService.createAuditRecord(userId, Constants.AUDIT_ACTION_DELETE, uuid, transactionId);
 			        auditRecord.setAuditInfo(auditService.createAuditInfo(Constants.AUDIT_ACTION_DELETE_OP, Constants.AUDIT_ACTION_DELETE, null, null, entityTypes));
-	                auditService.doAudit(auditRecord, userId, null, Constants.AUDIT_ACTION_DELETE_OP, entityTypes, uuid, shard);
-                }else {
-                	logger.debug("audit is not enabled");
+	                auditService.doAudit(auditRecord, null, entityTypes, uuid, shard);
                 }
             }
             logger.info("Entity {} marked deleted", uuid);
@@ -218,9 +216,7 @@ public class RegistryServiceImpl implements RegistryService {
 		        AuditRecord auditRecord = auditService.createAuditRecord(userId, Constants.AUDIT_ACTION_ADD, entityId, transactionId);
 		        auditRecord.setAuditInfo(auditService.createAuditInfo(Constants.AUDIT_ACTION_ADD_OP, Constants.AUDIT_ACTION_ADD, null, rootNode, entityTypes));
 
-            	auditService.doAudit(auditRecord, userId, rootNode, Constants.AUDIT_ACTION_ADD_OP, entityTypes, entityId, shard);
-            }else {
-            	logger.debug("audit is not enabled");
+            	auditService.doAudit(auditRecord, rootNode, entityTypes, entityId, shard);
             }
      
         }
@@ -311,9 +307,7 @@ public class RegistryServiceImpl implements RegistryService {
 	            
 		        AuditRecord auditRecord = auditService.createAuditRecord(userId, Constants.AUDIT_ACTION_UPDATE, id, transactionId);
 		        auditRecord.setAuditInfo(auditService.createAuditInfo(Constants.AUDIT_ACTION_UPDATE_OP, Constants.AUDIT_ACTION_UPDATE, readNode, mergedNode, entityTypes));
-		        auditService.doAudit(auditRecord, userId, mergedNode, Constants.AUDIT_ACTION_UPDATE_OP, entityTypes, rootId, shard);
-            }else {
-            	logger.debug("audit is not enabled");
+		        auditService.doAudit(auditRecord, mergedNode, entityTypes, rootId, shard);
             }
         }
     }

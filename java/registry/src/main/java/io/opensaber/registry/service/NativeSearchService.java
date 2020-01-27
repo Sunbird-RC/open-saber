@@ -137,9 +137,7 @@ public class NativeSearchService implements ISearchService {
 
 		        	AuditRecord auditRecord = auditService.createAuditRecord(apiMessage.getUserID(), action, null, transaction);
 			        auditRecord.setAuditInfo(auditService.createAuditInfo(operation, action, null, inputQueryNode, searchQuery.getEntityTypes()));
-		        	auditService.doAudit(auditRecord, apiMessage.getUserID(), inputQueryNode, operation, searchQuery.getEntityTypes(), null, shard);
-		        }else {
-		        	logger.debug("audit is not enabled");
+		        	auditService.doAudit(auditRecord, inputQueryNode, searchQuery.getEntityTypes(), null, shard);
 		        }
 		 	}
 		}
