@@ -76,7 +76,7 @@ const pushToEPR = (req) => {
                 }
                 httpUtils.post(options, function (err, res) {
                     if (res.statusCode == 200) {
-                        logger.info("Employee successfully added to Partner Registry")
+                        logger.info("Employee successfully added to Partner Registry", res.body)
                     } else {
                         logger.debug("Employee could not be added to Partner registry" + res.body + res.statusCode)
                     }
@@ -130,7 +130,7 @@ const addRecordToRegistry = (req, res, callback) => {
         req.body = reqBody;
         registryService.addRecord(req, function (err, res) {
             if (res.statusCode == 200) {
-                logger.info("Employee successfully added to registry")
+                logger.info("Employee successfully added to registry", res.body)
                 callback(null, res.body);
                 pushToEPR(eprReq);
             } else {

@@ -1,5 +1,6 @@
 const config = {
     "dev": {
+        "utilServicePort":process.env.util_service_port || 9181,
         "keycloak": {
             "url": process.env.keycloak_url || "http://localhost:8443", 
             "realmName": process.env.keycloak_realmName,
