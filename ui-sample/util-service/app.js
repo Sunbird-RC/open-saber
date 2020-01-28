@@ -11,9 +11,9 @@ const fs = require('fs');
 var interceptor = require('express-interceptor');
 const templateConfig = require('./templates/template.config.json');
 const RegistryService = require('./sdk/registryService')
-const KeycloakHelper = require('./sdk/KeycloakHelper');
 const logger = require('./sdk/log4j');
-const port = process.env.PORT || 9081;
+const vars = require('./sdk/vars').getAllVars(process.env.NODE_ENV);
+const port = vars.utilServicePort;
 let wfEngine = undefined
 const registryService = new RegistryService();
 

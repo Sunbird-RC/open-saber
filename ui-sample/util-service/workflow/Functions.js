@@ -10,7 +10,7 @@ var vars = require('../sdk/vars').getAllVars(process.env.NODE_ENV);
 var appConfig = require('../sdk/appConfig');
 var cacheManager = new CacheManager();
 const registryService = new RegistryService();
-const keycloakHelper = new KeycloakHelper(vars.keycloak_ner);
+const keycloakHelper = new KeycloakHelper(vars.keycloak);
 
 class Functions {
     constructor() {
