@@ -5,7 +5,7 @@ const _ = require('lodash')
 const WFEngineFactory = require('./workflow/EngineFactory');
 const baseFunctions = require('./workflow/Functions')
 const engineConfig = require('./engineConfig.json')
-const EPRUtilFunctions = require('./NERFunctions')
+const NERUtilFunctions = require('./NERFunctions')
 const KeycloakHelper = require('./sdk/KeycloakHelper');
 const RegistryService = require('./sdk/registryService')
 const CacheManager = require('./sdk/CacheManager.js');
@@ -19,7 +19,7 @@ const keycloakHelper = new KeycloakHelper(vars.keycloak);
 const eprKeycloakHelper = new KeycloakHelper(vars.keycloak_epr)
 
 const classesMapping = {
-    'NERFunction': EPRUtilFunctions,
+    'NERFunction': NERUtilFunctions,
     'Functions': baseFunctions
 };
 
@@ -43,7 +43,6 @@ const createUser = (req, callback) => {
         },
         function (token, callback) {
             req.headers['authorization'] = token;
-            console.log(req.headers)
             keycloakHelper.registerUserToKeycloak(req, callback)
         },
         function (req, res, callback2) {
