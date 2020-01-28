@@ -1,12 +1,16 @@
 const _ = require('lodash')
 const async = require('async');
 
-const keycloakHelper = require('../sdk/keycloakHelper.js');
+const KeycloakHelper = require('../sdk/KeycloakHelper.js');
 const Notification = require('../sdk/notification.js')
-const registryService = require('../sdk/registryService.js');
+const RegistryService = require('../sdk/registryService.js');
 const logger = require('../sdk/log4j.js')
 var CacheManager = require('../sdk/CacheManager.js');
+var vars = require('../sdk/vars').getAllVars(process.env.NODE_ENV);
+var appConfig = require('../sdk/appConfig');
 var cacheManager = new CacheManager();
+const registryService = new RegistryService();
+const keycloakHelper = new KeycloakHelper(vars.keycloak_ner);
 
 class Functions {
     constructor() {
@@ -18,6 +22,10 @@ class Functions {
 
     setRequest(request) {
         this.request = request
+    }
+
+    setResponse(response) {
+        this.response = response;
     }
 
     addToPlaceholders(anyKey, anyValue) {
@@ -63,16 +71,14 @@ class Functions {
             headers: this.request.headers,
             body: this.request.body
         };
-        req.body.id = "open-saber.registry.read",
-        req.body.request.Employee.osid = this.request.body.request.Employee.osid;
-        registryService.readEmployee(req, (err, data) => {
-            if (data) {
-                this.userData = data.result.Employee;
-                callback(null, data.result.Employee)
-            } else {
-                callback(err);
-            }
-        });
+        req.body.id = appConfig.APP_ID.READ,
+            registryService.readRecord(req, (err, data) => {
+                if (data) {
+                    callback(null, data)
+                } else {
+                    callback(err);
+                }
+            });
     }
 
     /**
@@ -80,8 +86,8 @@ class Functions {
      * @param {*} callback 
      */
     sendNotifications(callback) {
-        const notification = new Notification(null, null, this._placeholders, this._placeholders.subject, 
-            this._placeholders.templateId, this._placeholders.templateParams, this._placeholders.emailIds);
+        const notification = new Notification(null, null,
+            this._placeholders.templateId, this._placeholders.templateParams, this._placeholders.emailIds, this._placeholders.subject);
         notification.sendNotifications((err, data) => {
             if (data) {
                 callback(null, data);

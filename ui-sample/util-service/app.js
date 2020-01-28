@@ -8,15 +8,14 @@ const server = http.createServer(app);
 const _ = require('lodash')
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
-var async = require('async');
+var interceptor = require('express-interceptor');
 const templateConfig = require('./templates/template.config.json');
-const registryService = require('./sdk/registryService')
-const keycloakHelper = require('./sdk/keycloakHelper');
+const RegistryService = require('./sdk/registryService')
+const KeycloakHelper = require('./sdk/KeycloakHelper');
 const logger = require('./sdk/log4j');
 const port = process.env.PORT || 9081;
 let wfEngine = undefined
-var CacheManager = require('./sdk/CacheManager.js');
-var cacheManager = new CacheManager();
+const registryService = new RegistryService();
 
 app.use(cors())
 app.use(morgan('dev'));
@@ -27,107 +26,32 @@ const workFlowFunctionPre =  (req) => {
      wfEngine.preInvoke(req);
 }
 
-const workFlowFunctionPost = (req) => {
-    wfEngine.postInvoke(req);
+const workFlowFunctionPost = (req, res) => {
+    wfEngine.postInvoke(req, res);
 }
 
 app.use((req, res, next) => {
     logger.info('pre api request interceptor');
     workFlowFunctionPre(req);
     next();
-    logger.info("post api request interceptor");
-    workFlowFunctionPost(req);
 });
 
-app.post("/register/users", (req, res, next) => {
-    createUser(req, function (err, data) {
-        if (err) {
-            res.statusCode = err.statusCode;
-            return res.send(err.body)
-        } else {
-            return res.send(data);
-        }
-    });
-});
-
-const createUser = (req, callback) => {
-    async.waterfall([
-        function (callback) {
-            //if auth token is not given , this function is used get access token
-            getTokenDetails(req, callback);
+app.use(interceptor(function (req, res) {
+    return {
+        isInterceptable: function () {
+            return true;
         },
-        function (token, callback) {
-            req.headers['authorization'] = token;
-            keycloakHelper.registerUserToKeycloak(req, callback)
+        intercept: (body, send) => {
+            send(body)
         },
-        function (req, res, callback2) {
-            addEmployeeToRegistry(req, res, callback2)
+        afterSend(oldResBody, newResBody) {
+            workFlowFunctionPost(req, newResBody)
         }
-    ], function (err, result) {
-        logger.info('Main Callback --> ' + result);
-        if (err) {
-            callback(err, null)
-        } else {
-            callback(null, result);
-        }
-    });
-}
-
-const getTokenDetails = (req, callback) => {
-    if (!req.headers.authorization) {
-        cacheManager.get('usertoken', function (err, tokenData) {
-            if (err || !tokenData) {
-                keycloakHelper.getToken(function (err, token) {
-                    if (token) {
-                        cacheManager.set({ key: 'usertoken', value: { authToken: token } }, function (err, res) { });
-                        callback(null, 'Bearer ' + token.access_token.token);
-                    } else {
-                        callback(err);
-                    }
-                });
-            } else {
-                callback(null, 'Bearer ' + tokenData.authToken.access_token.token);
-            }
-        });
-    } else {
-        callback(null, req.headers.authorization);
     }
-}
-
-const addEmployeeToRegistry = (req, res, callback) => {
-    if (res.statusCode == 201) {
-        let reqParam = req.body.request;
-        reqParam['isOnboarded'] = false;
-        let reqBody = {
-            "id": "open-saber.registry.create",
-            "ver": "1.0",
-            "ets": "11234",
-            "params": {
-                "did": "",
-                "key": "",
-                "msgid": ""
-            },
-            "request": {
-                "Employee": reqParam
-            }
-        }
-        req.body = reqBody;
-        registryService.addEmployee(req, function (err, res) {
-            if (res.statusCode == 200) {
-                logger.info("Employee successfully added to registry")
-                callback(null, res.body)
-            } else {
-                logger.debug("Employee could not be added to registry" + res.statusCode)
-                callback(res.statusCode, res.errorMessage)
-            }
-        })
-    } else {
-        callback(res, null)
-    }
-}
+}));
 
 app.post("/registry/add", (req, res, next) => {
-    registryService.addEmployee(req, function (err, data) {
+    registryService.addRecord(req, function (err, data) {
         return res.send(data.body);
     })
 });
@@ -136,13 +60,13 @@ app.post("/registry/search", (req, res, next) => {
     if (!_.isEmpty(req.headers.authorization)) {
         req.body.request.viewTemplateId = getViewtemplate(req.headers.authorization);
     }
-    registryService.searchEmployee(req, function (err, data) {
+    registryService.searchRecord(req, function (err, data) {
         return res.send(data);
     })
 });
 
 app.post("/registry/read", (req, res, next) => {
-    registryService.readEmployee(req, function (err, data) {
+    registryService.readRecord(req, function (err, data) {
         return res.send(data);
     })
 });
@@ -159,13 +83,23 @@ const getViewtemplate = (authToken) => {
 }
 
 app.post("/registry/update", (req, res, next) => {
-    registryService.updateEmployee(req, function (err, data) {
+    registryService.updateRecord(req, function (err, data) {
         if (data) {
             return res.send(data);
         } else {
             return res.send(err);
         }
     })
+});
+
+app.post("/notifications", (req, res, next) => {
+    registryService.updateRecord(req, function (err, data) {
+        if (data) {
+            return res.send(data);
+        } else {
+            return res.send(err);
+        }
+    });
 });
 
 app.get("/formTemplates", (req, res, next) => {
@@ -251,3 +185,6 @@ module.exports.startServer = (engine) => {
         logger.info("util service listening on port " + port);
     })
 };
+
+// Expose the app object for adopters to add new endpoints.
+module.exports.theApp = app
