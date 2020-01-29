@@ -1,16 +1,17 @@
 package io.opensaber.registry.helper;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.opensaber.pojos.OpenSaberInstrumentation;
-import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
 import io.opensaber.registry.service.DecryptionHelper;
 import io.opensaber.registry.service.IReadService;
@@ -192,6 +193,16 @@ public class RegistryHelper {
 		logger.debug("get audit log starts");
 		JsonNode auditNode = auditHelper.getSearchQueryNodeForAudit(inputJson, uuidPropertyName);
 		JsonNode resultNode = searchService.search(auditNode);
+
+		if(null != resultNode) {
+			for(JsonNode elementNode:resultNode.iterator().next()) {
+				String resultStr = StringEscapeUtils.unescapeJson(elementNode.get("auditInfo").toString());
+				resultStr= resultStr.replaceAll("\"\"", "");
+				
+				// updating auditInfo with json string to audit record 
+				((ObjectNode)elementNode).replace("auditInfo", new ObjectMapper().readTree(resultStr));
+			}
+		}
 		ViewTemplate viewTemplate = viewTemplateManager.getViewTemplate(inputJson);
 		if (viewTemplate != null) {
 			ViewTransformer vTransformer = new ViewTransformer();
