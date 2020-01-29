@@ -57,12 +57,6 @@ app.post("/registry/add", (req, res, next) => {
 });
 
 app.post("/registry/search", (req, res, next) => {
-<<<<<<< HEAD
-=======
-    if (!_.isEmpty(req.headers.authorization)) {
-        req.body.request.viewTemplateId = getViewtemplate(req.headers.authorization);
-    }
->>>>>>> 0567aee0aa6deafbc7840b2af7fd9a606463dccf
     registryService.searchRecord(req, function (err, data) {
         return res.send(data);
     })
