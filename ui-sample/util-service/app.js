@@ -8,17 +8,14 @@ const server = http.createServer(app);
 const _ = require('lodash')
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
-var async = require('async');
+var interceptor = require('express-interceptor');
 const templateConfig = require('./templates/template.config.json');
-const engineConfig = require('./engineConfig.json')
-const registryService = require('./sdk/registryService')
-const keycloakHelper = require('./sdk/keycloakHelper');
-const WfEngineFactory = require('./workflow/EngineFactory');
+const RegistryService = require('./sdk/RegistryService')
 const logger = require('./sdk/log4j');
-const port = process.env.PORT || 9181;
-const httpUtils = require('./sdk/httpUtils.js');
-const partnerRegistryHost = process.env.partnerRegistryHost || "http://localhost:9081"
-
+const vars = require('./sdk/vars').getAllVars(process.env.NODE_ENV);
+const port = vars.utilServicePort;
+let wfEngine = undefined
+const registryService = new RegistryService();
 
 app.use(cors())
 app.use(morgan('dev'));
@@ -29,105 +26,32 @@ const workFlowFunctionPre = (req) => {
     wfEngine.preInvoke(req);
 }
 
-const workFlowFunctionPost = (req) => {
-    wfEngine.postInvoke(req);
+const workFlowFunctionPost = (req, res) => {
+    wfEngine.postInvoke(req, res);
 }
 
 app.use((req, res, next) => {
     logger.info('pre api request interceptor');
     workFlowFunctionPre(req);
     next();
-    logger.info("post api request interceptor");
-    workFlowFunctionPost(req);
 });
 
-app.post("/register/users", (req, res, next) => {
-    createUser(req, function (err, data) {
-        if (err) {
-            res.statusCode = err.statusCode;
-            return res.send(err.body)
-        } else {
-            return res.send(data);
-        }
-    });
-});
-
-const createUser = (req, callback) => {
-    async.waterfall([
-        function (callback) {
-            keycloakHelper.registerUserToKeycloak(req, callback)
+app.use(interceptor(function (req, res) {
+    return {
+        isInterceptable: function () {
+            return true;
         },
-        function (req, res, callback2) {
-            addEmployeeToRegistry(req, res, callback2)
-        }
-    ], function (err, result) {
-        logger.info('Main Callback --> ' + result);
-        if (err) {
-            callback(err, null)
-        } else {
-            callback(null, result);
-        }
-    });
-}
-
-
-const addEmployeeToRegistry = (req, res, callback) => {
-    var eprReq = Object.assign({}, req);
-    if (res.statusCode == 201) {
-        let reqParam = req.body.request;
-        reqParam['isActive'] = false;
-        let reqBody = {
-            "id": "open-saber.registry.create",
-            "ver": "1.0",
-            "ets": "11234",
-            "params": {
-                "did": "",
-                "key": "",
-                "msgid": ""
-            },
-            "request": {
-                "Employee": reqParam
-            }
-        }
-        req.body = reqBody;
-        registryService.addEmployee(req, function (err, res) {
-            if (res.statusCode == 200) {
-                logger.info("Employee successfully added to registry")
-                pushToEPR(eprReq);
-                callback(null, res.body)
-            } else {
-                logger.debug("Employee could not be added to registry" + res.statusCode)
-                callback(res.statusCode, res.errorMessage)
-            }
-        })
-    } else {
-        callback(res, null)
-    }
-}
-
-const pushToEPR = (req) => {
-    _.omit(req.body.request, ['clientInfo', 'role'])
-    req.body.request.orgName = "ILIMI";
-    delete req.headers.authorization;
-    const options = {
-        url: partnerRegistryHost + "/register/users",
-        headers: {
-            'content-type': 'application/json',
-            'accept': 'application/json',
+        intercept: (body, send) => {
+            send(body)
         },
-        body: req.body
-    }
-    httpUtils.post(options, function (err, res) {
-        if (res.statusCode == 200) {
-            logger.info("Employee successfully added to Partner Registry")
-        } else {
-            logger.debug("Employee could not be added to Partner registry" + res.body + res.statusCode)
+        afterSend(oldResBody, newResBody) {
+            workFlowFunctionPost(req, newResBody)
         }
-    });
-};
+    }
+}));
 
 app.post("/registry/add", (req, res, next) => {
-    registryService.addEmployee(req, function (err, data) {
+    registryService.addRecord(req, function (err, data) {
         return res.send(data.body);
     })
 });
@@ -136,13 +60,13 @@ app.post("/registry/search", (req, res, next) => {
     if (!_.isEmpty(req.headers.authorization)) {
         req.body.request.viewTemplateId = getViewtemplate(req.headers.authorization);
     }
-    registryService.searchEmployee(req, function (err, data) {
+    registryService.searchRecord(req, function (err, data) {
         return res.send(data);
     })
 });
 
 app.post("/registry/read", (req, res, next) => {
-    registryService.readEmployee(req, function (err, data) {
+    registryService.readRecord(req, function (err, data) {
         return res.send(data);
     })
 });
@@ -159,13 +83,23 @@ const getViewtemplate = (authToken) => {
 }
 
 app.post("/registry/update", (req, res, next) => {
-    registryService.updateEmployee(req, function (err, data) {
+    registryService.updateRecord(req, function (err, data) {
         if (data) {
             return res.send(data);
         } else {
             return res.send(err);
         }
     })
+});
+
+app.post("/notification", (req, res, next) => {
+    registryService.updateRecord(req, function (err, data) {
+        if (data) {
+            return res.send(data);
+        } else {
+            return res.send(err);
+        }
+    });
 });
 
 app.get("/formTemplates", (req, res, next) => {
@@ -240,15 +174,17 @@ const readFormTemplate = (value, callback) => {
     });
 }
 
-startServer = () => {
+const setEngine = (engine) => {
+    wfEngine = engine
+}
+
+module.exports.startServer = (engine) => {
+    setEngine(engine)
+
     server.listen(port, function () {
         logger.info("util service listening on port " + port);
     })
 };
 
-
-// Init the workflow engine.
-const wfEngine = WfEngineFactory.getEngine(engineConfig)
-wfEngine.init()
-
-startServer();
+// Expose the app object for adopters to add new endpoints.
+module.exports.theApp = app

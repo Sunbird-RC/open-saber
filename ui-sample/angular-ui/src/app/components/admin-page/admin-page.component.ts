@@ -196,8 +196,10 @@ export class AdminPageComponent implements OnInit, OnDestroy {
     let filters = _.pickBy(this.queryParams, (value: Array<string> | string) => value && value.length);
     filters = _.omit(filters, ['key', 'sort_by', 'sortType', 'appliedFilters']);
     option.data.request.filters = this.getFilterObject(filters);
-    option.data.request['offset'] = offset;
-    option.data.request['limit'] = this.paginationDetails.limit;
+    if(!this.queryParams.key) {
+      option.data.request['offset'] = offset;
+      option.data.request['limit'] = this.paginationDetails.limit;
+    }
     this.dataService.post(option)
       .subscribe(data => {
         if (data.result.Employee && data.result.Employee.length > 0) {
@@ -212,6 +214,10 @@ export class AdminPageComponent implements OnInit, OnDestroy {
             this.paginationDetails.nextBtn = true;
           }
         } else {
+          this.result = {
+            "headers": '',
+            "row": ''
+          }
           this.showLoader = false;
           this.paginationDetails.nextBtn = true
         }

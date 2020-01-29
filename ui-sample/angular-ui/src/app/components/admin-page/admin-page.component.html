@@ -60,7 +60,7 @@
             </app-card>
           </div>
         </div>
-        <div class="ui grid mt-5 table-scroll mb-1" *ngIf="buttonIcon == 'block layout'">
+        <div class="ui grid mt-5 table-scroll mb-1" *ngIf="buttonIcon == 'block layout' && listOfEmployees.length > 0" >
           <table class="ui celled padded table tablet stackable">
             <thead>
               <tr>
@@ -78,9 +78,9 @@
         </div>
         <div class="twelve wide column right aligned" *ngIf="!queryParams.appliedFilters && !key">
           <div class="ui right floated ui buttons">
-            <a class="ui button bl-1" [ngClass]="{'disabled': paginationDetails.previousBtn }"
+            <a class="ui basic primary button" [ngClass]="{'disabled': paginationDetails.previousBtn }"
               (click)="previous()">Previous</a>
-            <a class="ui button bl-1" [ngClass]="{'disabled': paginationDetails.nextBtn}"
+            <a class="ui basic primary button" [ngClass]="{'disabled': paginationDetails.nextBtn}"
               (click)="next(paginationDetails.offset)">Next</a>
           </div>
         </div>
