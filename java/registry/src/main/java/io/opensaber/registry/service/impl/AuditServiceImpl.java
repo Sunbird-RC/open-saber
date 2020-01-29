@@ -1,5 +1,11 @@
 package io.opensaber.registry.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,12 +23,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.sunbird.akka.core.ActorCache;
 import org.sunbird.akka.core.MessageProtos;
 import org.sunbird.akka.core.Router;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.opensaber.actors.factory.MessageFactory;
 import io.opensaber.pojos.AuditInfo;
@@ -169,6 +169,9 @@ public class AuditServiceImpl implements IAuditService {
 		//Removing auditIfo json node from audit record 
 		((ObjectNode)jsonN).remove("auditInfo");
 		
+		// Adding auditInfo with json string to audit record 
+		((ObjectNode)jsonN).put("auditInfo", json);
+	
 		//Creating root node with vertex label
 		//by appending the entity name with _Audit
 		String vertexLabel = entityType;
@@ -178,8 +181,6 @@ public class AuditServiceImpl implements IAuditService {
 		ObjectNode root = JsonNodeFactory.instance.objectNode();
 		root.set(vertexLabel, jsonN); 						
 		
-		// Adding auditInfo with json string to audit record 
-		((ObjectNode)root.get(vertexLabel)).put("auditInfo", json);
 		JsonNode rootNode  =  root;
 			
 		systemFieldsHelper.ensureCreateAuditFields(vertexLabel, rootNode.get(vertexLabel), auditRecord.getUserId());

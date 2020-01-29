@@ -81,21 +81,6 @@ public class AuditHelper {
 				filterNode.set("recordId", idNode);
 				break;
 
-			case Constants.START_DATE:
-				ObjectNode startDateNode = mapper.createObjectNode();
-				JsonNode startDate = inputJson.get(filterOp);
-				startDateNode.set(FilterOperators.gte.name(), startDate);
-				filterNode.set("date", startDateNode);
-				break;
-
-			case Constants.END_DATE:
-				ObjectNode endDateNode = mapper.createObjectNode();
-				JsonNode endDate = inputJson.get(filterOp);
-				endDateNode.set(FilterOperators.lte.name(), endDate);
-				filterNode.set("date", endDateNode);
-
-				break;
-
 			case Constants.LIMIT:
 				searchNode.set(filterOp, inputJson.get(filterOp));
 				break;
@@ -107,7 +92,16 @@ public class AuditHelper {
 			}
 
 		}
-
+		if (null != inputJson.get(Constants.START_DATE) && !inputJson.get(Constants.START_DATE).asText().isEmpty()
+	                && null != inputJson.get(Constants.END_DATE) && !inputJson.get(Constants.END_DATE).asText().isEmpty()) {
+			ObjectNode timestampNode = mapper.createObjectNode();
+			
+			ArrayNode arrayNode = mapper.createArrayNode();
+			arrayNode.add(inputJson.get(Constants.START_DATE));
+			arrayNode.add(inputJson.get(Constants.END_DATE));
+			timestampNode.set(FilterOperators.between.name(), arrayNode);
+			filterNode.set("timestamp", timestampNode);
+	    }
 		if (null != inputJson.get(uuidPropertyName) && !inputJson.get(uuidPropertyName).asText().isEmpty()) {
 			ObjectNode uuidNode = mapper.createObjectNode();
 			String uuid = inputJson.get(uuidPropertyName).asText();
