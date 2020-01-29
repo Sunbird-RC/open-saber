@@ -14,7 +14,8 @@
         ],
         "General": [
           "githubId",
-          "macAddress"
+          "macAddress",
+          "isActive"
         ],
         "Client information": [
           "clientInfo"
@@ -88,6 +89,57 @@
             "semanticColumnWidth": "six"
           },
           "index": 5
+        },
+        {
+            "code": "isActive",
+            "dataType": "boolean",
+            "name": "isActive",
+            "label": "isActive",
+            "description": "isActive",
+            "editable": true,
+            "placeholder": "isActive",
+            "inputType": "boolean",
+            "required": false,
+            "displayProperty": "Editable",
+            "visible": true,
+            "renderingHints": {
+                "semanticColumnWidth": "four"
+            },
+            "index": 5
+        },
+        {
+            "code": "macAddress",
+            "dataType": "text",
+            "name": "macAddress",
+            "label": "Mac Address",
+            "description": "Mac Address",
+            "editable": true,
+            "placeholder": "Mac Address",
+            "inputType": "text",
+            "required": true,
+            "displayProperty": "Editable",
+            "visible": true,
+            "renderingHints": {
+                "semanticColumnWidth": "four"
+            },
+            "index": 6
+        },
+        {
+            "code": "githubId",
+            "dataType": "text",
+            "name": "githubId",
+            "label": "GithubId",
+            "description": "GithubId",
+            "editable": true,
+            "placeholder": "GithubId",
+            "inputType": "text",
+            "required": true,
+            "displayProperty": "Editable",
+            "visible": true,
+            "renderingHints": {
+                "semanticColumnWidth": "four"
+            },
+            "index": 7
         },
         {
           "code": "role",
@@ -217,7 +269,7 @@
               "editable": true,
               "placeholder": "End Date",
               "inputType": "text",
-              "required": true,
+              "required": false,
               "displayProperty": "Editable",
               "visible": true,
               "renderingHints": {

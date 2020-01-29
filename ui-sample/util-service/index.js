@@ -113,7 +113,7 @@ const addRecordToRegistry = (req, res, callback) => {
     var eprReq = Object.assign({}, req);
     if (res.statusCode == 201) {
         let reqParam = req.body.request;
-        reqParam['isActive'] = false;
+        reqParam['isActive'] = true;
         let reqBody = {
             "id": "open-saber.registry.create",
             "ver": "1.0",

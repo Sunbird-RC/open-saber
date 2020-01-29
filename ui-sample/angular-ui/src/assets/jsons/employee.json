@@ -214,7 +214,7 @@
             "editable": true,
             "placeholder": "End Date",
             "inputType": "text",
-            "required": true,
+            "required": false,
             "displayProperty": "Editable",
             "visible": true,
             "renderingHints": {

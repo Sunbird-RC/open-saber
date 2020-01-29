@@ -99,7 +99,7 @@ class NERFunctions extends Functions {
                 break;
             case 'isOnboarded':
                 actions = ['getRegistryUsersMailId', 'sendNotifications'];
-                this.addToPlaceholders('templateId', "onboardSuccesstemplate");
+                this.addToPlaceholders('templateId', "onboardSuccessemplate");
                 this.invoke(actions, (err, data) => {
                     callback(null, data)
                 });

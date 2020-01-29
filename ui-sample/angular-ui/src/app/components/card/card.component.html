@@ -23,21 +23,13 @@
     </div>
   </div>
   <div class="extra content">
-    <div *ngIf="permissionService.permissionAvailable" appPermission [permission]="approveEmployee">
-      <div class="ui two buttons" *ngIf="!data?.isActive">
-        <div class="ui basic blue button" (click)="approveConfirmModal(data?.identifier); $event.stopPropagation()">
-          {{resourceService?.frmelmnts?.btn?.approve}}</div>
-        <div class="ui basic grey button">
-          {{resourceService?.frmelmnts?.btn?.decline}}</div>
-      </div>
-      <div *ngIf="data?.isActive">
-        <div class="ui basic blue button" (click)="onAction(data,{View: true})">
-          {{resourceService?.frmelmnts?.btn?.viewProfile}}</div>
-      </div>
-    </div>
-    <div *ngIf="enableViewProfile">
+    <div class="ui two buttons">
       <div class="ui basic blue button" (click)="onAction(data,{View: true})">
         {{resourceService?.frmelmnts?.btn?.viewProfile}}</div>
+      <div class="ui basic red button" *ngIf="data?.isActive && permissionService.permissionAvailable" appPermission
+        [permission]="approveEmployee" (click)="declineConfirmModal(data?.identifier, data?.name); $event.stopPropagation()">
+        {{resourceService?.frmelmnts?.btn?.decline}}
+      </div>
     </div>
   </div>
 </div>
@@ -50,6 +42,7 @@
   <div class="actions">
     <button class="ui blue button" (click)="modal.approve('approved')"
       autofocus>{{resourceService?.frmelmnts?.btn?.yes}}</button>
-    <button class="ui basic blue button" (click)="modal.deny('view')">{{resourceService?.frmelmnts?.btn?.viewProfile}}</button>
+    <button class="ui basic blue button"
+      (click)="modal.deny('view')">{{resourceService?.frmelmnts?.btn?.no}}</button>
   </div>
 </ng-template>
