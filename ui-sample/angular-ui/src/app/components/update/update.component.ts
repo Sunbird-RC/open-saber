@@ -163,10 +163,10 @@ export class UpdateComponent implements OnInit {
 
   navigateToProfilePage() {
     if (this.viewOwnerProfile) {
-      // this.router.navigate(['/profile', this.userId, this.viewOwnerProfile]);
+      this.router.navigate(['/profile', this.userId, this.viewOwnerProfile]);
     }
     else {
-      // this.router.navigate(['/profile', this.userId]);
+      this.router.navigate(['/profile', this.userId]);
     }
   }
 }
