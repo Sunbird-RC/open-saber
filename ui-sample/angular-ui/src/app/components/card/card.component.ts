@@ -55,25 +55,26 @@ export class CardComponent implements OnInit {
   public onAction(data, event) {
     this.clickEvent.emit({ 'action': event, 'data': data });
   }
-  approveConfirmModal(userId) {
+  declineConfirmModal(userId, userName) {
     const config = new TemplateModalConfig<{ data: string }, string, string>(this.modalTemplate);
     config.isClosable = true;
     config.size = 'mini';
     config.context = {
-      data: 'Do you want to approve before viewing the profile?'
+      data: 'Do you want to deboard ' + userName + '?'
     };
     this.modalService
       .open(config)
       .onApprove(result => {
-        this.approve(userId);
+        this.decline(userId);
       })
       .onDeny(result => {
         if (result === 'view') {
-          this.router.navigate(['/profile', userId]);
+          this.router.navigate(['/search']);
         }
       });
   }
-  approve(userId) {
+
+  decline(userId) {
     let token = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserToken);
     if (_.isEmpty(token)) {
       token = this.userService.getUserToken;
@@ -85,7 +86,7 @@ export class CardComponent implements OnInit {
         request: {
           Employee: {
             osid: userId,
-            isActive: true
+            isActive: false
           }
         }
       },
@@ -93,12 +94,11 @@ export class CardComponent implements OnInit {
     };
     this.dataService.post(requestData).subscribe(response => {
       if (response.params.status === "SUCCESSFUL") {
-        this.clickEvent.emit({ 'action': event, 'data': response.params.status });
-        this.toasterService.success(this.data.name + " " + this.resourceService.frmelmnts.msg.OnboardedSuccess);
-        this.router.navigate(['/search']);
+        this.clickEvent.emit({'action': event, 'data': {status: response.params.status}});
+        this.toasterService.success(this.data.name + " " + this.resourceService.frmelmnts.msg.deBoardSuccess);
       }
     }, err => {
-      this.toasterService.error(this.data.name + " " + this.resourceService.frmelmnts.msg.OnboardUnSuccess);
+      this.toasterService.error(this.data.name + " " + this.resourceService.frmelmnts.msg.deBoardUnSuccess);
     });
   }
 }

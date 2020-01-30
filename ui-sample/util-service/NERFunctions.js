@@ -60,9 +60,44 @@ class NERFunctions extends Functions {
         callback();
     }
 
+    /**
+     * send notification to the Employee who onboarded to the NIIT registry successfully
+     * @param {*} callback 
+     */
+    sendOnboardSuccessNotificationToEmployee(callback) {
+        logger.info("send notification for onboarding succcessfully to the Employee")
+        let tempParams = {}
+        tempParams.employeeName = this.request.body.request[entityType].name;
+        tempParams.niitURL = "http://localhost:9182"
+        this.addToPlaceholders('emailIds', [this.request.body.request[entityType].email]);
+        this.addToPlaceholders('subject', "Successfully Onboarded to NIIT")
+        this.addToPlaceholders('templateId', "nerOnboardSuccessTemplate");
+        this.addToPlaceholders('templateParams', tempParams)
+        let actions = ['sendNotifications'];
+        this.invoke(actions, (err, data) => {
+            callback(null, data)
+        });
+    }
+
+    /**
+     * send notification to the admin whenever new employee is onboarded to the NIIT successfully
+     * @param {*} callback 
+     */
+    sendNewEmployeeOnboardSuccessNoteToAdmin(callback) {
+        let tempParams = {}
+        tempParams.employeeName = this.request.body.request[entityType].name;
+        tempParams.niitURL = "http://localhost:9182"
+        this.addToPlaceholders('subject', "New Employee Onboarded")
+        this.addToPlaceholders('templateId', "nerNewEmployeeTemplate");
+        let actions = ['getAdminUsers', 'sendNotifications'];
+        this.invoke(actions, (err, data) => {
+            callback(null, data)
+        });
+    }
+
     notifyUsersBasedOnAttributes(callback) {
         let params = _.keys(this.request.body.request[entityType]);
-        async.forEachSeries(this.attributes, (value) => {
+        async.forEachSeries(this.attributes, (value, callback2) => {
             if (_.includes(params, value)) {
                 let params = {
                     paramName: value,
@@ -71,11 +106,11 @@ class NERFunctions extends Functions {
                 this.addToPlaceholders('templateParams', params)
                 this.getActions(value, (err, data) => {
                     if (data) {
-                        callback();
+                        callback2();
                     }
                 });
             } else {
-                callback();
+                callback2();
             }
         });
     }
@@ -99,7 +134,7 @@ class NERFunctions extends Functions {
                 break;
             case 'isOnboarded':
                 actions = ['getRegistryUsersMailId', 'sendNotifications'];
-                this.addToPlaceholders('templateId', "onboardSuccesstemplate");
+                this.addToPlaceholders('templateId', "onboardSuccessTemplate");
                 this.invoke(actions, (err, data) => {
                     callback(null, data)
                 });

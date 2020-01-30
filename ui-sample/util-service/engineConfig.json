@@ -3,13 +3,9 @@
     "rules": [{
         "url": "/register/users",
         "method": "post",
-        "preActions": [
-            "getAdminUsers",
-            "sendNotifications"
-        ],
         "postActions": [
-            "getPartnerAdminUsers",
-            "sendNotifications"
+            "sendOnboardSuccessNotificationToEmployee",
+            "sendNewEmployeeOnboardSuccessNoteToAdmin"
         ]
     },
     {
