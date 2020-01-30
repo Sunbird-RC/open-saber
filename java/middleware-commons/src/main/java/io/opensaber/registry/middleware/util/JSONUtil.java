@@ -46,7 +46,12 @@ public class JSONUtil {
 		String result = new ObjectMapper().writeValueAsString(object);
 		return result;
 	}
-
+	
+	public static JsonNode convertStringJsonNode(String jsonStr) throws IOException {
+		JsonNode jNode = new ObjectMapper().readTree(jsonStr);
+		return jNode;
+	}
+	
 	public static JsonNode convertObjectJsonNode(Object object) throws IOException {
 		JsonNode inputNode = new ObjectMapper().valueToTree(object);
 		return inputNode;

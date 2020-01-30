@@ -170,7 +170,7 @@ public class AuditServiceImpl implements IAuditService {
 		((ObjectNode)jsonN).remove("auditInfo");
 		
 		// Adding auditInfo with json string to audit record 
-		((ObjectNode)jsonN).put("auditInfo", "\"" + json + "\"");
+		((ObjectNode)jsonN).put("auditInfo", json );
 	
 		//Creating root node with vertex label
 		//by appending the entity name with _Audit

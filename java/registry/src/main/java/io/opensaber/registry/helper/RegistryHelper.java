@@ -194,15 +194,6 @@ public class RegistryHelper {
 		JsonNode auditNode = auditHelper.getSearchQueryNodeForAudit(inputJson, uuidPropertyName);
 		JsonNode resultNode = searchService.search(auditNode);
 
-		if(null != resultNode) {
-			for(JsonNode elementNode:resultNode.iterator().next()) {
-				String resultStr = StringEscapeUtils.unescapeJson(elementNode.get("auditInfo").toString());
-				resultStr= resultStr.replaceAll("\"\"", "");
-				
-				// updating auditInfo with json string to audit record 
-				((ObjectNode)elementNode).replace("auditInfo", new ObjectMapper().readTree(resultStr));
-			}
-		}
 		ViewTemplate viewTemplate = viewTemplateManager.getViewTemplate(inputJson);
 		if (viewTemplate != null) {
 			ViewTransformer vTransformer = new ViewTransformer();

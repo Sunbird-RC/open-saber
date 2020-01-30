@@ -2,12 +2,16 @@ package io.opensaber.registry.util;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import org.apache.commons.lang3.StringUtils;
+
+import io.opensaber.registry.middleware.util.JSONUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONArray;
 
 /**
  * This class creates util methods for String modification and replacing
@@ -56,7 +60,10 @@ public class ArrayHelper {
      * @return
      */
     public static String unquoteString(String quotedStr) {
-        return StringUtils.substringBetween(quotedStr, "\"", "\"");
+    	if(quotedStr.startsWith("\"") && quotedStr.endsWith("\"")){
+    		return StringUtils.substringBetween(quotedStr, "\"", "\"");
+    	}
+        return quotedStr;
     }
 
     /**
@@ -81,25 +88,27 @@ public class ArrayHelper {
 
     /**
      *
-     * @param valItems example, "1,2,3" or "social, english"
+     * @param valItems example, "[1,2,3]" or "["social", "english"]" or "[{"op":"add","path":"/Teacher"}]"
      * @return
      */
     public static ArrayNode constructArrayNode(String valItems) {
         ArrayNode arrNode = JsonNodeFactory.instance.arrayNode();
-        String[] arrItems = valItems.split(ITEM_SEPARATOR);
-
-        if (arrItems.length > 0) {
-            boolean isNotString = isNotAString(arrItems[0]);
-
-            for (String item : arrItems) {
+        JSONArray array = new JSONArray(valItems);
+        if (array.length() > 0) {
+            boolean isNotString = isNotAString(array.get(0).toString());
+            for (Object item : array) {
                 try {
                     if (isNotString) {
-                        arrNode.add(Long.valueOf(item));
+                        arrNode.add(Long.valueOf(item.toString()));
                     } else {
-                        arrNode.add(unquoteString(item));
+                    	if(JSONUtil.isJsonString(item.toString())) {
+                    		arrNode.add(JSONUtil.convertStringJsonNode(item.toString()));  
+                    	}else {
+                    		arrNode.add(unquoteString(item.toString()));
+                    	}
                     }
                 } catch (Exception e) {
-                    arrNode.add(Double.parseDouble(item));
+                    arrNode.add(Double.parseDouble(item.toString()));
                 }
             }
         }
