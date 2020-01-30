@@ -135,7 +135,7 @@ export class UpdateComponent implements OnInit {
         this.updateInfo(updatedFields, diffObj);
       }
       else {
-        this.toasterService.warning("Profile updation failed please provide required fields " + emptyFields.join(', '));
+        this.toasterService.warning("Profile updation failed please provide required fields ");
       }
     }
   }
@@ -162,11 +162,11 @@ export class UpdateComponent implements OnInit {
   }
 
   navigateToProfilePage() {
-    if(this.viewOwnerProfile) {
-      this.router.navigate(['/profile', this.userId, this.viewOwnerProfile]);
+    if (this.viewOwnerProfile) {
+      // this.router.navigate(['/profile', this.userId, this.viewOwnerProfile]);
     }
     else {
-      this.router.navigate(['/profile', this.userId]);
+      // this.router.navigate(['/profile', this.userId]);
     }
   }
 }

@@ -60,7 +60,7 @@ export class CardComponent implements OnInit {
     config.isClosable = true;
     config.size = 'mini';
     config.context = {
-      data: 'Do you want to decline ' + userName + '?'
+      data: 'Do you want to deboard ' + userName + '?'
     };
     this.modalService
       .open(config)

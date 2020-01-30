@@ -26,7 +26,7 @@
     <div class="ui two buttons">
       <div class="ui basic blue button" (click)="onAction(data,{View: true})">
         {{resourceService?.frmelmnts?.btn?.viewProfile}}</div>
-      <div class="ui basic red button" *ngIf="data?.isActive && permissionService.permissionAvailable" appPermission
+      <div class="ui basic grey button" *ngIf="data?.isActive && permissionService.permissionAvailable" appPermission
         [permission]="approveEmployee" (click)="declineConfirmModal(data?.identifier, data?.name); $event.stopPropagation()">
         {{resourceService?.frmelmnts?.btn?.decline}}
       </div>

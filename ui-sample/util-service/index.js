@@ -60,7 +60,9 @@ const createUser = (req, callback) => {
 
 const pushToEPR = (req) => {
     if (req.body.request.clientInfo.name === 'Ekstep') {
-        req.body.request = _.omit(req.body.request, ['clientInfo', 'role'])
+        req.body.request.externalRole = req.body.request.role
+        req.body.request.externalId = req.body.request.code
+        req.body.request = _.omit(req.body.request, ['clientInfo', 'role', 'isActive'])
         req.body.request.orgName = "ILIMI";
         delete req.headers.authorization;
         getTokenDetails(req, eprKeycloakHelper, 'eprUserToken', (err, token) => {
