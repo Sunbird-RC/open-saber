@@ -10,9 +10,9 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 var interceptor = require('express-interceptor');
 const templateConfig = require('./templates/template.config.json');
-const RegistryService = require('./sdk/registryService')
-const logger = require('./sdk/log4j');
-const vars = require('./sdk/vars').getAllVars(process.env.NODE_ENV);
+const RegistryService = require('./sdk/RegistryService.js')
+const logger = require('./sdk/log4j.js');
+const vars = require('./sdk/vars.js').getAllVars(process.env.NODE_ENV);
 const port = vars.utilServicePort;
 let wfEngine = undefined
 const registryService = new RegistryService();
@@ -92,7 +92,7 @@ app.post("/registry/update", (req, res, next) => {
     })
 });
 
-app.post("/notifications", (req, res, next) => {
+app.post("/notification", (req, res, next) => {
     registryService.updateRecord(req, function (err, data) {
         if (data) {
             return res.send(data);
