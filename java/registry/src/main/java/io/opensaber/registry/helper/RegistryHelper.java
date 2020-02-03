@@ -13,7 +13,6 @@ import io.opensaber.registry.service.ISearchService;
 import io.opensaber.registry.service.RegistryService;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.sink.shard.ShardManager;
-import io.opensaber.registry.util.AuditHelper;
 import io.opensaber.registry.util.ReadConfigurator;
 import io.opensaber.registry.util.ReadConfiguratorFactory;
 import io.opensaber.registry.util.RecordIdentifier;
@@ -62,10 +61,7 @@ public class RegistryHelper {
 
     @Autowired
     private ObjectMapper objectMapper;
-    
-    @Autowired
-    private AuditHelper auditHelper;
-    
+        
     @Value("${database.uuidPropertyName}")
     public String uuidPropertyName;
 

@@ -12,12 +12,16 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class creates util methods for String modification and replacing
  */
 public class ArrayHelper {
 
+	private static Logger logger = LoggerFactory.getLogger(ArrayHelper.class);
+	
     private static final String ITEM_SEPARATOR = ",";
     private static final String SQUARE_BRACE_REGEX = "[\\[\\]]";
     private static final String SQUARE_BRACE_ENCLOSED_REGEX = "(\\[)(.*)(\\])";
@@ -94,22 +98,20 @@ public class ArrayHelper {
     public static ArrayNode constructArrayNode(String valItems) {
         ArrayNode arrNode = JsonNodeFactory.instance.arrayNode();
         JSONArray array = new JSONArray(valItems);
-        if (array.length() > 0) {
-            boolean isNotString = isNotAString(array.get(0).toString());
-            for (Object item : array) {
-                try {
-                    if (isNotString) {
-                        arrNode.add(Long.valueOf(item.toString()));
-                    } else {
-                    	if(JSONUtil.isJsonString(item.toString())) {
-                    		arrNode.add(JSONUtil.convertStringJsonNode(item.toString()));  
-                    	}else {
-                    		arrNode.add(unquoteString(item.toString()));
-                    	}
-                    }
-                } catch (Exception e) {
-                    arrNode.add(Double.parseDouble(item.toString()));
+        for (Object item : array) {
+        	boolean isNotString = isNotAString(item.toString());
+            try {
+                if (isNotString) {
+                    arrNode.add(JSONUtil.convertObjectJsonNode(item));
+                } else {
+                	if(JSONUtil.isJsonString(item.toString())) {
+                		arrNode.add(JSONUtil.convertStringJsonNode(item.toString()));  
+                	}else {
+                		arrNode.add(unquoteString(item.toString()));
+                	}
                 }
+            } catch (Exception e) {
+                logger.error("Error in converting array elements to JsonNode" + e);
             }
         }
         return arrNode;
