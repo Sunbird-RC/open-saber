@@ -3,13 +3,15 @@
         "admin": "templates/AdminFormTemplate.json",
         "partner-admin": "templates/PartnerAdminFormTemplate.json",
         "owner": "templates/OwnerFormTemplate.json",
-        "fin-admin": "templates/FinAdminFormTemplate.json"
+        "fin-admin": "templates/FinAdminFormTemplate.json",
+        "reporter": "templates/ReporterFormTemplate.json"
     },
     "searchTemplates": {
         "admin": "Admin_SearchResult.json",
         "partner-admin": "PartnerAdmin_SearchResult.json",
         "owner": "Owner_SearchTemplates.json",
-        "fin-admin": "FinAdmin_SearchResult.json"
+        "fin-admin": "FinAdmin_SearchResult.json",
+        "reporter": "Reporter_SearchResult.json"
     },
     "roles": {
         "admin": "admin",

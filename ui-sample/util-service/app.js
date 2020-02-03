@@ -10,9 +10,9 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 var interceptor = require('express-interceptor');
 const templateConfig = require('./templates/template.config.json');
-const RegistryService = require('./sdk/RegistryService')
-const logger = require('./sdk/log4j');
-const vars = require('./sdk/vars').getAllVars(process.env.NODE_ENV);
+const RegistryService = require('./sdk/RegistryService.js')
+const logger = require('./sdk/log4j.js');
+const vars = require('./sdk/vars.js').getAllVars(process.env.NODE_ENV);
 const port = vars.utilServicePort;
 let wfEngine = undefined
 const registryService = new RegistryService();
@@ -90,6 +90,7 @@ app.post("/registry/update", (req, res, next) => {
 });
 
 app.post("/notification", (req, res, next) => {
+    logger.info("Got notification from external party" + JSON.stringify(req.body))
     registryService.updateRecord(req, function (err, data) {
         if (data) {
             return res.send(data);
@@ -139,7 +140,8 @@ const getFormTemplates = (header, callback) => {
     } else if (decoded.realm_access) {
         roles = decoded.realm_access.roles;
     }
-    readFormTemplate(getTemplateName(roles, 'formTemplates'), function (err, data) {
+    var templateName = getTemplateName(roles, 'formTemplates')
+    readFormTemplate(templateName, function (err, data) {
         if (err) callback(err, null);
         else callback(null, data);
     });
@@ -151,14 +153,21 @@ const getFormTemplates = (header, callback) => {
  */
 //todo get roles from config
 const getTemplateName = (roles, templateName) => {
-    if (_.includes(roles, templateConfig.roles.admin))
-        return templateConfig[templateName][templateConfig.roles.admin];
-    if (_.includes(roles, templateConfig.roles.partnerAdmin))
-        return templateConfig[templateName][templateConfig.roles.partnerAdmin];
-    if (_.includes(roles, templateConfig.roles.finAdmin))
-        return templateConfig[templateName][templateConfig.roles.finAdmin];
-    if (_.includes(roles, templateConfig.roles.owner))
-        return templateConfig[templateName][templateConfig.roles.owner]
+    logger.debug("Roles for the current user is - " + roles)
+    var highestRole = undefined
+    if (_.includes(roles, templateConfig.roles.admin)) {
+        highestRole = templateConfig.roles.admin
+    } else if (_.includes(roles, templateConfig.roles.partnerAdmin)) {
+        highestRole = templateConfig.roles.partnerAdmin
+    } else if (_.includes(roles, templateConfig.roles.finAdmin)) {
+        highestRole = templateConfig.roles.finAdmin
+    } else if (_.includes(roles, templateConfig.roles.reporter)) {
+        highestRole = templateConfig.roles.reporter
+    } else if (_.includes(roles, templateConfig.roles.owner)) {
+        highestRole = templateConfig.roles.owner
+    }
+    logger.debug("Returning with highestRole = " + highestRole)
+    return templateConfig[templateName][highestRole]
 }
 
 const readFormTemplate = (value, callback) => {
