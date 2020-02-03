@@ -43,7 +43,8 @@
                 "deBoardSuccess":"Deboarded successfully",
                 "deBoardUnSucces":"Deboarded failed , please try again later",
                 "errorMsg": "Error retrieving data please try again later",
-                "updateFailure": "Profile updation failed please try again later"
+                "updateFailure": "Profile updation failed please try again later",
+                "updateSuccess":"Updated Successfully"
             }
         }
     }

@@ -17,36 +17,60 @@ class NERFunctions extends Functions {
         setRequest(undefined)
     }
 
+    /**
+     * gets user mail ids from keycloak where user role = admin
+     * @param {*} callback 
+     */
     getAdminUsers(callback) {
         this.getUsersByRole('admin', (err, data) => {
             this.addEmailToPlaceHolder(data, callback);
         });
     }
 
+     /**
+     * gets user email ids from keycloak where user role = admin
+     * @param {*} callback 
+     */
     getPartnerAdminUsers(callback) {
         this.getUsersByRole('partner-admin', (err, data) => {
             this.addEmailToPlaceHolder(data, callback);
         })
     }
 
+    /**
+     * gets user mail ids from keycloak where user role = admin
+     * @param {*} callback 
+     */
     getFinAdminUsers(callback) {
         this.getUsersByRole('fin-admin', (err, data) => {
             this.addEmailToPlaceHolder(data, callback);
         });
     }
 
+    /**
+     * gets user mail ids from keycloak where user role = admin
+     * @param {*} callback 
+     */
     getReporterUsers(callback) {
         this.getUsersByRole('reporter', (err, data) => {
             this.addEmailToPlaceHolder(data, callback);
         });
     }
 
+    /**
+     * gets user mail ids from keycloak where user role = admin
+     * @param {*} callback 
+     */
     getOwnerUsers(callback) {
         this.getUsersByRole('owner', (err, data) => {
             this.addEmailToPlaceHolder(data, callback);
         });
     }
 
+    /**
+     * to get the Employee's email id,
+     * @param {} callback 
+     */
     getRegistryUsersMailId(callback) {
         this.getUserByid((err, data) => {
             if (data) {
@@ -55,6 +79,11 @@ class NERFunctions extends Functions {
         })
     }
 
+    /**
+     * gets email from the object and adds to the placeholder
+     * @param {object} data 
+     * @param {*} callback 
+     */
     addEmailToPlaceHolder(data, callback) {
         this.addToPlaceholders('emailIds', _.map(data, 'email'));
         callback();
@@ -68,7 +97,7 @@ class NERFunctions extends Functions {
         logger.info("send notification for onboarding succcessfully to the Employee")
         let tempParams = {}
         tempParams.employeeName = this.request.body.request[entityType].name;
-        tempParams.niitURL = "http://localhost:9182"
+        tempParams.niitURL = vars.appUrl
         this.addToPlaceholders('emailIds', [this.request.body.request[entityType].email]);
         this.addToPlaceholders('subject', "Successfully Onboarded to NIIT")
         this.addToPlaceholders('templateId', "nerOnboardSuccessTemplate");
@@ -86,7 +115,7 @@ class NERFunctions extends Functions {
     sendNewEmployeeOnboardSuccessNoteToAdmin(callback) {
         let tempParams = {}
         tempParams.employeeName = this.request.body.request[entityType].name;
-        tempParams.niitURL = "http://localhost:9182"
+        tempParams.niitURL = vars.appUrl
         this.addToPlaceholders('subject', "New Employee Onboarded")
         this.addToPlaceholders('templateId', "nerNewEmployeeTemplate");
         let actions = ['getAdminUsers', 'sendNotifications'];
@@ -95,16 +124,22 @@ class NERFunctions extends Functions {
         });
     }
 
+    /**
+     * This method is inovoked to send notiifcations whenever Employee record is updated(for eg attributes like macAddress ,
+     * githubId and isOnBoarded are updated)
+     * @param {*} callback 
+     */
     notifyUsersBasedOnAttributes(callback) {
-        let params = _.keys(this.request.body.request[entityType]);
-        async.forEachSeries(this.attributes, (value, callback2) => {
-            if (_.includes(params, value)) {
+        let attributesUpdated = _.keys(this.request.body.request[entityType]);//get the list of updated attributes from the req
+        let count = 0
+        async.forEachSeries(this.notifyAttributes, (param, callback2) => {
+            if (_.includes(attributesUpdated, param)) {
                 let params = {
-                    paramName: value,
-                    paramValue: this.request.body.request[entityType][value]
+                    paramName: param,
+                    [param]: this.request.body.request[entityType][param]
                 }
                 this.addToPlaceholders('templateParams', params)
-                this.getActions(value, (err, data) => {
+                this.getActions(param, (err, data) => {
                     if (data) {
                         callback2();
                     }
@@ -112,9 +147,18 @@ class NERFunctions extends Functions {
             } else {
                 callback2();
             }
+            if (count === this.notifyAttributes.length) {
+                callback(null, "success")
+            }
         });
     }
 
+    /**
+     * Invoked by notifyUsersBasedOnAttributes function to get the actions to be done(to send notification) on the attribute updated
+     * each case contains name of the functions( in the array ), to be invoked for sending notification.
+     * @param {*} attribute  param that is updated 
+     * @param {*} callback 
+     */
     getActions(attribute, callback) {
         let actions = []
         switch (attribute) {
@@ -142,6 +186,10 @@ class NERFunctions extends Functions {
         }
     }
 
+    /**
+     * Checks wheather User's organisation is Ekstep 
+     * @param {*} callback 
+     */
     isEkstepUser(callback) {
         let req = _.cloneDeep(this.request);
         req.body.id = appConfig.APP_ID.READ;
@@ -156,6 +204,11 @@ class NERFunctions extends Functions {
         });
     }
 
+    /**
+     * geta admin user token from the Partner Registry 
+     * @param {*} readResponse 
+     * @param {*} callback 
+     */
     getEPRToken(readResponse, callback) {
         eprKeycloakHelper.getToken((err, token) => {
             if (token) callback(null, readResponse, token.access_token.token);
@@ -163,6 +216,12 @@ class NERFunctions extends Functions {
         });
     }
 
+    /**
+     * Get osid of Employee from Partner Registry.
+     * @param {*} readResponse 
+     * @param {*} token 
+     * @param {*} callback 
+     */
     getEPRid(readResponse, token, callback) {
         const headers = {
             'content-type': 'application/json',
@@ -188,6 +247,12 @@ class NERFunctions extends Functions {
         });
     }
 
+    /**
+     * Update attribute in the client registry
+     * @param {*} searchRes 
+     * @param {*} headers 
+     * @param {*} callback 
+     */
     notifyEPR(searchRes, headers, callback) {
         let updateReq = _.cloneDeep(this.request);
         updateReq.body.request[entityType].osid = searchRes.result[entityType][0].osid;
@@ -205,7 +270,9 @@ class NERFunctions extends Functions {
     }
 
     /**
-     * 
+     * Updates record in client registry
+     * If Employee record is updated( for example if macAddress, gitHubId is updated ) then this data should be updated in client
+     * registry (iff Employee client name is Ekstep)
      * @param {*} req 
      */
     updateRecordOfClientRegistry() {
@@ -225,6 +292,11 @@ class NERFunctions extends Functions {
         }
     }
 
+    /**
+     * 
+     * @param {*} actions array of functions to be called
+     * @param {*} callback 
+     */
     invoke(actions, callback) {
         if (actions.length > 0) {
             let count = 0;

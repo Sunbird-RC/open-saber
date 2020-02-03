@@ -3,18 +3,19 @@ const config = {
         "utilServicePort":process.env.util_service_port || 9181,
         "keycloak": {
             "url": process.env.keycloak_url || "http://localhost:8443", 
-            "realmName": process.env.keycloak_realmName,
+            "realmName": process.env.keycloak_realmName || "NIITRegistry",
             "clientId": "utils",
             "clientSecret": process.env.keycloak_clientSecret || "f6ce7466-b04f-4ccf-b986-e9c61e5fb26b"
         },
         "keycloak_epr": {
             "url": process.env.keycloak_epr_url || "http://localhost:8443",
-            "realmName": process.env.keycloak_epr_realmName,
+            "realmName": process.env.keycloak_epr_realmName || "PartnerRegistry",
             "clientId": "utils",
             "clientSecret": process.env.keycloak_epr_clientSecret || "9ebc2fc1-ced9-4774-a661-7e2c59991cfe"
         },
         "notificationUrl": process.env.notificationUrl || "http://localhost:9012",
         "registryUrl": process.env.registry_url || "http://localhost:9180",
+        "appUrl": process.env.app_url || "http://localhost:9182",
         "eprUtilServiceUrl": process.env.epr_utilservice_url || "http://localhost:9081"
     },
     "prod": {
@@ -31,6 +32,7 @@ const config = {
             "clientSecret": process.env.keycloak_epr_clientSecret
         },
         "notificationUrl": process.env.notificationUrl,
+        "appUrl": process.env.app_url,
         "registryUrl": process.env.registry_url,
         "eprUtilServiceUrl": process.env.epr_utilservice_url
     }

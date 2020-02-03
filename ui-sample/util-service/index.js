@@ -18,6 +18,7 @@ var registryService = new RegistryService();
 const keycloakHelper = new KeycloakHelper(vars.keycloak);
 const eprKeycloakHelper = new KeycloakHelper(vars.keycloak_epr)
 
+const entityType = 'Employee';
 const classesMapping = {
     'NERFunction': NERUtilFunctions,
     'Functions': baseFunctions
@@ -43,9 +44,15 @@ const createUser = (req, callback) => {
         },
         function (token, callback) {
             req.headers['authorization'] = token;
-            keycloakHelper.registerUserToKeycloak(req, callback)
+            var keycloakUserReq = {
+                body: {
+                    request: req.body.request[entityType]
+                },
+                headers: req.headers
+            }
+            keycloakHelper.registerUserToKeycloak(keycloakUserReq, callback)
         },
-        function (req, res, callback2) {
+        function (res, callback2) {
             addRecordToRegistry(req, res, callback2)
         },
     ], function (err, result) {
@@ -58,14 +65,15 @@ const createUser = (req, callback) => {
     });
 }
 
-const pushToEPR = (req) => {
-    if (req.body.request.clientInfo.name === 'Ekstep') {
-        req.body.request.externalRole = req.body.request.role
-        req.body.request.externalId = req.body.request.code
-        req.body.request = _.omit(req.body.request, ['clientInfo', 'role', 'isActive'])
-        req.body.request.orgName = "ILIMI";
-        delete req.headers.authorization;
-        getTokenDetails(req, eprKeycloakHelper, 'eprUserToken', (err, token) => {
+const pushToEPR = (eprUserReq) => {
+    if (eprUserReq.body.request[entityType].clientInfo.name === 'Ekstep') {
+        //adding externalRole and externalId to EPR User re
+        eprUserReq.body.request[entityType].externalRole = eprUserReq.body.request[entityType].role
+        eprUserReq.body.request[entityType].externalId = eprUserReq.body.request[entityType].code
+        eprUserReq.body.request[entityType] = _.omit(eprUserReq.body.request[entityType], ['clientInfo', 'role', 'isActive', 'code']) // removes the properties present in the array from req 
+        eprUserReq.body.request[entityType].orgName = "ILIMI";
+        delete eprUserReq.headers.authorization;
+        getTokenDetails(eprUserReq, eprKeycloakHelper, 'eprUserToken', (err, token) => {
             if (token) {
                 const options = {
                     url: vars.eprUtilServiceUrl + "/register/users",
@@ -74,7 +82,7 @@ const pushToEPR = (req) => {
                         'accept': 'application/json',
                         'authorization': token
                     },
-                    body: req.body
+                    body: eprUserReq.body
                 }
                 httpUtils.post(options, function (err, res) {
                     if (res.statusCode == 200) {
@@ -114,22 +122,7 @@ const getTokenDetails = (req, keycloakHelper, cacheTokenName, callback) => {
 const addRecordToRegistry = (req, res, callback) => {
     var eprReq = Object.assign({}, req);
     if (res.statusCode == 201) {
-        let reqParam = req.body.request;
-        reqParam['isActive'] = true;
-        let reqBody = {
-            "id": "open-saber.registry.create",
-            "ver": "1.0",
-            "ets": "11234",
-            "params": {
-                "did": "",
-                "key": "",
-                "msgid": ""
-            },
-            "request": {
-                "Employee": reqParam
-            }
-        }
-        req.body = reqBody;
+        req.body.request[entityType]['isActive'] = true;
         registryService.addRecord(req, function (err, res) {
             if (res.statusCode == 200) {
                 logger.info("Employee successfully added to registry", res.body)

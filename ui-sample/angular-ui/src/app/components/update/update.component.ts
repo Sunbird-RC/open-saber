@@ -61,7 +61,7 @@ export class UpdateComponent implements OnInit {
     const requestData = {
       header: { Authorization: this.userToken },
       data: {
-        id: "open-saber.registry.read",
+        id: appConfig.API_ID.UPDATE,
         request: {
           Employee: {
             osid: this.userId
@@ -132,18 +132,18 @@ export class UpdateComponent implements OnInit {
         }
       });
       if (emptyFields.length === 0) {
-        this.updateInfo(updatedFields, diffObj);
+        this.updateInfo(updatedFields);
       }
       else {
-        this.toasterService.warning("Profile updation failed please provide required fields ");
+        this.toasterService.warning("Profile updation failed please provide required fields " + emptyFields.join(', '));
       }
     }
   }
 
-  updateInfo(updatedFieldValues, diffObj) {
+  updateInfo(updatedFieldValues) {
     const requestData = {
       data: {
-        id: "open-saber.registry.update",
+        id: appConfig.API_ID.UPDATE,
         request: {
           Employee: updatedFieldValues
         },
@@ -153,7 +153,7 @@ export class UpdateComponent implements OnInit {
     };
     this.dataService.post(requestData).subscribe(response => {
       if (response.params.status === "SUCCESSFUL") {
-        this.toasterService.success(diffObj + " successfully updated");
+        this.toasterService.success(this.resourceService.frmelmnts.msg.updateSuccess);
         this.navigateToProfilePage();
       }
     }, err => {
