@@ -3,7 +3,7 @@ const async = require('async');
 
 const KeycloakHelper = require('../sdk/KeycloakHelper.js');
 const Notification = require('../sdk/Notification.js')
-const RegistryService = require('../sdk/RegistryService');
+const RegistryService = require('../sdk/RegistryService.js');
 const logger = require('../sdk/log4j.js')
 var CacheManager = require('../sdk/CacheManager.js');
 var vars = require('../sdk/vars').getAllVars(process.env.NODE_ENV);
@@ -16,6 +16,7 @@ class Functions {
     constructor() {
         // Provide a property bag for any data exchange between workflow functions.
         this._placeholders = {};
+
         //list of param names to send notification if any of the attribute is updated
         this.notifyAttributes = ["macAddress", "githubId", "isOnboarded"]
     }
