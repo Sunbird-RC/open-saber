@@ -125,7 +125,7 @@ export class ProfileComponent implements OnInit {
     const requestData = {
       header: { Authorization: token },
       data: {
-        id: "open-saber.registry.read",
+        id: appConfig.API_ID.READ,
         request: {
           Employee: {
             osid: this.userId

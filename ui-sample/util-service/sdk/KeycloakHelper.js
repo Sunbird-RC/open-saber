@@ -96,7 +96,7 @@ class KeycloakHelper {
         console.log(JSON.stringify(options))
 
         httpUtil.post(options, function (err, res) {
-            callback(null, req, res)
+            callback(null, res)
         });
     }
 
