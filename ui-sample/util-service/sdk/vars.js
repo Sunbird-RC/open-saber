@@ -31,6 +31,7 @@ const config = {
             "clientId": "utils",
             "clientSecret": process.env.keycloak_ner_clientSecret
         },
+        "appUrl": process.env.appUrl,
         "notificationUrl": process.env.notificationUrl,
         "appUrl": process.env.appUrl,
         "registryUrl": process.env.registry_url,
