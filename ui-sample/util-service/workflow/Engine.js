@@ -28,8 +28,10 @@ class Engine {
             }
 
             logger.info("Workflow rules configured for the following paths")
+            var thisObject = this
             Object.keys(this.pathActions).forEach(function(key) {
-                logger.info(key) 
+                logger.info(key + "\nPreActions =" + JSON.stringify(thisObject.pathActions[key]["preActions"])
+                                + "\nPostActions =" + JSON.stringify(thisObject.pathActions[key]["postActions"]))
             })
             logger.info("End workflow rules")
         }

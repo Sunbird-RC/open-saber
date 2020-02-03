@@ -51,7 +51,8 @@ const createUser = (req, callback) => {
     ], function (err, result) {
         logger.info('Main Callback --> ' + result);
         if (err) {
-            callback(err, null)
+            logger.info("Some errors encountered" + JSON.stringify(err))
+            callback(err)
         } else {
             callback(null, result);
         }
@@ -59,7 +60,7 @@ const createUser = (req, callback) => {
 }
 
 const pushToEPR = (req) => {
-    if (req.body.request.clientInfo.name === 'Ekstep') {
+    if (req.body.request.clientInfo && req.body.request.clientInfo.name === 'Ekstep') {
         req.body.request.externalRole = req.body.request.role
         req.body.request.externalId = req.body.request.code
         req.body.request = _.omit(req.body.request, ['clientInfo', 'role', 'isActive'])
@@ -133,8 +134,8 @@ const addRecordToRegistry = (req, res, callback) => {
         registryService.addRecord(req, function (err, res) {
             if (res.statusCode == 200) {
                 logger.info("Employee successfully added to registry", res.body)
-                callback(null, res.body);
                 pushToEPR(eprReq);
+                callback(null, res.body);
             } else {
                 logger.debug("Employee could not be added to registry" + res.statusCode)
                 callback(res.statusCode, res.errorMessage)
