@@ -15,7 +15,7 @@
         "admin": "admin",
         "partnerAdmin": "partner-admin",
         "owner": "owner",
-        "finAadmin": "fin-admin",
+        "finAdmin": "fin-admin",
         "reporter": "reporter"
     }
 }

@@ -12,10 +12,13 @@ var _ = require('lodash');
 var keys = require('./keys.json')
 
 var invoke_add = function (nIter, payload, callback) {
-    var addSuffix = "add"
-    var url = baseUrl + "/" + addSuffix
+//    var addSuffix = "register/users"
+//    var url = baseUrl + "/" + addSuffix
+    var url = "http://localhost:9180/add"
     var headerVars = {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": "Bearer ",
+        "x-authenticated-user-token": ""
     }
 
     if (dryRun) {
@@ -28,7 +31,7 @@ var invoke_add = function (nIter, payload, callback) {
             body: payload,
             headers: headerVars
         }, function (err, response, body) {
-            //console.log("This is the api response " + JSON.stringify(body))
+            console.log("This is the api response " + JSON.stringify(body))
             var apiResponse = JSON.parse(body)
             if (err) {
                 console.error(err)
@@ -57,24 +60,12 @@ var addToArr = function (arr, val, cb) {
  */
 var populate_add_tasks = function (tasks, entityType, static_payload, arrDynamicData, someEntity) {
     var allPayloads = []
-    //to match keys of sechema and csv
-    const arrayWithValidKeys = [];
-    arrDynamicData.map(item => {
-        arrayWithValidKeys.push(
-            _.mapKeys(item, (value, key) => {
-                let newKey = keys[key];
-                if (newKey)
-                    return newKey;
-                else return key
-            })
-        )
-    });
-   for (var itr = 0; itr < arrayWithValidKeys.length; itr++) {
+   for (var itr = 0; itr < arrDynamicData.length; itr++) {
         //async.eachSeries(arrDynamicData, function (oneCSVRow, callback) {
         var completePayload = JSON.parse(JSON.stringify(static_payload))
-        var oneCSVRow = JSON.parse(JSON.stringify(arrayWithValidKeys[itr]))
+        var oneCSVRow = JSON.parse(JSON.stringify(arrDynamicData[itr]))
         //console.log("PAYLOAD Complete", JSON.stringify(static_payload))
-        //console.log("one row = " + JSON.stringify(oneCSVRow))
+        // console.log("one row = " + JSON.stringify(oneCSVRow))
 
         var attrsMerged = Object.assign(completePayload["request"][entityType], oneCSVRow)
         completePayload["request"][entityType] = attrsMerged
@@ -111,25 +102,13 @@ var populate_add_tasks = function (tasks, entityType, static_payload, arrDynamic
 
             // If there are field specific code, set here.
             if (field === 'isActive') {
-                // Yes-No fields.
-                if(dataPortion[field] === 'No' || dataPortion[field] === 'Inactive') {
-                    dataPortion[field] === 0
-                } else {
-                    dataPortion[field] === 1
-                }
-            }
-
-            if (field === 'phone' || field === 'isOnboarded' || field === 'isInKronos') {
-                if(dataPortion[field] === '1')
-                dataPortion[field] = true;
-                else if(dataPortion[field] === '0')
-                dataPortion[field] = false;
+                dataPortion[field] = (dataPortion[field] === 'TRUE')
             }
         }
 
         // Any extra column to delete from the csv goes here
         //delete dataPortion.ParentCode
-
+        console.log(JSON.stringify(completePayload))
         allPayloads.push(completePayload)
     }
 
@@ -186,11 +165,11 @@ var addApiPayload = {
 }
 
 // The subject that we have schematized
-var entityType = "Student"
+var entityType = "Employee"
 addApiPayload.request[entityType] = {}
 
 // The URL where the registry is running
-var baseUrl = "http://127.0.0.1:8080"
+var baseUrl = "http://localhost:9181"
 
 // Whether you want to run in dryRun mode
 // true - API will not be invoked.
@@ -209,17 +188,14 @@ function populateStudent(cb) {
     execute_tasks(student_tasks, "data.json", cb)
 }
 
-var instance1_url = "http://localhost:8080"
 var func_array = [populateStudent]
 
-// Execution phase
-console.log("Func_Array", func_array);
-
-async.series(func_array, (result, err) => {
+populateStudent(function (err, result) {
     if (err) {
         return (err);
         console.log("Errorrrrr==>", err);
     }
+    console.log("Finished with func_array result = " + result);
     return result;
-    console.log("result = " + result);
 })
+

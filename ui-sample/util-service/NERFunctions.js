@@ -195,10 +195,14 @@ class NERFunctions extends Functions {
         req.body.id = appConfig.APP_ID.READ;
         registryService.readRecord(req, function (err, data) {
             if (data && data.params.status === appConfig.STATUS.SUCCESSFULL) {
-                if (data.result[entityType].clientInfo.name === 'Ekstep')
+                if (data.result[entityType].clientInfo.name === 'Ekstep') {
+                    logger.info("EkStep is the client. Going to update.")
                     callback(null, data);
-                else
+                }
+                else {
+                    logger.info("Nothing to do.")
                     callback(new Error("record does not belongs to the Ekstep org"))
+                }
             } else
                 callback(err)
         });
@@ -240,8 +244,10 @@ class NERFunctions extends Functions {
         }
         httpUtils.post(searchReq, (err, res) => {
             if (res.body.params.status === appConfig.STATUS.SUCCESSFULL && res.body.result[entityType].length > 0) {
+                logger.info("Got id of the user from EPR)")
                 callback(null, res.body, headers);
             } else if (res.body.result[entityType].length <= 0) {
+                logger.info("Cannot get user from EPR)")
                 callback("error: record is not present in the client regitry");
             }
         });
@@ -255,17 +261,24 @@ class NERFunctions extends Functions {
      */
     notifyEPR(searchRes, headers, callback) {
         let updateReq = _.cloneDeep(this.request);
+        delete updateReq.body.request[entityType]["clientInfo"]
+
         updateReq.body.request[entityType].osid = searchRes.result[entityType][0].osid;
+
         let option = {
             body: updateReq.body,
             headers: headers,
             url: vars.eprUtilServiceUrl + appConfig.UTILS_URL_CONFIG.NOTIFICATIONS
         }
         httpUtils.post(option, (err, res) => {
-            if (res)
+            if (res) {
+                logger.info("Send successfully to EPR ")
+                logger.debug(res)
                 callback(null, res.body);
-            else
+            }
+            else {
                 callback(err)
+            }
         });
     }
 

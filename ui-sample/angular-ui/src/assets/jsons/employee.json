@@ -192,29 +192,12 @@
             "code": "startDate",
             "dataType": "text",
             "name": "startDate",
-            "label": "Start Date",
+            "label": "Start Date (dd/mm/yyy)",
             "description": "Start Date",
             "editable": true,
             "placeholder": "Start Date",
             "inputType": "text",
             "required": true,
-            "displayProperty": "Editable",
-            "visible": true,
-            "renderingHints": {
-              "semanticColumnWidth": "six"
-            },
-            "index": 5
-          },
-          {
-            "code": "endDate",
-            "dataType": "text",
-            "name": "endDate",
-            "label": "End Date",
-            "description": "End Date",
-            "editable": true,
-            "placeholder": "End Date",
-            "inputType": "text",
-            "required": false,
             "displayProperty": "Editable",
             "visible": true,
             "renderingHints": {

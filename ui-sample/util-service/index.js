@@ -58,22 +58,23 @@ const createUser = (req, callback) => {
     ], function (err, result) {
         logger.info('Main Callback --> ' + result);
         if (err) {
-            callback(err, null)
+            logger.info("Some errors encountered" + JSON.stringify(err))
+            callback(err)
         } else {
             callback(null, result);
         }
     });
 }
 
-const pushToEPR = (eprUserReq) => {
-    if (eprUserReq.body.request[entityType].clientInfo.name === 'Ekstep') {
+const pushToEPR = (userReq) => {
+    if (userReq.body.request[entityType].clientInfo && userReq.body.request[entityType].clientInfo.name === 'Ekstep') {
         //adding externalRole and externalId to EPR User re
-        eprUserReq.body.request[entityType].externalRole = eprUserReq.body.request[entityType].role
-        eprUserReq.body.request[entityType].externalId = eprUserReq.body.request[entityType].code
-        eprUserReq.body.request[entityType] = _.omit(eprUserReq.body.request[entityType], ['clientInfo', 'role', 'isActive', 'code']) // removes the properties present in the array from req 
-        eprUserReq.body.request[entityType].orgName = "ILIMI";
-        delete eprUserReq.headers.authorization;
-        getTokenDetails(eprUserReq, eprKeycloakHelper, 'eprUserToken', (err, token) => {
+        userReq.body.request[entityType].externalRole = userReq.body.request[entityType].role
+        userReq.body.request[entityType].externalId = userReq.body.request[entityType].code
+        userReq.body.request[entityType] = _.omit(userReq.body.request[entityType], ['clientInfo', 'role', 'isActive', 'code']) // removes the properties present in the array from req 
+        userReq.body.request[entityType].orgName = "ILIMI";
+        delete userReq.headers.authorization;
+        getTokenDetails(userReq, eprKeycloakHelper, 'eprUserToken', (err, token) => {
             if (token) {
                 const options = {
                     url: vars.eprUtilServiceUrl + "/register/users",
@@ -82,7 +83,7 @@ const pushToEPR = (eprUserReq) => {
                         'accept': 'application/json',
                         'authorization': token
                     },
-                    body: eprUserReq.body
+                    body: userReq.body
                 }
                 httpUtils.post(options, function (err, res) {
                     if (res.statusCode == 200) {
@@ -126,8 +127,8 @@ const addRecordToRegistry = (req, res, callback) => {
         registryService.addRecord(req, function (err, res) {
             if (res.statusCode == 200) {
                 logger.info("Employee successfully added to registry", res.body)
-                callback(null, res.body);
                 pushToEPR(eprReq);
+                callback(null, res.body);
             } else {
                 logger.debug("Employee could not be added to registry" + res.statusCode)
                 callback(res.statusCode, res.errorMessage)
