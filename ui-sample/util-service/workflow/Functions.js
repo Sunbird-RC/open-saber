@@ -16,8 +16,8 @@ class Functions {
     constructor() {
         // Provide a property bag for any data exchange between workflow functions.
         this._placeholders = {};
-
-        this.attributes = ["macAddress", "githubId", "isOnboarded"]
+        //list of param names to send notification if any of the attribute is updated
+        this.notifyAttributes = ["macAddress", "githubId", "isOnboarded"]
     }
 
     setRequest(request) {

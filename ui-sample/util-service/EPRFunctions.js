@@ -144,10 +144,10 @@ class EPRFunctions extends Functions {
      * @param {*} callback 
      */
     notifyUsersBasedOnAttributes(callback) {
-        let params = _.keys(this.request.body.request[entityType]);
+        let attributesUpdated = _.keys(this.request.body.request[entityType]);//get the list of updated attributes from the req
         let count = 0
-        async.forEachSeries(this.attributes, (param, callback2) => {
-            if (_.includes(params, param)) {
+        async.forEachSeries(this.notifyAttributes, (param, callback2) => {
+            if (_.includes(attributesUpdated, param)) {
                 let params = {
                     paramName: param,
                     [param]: this.request.body.request[entityType][param]
@@ -161,7 +161,7 @@ class EPRFunctions extends Functions {
             } else {
                 callback2();
             }
-            if (count === this.attributes.length) {
+            if (count === this.notifyAttributes.length) {
                 callback(null, "success")
             }
         });
