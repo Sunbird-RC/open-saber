@@ -113,7 +113,7 @@ var populate_add_tasks = function (tasks, entityType, static_payload, arrDynamic
                 dataPortion[field] = myArr
             }
             if (field === 'isActive') {
-                if (dataPortion[field] === 'Yes' && !dataPortion['endDate']) {
+                if (dataPortion[field] === 'Yes' || !dataPortion['endDate']) {
                     dataPortion['isOnboarded'] = true;
                 } else {
                     dataPortion['isOnboarded'] = false;
