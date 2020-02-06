@@ -178,7 +178,7 @@ class EPRFunctions extends Functions {
         switch (attribute) {
             case 'githubId':
                 actions = ['getFinAdminUsers', 'sendNotifications'];
-                // FIXME - add subject
+                this.addToPlaceholders('subject', "GitHub Id updation");
                 this.addToPlaceholders('templateId', "updateParamTemplate");
                 this.invoke(actions, (err, data) => {
                     callback(null, data)
