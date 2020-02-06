@@ -79,6 +79,27 @@ class NERFunctions extends Functions {
         })
     }
 
+
+
+    /**
+     * to get Employee deatils(from registry)
+     * @param {*} callback 
+     */
+    getRegistryUsersInfo(callback) {
+        let tempParams = {}
+        this.getUserByid((err, data) => {
+            if (data) {
+                tempParams = data.result[entityType];
+                tempParams['employeeName'] = data.result[entityType].name
+                tempParams['niitURL'] = vars.appUrl
+                this.addToPlaceholders('templateParams', tempParams)
+                this._placeholders.emailIds
+                
+                callback()
+            }
+        })
+    }
+
     /**
      * gets email from the object and adds to the placeholder
      * @param {object} data 
@@ -163,15 +184,17 @@ class NERFunctions extends Functions {
         let actions = []
         switch (attribute) {
             case 'githubId':
-                actions = ['getFinAdminUsers', 'sendNotifications'];
-                this.addToPlaceholders('templateId', "updateParamTemplate");
+                actions = ['getRegistryUsersInfo', 'getFinAdminUsers', 'sendNotifications'];
+                this.addToPlaceholders('subject', "GitHub Id updation");
+                this.addToPlaceholders('templateId', "nerUpdateParamTemplate");
                 this.invoke(actions, (err, data) => {
                     callback(null, data)
                 });
                 break;
             case 'macAddress':
-                actions = ['getReporterUsers', 'sendNotifications'];
-                this.addToPlaceholders('templateId', "updateParamTemplate");
+                actions = ['getRegistryUsersInfo', 'getReporterUsers', 'sendNotifications'];
+                this.addToPlaceholders('subject', "MacAdress updation");
+                this.addToPlaceholders('templateId', "nerUpdateParamTemplate");
                 this.invoke(actions, (err, data) => {
                     callback(null, data)
                 });

@@ -64,6 +64,16 @@
           "type": "string",
           "title": "Github identifier"
         },
+        "startDate": {
+          "$id": "#/properties/startDate",
+          "type": "string",
+          "$comment": "startDate"
+        },
+        "endDate": {
+          "$id": "#/properties/endDate",
+          "type": "string",
+          "$comment": "endDate"
+        },
         "clientInfo": {
           "$id": "#/properties/clientInfo",
           "$ref": "ClientInfo.json#/definitions/ClientInfo"
