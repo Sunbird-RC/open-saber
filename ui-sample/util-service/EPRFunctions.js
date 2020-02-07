@@ -147,6 +147,7 @@ class EPRFunctions extends Functions {
         let attributesUpdated = _.keys(this.request.body.request[entityType]);//get the list of updated attributes from the req
         let count = 0
         async.forEachSeries(this.notifyAttributes, (param, callback2) => {
+            count ++
             if (_.includes(attributesUpdated, param)) {
                 let params = {
                     paramName: param,
