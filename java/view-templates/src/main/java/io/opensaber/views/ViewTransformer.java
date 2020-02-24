@@ -37,15 +37,12 @@ public class ViewTransformer {
 				for (int i = 0; i < nodeAttrs.size(); i++) {
 					
 					JsonNode tNode = tranformNode(viewTemplate, nodeAttrs.get(i));
-					appendSignatures(viewTemplate, nodeAttrs.get(i),tNode);
-					
 					resultArray.add(tNode);
 				}
 				resultNode = resultArray;
 
 			} else if (nodeAttrs.isObject()) {
 				resultNode = tranformNode(viewTemplate, nodeAttrs);
-				appendSignatures(viewTemplate, nodeAttrs,resultNode);
 				
 			} else {
 				throw new IllegalArgumentException("Not a valid node for transformation, must be a object node or array node");
@@ -80,7 +77,6 @@ public class ViewTransformer {
                     // Cut off the $
                 	if(nodeAttrs.get(oneArg.substring(1)) != null) {
                         actualValues.add(ValueType.getValue(nodeAttrs.get(oneArg.substring(1))));
-
                 	}
                 }
                 
@@ -97,8 +93,9 @@ public class ViewTransformer {
             } else if (field.getDisplay()) {
                 result.set(field.getTitle(), nodeAttrs.get(field.getName()));
             }
-
         }
+        
+        appendSignatures(viewTemplate, nodeAttrs,result);        
         return result;
     }
     
@@ -112,13 +109,11 @@ public class ViewTransformer {
 	    		
 	    		if(signatureField != null){
 		    		for (Field fieldTemp : viewTemplate.getFields()) {
-		    			if(signatureField.asText().endsWith("/"+fieldTemp.getName()) && fieldTemp.getDisplay()){
-		    				
+		    			if(signatureField.asText().endsWith("/"+fieldTemp.getName()) && fieldTemp.getDisplay()){		
 		    				sigArray.add(sigNode);
 		    			}
 		    		}
-		    		if(signatureField.asText().endsWith("/"+viewTemplate.getSubject())){
-	    				
+		    		if(signatureField.asText().endsWith("/"+viewTemplate.getSubject())){	    				
 	    				sigArray.add(sigNode);
 	    			}
 	    		}
