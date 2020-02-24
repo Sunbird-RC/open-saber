@@ -1,6 +1,7 @@
 package io.opensaber.views;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -34,15 +35,18 @@ public class ViewTransformer {
 				ArrayNode resultArray = JsonNodeFactory.instance.arrayNode();
 
 				for (int i = 0; i < nodeAttrs.size(); i++) {
+					
 					JsonNode tNode = tranformNode(viewTemplate, nodeAttrs.get(i));
+					appendSignatures(viewTemplate, nodeAttrs.get(i),tNode);
+					
 					resultArray.add(tNode);
-
 				}
 				resultNode = resultArray;
 
 			} else if (nodeAttrs.isObject()) {
 				resultNode = tranformNode(viewTemplate, nodeAttrs);
-
+				appendSignatures(viewTemplate, nodeAttrs,resultNode);
+				
 			} else {
 				throw new IllegalArgumentException("Not a valid node for transformation, must be a object node or array node");
 			}
@@ -96,5 +100,33 @@ public class ViewTransformer {
 
         }
         return result;
+    }
+    
+    private JsonNode appendSignatures(ViewTemplate viewTemplate, JsonNode nodeAttrs, JsonNode resultNode) throws Exception {
+    	if(nodeAttrs.get("signatures")!=null) {
+			
+			ArrayNode sigArray = new ObjectMapper().createArrayNode();
+			
+	    	for (JsonNode sigNode : nodeAttrs.get("signatures")) {
+	    		JsonNode signatureField = sigNode.get("signatureFor");
+	    		
+	    		if(signatureField != null){
+		    		for (Field fieldTemp : viewTemplate.getFields()) {
+		    			if(signatureField.asText().endsWith("/"+fieldTemp.getName()) && fieldTemp.getDisplay()){
+		    				
+		    				sigArray.add(sigNode);
+		    			}
+		    		}
+		    		if(signatureField.asText().endsWith("/"+viewTemplate.getSubject())){
+	    				
+	    				sigArray.add(sigNode);
+	    			}
+	    		}
+	    	}
+	    	if(sigArray.size()>0) {
+	    		((ObjectNode)resultNode).set("signatures", sigArray);
+	    	}
+		}
+    	return resultNode;
     }
 }
