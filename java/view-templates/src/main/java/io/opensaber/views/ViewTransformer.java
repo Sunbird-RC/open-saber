@@ -99,6 +99,14 @@ public class ViewTransformer {
         return result;
     }
     
+    /**
+     * Appends the signature array to the result as per the fields specified in view template file.
+     *
+     * @param viewTemplate
+     * @param nodeAttrs
+     * @param resultNode
+     * @return
+     * */
     private JsonNode appendSignatures(ViewTemplate viewTemplate, JsonNode nodeAttrs, JsonNode resultNode) throws Exception {
     	if(nodeAttrs.get("signatures")!=null) {
 			
@@ -108,11 +116,13 @@ public class ViewTransformer {
 	    		JsonNode signatureField = sigNode.get("signatureFor");
 	    		
 	    		if(signatureField != null){
+	    			//Adds the signatures of fields specified in view template file
 		    		for (Field fieldTemp : viewTemplate.getFields()) {
 		    			if(signatureField.asText().endsWith("/"+fieldTemp.getName()) && fieldTemp.getDisplay()){		
 		    				sigArray.add(sigNode);
 		    			}
 		    		}
+		    		//Adds the subject signature
 		    		if(signatureField.asText().endsWith("/"+viewTemplate.getSubject())){	    				
 	    				sigArray.add(sigNode);
 	    			}
