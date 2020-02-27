@@ -80,6 +80,7 @@ var populate_add_tasks = function (tasks, entityType, static_payload, arrDynamic
         //console.log("PAYLOAD Complete", JSON.stringify(static_payload))
         //console.log("one row = " + JSON.stringify(oneCSVRow))
         completePayload["request"][entityType] ={}
+
         var attrsMerged = Object.assign(completePayload["request"][entityType], oneCSVRow)
         completePayload["request"][entityType] = attrsMerged
 
@@ -114,7 +115,8 @@ var populate_add_tasks = function (tasks, entityType, static_payload, arrDynamic
                 dataPortion[field] = myArr
             }
             if (field === 'isActive') {
-                if (dataPortion[field].toUpperCase() === 'Yes'.toUpperCase()) {
+                if (dataPortion[field].toUpperCase() === 'Yes'.toUpperCase() || !dataPortion['endDate']) {
+
                     dataPortion['isOnboarded'] = true;
                     dataPortion['isActive'] = true;
                 } else {
@@ -263,7 +265,7 @@ var addApiPayload = {
 
 // The subject that we have schematized
 var entityType = "Employee"
-addApiPayload.request = {}
+addApiPayload.request[entityType] = {}
 
 
 // The URL where the registry is running
