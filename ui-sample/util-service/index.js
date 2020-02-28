@@ -134,7 +134,7 @@ const addRecordToRegistry = (req, res, callback) => {
     if ((req.body.request[entityType].isActive && res.statusCode == 201)||
                     !req.body.request[entityType].isActive) {
         //intially isOnBoarded flag is set false
-        req.body.request[entityType]['isOnboarded'] = false;
+        req.body.request[entityType]['isOnboarded'] = req.body.request[entityType].isActive;
         console.log(req.body)
         registryService.addRecord(req, function (err, res) {
             if (res.statusCode == 200) {
