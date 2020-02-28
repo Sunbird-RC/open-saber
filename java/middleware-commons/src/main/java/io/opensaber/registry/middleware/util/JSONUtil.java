@@ -161,32 +161,34 @@ public class JSONUtil {
 	}
 
 	/**
-	 * Trimming a given prefix if present from each TextNode value corresponding to
-	 * the fieldName in parent's hierarchy (including nested objects).
+	 * Add prefix to given keys present in the parent's hierarchy.
 	 * 
 	 * @param parent
 	 * @param prefix
+	 * @param keys
 	 */
-	public static void trimPrefix(ObjectNode parent, String fieldName, String prefix) {
+	public static void addPrefix(ObjectNode parent, String prefix, List<String> keys) {
 
 		parent.fields().forEachRemaining(entry -> {
 			JsonNode entryValue = entry.getValue();
-
-			if ( entry.getKey().equals(fieldName) && entryValue.isValueNode() && entryValue.toString().contains(prefix)) {
-				parent.put(entry.getKey(), entry.getValue().asText().replaceFirst(prefix, ""));
-
+			if (entryValue.isValueNode() && keys.contains(entry.getKey())) {
+				String defaultValue = prefix + entryValue.asText();
+				parent.put(entry.getKey(), defaultValue);
 			} else if (entryValue.isArray()) {
+				ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
 				for (int i = 0; i < entryValue.size(); i++) {
-					if (entry.getValue().get(i).isObject())
-						trimPrefix((ObjectNode) entry.getValue().get(i), fieldName, prefix);
+					if (entryValue.get(i).isTextual() && keys.contains(entry.getKey()))
+						arrayNode.add(prefix + entryValue.get(i).asText());
+					else if (entryValue.get(i).isObject())
+						addPrefix((ObjectNode) entryValue.get(i), prefix, keys);
 				}
+				if (arrayNode.size() > 0)
+					parent.set(entry.getKey(), arrayNode);
 			} else if (entryValue.isObject()) {
-				trimPrefix((ObjectNode) entry.getValue(), fieldName, prefix);
+				addPrefix((ObjectNode) entry.getValue(), prefix, keys);
 			}
-
 		});
 	}
-
 
 	/**
 	 * Adding a child node to Parent's hierarchy.
@@ -380,34 +382,30 @@ public class JSONUtil {
 		return patchNode;
 	}
 	
-
 	/**
-	 * Add prefix to given keys present in the parent's hierarchy.
+	 * Trimming a given prefix if present from each TextNode value corresponding to
+	 * the fieldName in parent's hierarchy (including nested objects).
 	 * 
 	 * @param parent
 	 * @param prefix
-	 * @param keys
 	 */
-	public static void addPrefix(ObjectNode parent, String prefix, List<String> keys) {
+	public static void trimPrefix(ObjectNode parent, String fieldName, String prefix) {
 
 		parent.fields().forEachRemaining(entry -> {
 			JsonNode entryValue = entry.getValue();
-			if (entryValue.isValueNode() && keys.contains(entry.getKey())) {
-				String defaultValue = prefix + entryValue.asText();
-				parent.put(entry.getKey(), defaultValue);
+
+			if ( entry.getKey().equals(fieldName) && entryValue.isValueNode() && entryValue.toString().contains(prefix)) {
+				parent.put(entry.getKey(), entry.getValue().asText().replaceFirst(prefix, ""));
+
 			} else if (entryValue.isArray()) {
-				ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
 				for (int i = 0; i < entryValue.size(); i++) {
-					if (entryValue.get(i).isTextual() && keys.contains(entry.getKey()))
-						arrayNode.add(prefix + entryValue.get(i).asText());
-					else if (entryValue.get(i).isObject())
-						addPrefix((ObjectNode) entryValue.get(i), prefix, keys);
+					if (entry.getValue().get(i).isObject())
+						trimPrefix((ObjectNode) entry.getValue().get(i), fieldName, prefix);
 				}
-				if (arrayNode.size() > 0)
-					parent.set(entry.getKey(), arrayNode);
 			} else if (entryValue.isObject()) {
-				addPrefix((ObjectNode) entry.getValue(), prefix, keys);
+				trimPrefix((ObjectNode) entry.getValue(), fieldName, prefix);
 			}
+
 		});
 	}
 }
