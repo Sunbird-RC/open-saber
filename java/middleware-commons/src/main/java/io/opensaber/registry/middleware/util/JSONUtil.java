@@ -187,35 +187,6 @@ public class JSONUtil {
 		});
 	}
 
-	/**
-	 * Add prefix to given keys present in the parent's hierarchy.
-	 * 
-	 * @param parent
-	 * @param prefix
-	 * @param keys
-	 */
-	public static void addPrefix(ObjectNode parent, String prefix, List<String> keys) {
-
-		parent.fields().forEachRemaining(entry -> {
-			JsonNode entryValue = entry.getValue();
-			if (entryValue.isValueNode() && keys.contains(entry.getKey())) {
-				String defaultValue = prefix + entryValue.asText();
-				parent.put(entry.getKey(), defaultValue);
-			} else if (entryValue.isArray()) {
-				ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
-				for (int i = 0; i < entryValue.size(); i++) {
-					if (entryValue.get(i).isTextual() && keys.contains(entry.getKey()))
-						arrayNode.add(prefix + entryValue.get(i).asText());
-					else if (entryValue.get(i).isObject())
-						addPrefix((ObjectNode) entryValue.get(i), prefix, keys);
-				}
-				if (arrayNode.size() > 0)
-					parent.set(entry.getKey(), arrayNode);
-			} else if (entryValue.isObject()) {
-				addPrefix((ObjectNode) entry.getValue(), prefix, keys);
-			}
-		});
-	}
 
 	/**
 	 * Adding a child node to Parent's hierarchy.
@@ -407,5 +378,36 @@ public class JSONUtil {
 		}
 		JsonNode patchNode = JsonDiff.asJson(existingNode, latestNode);
 		return patchNode;
+	}
+	
+
+	/**
+	 * Add prefix to given keys present in the parent's hierarchy.
+	 * 
+	 * @param parent
+	 * @param prefix
+	 * @param keys
+	 */
+	public static void addPrefix(ObjectNode parent, String prefix, List<String> keys) {
+
+		parent.fields().forEachRemaining(entry -> {
+			JsonNode entryValue = entry.getValue();
+			if (entryValue.isValueNode() && keys.contains(entry.getKey())) {
+				String defaultValue = prefix + entryValue.asText();
+				parent.put(entry.getKey(), defaultValue);
+			} else if (entryValue.isArray()) {
+				ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
+				for (int i = 0; i < entryValue.size(); i++) {
+					if (entryValue.get(i).isTextual() && keys.contains(entry.getKey()))
+						arrayNode.add(prefix + entryValue.get(i).asText());
+					else if (entryValue.get(i).isObject())
+						addPrefix((ObjectNode) entryValue.get(i), prefix, keys);
+				}
+				if (arrayNode.size() > 0)
+					parent.set(entry.getKey(), arrayNode);
+			} else if (entryValue.isObject()) {
+				addPrefix((ObjectNode) entry.getValue(), prefix, keys);
+			}
+		});
 	}
 }
