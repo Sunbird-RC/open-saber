@@ -171,9 +171,8 @@ public class JSONUtil {
 
 		parent.fields().forEachRemaining(entry -> {
 			JsonNode entryValue = entry.getValue();
-			String keyField = entry.getKey();
 
-			if ( keyField.equals(fieldName) && entryValue.isValueNode() && entryValue.toString().contains(prefix)) {
+			if ( entry.getKey().equals(fieldName) && entryValue.isValueNode() && entryValue.toString().contains(prefix)) {
 				parent.put(entry.getKey(), entry.getValue().asText().replaceFirst(prefix, ""));
 
 			} else if (entryValue.isArray()) {
