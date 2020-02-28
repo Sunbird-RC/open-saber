@@ -46,12 +46,12 @@ public class JSONUtil {
 		String result = new ObjectMapper().writeValueAsString(object);
 		return result;
 	}
-	
+
 	public static JsonNode convertStringJsonNode(String jsonStr) throws IOException {
 		JsonNode jNode = new ObjectMapper().readTree(jsonStr);
 		return jNode;
 	}
-	
+
 	public static JsonNode convertObjectJsonNode(Object object) throws IOException {
 		JsonNode inputNode = new ObjectMapper().valueToTree(object);
 		return inputNode;
@@ -161,6 +161,34 @@ public class JSONUtil {
 	}
 
 	/**
+	 * Trimming a given prefix if present from each TextNode value corresponding to
+	 * the fieldName in parent's hierarchy (including nested objects).
+	 * 
+	 * @param parent
+	 * @param prefix
+	 */
+	public static void trimPrefix(ObjectNode parent, String fieldName, String prefix) {
+
+		parent.fields().forEachRemaining(entry -> {
+			JsonNode entryValue = entry.getValue();
+			String keyField = entry.getKey();
+
+			if ( keyField.equals(fieldName) && entryValue.isValueNode() && entryValue.toString().contains(prefix)) {
+				parent.put(entry.getKey(), entry.getValue().asText().replaceFirst(prefix, ""));
+
+			} else if (entryValue.isArray()) {
+				for (int i = 0; i < entryValue.size(); i++) {
+					if (entry.getValue().get(i).isObject())
+						trimPrefix((ObjectNode) entry.getValue().get(i), fieldName, prefix);
+				}
+			} else if (entryValue.isObject()) {
+				trimPrefix((ObjectNode) entry.getValue(), fieldName, prefix);
+			}
+
+		});
+	}
+
+	/**
 	 * Add prefix to given keys present in the parent's hierarchy.
 	 * 
 	 * @param parent
@@ -179,7 +207,7 @@ public class JSONUtil {
 				for (int i = 0; i < entryValue.size(); i++) {
 					if (entryValue.get(i).isTextual() && keys.contains(entry.getKey()))
 						arrayNode.add(prefix + entryValue.get(i).asText());
-					else if(entryValue.get(i).isObject())
+					else if (entryValue.get(i).isObject())
 						addPrefix((ObjectNode) entryValue.get(i), prefix, keys);
 				}
 				if (arrayNode.size() > 0)
@@ -216,31 +244,32 @@ public class JSONUtil {
 		parent.set(childKey, child);
 
 	}
+
 	/**
-	 * Adding field(key, value) to Parent's hierarchy 
+	 * Adding field(key, value) to Parent's hierarchy
 	 * 
 	 * @param parent
-	 * @param childKey      field key
-	 * @param child         field value
+	 * @param childKey field key
+	 * @param child    field value
 	 */
-    public static void addField(ObjectNode parent, String childKey, String child) {
-        parent.fields().forEachRemaining(entry -> {
-            JsonNode entryValue = entry.getValue();
-            if (entryValue.isObject()) {
-                addField((ObjectNode) entry.getValue(), childKey, child);
-            }
-            if (entryValue.isArray()) {
-                for (int i = 0; i < entryValue.size(); i++) {
-                    if (entry.getValue().get(i).isObject())
-                        addField((ObjectNode) entry.getValue().get(i), childKey, child);
-                }
-            }
-        });
-        if (childKey == null || childKey.isEmpty())
-            throw new IllegalArgumentException(KEY_NULL_ERROR);
-        parent.put(childKey, child);
+	public static void addField(ObjectNode parent, String childKey, String child) {
+		parent.fields().forEachRemaining(entry -> {
+			JsonNode entryValue = entry.getValue();
+			if (entryValue.isObject()) {
+				addField((ObjectNode) entry.getValue(), childKey, child);
+			}
+			if (entryValue.isArray()) {
+				for (int i = 0; i < entryValue.size(); i++) {
+					if (entry.getValue().get(i).isObject())
+						addField((ObjectNode) entry.getValue().get(i), childKey, child);
+				}
+			}
+		});
+		if (childKey == null || childKey.isEmpty())
+			throw new IllegalArgumentException(KEY_NULL_ERROR);
+		parent.put(childKey, child);
 
-    }
+	}
 
 	/**
 	 * Remove a node of given key from parent's hierarchy(including nested objects)
@@ -291,8 +320,10 @@ public class JSONUtil {
 		});
 		parent.remove(removeKeyNames);
 	}
+
 	/**
 	 * Find a key from hierarchy of JsonNode of given value
+	 * 
 	 * @param node
 	 * @param value
 	 * @return
@@ -312,13 +343,11 @@ public class JSONUtil {
 	}
 
 	/**
-	 * Returns the Json Node associated with the key
-	 * It may be that the specified key is not found in the input. If so, searches for
-	 * the next higher key parent and returns node.
-	 * Example:
-	 *  Consider inputNode as {a:{b:{c:d}}}
-	 *  key = a/b/c, will return c
-	 *  key = a/b/e, will return b, so that callers can set b to include e (addition).
+	 * Returns the Json Node associated with the key It may be that the specified
+	 * key is not found in the input. If so, searches for the next higher key parent
+	 * and returns node. Example: Consider inputNode as {a:{b:{c:d}}} key = a/b/c,
+	 * will return c key = a/b/e, will return b, so that callers can set b to
+	 * include e (addition).
 	 *
 	 * @param inputNode
 	 * @param key
@@ -333,22 +362,23 @@ public class JSONUtil {
 	}
 
 	/**
-	 * Iterates the inputNode and merges values with the result node. Takes care to add
-	 * new elements that are found in inputNode, but missing in the result.
+	 * Iterates the inputNode and merges values with the result node. Takes care to
+	 * add new elements that are found in inputNode, but missing in the result.
+	 * 
 	 * @param entityTypeJsonPtr - the entity type
-	 * @param result - existing
-	 * @param inputNode - new to be updated
-	 * @param ignoreFields - fields that must not be updated
+	 * @param result            - existing
+	 * @param inputNode         - new to be updated
+	 * @param ignoreFields      - fields that must not be updated
 	 */
-	public static void merge(String entityTypeJsonPtr, ObjectNode result, ObjectNode inputNode, List<String> ignoreFields) {
+	public static void merge(String entityTypeJsonPtr, ObjectNode result, ObjectNode inputNode,
+			List<String> ignoreFields) {
 		inputNode.fields().forEachRemaining(prop -> {
 			String propKey = prop.getKey();
 			JsonNode propValue = prop.getValue();
 
-			if ((propValue.isValueNode() && !ignoreFields.contains(propKey)) ||
-					propValue.isArray()) {
+			if ((propValue.isValueNode() && !ignoreFields.contains(propKey)) || propValue.isArray()) {
 				// Must be a value node and not a uuidPropertyName key pair
-				//((ObjectNode)result.get(entityType)).set(propKey, propValue);
+				// ((ObjectNode)result.get(entityType)).set(propKey, propValue);
 				getNode(result, entityTypeJsonPtr).set(propKey, propValue);
 			} else if (propValue.isObject()) {
 				if (result.at(entityTypeJsonPtr + "/" + propKey).isMissingNode()) {
@@ -360,7 +390,9 @@ public class JSONUtil {
 		});
 	}
 
-	/** This method checks difference between 2 json-nodes and filter out patch as json node
+	/**
+	 * This method checks difference between 2 json-nodes and filter out patch as
+	 * json node
 	 *
 	 * @param existingNode
 	 * @param latestNode
@@ -368,10 +400,10 @@ public class JSONUtil {
 	 */
 	public static JsonNode diffJsonNode(JsonNode existingNode, JsonNode latestNode) {
 		ObjectMapper objectMapper = new ObjectMapper();
-		if(existingNode == null) {
+		if (existingNode == null) {
 			existingNode = objectMapper.createObjectNode();
 		}
-		if(latestNode == null) {
+		if (latestNode == null) {
 			latestNode = objectMapper.createObjectNode();
 		}
 		JsonNode patchNode = JsonDiff.asJson(existingNode, latestNode);
