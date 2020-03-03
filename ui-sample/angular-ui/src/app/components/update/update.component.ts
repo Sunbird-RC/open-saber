@@ -61,7 +61,7 @@ export class UpdateComponent implements OnInit {
     const requestData = {
       header: { Authorization: this.userToken },
       data: {
-        id: appConfig.API_ID.UPDATE,
+        id: appConfig.API_ID.READ,
         request: {
           Employee: {
             osid: this.userId

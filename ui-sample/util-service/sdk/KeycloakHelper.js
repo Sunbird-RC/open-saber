@@ -67,7 +67,6 @@ class KeycloakHelper {
      */
     registerUserToKeycloak(req, callback) {
         const value = req.body.request;
-        console.log("Recvd for registration " + JSON.stringify(value))
         const options = {
             url: this.keyCloakHost + "/auth/admin/realms/" + this.realmName + "/users",
             headers: {
@@ -92,12 +91,33 @@ class KeycloakHelper {
                 ]
             }
         }
-
-        console.log(JSON.stringify(options))
-
         httpUtil.post(options, function (err, res) {
             callback(null, res)
         });
+    }
+
+    getUserById(userId, token, callback) {
+        var headers = {
+            'content-type': 'application/json',
+            authorization: token
+        }
+        try {
+            const options = {
+                method: 'GET',
+                url: this.keyCloakHost + "/auth/admin/realms/" + this.realmName + '/users/' + userId,
+                json: true,
+                headers: headers
+            }
+            httpUtil.get(options, function (err, res, body) {
+                if (res.body) {
+                    callback(null, res)
+                } else {
+                    callback(err)
+                }
+            });
+        } catch (err) {
+
+        }
     }
 
 }
