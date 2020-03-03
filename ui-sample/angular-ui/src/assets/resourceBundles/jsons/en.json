@@ -25,7 +25,8 @@
                 "viewProfile": "View Profile",
                 "search": "User Directory",
                 "yes": "Yes",
-                "no":"No"
+                "no":"No",
+                "viewHistory": "View History"
             },
             "label": {
                 "filters": "Filters",

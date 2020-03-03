@@ -9,6 +9,7 @@ import { CreateComponent } from './components/create/create.component';
 import { UpdateComponent } from './components/update/update.component';
 import { environment } from '../environments/environment';
 import { AppAuthGuard } from './app.authguard';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
 
 var routes = [
   {
@@ -56,6 +57,16 @@ var routes = [
     path: 'edit/:userId/:role', component: UpdateComponent,
     canActivate: [AppAuthGuard],
     data: { roles: 'editOwnProfileRole' }
+  },
+  {
+    path: 'dashboard/:userId', component: DashboardComponent,
+    canActivate: [AppAuthGuard],
+    data: { roles: 'dashboardView' }
+  },
+  {
+    path: 'dashboard', component: DashboardComponent,
+    canActivate: [AppAuthGuard],
+    data: { roles: 'onboardEmployee' }
   }
 ];
 

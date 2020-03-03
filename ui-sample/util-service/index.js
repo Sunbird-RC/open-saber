@@ -24,6 +24,19 @@ const classesMapping = {
     'Functions': baseFunctions
 };
 
+app.theApp.get("/keycloak/users/:userId", (req, res, next) => {
+    getTokenDetails(req, (err, token) => {
+        keycloakHelper.getUserById(req.params.userId, token, (error, data) => {
+            if (data) {
+                res.statusCode = data.statusCode
+                res.send(data.body);
+            } else {
+                res.send(error)
+            }
+        })
+    })
+})
+
 // Add any new APIs here.
 app.theApp.post("/register/users", (req, res, next) => {
     createUser(req, function (err, data) {
@@ -36,6 +49,12 @@ app.theApp.post("/register/users", (req, res, next) => {
     });
 });
 
+/**
+ * creates user in keycloak and add record to the registry
+ * first gets the bearer token needed to create user in keycloak and registry
+ * @param {*} req 
+ * @param {*} callback 
+ */
 const createUser = (req, callback) => {
     async.waterfall([
         function (callback) {
@@ -126,11 +145,11 @@ const addRecordToRegistry = (req, res, callback) => {
         req.body.request[entityType]['isActive'] = true;
         registryService.addRecord(req, function (err, res) {
             if (res.statusCode == 200) {
-                logger.info("Employee successfully added to registry", res.body)
+                logger.info("record successfully added to registry", res.body)
                 pushToEPR(eprReq);
                 callback(null, res.body);
             } else {
-                logger.debug("Employee could not be added to registry" + res.statusCode)
+                logger.debug("record could not be added to registry" + res.statusCode)
                 callback(res.statusCode, res.errorMessage)
             }
         })
