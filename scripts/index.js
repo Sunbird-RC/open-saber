@@ -274,7 +274,7 @@ var baseUrl = "http://localhost:9081"
 // Whether you want to run in dryRun mode
 // true - API will not be invoked.
 // false - API will be invoked.
-var dryRun = false
+var dryRun = true
 
 var PARALLEL_LIMIT = 1;
 var dataEntities = {}
