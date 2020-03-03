@@ -282,7 +282,7 @@ var dataEntities = {}
 
 function populateData(cb) {
     var data_tasks = [];
-    var dataCSV = csvToJson('demo_data.csv')
+    var dataCSV = csvToJson('EkStepStaffingSheet.csv')
     populate_add_tasks(data_tasks, entityType, addApiPayload, dataCSV)
     console.log("Total number of data records = " + data_tasks.length)
     execute_tasks(data_tasks, "data.json", cb)

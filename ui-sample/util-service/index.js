@@ -75,7 +75,6 @@ const createUser = (req, callback) => {
                     }
                     keycloakHelper.registerUserToKeycloak(keycloakUserReq, callback)
             }else{
-                
                 callback(null,undefined)
             }
                 
