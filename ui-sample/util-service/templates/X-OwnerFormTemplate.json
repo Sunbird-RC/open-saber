@@ -161,53 +161,15 @@
                 "name": "role",
                 "label": "EkStep role",
                 "description": "EkStep role",
-                "editable": true,
+                "editable": false,
                 "placeholder": "EkStep role",
-                "inputType": "select",
-                "required": true,
+                "inputType": "text",
+                "required": false,
                 "displayProperty": "Editable",
                 "visible": true,
                 "renderingHints": {
                     "semanticColumnWidth": "four"
                 },
-                "range": [
-                    {
-                        "id": "BA",
-                        "name": "BA"
-                    },
-                    {
-                        "id": "Tech Lead",
-                        "name": "Tech Lead"
-                    },
-                    {
-                        "id": "Project Management",
-                        "name": "Project Management"
-                    },
-                    {
-                        "id": "Developer",
-                        "name": "Developer"
-                    },
-                    {
-                        "id": "Design Council",
-                        "name": "Design Council"
-                    },
-                    {
-                        "id": "Designer",
-                        "name": "Designer"
-                    },
-                    {
-                        "id": "Tech Manager",
-                        "name": "Tech Manager"
-                    },
-                    {
-                        "id": "DevOps",
-                        "name": "DevOps"
-                    },
-                    {
-                        "id": "Tech Support",
-                        "name": "Tech Support"
-                    }
-                ],
                 "index": 7
             },
             {
@@ -216,29 +178,15 @@
                 "name": "projectName",
                 "label": "Project name",
                 "description": "Project name",
-                "editable": true,
+                "editable": false,
                 "placeholder": "Project name",
-                "inputType": "select",
+                "inputType": "text",
                 "required": false,
                 "displayProperty": "Editable",
                 "visible": true,
                 "renderingHints": {
                     "semanticColumnWidth": "four"
                 },
-                "range": [
-                    {
-                        "id": "DIKSHA",
-                        "name": "DIKSHA"
-                    },
-                    {
-                        "id": "Learning platform",
-                        "name": "Learning platform"
-                    },
-                    {
-                        "id": "Sunbird + DIKSHA",
-                        "name": "Sunbird + DIKSHA"
-                    }
-                ],
                 "index": 8
             },
             {
@@ -247,73 +195,15 @@
                 "name": "subProjectName",
                 "label": "Sub-project name",
                 "description": "Sub-project name",
-                "editable": true,
+                "editable": false,
                 "placeholder": "Sub-project name",
-                "inputType": "select",
+                "inputType": "text",
                 "required": false,
                 "displayProperty": "Editable",
                 "visible": true,
                 "renderingHints": {
                     "semanticColumnWidth": "four"
                 },
-                "range": [
-                    {
-                        "id": "User Platform",
-                        "name": "User Platform"
-                    },
-                    {
-                        "id": "Mobile",
-                        "name": "Mobile"
-                    },
-                    {
-                        "id": "Implementation",
-                        "name": "Implementation"
-                    },
-                    {
-                        "id": "Project Management",
-                        "name": "Project Management"
-                    },
-                    {
-                        "id": "Design Council",
-                        "name": "Design Council"
-                    },
-                    {
-                        "id": "DIKSHA UX",
-                        "name": "DIKSHA UX"
-                    },
-                    {
-                        "id": "Content Framework",
-                        "name": "Content Framework"
-                    },
-                    {
-                        "id": "Portal",
-                        "name": "Portal"
-                    },
-                    {
-                        "id": "Infra & DevOps",
-                        "name": "Infra & DevOps"
-                    },
-                    {
-                        "id": "DIKSHA Liasion",
-                        "name": "DIKSHA Liasion"
-                    },
-                    {
-                        "id": "Learning Platform",
-                        "name": "Learning Platform"
-                    },
-                    {
-                        "id": "DIKSHA Tech Support",
-                        "name": "DIKSHA Tech Support"
-                    },
-                    {
-                        "id": "Courses Platform",
-                        "name": "Courses Platform"
-                    },
-                    {
-                        "id": "DIKSHA Analytics",
-                        "name": "DIKSHA Analytics"
-                    }
-                ],
                 "index": 9
             }
         ]
