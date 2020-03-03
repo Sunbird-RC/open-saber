@@ -274,7 +274,7 @@ var baseUrl = "http://localhost:9081"
 // Whether you want to run in dryRun mode
 // true - API will not be invoked.
 // false - API will be invoked.
-var dryRun = true
+var dryRun = false
 
 var PARALLEL_LIMIT = 1;
 var dataEntities = {}
@@ -282,7 +282,7 @@ var dataEntities = {}
 
 function populateData(cb) {
     var data_tasks = [];
-    var dataCSV = csvToJson('EkStepStaffingSheet.csv')
+    var dataCSV = csvToJson('demo_data.csv')
     populate_add_tasks(data_tasks, entityType, addApiPayload, dataCSV)
     console.log("Total number of data records = " + data_tasks.length)
     execute_tasks(data_tasks, "data.json", cb)
