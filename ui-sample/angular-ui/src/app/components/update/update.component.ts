@@ -82,7 +82,7 @@ export class UpdateComponent implements OnInit {
   getFormTemplate() {
     var requestData = {};
     if (this.viewOwnerProfile === 'owner') {
-      requestData = { url: appConfig.URLS.OWNER_FORM_TEMPLATE }
+      requestData = { url: appConfig.URLS.OWNER_FORM_TEMPLATE + "/" + this.viewOwnerProfile }
     } else {
       requestData = {
         url: appConfig.URLS.FORM_TEPLATE,
@@ -149,7 +149,7 @@ export class UpdateComponent implements OnInit {
   }
 
   navigateToProfilePage() {
-    if(this.viewOwnerProfile) {
+    if (this.viewOwnerProfile) {
       this.router.navigate(['/profile', this.userId, this.viewOwnerProfile]);
     }
     else {

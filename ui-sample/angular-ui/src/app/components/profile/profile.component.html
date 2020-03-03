@@ -33,7 +33,7 @@
       <button class="ui secondary basic button" *ngIf="viewOwnerProfile =='owner'" (click)="navigateToDashBoardPage()">
         {{resourceService?.frmelmnts?.btn?.viewHistory}}
       </button>
-      <button class="ui grey basic button" (click)="navigateToHomePage()">
+      <button class="ui grey basic button" *ngIf="!viewOwnerProfile" (click)="navigateToHomePage()">
         {{resourceService?.frmelmnts?.btn?.cancel}}
       </button>
     </div>

@@ -60,9 +60,9 @@ export class ProfileComponent implements OnInit {
 
   getFormTemplate() {
     var requestData = {}
-    if (this.viewOwnerProfile === 'owner') {
+    if (this.viewOwnerProfile) {
       requestData = {
-        url: appConfig.URLS.OWNER_FORM_TEMPLATE
+        url: appConfig.URLS.OWNER_FORM_TEMPLATE + "/" + this.viewOwnerProfile
       }
     } else {
       let token = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserToken);
