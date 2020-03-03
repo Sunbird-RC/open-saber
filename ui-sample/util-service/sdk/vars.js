@@ -5,13 +5,13 @@ const config = {
             "url": process.env.keycloak_url || "http://localhost:8443", 
             "realmName": process.env.keycloak_realmName || "PartnerRegistry",
             "clientId": "utils",
-            "clientSecret": process.env.keycloak_clientSecret || "f6ce7466-b04f-4ccf-b986-e9c61e5fb26b"
+            "clientSecret": process.env.keycloak_clientSecret || "9ebc2fc1-ced9-4774-a661-7e2c59991cfe"
         },
         "keycloak_ner": {
             "url": process.env.keycloak_ner_url || "http://localhost:8443",
             "realmName": process.env.keycloak_ner_realmName || "NIITRegistry",
             "clientId": "utils",
-            "clientSecret": process.env.keycloak_ner_clientSecret || "9ebc2fc1-ced9-4774-a661-7e2c59991cfe"
+            "clientSecret": process.env.keycloak_ner_clientSecret || "f6ce7466-b04f-4ccf-b986-e9c61e5fb26b"
         },
         "notificationUrl": process.env.notificationUrl || "http://localhost:9012",
         "appUrl": process.env.appUrl || "http://localhost:9082",
