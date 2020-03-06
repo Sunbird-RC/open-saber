@@ -47,7 +47,7 @@ export class AdminPageComponent implements OnInit, OnDestroy {
   result: { "headers": string; "row": {}; };
   userService: UserService;
   public permissionService: PermissionService;
-  downloadCsvRoles: Array<string>;
+  downloadRole: Array<string>;
   userToken = '';
   loader = false;
 
@@ -64,7 +64,7 @@ export class AdminPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.downloadCsvRoles = appConfig.rolesMapping.downLoadCsv;
+    this.downloadRole = appConfig.rolesMapping.downLoadCsv;
     this.resetPaigination();
     this.result = {
       "headers": '',
