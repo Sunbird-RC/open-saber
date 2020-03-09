@@ -24,7 +24,7 @@
           <i class="icon {{buttonIcon}}"></i>
         </div>
         <a  class="ui button primary end"  *ngIf='permissionService.permissionAvailable' appPermission
-        [permission]="downloadCsvRoles" (click)="downloadFile()"  [ngClass]="{'loading' : loader}">Download CSV</a>
+        [permission]="downloadRole" (click)="downloadFile()"  [ngClass]="{'loading' : loader}">Download CSV</a>
       </div>
     </div>
     <div class="row">
