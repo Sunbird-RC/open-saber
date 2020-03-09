@@ -1,14 +1,14 @@
 const config = {
-    "development": {
+    "dev": {
         "utilServicePort":process.env.util_service_port || 9081,
         "keycloak": {
-            "url": process.env.keycloak_url || "http://localhost:8081", 
+            "url": process.env.keycloak_url || "http://localhost:8443", 
             "realmName": process.env.keycloak_realmName || "PartnerRegistry",
             "clientId": "utils",
-            "clientSecret": process.env.keycloak_clientSecret || "0b5ae061-5c5a-441d-9492-1b5a2c79635c"
+            "clientSecret": process.env.keycloak_clientSecret || "fd637035-cfbd-48de-8fac-073e7e6614b2"
         },
         "keycloak_ner": {
-            "url": process.env.keycloak_ner_url || "http://localhost:8081",
+            "url": process.env.keycloak_ner_url || "http://localhost:8443",
             "realmName": process.env.keycloak_ner_realmName || "NIITRegistry",
             "clientId": "utils",
             "clientSecret": process.env.keycloak_ner_clientSecret || "f6ce7466-b04f-4ccf-b986-e9c61e5fb26b"
