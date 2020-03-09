@@ -5,7 +5,7 @@ const config = {
             "url": process.env.keycloak_url || "http://localhost:8443", 
             "realmName": process.env.keycloak_realmName || "PartnerRegistry",
             "clientId": "utils",
-            "clientSecret": process.env.keycloak_clientSecret || "9ebc2fc1-ced9-4774-a661-7e2c59991cfe"
+            "clientSecret": process.env.keycloak_clientSecret || "fd637035-cfbd-48de-8fac-073e7e6614b2"
         },
         "keycloak_ner": {
             "url": process.env.keycloak_ner_url || "http://localhost:8443",
