@@ -142,6 +142,11 @@
           "type": "string",
           "title": "nineAMreportTo"
         },
+        "supervisor": {
+          "$id": "#/properties/supervisor",
+          "type": "string",
+          "title": "supervisor"
+        },
         "subProjectName": {
           "$id": "#/properties/subProjectName",
           "type": "string",

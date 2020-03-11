@@ -142,44 +142,25 @@ const offBoardUser = (req, callback) => {
  * @param {*} callback 
  */
 const createUser = (req, callback) => {
-
-    
-    var tasks =[ function (callback) {
-        //if auth token is not given , this function is used get access token
-        getTokenDetails(req, callback);
-    }]
-
-    //Add to keycloak if user is active
-
-    tasks.push(function (token, callback) {
-          
-            req.headers['authorization'] = token;
-            if(req.body.request[entityType].isActive){
-
-                var keycloakUserReq = {
-                        body: {
-                            request: req.body.request[entityType]
-                        },
-                        headers: req.headers
-                    }
-                    keycloakHelper.registerUserToKeycloak(keycloakUserReq, callback)
-            }else{
-                callback(null, undefined)
-
+    async.waterfall([
+        function (callback) {
+            //if auth token is not given , this function is used get access token
+            getTokenDetails(req, callback);
+        },
+        function (token, callback) {
+            req.headers['authorization'] = token
+            var keycloakUserReq = {
+                body: {
+                    request: req.body.request[entityType]
+                },
+                headers: req.headers
             }
-                
-        })
-    
-
-    
-
-    //Add to registry
-    tasks.push(function (res, callback2) {
-        addRecordToRegistry(req, res, callback2)
-    })
-
-
-    async.waterfall(tasks, function (err, result) {
+            keycloakHelper.registerUserToKeycloak(keycloakUserReq, callback)
+        },
+        function (res, callback2) {
+            addRecordToRegistry(req, res, callback2)
+        }
+    ], function (err, result) {
         logger.info('Main Callback --> ' + result);
         if (err) {
             callback(err, null)
@@ -223,11 +204,10 @@ const getTokenDetails = (req, callback) => {
  */
 const addRecordToRegistry = (req, res, callback) => {
     
-    if ((req.body.request[entityType].isActive && res.statusCode == 201)||
-                    !req.body.request[entityType].isActive) {
+    if (res.statusCode == 201) {
         //intially isOnBoarded flag is set false
-        req.body.request[entityType]['isOnboarded'] = req.body.request[entityType].isActive;
-        console.log(req.body)
+        req.body.request[entityType]['isOnboarded'] = false;
+        console.log("registry request", req.body)
         registryService.addRecord(req, function (err, res) {
             if (res.statusCode == 200) {
                 logger.info("record successfully added to registry")
