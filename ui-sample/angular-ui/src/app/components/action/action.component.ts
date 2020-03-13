@@ -37,9 +37,8 @@ export class ActionComponent implements OnInit {
   }
 
   ngOnInit() {
-    let userDetail = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.EmployeeDetails);
-    // this.getUserDetails(userDetail.osid);
-    this.getSupervisorActions();
+    let userCacheData = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.EmployeeDetails);
+    this.getUserDetails(userCacheData.osid);
   }
 
   getSupervisorActions() {
@@ -56,7 +55,7 @@ export class ActionComponent implements OnInit {
           entityType: ["Employee"],
           filters: {
             supervisor: {
-              eq: "a.aish1997@gmail.com"
+              eq: this.userDetail.email
             },
             isActive: {
               eq: false
@@ -100,20 +99,14 @@ export class ActionComponent implements OnInit {
           Employee: {
             osid: userId
           },
-          includeSignatures: true,
-          viewTemplateId: {
-            fields: [
-              {
-                name: "email"
-              }
-            ]
-          }
+          includeSignatures: true
         }
       },
       url: appConfig.URLS.READ,
     }
     this.dataService.post(requestData).subscribe(response => {
-      this.userDetail = JSON.stringify(response.result.Employee)
+      this.userDetail = response.result.Employee;
+      this.getSupervisorActions();
     }, (err => {
       console.log(err)
     }))
