@@ -22,7 +22,7 @@
   <div class="extra content">
     <div class="ui basic fluid blue button" *ngIf="!data?.isActive && !data?.isOnboarded" (click)="validateConfirmModal(data?.osid); $event.stopPropagation()">
       validate</div>
-    <div class="ui basic fluid blue button" *ngIf="data?.isActive && data?.isOnboarded && data?.supervisor" (click)="onAction(data,{View: true})">
+    <div class="ui basic fluid blue button" *ngIf="data?.isActive && data?.isOnboarded && data?.manager" (click)="onAction(data,{View: true})">
       view profile</div>
   </div>
 </div>

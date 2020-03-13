@@ -41,7 +41,7 @@ export class ActionComponent implements OnInit {
     this.getUserDetails(userCacheData.osid);
   }
 
-  getSupervisorActions() {
+  getManagerActions() {
     this.showLoader = true
     let token = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserToken);
     if (_.isEmpty(token)) {
@@ -54,7 +54,7 @@ export class ActionComponent implements OnInit {
         request: {
           entityType: ["Employee"],
           filters: {
-            supervisor: {
+            manager: {
               eq: this.userDetail.email
             },
             isActive: {
@@ -106,7 +106,7 @@ export class ActionComponent implements OnInit {
     }
     this.dataService.post(requestData).subscribe(response => {
       this.userDetail = response.result.Employee;
-      this.getSupervisorActions();
+      this.getManagerActions();
     }, (err => {
       console.log(err)
     }))
@@ -114,7 +114,7 @@ export class ActionComponent implements OnInit {
 
   navigateToProfilePage(user: any) {
     if (user.data.status === "SUCCESSFUL") {
-      this.getSupervisorActions();
+      this.getManagerActions();
     } else {
       this.router.navigate(['/profile', user.data.osid]);
     }
