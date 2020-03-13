@@ -48,6 +48,18 @@ app.theApp.post("/register/users", (req, res, next) => {
     });
 });
 
+// self registeration api
+app.theApp.post("/register/users/self", (req, res, next) => {
+    createUser(req, function (err, data) {
+        if (err) {
+            res.statusCode = err.statusCode;
+            return res.send(err.body)
+        } else {
+            return res.send(data);
+        }
+    });
+});
+
 //used to onboard all users
 app.theApp.post("/seed/users", (req, res, next) => {
     createUser(req, function (err, data) {
@@ -203,11 +215,9 @@ const getTokenDetails = (req, callback) => {
  * @param {*} callback 
  */
 const addRecordToRegistry = (req, res, callback) => {
-    
     if (res.statusCode == 201) {
         //intially isOnBoarded flag is set false
-        req.body.request[entityType]['isOnboarded'] = false;
-        console.log("registry request", req.body)
+        req.body.request[entityType]['isOnboarded'] = req.body.request[entityType].isOnboarded ? req.body.request[entityType].isOnboarded : false;
         registryService.addRecord(req, function (err, res) {
             if (res.statusCode == 200) {
                 logger.info("record successfully added to registry")
