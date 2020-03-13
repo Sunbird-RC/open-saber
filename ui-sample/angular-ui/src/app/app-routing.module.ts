@@ -72,7 +72,7 @@ var routes = [
   {
     path: 'actions', component: ActionComponent,
     canActivate: [AppAuthGuard],
-    data: { roles: ''}
+    data: { roles: 'actionPageViewRole'}
   }
 ];
 
