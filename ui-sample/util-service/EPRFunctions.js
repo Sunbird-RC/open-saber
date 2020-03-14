@@ -119,9 +119,9 @@ class EPRFunctions extends Functions {
     sendNotificationForSuccessfullyOnboarding(callback) {
         if(this.request.body.request[entityType].isActive) {
             if(this.request.body.request[entityType].orgName == 'EkStep') {
-                this.addToPlaceholders('templateId', "onboardSuccessTemplate");
-            } else {
                 this.addToPlaceholders('templateId', "onboardSuccessTemplateEkstepEmployee");
+            } else {
+                this.addToPlaceholders('templateId', "onboardSuccessTemplate");
             }
             this.addToPlaceholders('subject', "Successfully Onboarded to EkStep")
             let tempParams = this.request.body.request[entityType];
