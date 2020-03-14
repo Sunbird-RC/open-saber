@@ -177,7 +177,7 @@ class EPRFunctions extends Functions {
      * @param {*} callback 
      */
     sendNotificationForManager(callback) {
-        this.addToPlaceholders('subject', "Request to Onboard " + this.request.body.request[entityType].name)
+        this.addToPlaceholders('subject', "[Action Required] Validate reportee " + this.request.body.request[entityType].name)
         this.addToPlaceholders('templateId', "supervisorNotificationTemplate");
         let tempParams = this.request.body.request[entityType];
         tempParams['employeeName'] = this.request.body.request[entityType].name
