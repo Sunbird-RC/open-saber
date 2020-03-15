@@ -62,6 +62,11 @@
           "type": "string",
           "$comment": "Employee name"
         },
+        "kcid": {
+          "$id": "#/properties/name",
+          "type": "string",
+          "$comment": "Employee identity"
+        },
         "email": {
           "$id": "#/properties/email",
           "type": "string",
@@ -141,6 +146,11 @@
           "$id": "#/properties/nineAMreportTo",
           "type": "string",
           "title": "nineAMreportTo"
+        },
+        "manager": {
+          "$id": "#/properties/manager",
+          "type": "string",
+          "title": "manager"
         },
         "subProjectName": {
           "$id": "#/properties/subProjectName",

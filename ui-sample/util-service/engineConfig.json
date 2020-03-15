@@ -22,5 +22,31 @@
         "postActions": [
             "notifyUsersBasedOnAttributes"
         ]
-    }]
+    },
+    {
+        "url": "/offboard/user",
+        "method": "post",
+        "preActions": [],
+        "postActions": [
+            "sendOffboardSuccessNotification"
+        ]
+    },
+    {
+        "url": "/seed/users",
+        "method": "post",
+        "preActions": [],
+        "postActions": [
+            "sendNotificationForSuccessfullyOnboarding"
+        ]
+    },
+    {
+        "url":"/register/users/self",
+        "method":"post",
+        "preActions":[],
+        "postActions":[
+            "sendNotificationForManager",
+            "sendNotificationToSelfRegisteredUser"
+        ]
+    }
+]
 }

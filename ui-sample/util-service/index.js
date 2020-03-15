@@ -38,6 +38,18 @@ app.theApp.get("/keycloak/users/:userId", (req, res, next) => {
 
 // Add any new APIs here.
 app.theApp.post("/register/users", (req, res, next) => {
+    createUser(req, false, function (err, data) {
+        if (err) {
+            res.statusCode = err.statusCode;
+            return res.send(err.body)
+        } else {
+            return res.send(data);
+        }
+    });
+});
+
+// self registeration api
+app.theApp.post("/register/users/self", (req, res, next) => {
     createUser(req, function (err, data) {
         if (err) {
             res.statusCode = err.statusCode;
@@ -47,6 +59,19 @@ app.theApp.post("/register/users", (req, res, next) => {
         }
     });
 });
+
+//used to onboard all users
+app.theApp.post("/seed/users", (req, res, next) => {
+    createUser(req, true, function (err, data) {
+        if (err) {
+            res.statusCode = err.statusCode;
+            return res.send(err.body)
+        } else {
+            return res.send(data);
+        }
+    });
+});
+
 app.theApp.post("/offboard/user", (req, res, next) => {
     offBoardUser(req, function (err, data) {
         if (err) {
@@ -65,7 +90,7 @@ app.theApp.post("/offboard/user", (req, res, next) => {
  * @param {*} callback 
  */
 const offBoardUser = (req, callback) => {
-    async.waterfall([
+    async.series([
         function (callback) {
             //if auth token is not given , this function is used get access token
             getTokenDetails(req, callback);
@@ -79,23 +104,12 @@ const offBoardUser = (req, callback) => {
             }
             readRequest.body["id"] = "open-saber.registry.read";
             registryService.readRecord(readRequest, (err, data) => {
-                if (data && data.params.status=='SUCCESSFUL') {
+                if (data && data.params.status == 'SUCCESSFUL') {
                     callback(null, token, data.result)
-                } else if (data && data.params.status=='UNSUCCESSFUL') {
+                } else if (data && data.params.status == 'UNSUCCESSFUL') {
                     callback(new Error(data.params.errmsg))
                 } else if (err) {
                     callback(new Error(err.message))
-                }
-            })
-        },
-        // To get the keycloak id by passing user email id
-        function (token, result, callback) {
-            keycloakHelper.getUserByEmailId(result[entityType].email, token, (err, data) => {
-                if (data && data.body.length > 0) {
-                    req.params.keyCloakId = data.body[0].id
-                    callback(null, token)
-                } else {
-                    callback(new Error("Unable to get userdetails from keycloak"))
                 }
             })
         },
@@ -128,40 +142,35 @@ const offBoardUser = (req, callback) => {
  * @param {*} req 
  * @param {*} callback 
  */
-const createUser = (req, callback) => {
-
-    
-    var tasks =[ function (callback) {
+const createUser = (req, seedMode, callback) => {
+    var tasks = [function (callback) {
         //if auth token is not given , this function is used get access token
         getTokenDetails(req, callback);
     }]
 
-    //Add to keycloak if user is active
-
     tasks.push(function (token, callback) {
-          
-            req.headers['authorization'] = token;
-            if(req.body.request[entityType].isActive){
+        req.headers['Authorization'] = token;
+        req.body.request[entityType]['emailVerified'] = seedMode
 
-                var keycloakUserReq = {
-                        body: {
-                            request: req.body.request[entityType]
-                        },
-                        headers: req.headers
-                    }
-                    keycloakHelper.registerUserToKeycloak(keycloakUserReq, callback)
-            }else{
-                callback(null, undefined)
-
+        //Add to keycloak if user is active
+        if (req.body.request[entityType].isActive) {
+            var keycloakUserReq = {
+                body: {
+                    request: req.body.request[entityType]
+                },
+                headers: req.headers
             }
-                
-        })
-    
-
-    
+            logger.info("Adding user to KeyCloak. Email verified = " + seedMode)
+            keycloakHelper.registerUserToKeycloak(keycloakUserReq, callback)
+        } else {
+            logger.info("User is not active. Not registering to keycloak")
+            callback(null, undefined)
+        }
+    })
 
     //Add to registry
     tasks.push(function (res, callback2) {
+        logger.info("Got this response from KC registration " + res)
         addRecordToRegistry(req, res, callback2)
     })
 
@@ -209,14 +218,19 @@ const getTokenDetails = (req, callback) => {
  * @param {*} callback 
  */
 const addRecordToRegistry = (req, res, callback) => {
-    
-    if ((req.body.request[entityType].isActive && res.statusCode == 201)||
-                    !req.body.request[entityType].isActive) {
-        //intially isOnBoarded flag is set false
+    // If active, KC registration must be successful.
+    let isActive = req.body.request[entityType].isActive
+    if ((isActive && (res.statusCode == 201 || res.statusCode == 200)) ||
+        !isActive) {
+        let kcid = ""
+        if (isActive) {
+            kcid = res.body.id
+        }
+        
+        req.body.request[entityType]['kcid'] = kcid
         req.body.request[entityType]['isOnboarded'] = req.body.request[entityType].isActive;
-        console.log(req.body)
         registryService.addRecord(req, function (err, res) {
-            if (res.statusCode == 200) {
+            if (res.statusCode == 200 && res.params.status == 'SUCCESSFUL') {
                 logger.info("record successfully added to registry")
                 callback(null, res.body)
             } else {
@@ -278,7 +292,7 @@ const updateKeycloakUserRoles = (token, req, callback) => {
                 headers: req.headers,
                 body: addRoleDetails
             }
-            keycloakHelper.addUserRoleById(req.params.keyCloakId, keycloakUserReq, (err, res) => {
+            keycloakHelper.addUserRoleById(req.body.kcid, keycloakUserReq, (err, res) => {
                 if (res && res.statusCode == 204) {
                     callback2(null, roles)
                 } else {
