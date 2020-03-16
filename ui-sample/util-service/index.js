@@ -50,7 +50,7 @@ app.theApp.post("/register/users", (req, res, next) => {
 
 // self registeration api
 app.theApp.post("/register/users/self", (req, res, next) => {
-    createUser(req, function (err, data) {
+    createUser(req, false, function (err, data) {
         if (err) {
             res.statusCode = err.statusCode;
             return res.send(err.body)
@@ -152,8 +152,6 @@ const createUser = (req, seedMode, callback) => {
         req.headers['Authorization'] = token;
         req.body.request[entityType]['emailVerified'] = seedMode
 
-        //Add to keycloak if user is active
-        if (req.body.request[entityType].isActive) {
             var keycloakUserReq = {
                 body: {
                     request: req.body.request[entityType]
@@ -162,15 +160,11 @@ const createUser = (req, seedMode, callback) => {
             }
             logger.info("Adding user to KeyCloak. Email verified = " + seedMode)
             keycloakHelper.registerUserToKeycloak(keycloakUserReq, callback)
-        } else {
-            logger.info("User is not active. Not registering to keycloak")
-            callback(null, undefined)
-        }
     })
 
     //Add to registry
     tasks.push(function (res, callback2) {
-        logger.info("Got this response from KC registration " + res)
+        logger.info("Got this response from KC registration " + JSON.stringify(res))
         addRecordToRegistry(req, res, callback2)
     })
 
@@ -219,18 +213,11 @@ const getTokenDetails = (req, callback) => {
  */
 const addRecordToRegistry = (req, res, callback) => {
     // If active, KC registration must be successful.
-    let isActive = req.body.request[entityType].isActive
-    if ((isActive && (res.statusCode == 201 || res.statusCode == 200)) ||
-        !isActive) {
-        let kcid = ""
-        if (isActive) {
-            kcid = res.body.id
-        }
-        
-        req.body.request[entityType]['kcid'] = kcid
+    if (res.statusCode == 200) {        
+        req.body.request[entityType]['kcid'] = res.body.id
         req.body.request[entityType]['isOnboarded'] = req.body.request[entityType].isActive;
         registryService.addRecord(req, function (err, res) {
-            if (res.statusCode == 200 && res.params.status == 'SUCCESSFUL') {
+            if (res.statusCode == 200 && res.body.params.status == 'SUCCESSFUL') {
                 logger.info("record successfully added to registry")
                 callback(null, res.body)
             } else {
