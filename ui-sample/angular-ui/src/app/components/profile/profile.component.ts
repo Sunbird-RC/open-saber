@@ -34,7 +34,8 @@ export class ProfileComponent implements OnInit {
   sections = []
   formInputData = {};
   userInfo: string;
-
+  qrCodeUrl = "";
+  
   constructor(dataService: DataService, resourceService: ResourceService, activatedRoute: ActivatedRoute, router: Router, userService: UserService, public cacheService: CacheService
     , permissionService: PermissionService, public toastService: ToasterService) {
     this.dataService = dataService
@@ -143,9 +144,23 @@ export class ProfileComponent implements OnInit {
     this.dataService.post(requestData).subscribe(response => {
       this.formInputData = response.result.Employee;
       this.userInfo = JSON.stringify(response.result.Employee)
+
+      this.getQrCode(response.result.Employee.empCode);
     }, (err => {
       console.log(err)
     }));
+    
+  }
+
+  getQrCode(empCode){
+    const requestData = {     
+      url: "/profile/qrImage",
+      param:{qrCode:empCode}
+    };
+    this.dataService.getImg(requestData).subscribe(response => {
+        this.qrCodeUrl = response;
+       
+    });
   }
 
   validate() {

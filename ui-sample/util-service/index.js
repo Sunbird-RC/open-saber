@@ -12,6 +12,7 @@ const logger = require('./sdk/log4j');
 const vars = require('./sdk/vars').getAllVars(process.env.NODE_ENV);
 const dateFormat = require('dateformat');
 const _ = require('lodash');
+const QRCode = require('qrcode')
 
 var cacheManager = new CacheManager();
 var registryService = new RegistryService();
@@ -84,6 +85,25 @@ app.theApp.post("/offboard/user", (req, res, next) => {
         }
     });
 });
+app.theApp.post("/profile/qrImage", (req, res, next) => {
+    var opts = {
+        errorCorrectionLevel: 'H',
+        type: 'image/jpeg',
+        quality: 0.3,
+        margin: 1,
+        color: {
+          dark:"#113d4d",
+          light:"#cfb648"
+        }
+      }
+      QRCode.toDataURL(req.query.qrCode, opts, function (err, url) {
+        if (err) throw err
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'img/png');
+        return res.end(url);
+    });
+});
+
 /**
  * deletes user in keycloak and update record as inactive to the registry
  * @param {*} req 

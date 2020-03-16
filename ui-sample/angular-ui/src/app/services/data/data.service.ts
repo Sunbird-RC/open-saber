@@ -58,7 +58,14 @@ export class DataService {
         return observableOf(data);
       }));
   }
-
+  getImg(requestParam: any): Observable<any> {
+    const headers = new HttpHeaders().set('Content-Type', 'text/plain; charset=utf-8');
+  
+    return this.http.post(this.baseUrl + requestParam.url, 
+      { qrCode: requestParam.qrCode }, 
+      { headers, responseType: 'text', params:requestParam.param}
+    ).pipe();
+  }
   private getHeader(headers?: any) {
     const default_headers = {
       'Accept': 'application/json',
