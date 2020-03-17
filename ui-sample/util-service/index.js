@@ -153,25 +153,19 @@ const createUser = (req, seedMode, callback) => {
         req.headers['Authorization'] = token;
         req.body.request[entityType]['emailVerified'] = seedMode
 
-            var keycloakUserReq = {
-                body: {
-                    request: req.body.request[entityType]
-                },
-                headers: req.headers
-            }
-            logger.info("Adding user to KeyCloak. Email verified = " + seedMode)
-            keycloakHelper.registerUserToKeycloak(keycloakUserReq, callback)
+        var keycloakUserReq = {
+            body: {
+                request: req.body.request[entityType]
+            },
+            headers: req.headers
+        }
+        logger.info("Adding user to KeyCloak. Email verified = " + seedMode)
+        keycloakHelper.registerUserToKeycloak(keycloakUserReq, callback)
     })
-    //get nextCode
-    tasks.push(function (keycloakRes, callback3) {
-        logger.info("get the next employee code");
-        getNextEmployeeCode(keycloakRes, req.headers, callback3)
-    })
-
     //Add to registry
-    tasks.push(function (res, employeeCode, callback2) {
+    tasks.push(function (res, callback2) {
         logger.info("Got this response from KC registration " + JSON.stringify(res))
-        addRecordToRegistry(req, res, employeeCode, callback2)
+        addEmployeeToRegistry(req, res, callback2);
     })
 
 
@@ -186,12 +180,44 @@ const createUser = (req, seedMode, callback) => {
 }
 
 /**
- * 
+ * gets employee next code
+ * updates employee next code
+ * add records to the registry
+ * @param {*} req 
  * @param {*} keycloakRes 
+ * @param {*} callback 
+ */
+const addEmployeeToRegistry = (req, keycloakRes, callback) => {
+    //if keycloak registration is successfull then add record to the registry
+    if (keycloakRes.statusCode == 200) {
+        async.waterfall([
+            function (callback1) {
+                getNextEmployeeCode(req.headers, callback1)
+            },
+            function (employeeCode, callback3) {
+                updateEmployeeCode(employeeCode, req.headers, callback3);
+            },
+            function (employeeCode, callback2) {
+                addRecordToRegistry(req, keycloakRes, employeeCode, callback2)
+            }
+        ], function (err, data) {
+            if (err) {
+                callback(err, null)
+            } else {
+                callback(null, data);
+            }
+        })
+    } else {
+        callback(keycloakRes, null)
+    }
+}
+
+/**
+ * 
  * @param {*} headers 
  * @param {*} callback 
  */
-const getNextEmployeeCode = (keycloakRes, headers, callback) => {
+const getNextEmployeeCode = (headers, callback) => {
     let employeeCodeReq = {
         body: {
             id: appConfig.APP_ID.SEARCH,
@@ -205,7 +231,7 @@ const getNextEmployeeCode = (keycloakRes, headers, callback) => {
     registryService.searchRecord(employeeCodeReq, function (err, res) {
         if (res.params.status == 'SUCCESSFUL') {
             logger.info("next employee code is ", res.result.EmployeeCode[0])
-            callback(null, keycloakRes, res.result.EmployeeCode[0])
+            callback(null, res.result.EmployeeCode[0])
         } else {
             process.exit()
         }
@@ -239,30 +265,25 @@ const getTokenDetails = (req, callback) => {
 }
 
 /**
- * adds record to the registry
- * @param {objecr} req 
- * @param {*} res 
+ * 
+ * @param {*} req 
+ * @param {*} res keycloak res , for getting kcId
+ * @param {*} employeeCode 
  * @param {*} callback 
  */
 const addRecordToRegistry = (req, res, employeeCode, callback) => {
-    // If active, KC registration must be successful.
-    if (res.statusCode == 200) {        
-        req.body.request[entityType]['kcid'] = res.body.id
-        req.body.request[entityType]['isOnboarded'] = req.body.request[entityType].isActive;
-        req.body.request[entityType]['empCode'] = employeeCode.prefix  + employeeCode.nextCode;
-        registryService.addRecord(req, function (err, res) {
-            if (res.statusCode == 200 && res.body.params.status == 'SUCCESSFUL') {
-                logger.info("record successfully added to registry");
-                updateEmployeeCode(employeeCode, req.headers)
-                callback(null, res.body)
-            } else {
-                logger.debug("record could not be added to registry" + res.statusCode)
-                callback(res.statusCode, res.errorMessage)
-            }
-        })
-    } else {
-        callback(res, null)
-    }
+    req.body.request[entityType]['kcid'] = res.body.id
+    req.body.request[entityType]['isOnboarded'] = req.body.request[entityType].isActive;
+    req.body.request[entityType]['empCode'] = employeeCode.prefix + employeeCode.nextCode;
+    registryService.addRecord(req, function (err, res) {
+        if (res.statusCode == 200 && res.body.params.status == 'SUCCESSFUL') {
+            logger.info("record successfully added to registry");
+            callback(null, res.body)
+        } else {
+            logger.debug("record could not be added to registry" + res.statusCode)
+            callback(res)
+        }
+    })
 }
 
 /**
@@ -270,9 +291,9 @@ const addRecordToRegistry = (req, res, employeeCode, callback) => {
  * @param {*} employeeCode 
  * @param {*} headers 
  */
-const updateEmployeeCode = (employeeCode, headers) => {
+const updateEmployeeCode = (employeeCode, headers, callback) => {
     logger.info("employee code updation started", employeeCode.nextCode)
-   let empCodeUpdateReq = {
+    let empCodeUpdateReq = {
         body: {
             id: appConfig.APP_ID.UPDATE,
             request: {
@@ -285,8 +306,9 @@ const updateEmployeeCode = (employeeCode, headers) => {
         headers: headers
     }
     registryService.updateRecord(empCodeUpdateReq, (err, res) => {
-        if(res.params.status == 'SUCCESSFUL') {
+        if (res.params.status == 'SUCCESSFUL') {
             logger.info("employee code succesfully updated", res)
+            callback(null, employeeCode)
         } else {
             logger.info("employee code updation failed", res)
             process.exit();
