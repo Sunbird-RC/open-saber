@@ -62,6 +62,21 @@
           "type": "string",
           "$comment": "Employee name"
         },
+        "kcid": {
+          "$id": "#/properties/kcid",
+          "type": "string",
+          "$comment": "Employee identity"
+        },
+        "empCode": {
+          "$id": "#/properties/empCode",
+          "type": "string",
+          "$comment": "Employee code"
+        },
+        "photoUrl": {
+          "$id": "#/properties/photoUrl",
+          "type": "string",
+          "$comment": "photo png"
+        },
         "email": {
           "$id": "#/properties/email",
           "type": "string",
@@ -141,6 +156,11 @@
           "$id": "#/properties/nineAMreportTo",
           "type": "string",
           "title": "nineAMreportTo"
+        },
+        "manager": {
+          "$id": "#/properties/manager",
+          "type": "string",
+          "title": "manager"
         },
         "subProjectName": {
           "$id": "#/properties/subProjectName",
@@ -353,10 +373,10 @@
       "uniqueIndexFields: Optional; list of field names used for creating unique index. Field names must be different from index field name",
       "systemFields: Optional; list of fields names used for system standard information like created, updated timestamps and userid"
     ],
-    "privateFields": [],
+    "privateFields": ["email","phone"],
     "signedFields": [],
     "indexFields": [],
-    "uniqueIndexFields": ["(name, orgName, startDate)"],
+    "uniqueIndexFields": ["kcid", "empCode"],
     "systemFields": [
       "osCreatedAt",
       "osUpdatedAt",
