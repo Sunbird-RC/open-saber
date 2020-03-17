@@ -13,6 +13,8 @@ const vars = require('./sdk/vars').getAllVars(process.env.NODE_ENV);
 const dateFormat = require('dateformat');
 const _ = require('lodash');
 const appConfig = require('./sdk/appConfig');
+const QRCode = require('qrcode');
+const Jimp = require('jimp');
 
 var cacheManager = new CacheManager();
 var registryService = new RegistryService();
@@ -87,20 +89,37 @@ app.theApp.post("/offboard/user", (req, res, next) => {
 });
 app.theApp.post("/profile/qrImage", (req, res, next) => {
     var opts = {
-        errorCorrectionLevel: 'H',
+        errorCorrectionLevel: 'M',
         type: 'image/jpeg',
         quality: 0.3,
-        margin: 1,
+        margin: 6,
         color: {
-          dark:"#113d4d",
+          dark:"#000000",
           light:"#cfb648"
         }
       }
       QRCode.toDataURL(req.query.qrCode, opts, function (err, url) {
         if (err) throw err
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'img/png');
-        return res.end(url);
+
+        if(url.indexOf('base64') != -1) {
+            var buffer = Buffer.from(url.replace(/^data:image\/png;base64,/, ""), 'base64');
+            Jimp.read(buffer, (err, image) => {
+            if (err) throw err;
+            else {
+                Jimp.loadFont(Jimp.FONT_SANS_16_BLACK).then(function(font) {
+                    image.print(font, 95, 225, req.query.empCode);
+                    image.getBase64(Jimp.MIME_PNG, (err, img) => {
+                        res.statusCode = 200;
+                        res.setHeader('Content-Type', 'img/png');
+                        return res.end(img);
+                    });
+                });
+            }
+            });
+            } else {
+            // handle as Buffer, etc..
+            }
+        
     });
 });
 
