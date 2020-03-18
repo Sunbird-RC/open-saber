@@ -191,14 +191,19 @@ const createUser = (req, seedMode, callback) => {
         req.headers['Authorization'] = token;
         req.body.request[entityType]['emailVerified'] = seedMode
 
-        var keycloakUserReq = {
-            body: {
-                request: req.body.request[entityType]
-            },
-            headers: req.headers
+        if (req.body.request[entityType].isActive) {	
+                var keycloakUserReq = {
+                body: {
+                    request: req.body.request[entityType]
+                },
+                headers: req.headers
+            }
+            logger.info("Adding user to KeyCloak. Email verified = " + seedMode)
+            keycloakHelper.registerUserToKeycloak(keycloakUserReq, callback)
+        }else{
+            logger.info("User is not active. Not registering to keycloak")	
+            callback(null, undefined)
         }
-        logger.info("Adding user to KeyCloak. Email verified = " + seedMode)
-        keycloakHelper.registerUserToKeycloak(keycloakUserReq, callback)
     })
     //Add to registry
     tasks.push(function (res, callback2) {
@@ -227,7 +232,8 @@ const createUser = (req, seedMode, callback) => {
  */
 const addEmployeeToRegistry = (req, keycloakRes, callback) => {
     //if keycloak registration is successfull then add record to the registry
-    if (keycloakRes.statusCode == 200) {
+    let isActive = req.body.request[entityType].isActive
+    if ((isActive && keycloakRes.statusCode == 200)|| !isActive) {
         async.waterfall([
             function (callback1) {
                 getNextEmployeeCode(req.headers, callback1)
@@ -310,8 +316,12 @@ const getTokenDetails = (req, callback) => {
  * @param {*} callback 
  */
 const addRecordToRegistry = (req, res, employeeCode, callback) => {
-    req.body.request[entityType]['kcid'] = res.body.id
-    req.body.request[entityType]['isOnboarded'] = req.body.request[entityType].isActive;
+    
+    let isActive = req.body.request[entityType].isActive
+    if(isActive){
+        req.body.request[entityType]['kcid'] = res.body.id
+    }
+    req.body.request[entityType]['isOnboarded'] = isActive;
     req.body.request[entityType]['empCode'] = employeeCode.prefix + employeeCode.nextCode;
     registryService.addRecord(req, function (err, res) {
         if (res.statusCode == 200 && res.body.params.status == 'SUCCESSFUL') {
