@@ -237,8 +237,6 @@ const createUser = (req, seedMode, callback) => {
         //if keycloak registration is successfull then add record to the registry
         logger.info("Got this response from KC registration " + JSON.stringify(keycloakRes))
         let isActive = req.body.request[entityType].isActive
-        
-       
         if ((isActive && keycloakRes.statusCode == 200) || !isActive) {
             if(isActive ){
                 req.body.request[entityType]['kcid'] = keycloakRes.body.id
