@@ -255,7 +255,6 @@ const createUser = (req, seedMode, callback) => {
  * updates employee next code
  * add records to the registry
  * @param {*} req 
- * @param {*} keycloakRes 
  * @param {*} callback 
  */
 const addEmployeeToRegistry = (req, callback) => {
@@ -333,7 +332,6 @@ const getTokenDetails = (req, callback) => {
 /**
  * 
  * @param {*} req 
- * @param {*} res keycloak res , for getting kcId
  * @param {*} employeeCode 
  * @param {*} callback 
  */
