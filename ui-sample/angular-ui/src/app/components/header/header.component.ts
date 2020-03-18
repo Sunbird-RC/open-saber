@@ -55,7 +55,6 @@ export class HeaderComponent implements OnInit {
   public keyCloakUserDetails: any;
   private userId: string;
   private userAuthenticated: any;
-  private userIsActive: any;
   private userData: any;
   constructor(public router: Router, public activatedRoute: ActivatedRoute, resourceService: ResourceService, userService: UserService
     , permissionService: PermissionService, keycloakAngular: KeycloakService, private cacheService: CacheService, private _cacheService: CacheService,
