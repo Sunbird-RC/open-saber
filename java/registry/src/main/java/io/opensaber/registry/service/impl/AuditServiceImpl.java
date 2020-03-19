@@ -123,7 +123,7 @@ public class AuditServiceImpl implements IAuditService {
     	
     	AuditRecord auditRecord = new AuditRecord();    	 
     	//Transaction id is null incase of elastic read service
-        auditRecord.setUserId(userId).setAction(auditAction)
+        auditRecord.setUserId(userId==null?"":userId).setAction(auditAction)
                 .setTransactionId(transactionId).setRecordId(id).
                 setAuditId(UUID.randomUUID().toString()).setTimestamp(String.valueOf(DateUtil.getTimeStampLong()));
         
