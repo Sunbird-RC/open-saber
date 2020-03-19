@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -124,7 +125,7 @@ public class AuditServiceImpl implements IAuditService {
     	AuditRecord auditRecord = new AuditRecord();    	 
     	//Transaction id is null incase of elastic read service
         auditRecord.setUserId(userId==null?"":userId).setAction(auditAction)
-                .setTransactionId(transactionId).setRecordId(id).
+                .setTransactionId(transactionId==null?new LinkedList<>():transactionId).setRecordId(id).
                 setAuditId(UUID.randomUUID().toString()).setTimestamp(String.valueOf(DateUtil.getTimeStampLong()));
         
         return auditRecord;
