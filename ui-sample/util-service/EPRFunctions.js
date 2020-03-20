@@ -104,7 +104,7 @@ class EPRFunctions extends Functions {
         this.addToPlaceholders('templateId', "requestOnboardTemplate");
         let tempParams = this.request.body.request[entityType];
         tempParams['employeeName'] = this.request.body.request[entityType].name
-        tempParams['empRecord'] = vars.appUrl + "/profile/" + JSON.parse(this.response).result[entityType].osid
+        tempParams['empRecord'] = vars.appUrl
         this.addToPlaceholders('templateParams', tempParams);
         let actions = ['getAdminUsers', 'sendNotifications'];
         this.invoke(actions, (err, data) => {
@@ -126,7 +126,7 @@ class EPRFunctions extends Functions {
             this.addToPlaceholders('subject', "Successfully Onboarded to EkStep")
             let tempParams = this.request.body.request[entityType];
             tempParams['employeeName'] = this.request.body.request[entityType].name
-            tempParams['eprURL'] = vars.appUrl + "/profile/" + JSON.parse(this.response).result[entityType].osid
+            tempParams['eprURL'] = vars.appUrl
             this.addToPlaceholders('templateParams', tempParams);
             this.addToPlaceholders('emailIds', [this.request.body.request[entityType].email])
             let actions = ['sendNotifications'];

@@ -88,38 +88,39 @@ app.theApp.post("/offboard/user", (req, res, next) => {
     });
 });
 app.theApp.post("/profile/qrImage", (req, res, next) => {
+    console.log("qrcode req", req.body)
     var opts = {
         errorCorrectionLevel: 'M',
         type: 'image/jpeg',
         quality: 0.3,
         margin: 6,
         color: {
-          dark:"#000000",
-          light:"#cfb648"
+            dark: "#000000",
+            light: "#ffffff"
         }
-      }
-      QRCode.toDataURL(req.query.qrCode, opts, function (err, url) {
+    }
+    QRCode.toDataURL(JSON.stringify(req.body.request), opts, function (err, url) {
         if (err) throw err
 
-        if(url.indexOf('base64') != -1) {
+        if (url.indexOf('base64') != -1) {
             var buffer = Buffer.from(url.replace(/^data:image\/png;base64,/, ""), 'base64');
             Jimp.read(buffer, (err, image) => {
-            if (err) throw err;
-            else {
-                Jimp.loadFont(Jimp.FONT_SANS_16_BLACK).then(function(font) {
-                    image.print(font, 95, 225, req.query.empCode);
-                    image.getBase64(Jimp.MIME_PNG, (err, img) => {
-                        res.statusCode = 200;
-                        res.setHeader('Content-Type', 'img/png');
-                        return res.end(img);
+                if (err) throw err;
+                else {
+                    Jimp.loadFont(Jimp.FONT_SANS_16_BLACK).then(function (font) {
+                        image.print(font, 95, 230, req.body.request.empCode);
+                        image.getBase64(Jimp.MIME_PNG, (err, img) => {
+                            res.statusCode = 200;
+                            res.setHeader('Content-Type', 'img/png');
+                            return res.end(img);
+                        });
                     });
-                });
-            }
+                }
             });
-            } else {
+        } else {
             // handle as Buffer, etc..
-            }
-        
+        }
+
     });
 });
 
@@ -218,8 +219,8 @@ const createUser = (req, seedMode, callback) => {
         req.headers['Authorization'] = token;
         req.body.request[entityType]['emailVerified'] = seedMode
 
-        if (req.body.request[entityType].isActive) {	
-                var keycloakUserReq = {
+        if (req.body.request[entityType].isActive) {
+            var keycloakUserReq = {
                 body: {
                     request: req.body.request[entityType]
                 },
@@ -227,8 +228,8 @@ const createUser = (req, seedMode, callback) => {
             }
             logger.info("Adding user to KeyCloak. Email verified = " + seedMode)
             keycloakHelper.registerUserToKeycloak(keycloakUserReq, callback)
-        }else{
-            logger.info("User is not active. Not registering to keycloak")	
+        } else {
+            logger.info("User is not active. Not registering to keycloak")
             callback(null, undefined)
         }
     })
@@ -238,7 +239,7 @@ const createUser = (req, seedMode, callback) => {
         logger.info("Got this response from KC registration " + JSON.stringify(keycloakRes))
         let isActive = req.body.request[entityType].isActive
         if ((isActive && keycloakRes.statusCode == 200) || !isActive) {
-            if(isActive ){
+            if (isActive) {
                 req.body.request[entityType]['kcid'] = keycloakRes.body.id
             }
 
@@ -307,7 +308,7 @@ const getNextEmployeeCode = (headers, callback) => {
             logger.info("next employee code is ", res.result.EmployeeCode[0])
             callback(null, res.result.EmployeeCode[0])
         } else {
-            callback(new Error("can't get any empcode"), null)
+            callback({ body: { errMsg: "can't get any empcode" }, statusCode: 500 }, null)
         }
     })
 }
@@ -383,7 +384,7 @@ const updateEmployeeCode = (employeeCode, headers, callback) => {
             callback(null, employeeCode)
         } else {
             logger.info("employee code updation failed", res)
-            callback(new Error("employee code update failed"), null)
+            callback({ body: { errMsg: "employee code update failed" }, statusCode: 500 }, null)
         }
     });
 }

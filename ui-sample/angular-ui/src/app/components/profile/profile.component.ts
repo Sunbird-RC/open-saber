@@ -36,7 +36,7 @@ export class ProfileComponent implements OnInit {
   formInputData = {};
   userInfo: string;
   qrCodeUrl = "";
-  
+
   constructor(dataService: DataService, resourceService: ResourceService, activatedRoute: ActivatedRoute, router: Router, userService: UserService, public cacheService: CacheService
     , permissionService: PermissionService, public toastService: ToasterService) {
     this.dataService = dataService
@@ -146,40 +146,41 @@ export class ProfileComponent implements OnInit {
     this.dataService.post(requestData).subscribe(response => {
       this.formInputData = response.result.Employee;
       this.userInfo = JSON.stringify(response.result.Employee)
-      var jsonStr = "{"+
-      "\"name\": \""+response.result.Employee.name+"\","+
-      "\"profile\": \""+window.location.protocol+"//"+window.location.hostname+"/users/"+response.result.Employee.osid+"\","+
-      "\"photoUrl\": \""+response.result.Employee.photoUrl+"\","+
-      "\"empCode\": \""+response.result.Employee.empCode+"\""+
-      "}";
-      this.getQrCode(response.result.Employee.empCode,jsonStr);
+      var qrcodeReq = {
+        name: response.result.Employee.name,
+        profile: window.location.protocol + window.location.hostname + "/users/" + response.result.Employee.osid,
+        photoUrl: response.result.Employee.photoUrl,
+        empCode: response.result.Employee.empCode,
+        isActive: response.result.Employee.isActive
+      };
+      this.getQrCode(qrcodeReq);
     }, (err => {
       console.log(err)
     }));
-    
+
   }
 
-  getQrCode(empCode,jsonStr){
-    const requestData = {     
+  getQrCode(qrcodeReq) {
+    const requestData = {
       url: "/profile/qrImage",
-      param:{empCode :empCode,
-        qrCode :jsonStr}
+      body: {
+        request: qrcodeReq
+      }
     };
 
     this.dataService.getImg(requestData).subscribe(response => {
-     
-    this.qrCodeUrl = response;
+      this.qrCodeUrl = response;
     });
   }
 
-  downloadQrImage(){
+  downloadQrImage() {
     this.dataService.getImage(this.qrCodeUrl).subscribe(
       (res) => {
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(res);
-            a.download = "QrCodeImage";
-            document.body.appendChild(a);
-            a.click();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(res);
+        a.download = "QrCodeImage";
+        document.body.appendChild(a);
+        a.click();
       });
   }
 
