@@ -16,10 +16,18 @@ public interface IAuditService {
      *
      * 
      */
-    public void doAudit(AuditRecord auditRecord, JsonNode mergedNode, List<String> entityTypes, String entityRootId, Shard shard);
-    public void auditToFile(AuditRecord auditRecord) throws JsonProcessingException;
+	boolean shouldAudit(String entityType);
+	void doAudit(AuditRecord auditRecord, JsonNode mergedNode, List<String> entityTypes, String entityRootId, Shard shard);
+    void auditToFile(AuditRecord auditRecord) throws JsonProcessingException;
 	AuditRecord createAuditRecord(String userId, String auditAction, String id, List<Integer> transactionId)
 			throws JsonProcessingException;
 	List<AuditInfo> createAuditInfo(String operation, String auditAction, JsonNode readNode, JsonNode mergedNode,
 			List<String> entityTypes) throws JsonProcessingException;
+
+	default String getAuditDefinitionName(String entityType, String auditSuffixSeparator, String auditSuffix) {
+		if (null != entityType && !(entityType.contains(auditSuffixSeparator + auditSuffix))) {
+			entityType = entityType + auditSuffixSeparator + auditSuffix;
+		}
+		return entityType;
+	}
 }

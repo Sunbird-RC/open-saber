@@ -384,7 +384,7 @@
     "privateFields": ["email","phone"],
     "signedFields": [],
     "indexFields": [],
-    "uniqueIndexFields": ["kcid", "empCode"],
+    "uniqueIndexFields": ["(name, orgName, startDate)", "kcid", "empCode"],
     "systemFields": [
       "osCreatedAt",
       "osUpdatedAt",

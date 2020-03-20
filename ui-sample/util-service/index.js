@@ -189,7 +189,6 @@ const selfRegisterUser = (req, callback) => {
         },
         function (token, callback2) {
             req.headers['authorization'] = token;
-            req.body.request[entityType]['emailVerified'] = false
             addEmployeeToRegistry(req, callback2);
         }
     ], function (err, result) {
