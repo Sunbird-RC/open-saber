@@ -1,5 +1,6 @@
 package io.opensaber.registry.service.impl;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -193,8 +194,9 @@ public class AuditServiceImpl implements IAuditService {
 		
 		//Fetching auditInfo and creating json string
 		JsonNode auditInfo = jsonN.path("auditInfo");
-		String json = objectMapper.writeValueAsString(auditInfo);
-		
+		ObjectMapper objectMapper = new ObjectMapper();
+		String json = objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL).writeValueAsString(auditInfo);
+
 		//Removing auditIfo json node from audit record 
 		((ObjectNode)jsonN).remove("auditInfo");
 		
