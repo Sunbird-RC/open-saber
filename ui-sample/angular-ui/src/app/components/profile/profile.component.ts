@@ -62,6 +62,7 @@ export class ProfileComponent implements OnInit {
 
   getFormTemplate() {
     var requestData = {}
+    // this.viewProfileRole will be defined only for owner.
     if (this.viewProfileRole) {
       requestData = {
         url: appConfig.URLS.OWNER_FORM_TEMPLATE + "/" + this.viewProfileRole

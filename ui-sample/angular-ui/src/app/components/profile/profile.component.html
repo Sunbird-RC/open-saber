@@ -37,7 +37,7 @@
       <button class="ui secondary basic button" *ngIf="viewProfileRole =='owner'" (click)="navigateToDashBoardPage()">
         {{resourceService?.frmelmnts?.btn?.viewHistory}}
       </button>
-      <button class="ui primary basic button" *ngIf="!formInputData.isActive && !formInputData.isOnboarded && formInputData.manager" (click)="validate()">
+      <button class="ui primary basic button" *ngIf="viewProfileRole != 'owner' && !formInputData.isActive && !formInputData.isOnboarded && formInputData.manager" (click)="validate()">
         {{resourceService?.frmelmnts?.btn?.Validate}}
       </button>
       <button class="ui grey basic button" *ngIf="!viewProfileRole" (click)="navigateToHomePage()">
