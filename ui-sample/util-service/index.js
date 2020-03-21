@@ -320,18 +320,12 @@ const getNextEmployeeCode = (headers, callback) => {
  */
 const getTokenDetails = (req, callback) => {
     if (!req.headers.authorization) {
-        cacheManager.get('usertoken', function (err, tokenData) {
-            if (err || !tokenData) {
-                keycloakHelper.getToken(function (err, token) {
-                    if (token) {
-                        cacheManager.set({ key: 'usertoken', value: { authToken: token } }, function (err, res) { });
-                        callback(null, 'Bearer ' + token.access_token.token);
-                    } else {
-                        callback(err);
-                    }
-                });
+        keycloakHelper.getToken(function (err, token) {
+            if (token) {
+                callback(null, 'Bearer ' + token.access_token.token);
             } else {
-                callback(null, 'Bearer ' + tokenData.authToken.access_token.token);
+                logger.info("error in generater token", err)
+                callback(err);
             }
         });
     } else {

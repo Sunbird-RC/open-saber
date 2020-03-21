@@ -148,7 +148,7 @@ export class ProfileComponent implements OnInit {
       this.userInfo = JSON.stringify(response.result.Employee)
       var qrcodeReq = {
         name: response.result.Employee.name,
-        profile: window.location.protocol + window.location.hostname + "/users/" + response.result.Employee.osid,
+        profile: window.location.protocol + "//" + window.location.hostname + "/users/" + response.result.Employee.osid,
         photoUrl: response.result.Employee.photoUrl,
         empCode: response.result.Employee.empCode,
         isActive: response.result.Employee.isActive
