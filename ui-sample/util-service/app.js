@@ -67,7 +67,11 @@ app.post("/registry/search", (req, res, next) => {
 
 app.post("/registry/read", (req, res, next) => {
     if (!_.isEmpty(req.headers.authorization)) {
-        req.body.request.viewTemplateId = getViewtemplate(req.headers.authorization);
+        const token = req.headers.authorization.replace('Bearer ', '');
+        var decoded = jwt.decode(token);
+        if (req.body.request.kcid && (req.body.request.kcid == decoded.sub)) {
+            req.body.request.viewTemplateId = getViewtemplate(req.headers.authorization);
+        }
     }
     registryService.readRecord(req, function (err, data) {
         return res.send(data);

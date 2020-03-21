@@ -9,6 +9,7 @@ import { UserService } from '../../services/user/user.service';
 import _ from 'lodash-es';
 import { PermissionService } from 'src/app/services/permission/permission.service';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
+import * as jwt_decode from 'jwt-decode';
 
 
 @Component({
@@ -142,6 +143,10 @@ export class ProfileComponent implements OnInit {
         }
       },
       url: appConfig.URLS.READ,
+    }
+    if(this.viewProfileRole == 'owner') {
+      var decodedUserData = jwt_decode(token);
+      requestData.data.request['kcid'] = decodedUserData.sub
     }
     this.dataService.post(requestData).subscribe(response => {
       this.formInputData = response.result.Employee;
