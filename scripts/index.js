@@ -13,7 +13,7 @@ var csvjson = require('csvjson');
 var _ = require('lodash');
 
 var invoke_add = function (nIter, payload, callback) {
-    var addSuffix = "register/users"
+    var addSuffix = "seed/users"
     var url = baseUrl + "/" + addSuffix
     var headerVars = {
         "Content-Type": "application/json",
@@ -32,7 +32,7 @@ var invoke_add = function (nIter, payload, callback) {
             body: payload,
             headers: headerVars
         }, function (err, response, body) {
-            //console.log("This is the api response " + JSON.stringify(body))
+            console.log("This is the api response " + JSON.stringify(body))
             var apiResponse = JSON.parse(body)
             if (err) {
                 console.error(err)
@@ -282,7 +282,7 @@ var dataEntities = {}
 
 function populateData(cb) {
     var data_tasks = [];
-    var dataCSV = csvToJson('data_ek.csv')
+    var dataCSV = csvToJson('data.csv')
     populate_add_tasks(data_tasks, entityType, addApiPayload, dataCSV)
     console.log("Total number of data records = " + data_tasks.length)
     execute_tasks(data_tasks, "data.json", cb)
