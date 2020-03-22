@@ -89,19 +89,19 @@
                                                 </div>
                                                 <div class="ui divider mt-0"></div>
                                                 <a class="item" [class.active]="router.isActive('/search')"
-                                                        *ngIf='permissionService.permissionAvailable' appPermission
+                                                        *ngIf='permissionService.permissionAvailable  && userData.isActive' appPermission
                                                         [permission]="userDirectoryViewRole" (click)="showSideBar()"
                                                         [routerLink]="'/search'">
                                                         {{resourceService?.frmelmnts?.btn?.search}}
                                                 </a>
                                                 <a class="item" [class.active]="router.isActive('/actions')"
-                                                *ngIf='permissionService.permissionAvailable' appPermission
+                                                *ngIf='permissionService.permissionAvailable  && userData.isActive' appPermission
                                                 [permission]="userDirectoryViewRole"
                                                 [routerLink]="['/actions']" tabindex="0">
                                                 {{resourceService?.frmelmnts?.btn?.Actions}}
                                                 </a>
                                                 <a class="item" [class.active]="router.isActive('create')" (click)="showSideBar()"
-                                                        *ngIf='permissionService.permissionAvailable' appPermission
+                                                        *ngIf='permissionService.permissionAvailable  && userData.isActive' appPermission
                                                         [permission]="onBoardEmployee" [routerLink]="'/create'" tabindex="0">
                                                         {{resourceService?.frmelmnts?.btn?.onBoard}}
                                                 </a>
