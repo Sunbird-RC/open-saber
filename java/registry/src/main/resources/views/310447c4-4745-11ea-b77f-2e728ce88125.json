@@ -12,6 +12,12 @@
       "name": "orgName"
     },
     {
+      "name": "email"
+    },
+    {
+      "name": "phone"
+    },
+    {
       "name": "role"
     },
     {

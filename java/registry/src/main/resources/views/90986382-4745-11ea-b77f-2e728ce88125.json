@@ -24,7 +24,21 @@
     },
     {
       "name": "workLocation"
+    },
+    {
+      "name": "startDate"
+    },
+    {
+      "name": "endDate"
+    },
+    {
+      "name": "repoAccess"
+    },
+    {
+      "name": "slackAccess"
+    },
+    {
+      "name": "macAddress"
     }
-
   ]
 }
