@@ -181,7 +181,7 @@ class EPRFunctions extends Functions {
         this.addToPlaceholders('templateId', "supervisorNotificationTemplate");
         let tempParams = this.request.body.request[entityType];
         tempParams['employeeName'] = this.request.body.request[entityType].name
-        tempParams['empRecord'] = vars.appUrl + "/actions"
+        tempParams['empRecord'] = vars.appUrl
         this.addToPlaceholders('templateParams', tempParams);
         this.addToPlaceholders('emailIds', [this.request.body.request[entityType].manager])
         let actions = ['sendNotifications'];

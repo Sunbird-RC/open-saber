@@ -207,6 +207,10 @@ export class AdminPageComponent implements OnInit, OnDestroy {
     let filters = _.pickBy(this.queryParams, (value: Array<string> | string) => value && value.length);
     filters = _.omit(filters, ['key', 'sort_by', 'sortType', 'appliedFilters']);
     option.data.request.filters = this.getFilterObject(filters);
+    // Apply onboarded filter.
+    option.data.request.filters['isOnboarded'] = {
+      'eq': true
+    };
     if (!this.queryParams.key) {
       option.data.request['offset'] = offset;
       option.data.request['limit'] = this.paginationDetails.limit;
