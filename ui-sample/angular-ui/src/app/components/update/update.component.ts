@@ -71,6 +71,9 @@ export class UpdateComponent implements OnInit {
       },
       url: appConfig.URLS.READ,
     }
+    if (this.viewProfileRole) {
+      requestData.url = appConfig.URLS.READ + "/" + this.viewProfileRole
+    } 
     this.dataService.post(requestData).subscribe(response => {
       this.formInputData = response.result.Employee;
       this.userInfo = JSON.stringify(response.result.Employee)

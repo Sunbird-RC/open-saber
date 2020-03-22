@@ -66,9 +66,14 @@ app.post("/registry/search", (req, res, next) => {
 });
 
 app.post("/registry/read", (req, res, next) => {
-    if (!_.isEmpty(req.headers.authorization)) {
-        req.body.request.viewTemplateId = getViewtemplate(req.headers.authorization);
-    }
+    registryService.readRecord(req, function (err, data) {
+        return res.send(data);
+    })
+});
+
+app.post("/registry/read/:role", (req, res, next) => {
+    //role based view templates are added
+    req.body.request.viewTemplateId = templateConfig.searchTemplates[req.params.role]
     registryService.readRecord(req, function (err, data) {
         return res.send(data);
     })

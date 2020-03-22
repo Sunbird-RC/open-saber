@@ -130,7 +130,7 @@ export class ProfileComponent implements OnInit {
     if (_.isEmpty(token)) {
       token = this.userService.getUserToken;
     }
-    const requestData = {
+    var requestData = {
       header: { Authorization: token },
       data: {
         id: appConfig.API_ID.READ,
@@ -143,12 +143,15 @@ export class ProfileComponent implements OnInit {
       },
       url: appConfig.URLS.READ,
     }
+    if (this.viewProfileRole) {
+      requestData.url = appConfig.URLS.READ + "/" + this.viewProfileRole
+    } 
     this.dataService.post(requestData).subscribe(response => {
       this.formInputData = response.result.Employee;
       this.userInfo = JSON.stringify(response.result.Employee)
       var qrcodeReq = {
         name: response.result.Employee.name,
-        profile: window.location.protocol + window.location.hostname + "/users/" + response.result.Employee.osid,
+        profile: window.location.protocol + "//" + window.location.hostname + "/users/" + response.result.Employee.osid,
         photoUrl: response.result.Employee.photoUrl,
         empCode: response.result.Employee.empCode,
         isActive: response.result.Employee.isActive
