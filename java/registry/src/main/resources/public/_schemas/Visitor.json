@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "Visitor": {
+      "$ref": "#/definitions/Visitor"
+    }
+  },
+  "required": [
+    "Visitor"
+  ],
+  "title":"Visitor",
+
+  "definitions": {
+    "Visitor": {
+      "$id": "#/properties/visitor",
+      "type": "object",
+      "title": "The visitor Schema",
+      "required": [
+        "name",
+        "code"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        
+        "code": {
+          "$id": "#/properties/visitorCode",
+          "type": "string"
+        },
+        "name": {
+          "$id": "#/properties/name",
+          "type": "string",
+          "title": "Full name"
+        }
+      }
+    }
+  },
+    "_osConfig": {
+   "indexFields": ["code"],
+     "uniqueIndexFields": ["code"],
+     "systemFields": ["osCreatedAt", "osUpdatedAt"]
+  }
+}

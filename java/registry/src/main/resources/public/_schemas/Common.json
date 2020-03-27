@@ -156,6 +156,13 @@
         "YesNoCode-YES",
         "YesNoCode-NO"
       ]
+    },
+     "UserRole": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user"
+      ]
     }
   }
 }
