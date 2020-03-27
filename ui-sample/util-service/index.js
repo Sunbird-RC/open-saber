@@ -182,6 +182,7 @@ const offBoardUser = (req, callback) => {
  * @param {*} callback 
  */
 const selfRegisterUser = (req, callback) => {
+    logger.info("Self-registering " + JSON.stringify(req.body))
     async.waterfall([
         function (callback) {
             getTokenDetails(req, callback);
@@ -303,11 +304,11 @@ const getNextEmployeeCode = (headers, callback) => {
         headers: headers
     }
     registryService.searchRecord(employeeCodeReq, function (err, res) {
-        if (res.params.status == 'SUCCESSFUL') {
+        if (res != undefined && res.params.status == 'SUCCESSFUL') {
             logger.info("next employee code is ", res.result.EmployeeCode[0])
             callback(null, res.result.EmployeeCode[0])
         } else {
-            process.exit()
+            callback(new Error("can't get any empcode"), null)
         }
     })
 }
@@ -383,7 +384,7 @@ const updateEmployeeCode = (employeeCode, headers, callback) => {
             callback(null, employeeCode)
         } else {
             logger.info("employee code updation failed", res)
-            process.exit();
+            callback(new Error("employee code update failed"), null)
         }
     });
 }
