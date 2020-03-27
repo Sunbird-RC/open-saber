@@ -9,7 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Component;
 import org.sunbird.akka.core.ActorCache;
 import org.sunbird.akka.core.MessageProtos;
 import org.sunbird.akka.core.Router;
@@ -23,13 +24,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opensaber.actors.factory.MessageFactory;
 import io.opensaber.pojos.AuditInfo;
 import io.opensaber.pojos.AuditRecord;
-import io.opensaber.registry.exception.AuditFailedException;
 import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.service.IAuditService;
 import io.opensaber.registry.sink.shard.Shard;
-import io.opensaber.registry.util.AuditDBWriter;
-import io.opensaber.registry.util.AuditFileWriter;
 import io.opensaber.registry.util.Definition;
 import io.opensaber.registry.util.DefinitionsManager;
 import io.opensaber.registry.util.OSSystemFieldsHelper;
@@ -37,7 +35,9 @@ import io.opensaber.registry.util.OSSystemFieldsHelper;
 /**
  * Audit service implementation for audit layer in the application
  */
-public abstract class AuditServiceImpl implements IAuditService {
+@Component
+@Primary
+public class AuditServiceImpl implements IAuditService {
 
     private static Logger logger = LoggerFactory.getLogger(AuditServiceImpl.class);
     @Autowired
@@ -60,6 +60,9 @@ public abstract class AuditServiceImpl implements IAuditService {
     
     @Autowired
     private OSSystemFieldsHelper systemFieldsHelper;
+    
+    @Autowired
+    private AuditProviderFactory auditProviderFactory;
 
     @Value("${search.providerName}")
     private String searchProvider;
@@ -103,7 +106,7 @@ public abstract class AuditServiceImpl implements IAuditService {
 
     @Override
     public void doAudit(AuditRecord auditRecord, JsonNode inputNode, Shard shard) {
-    	new AuditProviderFactory().getAuditService(auditFrameStore).doAudit(auditRecord, inputNode, shard);
+    	auditProviderFactory.getAuditService(auditFrameStore).doAudit(auditRecord, inputNode, shard);
     }
     
     public void sendAuditToActor(AuditRecord auditRecord, JsonNode inputNode, String entityType) throws JsonProcessingException{
@@ -118,7 +121,7 @@ public abstract class AuditServiceImpl implements IAuditService {
         ActorCache.instance().get(Router.ROUTER_NAME).tell(message, null);
     }
 
-    public ObjectNode convertAuditRecordToJson(AuditRecord auditRecord, String entityType) throws IOException {
+    public JsonNode convertAuditRecordToJson(AuditRecord auditRecord, String entityType) throws IOException {
     	JsonNode jsonN = JSONUtil.convertObjectJsonNode(auditRecord);
 
         //Fetching auditInfo and creating json string
@@ -132,13 +135,21 @@ public abstract class AuditServiceImpl implements IAuditService {
         // Adding auditInfo with json string to audit record
         ((ObjectNode) jsonN).put("auditInfo", json);
 
-
+        //Creating root node with vertex label
+  		//by appending the entity name with _Audit
+  		String vertexLabel = entityType;
+  		if( null != entityType && !(entityType.contains(auditSuffixSeparator+auditSuffix))) {
+  			vertexLabel = vertexLabel+auditSuffixSeparator+auditSuffix;
+  		}
+  		
         ObjectNode root = JsonNodeFactory.instance.objectNode();
-        root.set(entityType, jsonN);
-
-    	systemFieldsHelper.ensureCreateAuditFields(entityType, root.get(entityType), auditRecord.getUserId());
-    	
-        return root;        
+        root.set(vertexLabel, jsonN);
+        
+        JsonNode rootNode  =  root;
+        
+    	systemFieldsHelper.ensureCreateAuditFields(vertexLabel, rootNode.get(vertexLabel), auditRecord.getUserId());
+	
+    	return rootNode;        
     }
     
     @Override
@@ -164,5 +175,10 @@ public abstract class AuditServiceImpl implements IAuditService {
     	}
         return auditItemDetails;
     }
+	@Override
+	public String getAuditProvider() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }
