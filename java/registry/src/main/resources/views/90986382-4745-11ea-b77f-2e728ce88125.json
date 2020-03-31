@@ -15,12 +15,10 @@
       "title": "isActive"
     },
     {
-      "name": "role",
-      "title": "Role"
+      "name": "role"
     },
     {
-      "name": "isInKronos",
-      "title": "Is In Kronous"
+      "name": "isInKronos"
     },
     {
       "name": "workLocation"
@@ -39,6 +37,9 @@
     },
     {
       "name": "macAddress"
+    },
+    {
+      "name": "osid"
     }
   ]
 }
