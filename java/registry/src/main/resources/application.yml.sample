@@ -225,7 +225,7 @@ auditTaskExecutor:
 elastic:
   search:
     # elastic-search can be enable and disable through this flag
-    enabled: ${elastic_search_enabled:true}
+    enabled: ${elastic_search_enabled:false}
     # elastic-search connection info
     connection_url: ${elastic_search_connection_url:localhost:9200}
 
@@ -291,7 +291,7 @@ decryption:
     uri: https://dev.sunbirded.org/encryption/decrypt/obj
 
 signature:
-  enabled: ${signature_enabled:true}
+  enabled: ${signature_enabled:false}
   healthCheckURL: ${sign_health_check_url:https://dev.sunbirded.org/encryption/}
   signURL: ${sign_url:https://dev.sunbirded.org/encryption/sign}
   verifyURL: ${verify_url:https://dev.sunbirded.org/encryption/verify}
@@ -316,7 +316,7 @@ audit:
     suffixSeparator: ${audit_suffixSeparator:_}
    
 authentication:
-  enabled: true
+  enabled: false
 
 keycloak:
   sso:
@@ -373,6 +373,6 @@ auditTaskExecutor:
 elastic:
   search:
     # elastic-search can be enable and disable through this flag
-    enabled: ${elastic_search_enabled:true}
+    enabled: ${elastic_search_enabled:false}
     # elastic-search connection info
     connection_url: ${elastic_search_connection_url:localhost:9200}
