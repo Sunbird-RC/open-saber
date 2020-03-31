@@ -139,7 +139,7 @@ decryption:
     uri: ${decryption_batch_uri:http://localhost:8013/decrypt/obj}
 
 signature:
-  enabled: ${signature_enabled:true}
+  enabled: ${signature_enabled:false}
   healthCheckURL: ${sign_health_check_url:http://localhost:8013/}
   signURL: ${sign_url:http://localhost:8013/sign}
   verifyURL: ${verify_url:http://localhost:8013/verify}
@@ -155,7 +155,7 @@ signature:
 # suffix : specifies the suffix given for schema. If audit schema name is Teacher_Audit.json, the suffix is Audit.
 # suffixSeperator : specifies the separator used between entity name and suffix. If audit schema name is Teacher_Audit.json, the suffixSeperator is _.
 audit:
-  enabled: ${audit_enabled:true}
+  enabled: ${audit_enabled:false}
   frame:
     file: ${audit_frame_file:raw_audit_schema.json}
     store: ${audit_frame_store:DATABASE}
@@ -164,7 +164,11 @@ audit:
     suffixSeparator: ${audit_suffixSeparator:_}
 
 authentication:
-  enabled: ${authentication_enabled:true}
+  enabled: ${authentication_enabled:false}
+  publicKey: ${authentication_publickey:MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjUE34DHpGinxqKx8zQrlfztlVWlyiiq16eU+/JMUNKaNhfsUYa8xM8W22CmfyQfm4+aliIuKdr7BD9Sp9AJJGXvawzWce1+gXV7LfuGepHUV/tWGqaIi4ZeUYJmmXoPCVtulsdt6UO+ENd3cs18o0z4IgfDulT/fvlKR2SgAy3cJEb0dM/fBD3oCa3uE3e2wU2OdevT7KcCqDcSs+bFfIW1taZ9rWdG59mNISRVrKHaqaGH8LVQhMo9v7gccUlWKDeiavASzoV8r2vlwKKw84K3k8BT3lx2uaEc/Zr8kLTZaHW+NKX8GLjwzqm077cTdgKgqWyIilZblYGPWCAy5xwIDAQAB}
+  realm: ${authentication_realm:PartnerRegistry}
+  url:  ${authentication_url:http://localhost:8081/auth/}
+  
 
 keycloak:
   sso:
