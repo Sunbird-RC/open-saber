@@ -127,7 +127,7 @@ frame:
   file: ${frame_file:frame.json}
 
 encryption:
-  enabled: ${encryption_enabled:true}
+  enabled: ${encryption_enabled:false}
   base: ${encryption_base:http://localhost:8013}
   uri: ${encryption_uri:http://localhost:8013/encrypt}
   batch:
@@ -279,7 +279,7 @@ frame:
   file: frame.json
 
 encryption:
-  enabled: true
+  enabled: false
   base: https://dev.sunbirded.org/encryption/
   uri: https://dev.sunbirded.org/encryption/encrypt
   batch:
