@@ -182,6 +182,8 @@ const getTemplateName = (roles, templateName) => {
         highestRole = templateConfig.roles.reporter
     } else if (_.includes(roles, templateConfig.roles.owner)) {
         highestRole = templateConfig.roles.owner
+    } else if (_.includes(roles, templateConfig.roles.security)) {
+        highestRole = templateConfig.roles.security
     }
     logger.debug("Returning with highestRole = " + highestRole)
     return templateConfig[templateName][highestRole]
