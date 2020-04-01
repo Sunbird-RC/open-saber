@@ -1,0 +1,24 @@
+{
+  "subject": "Security Search Template",
+  "fields": [
+    {
+      "name": "name",
+      "display": true
+    },
+    {
+      "name": "osid"
+    },
+    {
+      "name": "orgName"
+    },
+    {
+      "name": "isActive"
+    },
+    {
+      "name":"empCode"
+    },
+    {
+      "name": "photoUrl"
+    }
+  ]
+}
