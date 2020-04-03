@@ -19,7 +19,7 @@
       New Member
     </div>
     <div class="description">
-      {{data.role}}
+      {{data.role | titlecase}}
     </div>
   </div>
   <div class="extra content">
@@ -28,14 +28,14 @@
         {{resourceService?.frmelmnts?.btn?.viewProfile}}</div>
       <div class="ui basic grey button" *ngIf="data?.isActive && permissionService.permissionAvailable" appPermission
         [permission]="approveEmployee" (click)="declineConfirmModal(data?.identifier, data?.name); $event.stopPropagation()">
-        {{resourceService?.frmelmnts?.btn?.decline}}
+        {{resourceService?.frmelmnts?.btn?.Deboard}}
       </div>
     </div>
   </div>
 </div>
 
 <ng-template let-context let-modal="modal" #modalTemplate>
-  <div class="header"> {{resourceService?.frmelmnts?.btn?.approve}}</div>
+  <div class="header"> {{resourceService?.frmelmnts?.btn?.Deboard}}</div>
   <div class="content">
     <p>{{ context.data }}</p>
   </div>

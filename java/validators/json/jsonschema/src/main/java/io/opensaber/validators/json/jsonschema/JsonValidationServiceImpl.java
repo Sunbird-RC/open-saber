@@ -17,6 +17,13 @@ public class JsonValidationServiceImpl implements IValidate {
 
 	private Map<String, Schema> entitySchemaMap = new HashMap<>();
 	private Map<String, String> definitionMap = new HashMap<>();;
+	private long port = 8080;
+
+	public JsonValidationServiceImpl() {}
+
+	public void setPort(long port) {
+		this.port = port;
+	}
 
 	private Schema getEntitySchema(String entityType) throws MiddlewareHaltException {
 
@@ -28,8 +35,9 @@ public class JsonValidationServiceImpl implements IValidate {
 				String definitionContent = definitionMap.get(entityType);
                 JSONObject rawSchema = new JSONObject(definitionContent);
 
+                String scopeUrl = String.format("http://localhost:%d/_schemas/", port);
 				SchemaLoader schemaLoader = SchemaLoader.builder().schemaJson(rawSchema).draftV7Support()
-						.resolutionScope("http://localhost:9180/_schemas/").build();
+						.resolutionScope(scopeUrl).build();
 				schema = schemaLoader.load().build();
 				entitySchemaMap.put(entityType, schema);
 			} catch (Exception ioe) {

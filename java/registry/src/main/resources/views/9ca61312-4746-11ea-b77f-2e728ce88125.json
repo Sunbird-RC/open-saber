@@ -9,7 +9,16 @@
       "name": "osid"
     },
     {
-      "name": "orgName"
+      "name": "email"
+    },
+    {
+      "name": "phone"
+    },
+    {
+      "name": "macAddress"
+    },
+    {
+      "name": "githubId"
     },
     {
       "name": "role"
@@ -18,46 +27,16 @@
       "name": "isActive"
     },
     {
-      "name": "isOnboarded"
-    },
-    {
-      "name": "isInKronos"
-    },
-    {
-      "name": "nineAMreportTo"
-    },
-    {
-      "name": "projectName"
-    },
-    {
-      "name": "subProjectName"
-    },
-    {
       "name": "startDate"
     },
     {
       "name": "endDate"
     },
     {
-      "name": "repoAccess"
+      "name": "code"
     },
     {
-      "name": "slackAccess"
-    },
-    {
-      "name": "workLocation"
-    },
-    {
-      "name": "remarks"
-    },
-    {
-      "name": "workingStyle"
-    },
-    {
-      "name": "externalId"
-    },
-    {
-      "name": "externalRole"
+      "name": "clientInfo"
     }
   ]
 }

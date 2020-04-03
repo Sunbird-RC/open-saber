@@ -27,10 +27,10 @@ class NERFunctions extends Functions {
         });
     }
 
-     /**
-     * gets user email ids from keycloak where user role = admin
-     * @param {*} callback 
-     */
+    /**
+    * gets user email ids from keycloak where user role = admin
+    * @param {*} callback
+    */
     getPartnerAdminUsers(callback) {
         this.getUsersByRole('partner-admin', (err, data) => {
             this.addEmailToPlaceHolder(data, callback);
@@ -88,14 +88,14 @@ class NERFunctions extends Functions {
     getRegistryUsersInfo(callback) {
         let tempParams = {}
         this.getUserByid((err, data) => {
-            if (data) {
+            if (data && data.result) {
                 tempParams = data.result[entityType];
                 tempParams['employeeName'] = data.result[entityType].name
                 tempParams['niitURL'] = vars.appUrl
                 this.addToPlaceholders('templateParams', tempParams)
-                this._placeholders.emailIds
-                
                 callback()
+            } else {
+                callback(data, null)
             }
         })
     }
@@ -145,6 +145,23 @@ class NERFunctions extends Functions {
         });
     }
 
+
+    /**
+     * notify the user who are offboarded form the Ekstep 
+     * notify to admins, reporters, 
+     * @param {*} callback 
+     */
+    sendOffboardSuccessNotification(callback) {
+        this.addToPlaceholders('subject', "Successfully Offboarded")
+        this.addToPlaceholders('templateId', "NEROffboardingSuccessEmployeeTemplate");
+        let actions = ['getRegistryUsersInfo',
+            'getAdminUsers', 'sendNotifications',
+            'getReporterUsers', 'sendNotifications'];
+        this.invoke(actions, (err, data) => {
+            callback(null, data)
+        });
+    }
+
     /**
      * This method is inovoked to send notiifcations whenever Employee record is updated(for eg attributes like macAddress ,
      * githubId and isOnBoarded are updated)
@@ -154,6 +171,7 @@ class NERFunctions extends Functions {
         let attributesUpdated = _.keys(this.request.body.request[entityType]);//get the list of updated attributes from the req
         let count = 0
         async.forEachSeries(this.notifyAttributes, (param, callback2) => {
+            count++
             if (_.includes(attributesUpdated, param)) {
                 let params = {
                     paramName: param,
@@ -199,12 +217,17 @@ class NERFunctions extends Functions {
                     callback(null, data)
                 });
                 break;
-            case 'isOnboarded':
-                actions = ['getRegistryUsersMailId', 'sendNotifications'];
-                this.addToPlaceholders('templateId', "onboardSuccessTemplate");
-                this.invoke(actions, (err, data) => {
-                    callback(null, data)
-                });
+            case 'isActive':
+                if (this.request.body.request[entityType][attribute]) {
+                    actions = ['getRegistryUsersMailId', 'sendNotifications'];
+                    this.addToPlaceholders('subject', "Successfully Onboarded to NIIT");
+                    this.addToPlaceholders('templateId', "onboardSuccessTemplate");
+                    this.invoke(actions, (err, data) => {
+                        callback(null, data)
+                    });
+                } else {
+                    callback(null, "employee deboarded")
+                }
                 break;
         }
     }

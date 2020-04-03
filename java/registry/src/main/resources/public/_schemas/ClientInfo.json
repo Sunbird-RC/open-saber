@@ -29,14 +29,20 @@
           "$comment": "Client name"
         },
         "startDate": {
-          "$id": "#/properties/startDate",
           "type": "string",
-          "$comment": "startDate"
+          "format": "date",
+          "$comment": "YYYY-MM-DD format",
+          "examples": [
+            "1990-12-01"
+          ]
         },
         "endDate": {
-          "$id": "#/properties/endDate",
           "type": "string",
-          "$comment": "endDate"
+          "format": "date",
+          "$comment": "YYYY-MM-DD format",
+          "examples": [
+            "1990-12-01"
+          ]
         }
       },
       "_osConfig": {

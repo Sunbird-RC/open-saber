@@ -26,7 +26,8 @@
                 "search": "User Directory",
                 "yes": "Yes",
                 "no":"No",
-                "viewHistory": "View History"
+                "viewHistory": "View History",
+                "Deboard":"Deboard"
             },
             "label": {
                 "filters": "Filters",

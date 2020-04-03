@@ -85,12 +85,11 @@ export class CardComponent implements OnInit {
         id: appConfig.API_ID.UPDATE,
         request: {
           Employee: {
-            osid: userId,
-            isActive: false
+            osid: userId
           }
         }
       },
-      url: appConfig.URLS.UPDATE
+      url: "/offboard/user"
     };
     this.dataService.post(requestData).subscribe(response => {
       if (response.params.status === "SUCCESSFUL") {

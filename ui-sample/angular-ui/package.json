@@ -28,6 +28,8 @@
     "bootstrap": "^4.3.1",
     "core-js": "^2.5.4",
     "font-awesome": "^4.7.0",
+    "file-saver": "^2.0.2",
+    "json2csv": "^4.5.4",
     "jquery": "^3.3.1",
     "keycloak-angular": "^6.1.0",
     "keycloak-js": "^6.0.1",

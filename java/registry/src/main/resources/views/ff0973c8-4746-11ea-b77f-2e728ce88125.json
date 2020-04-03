@@ -7,20 +7,13 @@
       "display": true
     },
     {
-      "name": "orgName",
-      "title": "Organization"
+      "name": "orgName"
     },
     {
-      "name": "isActive",
-      "title": "isApproved"
+      "name": "isActive"
     },
     {
-      "name": "role",
-      "title": "Role"
-    },
-    {
-      "name": "isInKronos",
-      "title": "Is In Kronous"
+      "name": "role"
     }
   ]
 }

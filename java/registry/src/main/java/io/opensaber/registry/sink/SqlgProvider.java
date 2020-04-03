@@ -17,6 +17,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 public class SqlgProvider extends DatabaseProvider {
 
@@ -100,7 +101,20 @@ public class SqlgProvider extends DatabaseProvider {
         VertexLabel vertexLabel = getVertex(graph, label);
         for (String propertyName : propertyNames) {
             List<PropertyColumn> properties = new ArrayList<>();
-            properties.add(vertexLabel.getProperty(propertyName).get());
+            if (propertyName.contains(",")) {
+                // Create a composite key
+                StringTokenizer st1 = new StringTokenizer(propertyName, ",");
+                while (st1.hasMoreTokens()) {
+                    String oneProperty = st1.nextToken().replaceAll("[\\(\\)]", "").trim();
+                    try {
+                        properties.add(vertexLabel.getProperty(oneProperty).get());
+                    } catch (Exception e) {
+                        logger.error("Column {} could not be found. Not creating index", oneProperty);
+                    }
+                }
+            } else {
+                properties.add(vertexLabel.getProperty(propertyName).get());
+            }
             ensureIndex(vertexLabel, indexType, properties);
         }
     }

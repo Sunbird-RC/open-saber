@@ -1,20 +1,30 @@
 {
     "version": "1.0.0",
-    "rules": [{
-        "url": "/register/users",
-        "method": "post",
-        "postActions": [
-            "sendOnboardSuccessNotificationToEmployee",
-            "sendNewEmployeeOnboardSuccessNoteToAdmin"
-        ]
-    },
-    {
-        "url": "/registry/update",
-        "method": "post",
-        "preActions": [],
-        "postActions": [
-            "notifyUsersBasedOnAttributes",
-            "updateRecordOfClientRegistry"
-        ]
-    }]
+    "rules": [
+        {
+            "url": "/register/users",
+            "method": "post",
+            "postActions": [
+                "sendOnboardSuccessNotificationToEmployee",
+                "sendNewEmployeeOnboardSuccessNoteToAdmin"
+            ]
+        },
+        {
+            "url": "/registry/update",
+            "method": "post",
+            "preActions": [],
+            "postActions": [
+                "notifyUsersBasedOnAttributes",
+                "updateRecordOfClientRegistry"
+            ]
+        },
+        {
+            "url": "/offboard/user",
+            "method": "post",
+            "preActions": [],
+            "postActions": [
+                "sendOffboardSuccessNotification"
+            ]
+        }
+    ]
 }

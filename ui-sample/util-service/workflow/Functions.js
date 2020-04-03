@@ -101,18 +101,11 @@ class Functions {
      * @param {*} callback 
      */
     getTokenDetails(callback) {
-        cacheManager.get('usertoken', function (err, tokenData) {
-            if (err || !tokenData) {
-                keycloakHelper.getToken(function (err, token) {
-                    if (token) {
-                        cacheManager.set({ key: 'usertoken', value: { authToken: token } }, function (err, res) { });
-                        callback(null, token);
-                    } else {
-                        callback(err);
-                    }
-                });
+        keycloakHelper.getToken(function (err, token) {
+            if (token) {
+                callback(null, token);
             } else {
-                callback(null, tokenData.authToken);
+                callback(err);
             }
         });
     }

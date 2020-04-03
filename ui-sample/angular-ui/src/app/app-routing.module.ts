@@ -36,7 +36,7 @@ var routes = [
   {
       path: 'profile/:userId/:role', component: ProfileComponent,
       canActivate: [AppAuthGuard],
-      data: { roles: 'profilePageViewRole' }
+      data: { roles: 'profilePageView' }
   },
   {
     path: 'login', component: LoginComponent,
