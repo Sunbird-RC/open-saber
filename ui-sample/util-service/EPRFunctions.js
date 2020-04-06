@@ -70,7 +70,7 @@ class EPRFunctions extends Functions {
         this.request.body.request['viewTemplateId'] = "6245495a-4745-11ea-b77f-2e728ce88125.json"
         let tempParams = {}
         this.getUserByid((err, data) => {
-            if (data) {
+            if (data && data.result) {
                 tempParams = data.result[entityType];
                 tempParams['employeeName'] = data.result[entityType].name
                 tempParams['eprURL'] = vars.appUrl
@@ -81,6 +81,8 @@ class EPRFunctions extends Functions {
                 }
                 this.addToPlaceholders('templateParams', tempParams)
                 this.addEmailToPlaceHolder([data.result[entityType]], callback);
+            } else {
+                callback(data)
             }
         })
     }
@@ -217,12 +219,14 @@ class EPRFunctions extends Functions {
     getRegistryUsersInfo(callback) {
         let tempParams = {}
         this.getUserByid((err, data) => {
-            if (data) {
+            if (data && data.result) {
                 tempParams = data.result[entityType];
                 tempParams['employeeName'] = data.result[entityType].name
                 tempParams['eprURL'] = vars.appUrl
                 this.addToPlaceholders('templateParams', tempParams)
                 callback()
+            } else {
+                callback(data)
             }
         })
     }

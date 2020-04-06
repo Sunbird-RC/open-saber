@@ -110,7 +110,11 @@ export class AdminPageComponent implements OnInit, OnDestroy {
   }
 
   navigateToProfilePage(user: any) {
-    this.router.navigate(['/profile', user.data.identifier]);
+    if (user.data.status === "SUCCESSFUL") {
+      this.fetchEmployees(this.paginationDetails.currentOffset)
+    } else {
+      this.router.navigate(['/profile', user.data.identifier]);
+    }
   }
 
   changeView() {

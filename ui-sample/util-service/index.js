@@ -130,7 +130,7 @@ app.theApp.post("/profile/qrImage", (req, res, next) => {
  * @param {*} callback 
  */
 const offBoardUser = (req, callback) => {
-    async.series([
+    async.waterfall([
         function (callback) {
             //if auth token is not given , this function is used get access token
             getTokenDetails(req, callback);
@@ -145,7 +145,7 @@ const offBoardUser = (req, callback) => {
             readRequest.body["id"] = "open-saber.registry.read";
             registryService.readRecord(readRequest, (err, data) => {
                 if (data && data.params.status == 'SUCCESSFUL') {
-                    callback(null, token, data.result)
+                    callback(null, token, data.result[entityType].kcid)
                 } else if (data && data.params.status == 'UNSUCCESSFUL') {
                     callback(new Error(data.params.errmsg))
                 } else if (err) {
@@ -154,8 +154,8 @@ const offBoardUser = (req, callback) => {
             })
         },
         // To update 'x-owner' role to the user
-        function (token, callback2) {
-            updateKeycloakUserRoles(token, req, (err, data) => {
+        function (token, kcid, callback2) {
+            updateKeycloakUserRoles(token, req, kcid, (err, data) => {
                 if (data) {
                     callback2(null, data)
                 } else if (err) {
@@ -412,7 +412,7 @@ const offBoardUserFromRegistry = (req, res, callback) => {
  * @param {*} res 
  * @param {*} callback 
  */
-const updateKeycloakUserRoles = (token, req, callback) => {
+const updateKeycloakUserRoles = (token, req, kcid, callback) => {
     async.waterfall([
         //To get all roles with ids from keycloak
         function (callback) {
@@ -432,7 +432,7 @@ const updateKeycloakUserRoles = (token, req, callback) => {
                 headers: req.headers,
                 body: addRoleDetails
             }
-            keycloakHelper.addUserRoleById(req.body.kcid, keycloakUserReq, (err, res) => {
+            keycloakHelper.addUserRoleById(kcid, keycloakUserReq, (err, res) => {
                 if (res && res.statusCode == 204) {
                     callback2(null, roles)
                 } else {
@@ -447,7 +447,7 @@ const updateKeycloakUserRoles = (token, req, callback) => {
                 headers: req.headers,
                 body: deleteRoleDetails
             }
-            keycloakHelper.deleteUserRoleById(req.params.keyCloakId, keycloakUserReq, (err, res) => {
+            keycloakHelper.deleteUserRoleById(kcid, keycloakUserReq, (err, res) => {
                 if (res && res.statusCode == 204) {
                     callback(null, res)
                 } else {
