@@ -4,7 +4,7 @@
 import { KeycloakConfig } from 'keycloak-angular';
 
 let keycloakConfiguration: KeycloakConfig = {
-  url: 'http://localhost:8443/auth',
+  url: 'http://localhost:8080/auth',
   realm: 'NIITRegistry',
   clientId: 'portal'
 };

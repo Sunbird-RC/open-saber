@@ -8,6 +8,7 @@ import { CacheService } from 'ng2-cache-service';
 import { DataService } from 'src/app/services/data/data.service';
 import appConfig from '../../services/app.config.json';
 import { ToasterService } from 'src/app/services/toaster/toaster.service';
+import _ from 'lodash-es'
 
 
 
@@ -54,6 +55,7 @@ export class HeaderComponent implements OnInit {
   public keyCloakUserDetails: any;
   private userId: string;
   private userAuthenticated: any;
+  private userData: any;
   constructor(public router: Router, public activatedRoute: ActivatedRoute, resourceService: ResourceService, userService: UserService
     , permissionService: PermissionService, keycloakAngular: KeycloakService, private cacheService: CacheService, private _cacheService: CacheService,
     dataService: DataService, public toasterService: ToasterService) {
@@ -69,6 +71,9 @@ export class HeaderComponent implements OnInit {
     this.onBoardEmployee = appConfig.rolesMapping.onboardEmployee;
     this.resourceService.getResource();
     this.userAuthenticated = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserAuthenticated);
+    if (this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.EmployeeDetails)) {
+      this.userData = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.EmployeeDetails)
+    }
     if (this.userAuthenticated) {
       this.userLogin = this.userAuthenticated.status;
       this.userName = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserKeyCloakData).given_name;
@@ -104,7 +109,8 @@ export class HeaderComponent implements OnInit {
     this.cacheService.set(appConfig.cacheServiceConfig.cacheVariables.UserKeyCloakData, userDetails, { maxAge: appConfig.cacheServiceConfig.setTimeInMinutes * appConfig.cacheServiceConfig.setTimeInSeconds });
     this.cacheService.set(appConfig.cacheServiceConfig.cacheVariables.UserAuthenticated, { status: true }, { maxAge: appConfig.cacheServiceConfig.setTimeInMinutes * appConfig.cacheServiceConfig.setTimeInSeconds });
     if (this.userLogin) {
-      this.readUserDetails(this.keycloakAngular.getKeycloakInstance().profile.email, userToken)
+      // The subject is the keycloak user id
+      this.readUserDetails(userDetails.sub, userDetails.realm_access.roles, userToken)
     }
 
   }
@@ -119,7 +125,7 @@ export class HeaderComponent implements OnInit {
     this.router.navigate(['/profile', this.userId, 'owner'])
   }
 
-  readUserDetails(data: String, token ){
+  readUserDetails(userdata: String, roles, token) {
     const requestData = {
       header: { Authorization: token },
       data: {
@@ -127,7 +133,7 @@ export class HeaderComponent implements OnInit {
         request: {
           entityType: ["Employee"],
           filters: {
-            email: { eq: data }
+            kcid: { eq: userdata }
           }
         }
       },
@@ -136,11 +142,21 @@ export class HeaderComponent implements OnInit {
     this.dataService.post(requestData).subscribe(response => {
       this.cacheService.set(appConfig.cacheServiceConfig.cacheVariables.EmployeeDetails, response.result.Employee[0], { maxAge: appConfig.cacheServiceConfig.setTimeInMinutes * appConfig.cacheServiceConfig.setTimeInSeconds });
       this.userId = response.result.Employee[0].osid;
-      this.router.navigate(['/profile', this.userId, 'owner'])
+      this.userData = response.result.Employee[0];
+      if (_.includes(roles, 'x-owner')) {
+        console.log("hey")
+        this.router.navigate(['/profile', this.userId, 'x-owner'])
+      } else {
+        this.router.navigate(['/profile', this.userId, 'owner'])
+      }
     }, (err => {
       this.toasterService.error(this.resourceService.frmelmnts.msg.errorMsg);
       console.log(err)
     }))
+  }
+
+  getAuditReport() {
+    this.router.navigate(['/dashboard'])
   }
 
 }

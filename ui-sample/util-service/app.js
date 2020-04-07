@@ -57,12 +57,24 @@ app.post("/registry/add", (req, res, next) => {
 });
 
 app.post("/registry/search", (req, res, next) => {
+    if (!_.isEmpty(req.headers.authorization)) {
+        req.body.request.viewTemplateId = getViewtemplate(req.headers.authorization);
+    }
+    console.log(getViewtemplate(req.headers.authorization))
     registryService.searchRecord(req, function (err, data) {
         return res.send(data);
     })
 });
 
 app.post("/registry/read", (req, res, next) => {
+    registryService.readRecord(req, function (err, data) {
+        return res.send(data);
+    })
+});
+
+app.post("/registry/read/:role", (req, res, next) => {
+    //role based view templates are added
+    req.body.request.viewTemplateId = templateConfig.searchTemplates[req.params.role]
     registryService.readRecord(req, function (err, data) {
         return res.send(data);
     })
@@ -122,8 +134,8 @@ app.get("/formTemplates", (req, res, next) => {
     })
 });
 
-app.get("/owner/formTemplate", (req, res, next) => {
-    readFormTemplate(templateConfig.formTemplates.owner, function (err, data) {
+app.get("/formTemplate/:role", (req, res, next) => {
+    readFormTemplate(templateConfig.formTemplates[req.params.role], function (err, data) {
         if (err) {
             res.statusCode = 404;
             return res.send(err);

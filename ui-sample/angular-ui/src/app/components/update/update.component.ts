@@ -28,7 +28,7 @@ export class UpdateComponent implements OnInit {
   activatedRoute: ActivatedRoute;
   userService: UserService;
   public showLoader = true;
-  viewOwnerProfile: string;
+  viewProfileRole: string;
   categories: any = {};
   sections = []
   formInputData = {}
@@ -48,10 +48,10 @@ export class UpdateComponent implements OnInit {
   ngOnInit() {
     this.activatedRoute.params.subscribe((params) => {
       this.userId = params.userId;
-      this.viewOwnerProfile = params.role;
+      this.viewProfileRole = params.role;
     });
     this.userToken = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserToken);
-    if (_.isEmpty(this.userToken )) {
+    if (_.isEmpty(this.userToken)) {
       this.userToken = this.userService.getUserToken;
     }
     this.getUserDetails();
@@ -70,7 +70,16 @@ export class UpdateComponent implements OnInit {
       },
       url: appConfig.URLS.READ,
     }
+    if (this.viewProfileRole) {
+      requestData.url = appConfig.URLS.READ + "/" + this.viewProfileRole
+    }
     this.dataService.post(requestData).subscribe(response => {
+      if (response && !response.result.Employee.clientInfo)
+        response.result.Employee.clientInfo = {
+          name: "",
+          endDate: "",
+          startDate: ""
+        }
       this.formInputData = response.result.Employee;
       this.getFormTemplate();
       this.userInfo = JSON.stringify(response.result.Employee)
@@ -81,8 +90,8 @@ export class UpdateComponent implements OnInit {
 
   getFormTemplate() {
     var requestData = {};
-    if (this.viewOwnerProfile === 'owner') {
-      requestData = { url: appConfig.URLS.OWNER_FORM_TEMPLATE }
+    if (this.viewProfileRole === 'owner') {
+      requestData = { url: appConfig.URLS.OWNER_FORM_TEMPLATE + "/" + this.viewProfileRole }
     } else {
       requestData = {
         url: appConfig.URLS.FORM_TEPLATE,
@@ -114,8 +123,14 @@ export class UpdateComponent implements OnInit {
     const userData = JSON.parse(this.userInfo);
     //get only updated fields
     const diffObj = Object.keys(this.formData.formInputData).filter(i => this.formData.formInputData[i] !== userData[i]);
+    let clientDiff = []
+    if (diffObj.includes("clientInfo")) {
+      clientDiff = Object.keys(this.formData.formInputData.clientInfo).filter(i => this.formData.formInputData.clientInfo[i] !== userData.clientInfo[i]);
+      if (clientDiff.length === 0) {
+        _.pull(diffObj, "clientInfo")
+      }
+    }
     const updatedFields = {}
-    let emptyFields = [];
     if (diffObj.length > 0) {
       _.map(diffObj, (value) => {
         updatedFields[value] = this.formData.formInputData[value];
@@ -123,22 +138,22 @@ export class UpdateComponent implements OnInit {
       updatedFields['osid'] = this.userId;
     }
     if (Object.keys(updatedFields).length > 0) {
-      _.map(this.formFieldProperties, field => {
-        if (field.required) {
-          if (!this.formData.formInputData[field.code]) {
-            let findObj = _.find(this.formFieldProperties, { code: field.code });
-            emptyFields.push(findObj.label);
-          }
-        }
-      });
-      if (emptyFields.length === 0) {
-        this.updateInfo(updatedFields);
-      }
-      else {
-        this.toasterService.warning("Profile updation failed please provide required fields " + emptyFields.join(', '));
-      }
+      this.updateInfo(updatedFields);
     }
   }
+
+  changes(object, base) {
+    return _.transform(object, function (result, value, key) {
+      if (!_.isEqual(value, base[key])) {
+        result[key] = (_.isObject(value) && _.isObject(base[key])) ? this.changes(value, base[key]) : value;
+      }
+    });
+  }
+  difference(object, base) {
+    return this.changes(object, base);
+
+  }
+
 
   updateInfo(updatedFieldValues) {
     const requestData = {
@@ -162,8 +177,8 @@ export class UpdateComponent implements OnInit {
   }
 
   navigateToProfilePage() {
-    if (this.viewOwnerProfile) {
-      this.router.navigate(['/profile', this.userId, this.viewOwnerProfile]);
+    if (this.viewProfileRole) {
+      this.router.navigate(['/profile', this.userId, this.viewProfileRole]);
     }
     else {
       this.router.navigate(['/profile', this.userId]);

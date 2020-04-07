@@ -6,6 +6,7 @@ import { CacheService } from 'ng2-cache-service';
 import _ from 'lodash-es'
 import { UserService } from 'src/app/services/user/user.service.js';
 
+
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
@@ -59,9 +60,11 @@ export class DashboardComponent implements OnInit {
     }
     this.dataService.post(requestData).subscribe(response => {
       this.auditInfo = response.result.Employee_Audit;
+      this.auditInfo.sort((record1, record2) => {
+        return + new Date(record2.osUpdatedAt) - + new Date(record1.osUpdatedAt);
+      });
     }, (err => {
       console.log(err)
     }))
   }
-
 }

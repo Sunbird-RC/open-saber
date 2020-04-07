@@ -27,13 +27,14 @@ export class ProfileComponent implements OnInit {
   userService: UserService;
   public formFieldProperties: any;
   public showLoader = true;
-  public viewOwnerProfile: string;
+  public viewProfileRole: string;
   public editProfile: Array<string>;
   enable: boolean = false;
   categories: any = {};
   sections = []
   formInputData = {};
   userInfo: string;
+  qrCodeUrl = "";
 
   constructor(dataService: DataService, resourceService: ResourceService, activatedRoute: ActivatedRoute, router: Router, userService: UserService, public cacheService: CacheService
     , permissionService: PermissionService, public toastService: ToasterService) {
@@ -49,9 +50,9 @@ export class ProfileComponent implements OnInit {
     this.editProfile = appConfig.rolesMapping.editProfileRole;
     this.activatedRoute.params.subscribe((params) => {
       this.userId = params.userId;
-      this.viewOwnerProfile = params.role
+      this.viewProfileRole = params.role
     });
-    if (_.isEmpty(this.viewOwnerProfile) && this.viewOwnerProfile == undefined) {
+    if (_.isEmpty(this.viewProfileRole) && this.viewProfileRole == undefined) {
       this.enable = true;
     }
     this.getUserDetails();
@@ -59,9 +60,10 @@ export class ProfileComponent implements OnInit {
 
   getFormTemplate() {
     var requestData = {}
-    if (this.viewOwnerProfile === 'owner') {
+    // this.viewProfileRole will be defined only for owner.
+    if (this.viewProfileRole) {
       requestData = {
-        url: appConfig.URLS.OWNER_FORM_TEMPLATE
+        url: appConfig.URLS.OWNER_FORM_TEMPLATE + "/" + this.viewProfileRole
       }
     } else {
       let token = this.cacheService.get(appConfig.cacheServiceConfig.cacheVariables.UserToken);
@@ -79,13 +81,17 @@ export class ProfileComponent implements OnInit {
       if (res.responseCode === 'OK') {
         this.formFieldProperties = res.result.formTemplate.data.fields;
         this.categories = res.result.formTemplate.data.categories;
-        this.disableEditMode()
+        this.disableEditMode(this.formFieldProperties)
+        this.getCategory()
       }
     });
   }
 
-  disableEditMode() {
-    _.map(this.formFieldProperties, field => {
+  disableEditMode(fields) {
+    _.map(fields, field => {
+      if (field.inputType === 'object') {
+        this.disableEditMode(field.attributes)
+      }
       if (field.hasOwnProperty('editable')) {
         field['editable'] = false;
         field['required'] = false;
@@ -94,7 +100,6 @@ export class ProfileComponent implements OnInit {
       }
     });
     this.showLoader = false;
-    this.getCategory()
   }
 
   getCategory() {
@@ -106,8 +111,8 @@ export class ProfileComponent implements OnInit {
     });
   }
   navigateToEditPage() {
-    if (this.viewOwnerProfile) {
-      this.router.navigate(['/edit', this.userId, this.viewOwnerProfile]);
+    if (this.viewProfileRole) {
+      this.router.navigate(['/edit', this.userId, this.viewProfileRole]);
     } else {
       this.router.navigate(['/edit', this.userId]);
     }
@@ -126,7 +131,7 @@ export class ProfileComponent implements OnInit {
     if (_.isEmpty(token)) {
       token = this.userService.getUserToken;
     }
-    const requestData = {
+    var requestData = {
       header: { Authorization: token },
       data: {
         id: appConfig.API_ID.READ,
@@ -139,13 +144,55 @@ export class ProfileComponent implements OnInit {
       },
       url: appConfig.URLS.READ,
     }
+    if (this.viewProfileRole) {
+      requestData.url = appConfig.URLS.READ + "/" + this.viewProfileRole
+    }
     this.dataService.post(requestData).subscribe(response => {
+      if (response && !response.result.Employee.clientInfo)
+        response.result.Employee.clientInfo = {
+          name: "",
+          endDate: "",
+          startDate: ""
+        }
       this.formInputData = response.result.Employee;
-      this.getFormTemplate();
+      this.getFormTemplate()
       this.userInfo = JSON.stringify(response.result.Employee)
+      var qrcodeReq = {
+        name: response.result.Employee.name,
+        profile: window.location.protocol + "//" + window.location.hostname + "/users/" + response.result.Employee.osid,
+        photoUrl: response.result.Employee.photoUrl,
+        empCode: response.result.Employee.code,
+        isActive: response.result.Employee.isActive
+      };
+      this.getQrCode(qrcodeReq);
     }, (err => {
       console.log(err)
-    }))
+    }));
+  }
+
+  getQrCode(qrcodeReq) {
+    const requestData = {
+      url: "/profile/qrImage",
+      body: {
+        request: qrcodeReq
+      }
+    };
+
+    this.dataService.getImg(requestData).subscribe(response => {
+      this.qrCodeUrl = response;
+    });
+  }
+
+
+  downloadQrImage() {
+    this.dataService.getImage(this.qrCodeUrl).subscribe(
+      (res) => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(res);
+        a.download = "QrCodeImage";
+        document.body.appendChild(a);
+        a.click();
+      });
   }
 }
 

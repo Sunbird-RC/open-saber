@@ -68,16 +68,16 @@ class KeycloakHelper {
     registerUserToKeycloak(req, callback) {
         const value = req.body.request;
         const options = {
-            url: this.keyCloakHost + "/auth/admin/realms/" + this.realmName + "/users",
+            url: this.keyCloakHost + "/auth/realms/" + this.realmName + "/users/add",
             headers: {
-                'content-type': 'application/json',
-                accept: 'application/json',
-                Authorization: req.headers.authorization
+                'Content-type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': req.headers.authorization
             },
             body: {
-                username: value.email,
+                username: value.name + Date.now(),
                 enabled: true,
-                emailVerified: false,
+                emailVerified: value.emailVerified,
                 firstName: value.name,
                 email: value.email,
                 requiredActions: [
@@ -91,7 +91,9 @@ class KeycloakHelper {
                 ]
             }
         }
+        console.log("This is the request going to kc" + JSON.stringify(options.body))
         httpUtil.post(options, function (err, res) {
+            console.log("This is the response from KC" + err + " : " + res)
             callback(null, res)
         });
     }
@@ -111,6 +113,161 @@ class KeycloakHelper {
             httpUtil.get(options, function (err, res, body) {
                 if (res.body) {
                     callback(null, res)
+                } else {
+                    callback(err)
+                }
+            });
+        } catch (err) {
+
+        }
+    }
+    getUserByEmailId(emailId, token, callback) {
+        var headers = {
+            'content-type': 'application/json',
+            authorization: token
+        }
+        try {
+            const options = {
+                method: 'GET',
+                url: this.keyCloakHost + "/auth/admin/realms/" + this.realmName + '/users?email=' + emailId,
+                json: true,
+                headers: headers
+            }
+            httpUtil.get(options, function (err, res, body) {
+                if (res.body) {
+                    callback(null, res)
+                } else {
+                    callback(err)
+                }
+            });
+        } catch (err) {
+
+        }
+    }
+
+    deleteUserById(req, callback) {
+
+        var headers = {
+            'content-type': 'application/json',
+            authorization: req.headers['authorization']
+        }
+        try {
+            const options = {
+                method: 'DELETE',
+                url: this.keyCloakHost + "/auth/admin/realms/" + this.realmName + '/users/' + req.body.request.keyCloakId,
+                json: true,
+                headers: headers
+            }
+            httpUtil.deletes(options, function (err, res, body) {
+                if (res) {
+                    callback(null, res)
+                } else {
+                    callback(err)
+                }
+            });
+        } catch (err) {
+
+        }
+    }
+
+    disableUserById(req, callback) {
+
+        var headers = {
+            'content-type': 'application/json',
+            authorization: req.headers['authorization']
+        }
+        try {
+            const options = {
+                method: 'PUT',
+                url: this.keyCloakHost + "/auth/admin/realms/" + this.realmName + '/users/' + req.body.request.keyCloakId,
+                json: true,
+                headers: headers,
+                body: {
+                    enabled: false,
+                }
+            }
+            httpUtil.put(options, function (err, res, body) {
+                if (res) {
+                    callback(null, res)
+                } else {
+                    callback(err)
+                }
+            });
+        } catch (err) {
+
+        }
+    }
+
+    addUserRoleById(keyCloackUserId, req, callback) {
+
+        var headers = {
+            'content-type': 'application/json',
+            authorization: req.headers['authorization']
+        }
+        try {
+            const options = {
+                method: 'POST',
+                url: this.keyCloakHost + "/auth/admin/realms/" + this.realmName + '/users/' + keyCloackUserId + '/role-mappings/realm',
+                json: true,
+                headers: headers,
+                body: req.body
+            }
+            httpUtil.post(options, function (err, res, body) {
+                if (res) {
+                    callback(null, res)
+                } else {
+                    callback(err)
+                }
+            });
+        } catch (err) {
+
+        }
+    }
+
+    deleteUserRoleById(keyCloackUserId, req, callback) {
+        var headers = {
+            'content-type': 'application/json',
+            authorization: req.headers['authorization']
+        }
+        try {
+            const options = {
+                method: 'DELETE',
+                url: this.keyCloakHost + "/auth/admin/realms/" + this.realmName + '/users/' + keyCloackUserId + '/role-mappings/realm',
+                json: true,
+                headers: headers,
+                body: req.body
+            }
+            httpUtil.deletes(options, function (err, res) {
+                if (res) {
+                    callback(null, res)
+                } else {
+                    callback(err)
+                }
+            });
+        } catch (err) {
+
+        }
+    }
+
+    /**
+     * @param {*} token authorization token 
+     * @param {*} callback 
+     */
+    getRolesByRealm(token, callback) {
+        var headers = {
+            'content-type': 'application/json',
+            authorization: token
+        }
+        try {
+            const options = {
+                method: 'GET',
+                url: this.keyCloakHost + "/auth/admin/realms/" + this.realmName + '/roles',
+                json: true,
+                headers: headers
+            }
+            httpUtil.get(options, function (err, res) {
+                if (res) {
+                    callback(null, res.body)
                 } else {
                     callback(err)
                 }

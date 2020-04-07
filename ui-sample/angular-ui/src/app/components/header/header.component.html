@@ -38,7 +38,7 @@
                                                 <a class="item" [class.active]="router.isActive('create')"
                                                         *ngIf='permissionService.permissionAvailable' appPermission
                                                         [permission]="onBoardEmployee" [routerLink]="'/create'" tabindex="0">
-                                                        {{resourceService?.frmelmnts?.btn?.create}}
+                                                        {{resourceService?.frmelmnts?.btn?.onBoard}}
                                                 </a>
                                         </ng-container>
                                 </div>
@@ -89,7 +89,7 @@
                                                 <a class="item" [class.active]="router.isActive('create')" (click)="showSideBar()"
                                                         *ngIf='permissionService.permissionAvailable' appPermission
                                                         [permission]="onBoardEmployee" [routerLink]="'/create'" tabindex="0">
-                                                        {{resourceService?.frmelmnts?.btn?.create}}
+                                                        {{resourceService?.frmelmnts?.btn?.onBoard}}
                                                 </a>
                                                 <a class="item" [class.active]="router.isActive('/profile')" (click)="showSideBar();navigateToProfilePage()"
                                                         (click)="showSideBar()">

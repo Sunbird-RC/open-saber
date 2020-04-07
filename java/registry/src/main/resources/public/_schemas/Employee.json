@@ -65,14 +65,30 @@
           "title": "Github identifier"
         },
         "startDate": {
-          "$id": "#/properties/startDate",
           "type": "string",
-          "$comment": "startDate"
+          "format": "date",
+          "$comment": "YYYY-MM-DD format",
+          "examples": [
+            "1990-12-01"
+          ]
         },
         "endDate": {
-          "$id": "#/properties/endDate",
           "type": "string",
-          "$comment": "endDate"
+          "format": "date",
+          "$comment": "YYYY-MM-DD format",
+          "examples": [
+            "1990-12-01"
+          ]
+        },
+        "kcid": {
+          "$id": "#/properties/kcid",
+          "type": "string",
+          "$comment": "Keycloak identity"
+        },
+        "photoUrl": {
+          "$id": "#/properties/photoUrl",
+          "type": "string",
+          "$comment": "photo png"
         },
         "clientInfo": {
           "$id": "#/properties/clientInfo",
@@ -89,10 +105,10 @@
       "uniqueIndexFields: Optional; list of field names used for creating unique index. Field names must be different from index field name",
       "systemFields: Optional; list of fields names used for system standard information like created, updated timestamps and userid"],
 
-    "privateFields": [],
+    "privateFields": ["email","phone"],
     "signedFields": [],
     "indexFields": [],
-    "uniqueIndexFields": [],
+    "uniqueIndexFields": ["(name, startDate)", "kcid", "code"],
     "systemFields": [
       "osCreatedAt",
       "osUpdatedAt",

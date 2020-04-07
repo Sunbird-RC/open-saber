@@ -61,7 +61,7 @@ public class RegistryHelper {
 
     @Autowired
     private ObjectMapper objectMapper;
-        
+
     @Value("${database.uuidPropertyName}")
     public String uuidPropertyName;
 
@@ -182,37 +182,37 @@ public class RegistryHelper {
     }
 
     /**
-	 * Get Audit log information , external api's can use this method to get the
-	 * audit log of an antity
-	 * 
-	 * @param inputJson
-	 * @return
-	 * @throws Exception
-	 */
+     * Get Audit log information , external api's can use this method to get the
+     * audit log of an antity
+     *
+     * @param inputJson
+     * @return
+     * @throws Exception
+     */
 
     public JsonNode getAuditLog(JsonNode inputJson) throws Exception {
         logger.debug("get audit log starts");
         String entityType = inputJson.fields().next().getKey();
         JsonNode queryNode =inputJson.get(entityType);
-        
+
         ArrayNode newEntityArrNode = objectMapper.createArrayNode();
         newEntityArrNode.add(entityType + auditSuffixSeparator + auditSuffix);
         ((ObjectNode)queryNode).set("entityType", newEntityArrNode);
-        
+
         JsonNode resultNode = searchService.search(queryNode);
-        
+
         ViewTemplate viewTemplate = viewTemplateManager.getViewTemplate(inputJson);
         if (viewTemplate != null) {
             ViewTransformer vTransformer = new ViewTransformer();
             resultNode = vTransformer.transform(viewTemplate, resultNode);
         }
         logger.debug("get audit log ends");
-        
+
         return resultNode;
 
     }
 
-	
+
 
 }
 

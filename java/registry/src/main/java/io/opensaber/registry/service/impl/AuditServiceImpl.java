@@ -1,5 +1,6 @@
 package io.opensaber.registry.service.impl;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -51,6 +52,9 @@ public class AuditServiceImpl implements IAuditService {
 	private static Logger logger = LoggerFactory.getLogger(AuditServiceImpl.class);
 	@Autowired
 	private ObjectMapper objectMapper;
+
+	@Value("${audit.enabled}")
+	private boolean auditEnabled;
     
     @Value("${audit.frame.store}")
     private String auditFrameStore;
@@ -78,6 +82,27 @@ public class AuditServiceImpl implements IAuditService {
 
     @Autowired
     private EntityParenter entityParenter;
+
+	private boolean isFileAudit() {
+		return auditEnabled && Constants.FILE.equalsIgnoreCase(auditFrameStore);
+	}
+
+	/***
+	 * Returns if the entityType must be audited.
+	 * @param entityType
+	 * @return
+	 */
+	@Override
+	public boolean shouldAudit(String entityType) {
+		boolean shouldAudit = isFileAudit();
+		if (!shouldAudit) {
+			boolean doDbAudit = auditEnabled && Constants.DATABASE.equalsIgnoreCase(auditFrameStore);
+			Definition definition = definitionsManager.getDefinition(getAuditDefinitionName(entityType, auditSuffixSeparator, auditSuffix));
+			shouldAudit = doDbAudit & (definition != null);
+		}
+
+		return shouldAudit;
+	}
     
 	/**
 	 * This is starting of audit in the application, audit details of read, add, update, delete and search activities
@@ -86,8 +111,14 @@ public class AuditServiceImpl implements IAuditService {
     @Override
     public void doAudit(AuditRecord auditRecord, JsonNode mergedNode,  List<String> entityTypes, String entityRootId, Shard shard)   {
         logger.debug("doAudit started");
-       
-        try {
+
+		String entityType = entityTypes.get(0);
+		if (!shouldAudit(entityType)) {
+			logger.debug("Not auditing {}", entityType);
+			return;
+		}
+
+		try {
         		String operation = auditRecord.getAuditInfo().get(0).getOp();
 		        // If the audit is stored as file, fetchAudit from audit entity will not come to this point.
 	    		if(Constants.FILE.equalsIgnoreCase(auditFrameStore)) {
@@ -96,12 +127,12 @@ public class AuditServiceImpl implements IAuditService {
 	    			
 	    		// Shard will be null in case of elastic search, so we are not storing audit info in such cases
 	    		}else if(Constants.DATABASE.equalsIgnoreCase(auditFrameStore) && shard != null) {    
-	    			for(String entityType : entityTypes){
-	    				auditToDB(auditRecord, entityType, shard);
+	    			for(String et : entityTypes){
+	    				auditToDB(auditRecord, et, shard);
 	    			}
 	    		}	
     		
-    			String entityType = entityTypes.get(0);    			
+
 	    		boolean elasticSearchEnabled = ("io.opensaber.registry.service.ElasticSearchService".equals(searchProvider));
 	    		
 	    		JsonNode inputNode = null;
@@ -164,8 +195,8 @@ public class AuditServiceImpl implements IAuditService {
 		//Fetching auditInfo and creating json string
 		JsonNode auditInfo = jsonN.path("auditInfo");
 		ObjectMapper objectMapper = new ObjectMapper();
-		String json = objectMapper.writeValueAsString(auditInfo);
-		
+		String json = objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL).writeValueAsString(auditInfo);
+
 		//Removing auditIfo json node from audit record 
 		((ObjectNode)jsonN).remove("auditInfo");
 		

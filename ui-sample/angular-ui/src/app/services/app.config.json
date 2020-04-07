@@ -24,7 +24,15 @@
             "owner",
             "fin-admin"
         ],
+        "profilePageView":[
+            "owner",
+            "x-owner"
+        ],
         "onboardEmployee": [
+            "admin",
+            "partner-admin"
+        ],
+        "downLoadCsv":[
             "admin",
             "partner-admin"
         ],
@@ -55,7 +63,9 @@
         "AUDIT": "/registry/audit",
         "REGISTER": "/register/users",
         "FORM_TEPLATE": "/formtemplates",
-        "OWNER_FORM_TEMPLATE": "/owner/formTemplate"
+        "OWNER_FORM_TEMPLATE":"/formTemplate",
+        "OFFBOARD":"/offboard/user",
+        "QRIMAGE":"/profile/qrImage"
     },
     "API_ID": {
         "CREATE": "open-saber.registry.create",
@@ -63,7 +73,7 @@
         "UPDATE": "open-saber.registry.update",
         "DELETE": "open-saber.registry.delete",
         "SEARCH": "open-saber.registry.search",
-        "AUDIT": "open-saber.registry.audit"
+        "AUDIT":"open-saber.registry.audit"
     },
     "PAGE_LIMIT": 20
 }
