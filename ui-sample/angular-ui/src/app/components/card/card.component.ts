@@ -116,7 +116,7 @@ export class CardComponent implements OnInit {
     this.dataService.post(requestData).subscribe(response => {
       if (response.params.status === "SUCCESSFUL") {
         this.toasterService.success(this.data.name + " " + this.resourceService.frmelmnts.msg.deBoardSuccess);
-        this.router.navigate(['/search']);
+        this.clickEvent.emit({'action': event, 'data': {status: response.params.status}});
       }
     }, err => {
       this.toasterService.error(this.data.name + " " + this.resourceService.frmelmnts.msg.deBoardFailure);
@@ -146,7 +146,7 @@ export class CardComponent implements OnInit {
     this.dataService.post(requestData).subscribe(response => {
       if (response.params.status === "SUCCESSFUL") {
         this.toasterService.success(this.data.name + " " + this.resourceService.frmelmnts.msg.OnboardedSuccess);
-        this.router.navigate(['/search']);
+        this.clickEvent.emit({'action': event, 'data': {status: response.params.status}});
       }
     }, err => {
       this.toasterService.error(this.data.name + " " + this.resourceService.frmelmnts.msg.OnboardUnSuccess);
