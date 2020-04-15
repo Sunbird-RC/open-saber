@@ -262,55 +262,53 @@ public class VertexWriter {
 		String label;
 
 		for (JsonNode jsonNode : arrayNode) {
-			if (isArrayItemObject) {
-				if (jsonNode.isObject()) {
-					if (jsonNode.get(uuidPropertyName) != null) {
-						ObjectNode objectNode = (ObjectNode) jsonNode;
-						uidList.add(jsonNode.get(uuidPropertyName).asText());
-						Vertex vertex = existingArrayItemsMap.get(jsonNode.get(uuidPropertyName).asText());
-						objectNode.fields().forEachRemaining(field -> {
-							JsonNode fieldValue = field.getValue();
-							String fieldKey = field.getKey();
-
-							if (!fieldKey.equals(uuidPropertyName) && fieldValue.isValueNode()
-									&& !fieldKey.equals(Constants.TYPE_STR_JSON_LD)) {
-								vertex.property(fieldKey, ValueType.getValue(fieldValue));
-							} else {
-								logger.debug("Not updating non-value object types here");
-							}
-						});
-
+		  if (isArrayItemObject) {
+			if (jsonNode.isObject()) {
+              if (jsonNode.get(uuidPropertyName) != null) {
+				ObjectNode objectNode = (ObjectNode) jsonNode;
+				uidList.add(jsonNode.get(uuidPropertyName).asText());
+				Vertex vertex = existingArrayItemsMap.get(jsonNode.get(uuidPropertyName).asText());
+				objectNode.fields().forEachRemaining(field -> {
+				   JsonNode fieldValue = field.getValue();
+		           String fieldKey = field.getKey();
+                   if (!fieldKey.equals(uuidPropertyName) && fieldValue.isValueNode()
+					  && !fieldKey.equals(Constants.TYPE_STR_JSON_LD)) {
+					    vertex.property(fieldKey, ValueType.getValue(fieldValue));
 					} else {
-						Vertex createdV = processNode(entryKey, jsonNode);
-						ObjectNode objectNode = (ObjectNode) jsonNode;
-						objectNode.put(uuidPropertyName, databaseProvider.getId(createdV));
-						createdV.property(Constants.ROOT_KEYWORD, parentOSid);
-						uidList.add(databaseProvider.getId(createdV));
-
-						if (isSignature) {
-							Edge e = addEdge(Constants.SIGNATURE_FOR + Constants.ARRAY_ITEM, blankNode, createdV);
-							e.property(Constants.SIGNATURE_FOR, jsonNode.get(Constants.SIGNATURE_FOR).textValue());
-						} else {
-							addEdge(entryKey + Constants.ARRAY_ITEM, blankNode, createdV);
+							logger.debug("Not updating non-value object types here");
 						}
-					}
+					});
 
 				} else {
-					uidList.add(ValueType.getValue(jsonNode));
+					Vertex createdV = processNode(entryKey, jsonNode);
+					ObjectNode objectNode = (ObjectNode) jsonNode;
+					objectNode.put(uuidPropertyName, databaseProvider.getId(createdV));
+					createdV.property(Constants.ROOT_KEYWORD, parentOSid);
+					uidList.add(databaseProvider.getId(createdV));
+
+					if (isSignature) {
+						Edge e = addEdge(Constants.SIGNATURE_FOR + Constants.ARRAY_ITEM, blankNode, createdV);
+						e.property(Constants.SIGNATURE_FOR, jsonNode.get(Constants.SIGNATURE_FOR).textValue());
+					} else {
+						addEdge(entryKey + Constants.ARRAY_ITEM, blankNode, createdV);
+					}
 				}
+
+			} else {
+				uidList.add(ValueType.getValue(jsonNode));
 			}
 		}
+	}
 
 		// Set up references on a blank node.
-		label = RefLabelHelper.getLabel(entryKey, uuidPropertyName);
-		if (isArrayItemObject) {
-			blankNode.property(label, ArrayHelper.formatToString(uidList));
-		} else {
-			blankNode.property(entryKey, ArrayHelper.formatToString(uidList));
-
-		}
-
-		return uidList;
-
+	label = RefLabelHelper.getLabel(entryKey, uuidPropertyName);
+	if (isArrayItemObject) {
+		blankNode.property(label, ArrayHelper.formatToString(uidList));
+	} else {
+		blankNode.property(entryKey, ArrayHelper.formatToString(uidList));
 	}
+
+	return uidList;
+
+  }
 }
