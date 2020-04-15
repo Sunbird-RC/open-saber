@@ -313,29 +313,28 @@ public class RegistryServiceImpl implements RegistryService {
         }
     }
 
-	private void doUpdateArray(Shard shard, Graph graph, IRegistryDao registryDao, VertexReader vr,
-			Vertex blankArrVertex, ArrayNode arrayNode) {
-		HashMap<String, Vertex> uuidVertexMap = vr.getUuidVertexMap();
+    private void doUpdateArray(Shard shard, Graph graph, IRegistryDao registryDao, VertexReader vr, Vertex blankArrVertex, ArrayNode arrayNode) {
+        HashMap<String, Vertex> uuidVertexMap = vr.getUuidVertexMap();
 		Set<String> previousArrayItemsUuids = vr.getArrayItemUuids(blankArrVertex);
+
 		VertexWriter vertexWrter = new VertexWriter(graph, shard.getDatabaseProvider(), uuidPropertyName);
 		List<Object> updatedUuids = vertexWrter.updateArrayNode(blankArrVertex, vr.getInternalType(blankArrVertex),
-									arrayNode, uuidVertexMap);
+				arrayNode, uuidVertexMap);
 
 		doDelete(registryDao, vr, previousArrayItemsUuids, new HashSet<Object>(updatedUuids));
-	}
 
-	private void doDelete(IRegistryDao registryDao, VertexReader vr, Set<String> previousArrayItemsUuids,
-			Set<Object> updatedUuids) {
-		HashMap<String, Vertex> uuidVertexMap = vr.getUuidVertexMap();
+    }
 
-		for (String itemUuid : previousArrayItemsUuids) {
-			itemUuid = ArrayHelper.unquoteString(itemUuid);
+    private void doDelete(IRegistryDao registryDao, VertexReader vr, Set<String> previousArrayItemsUuids,Set<Object> updatedUuids) {
+    	HashMap<String, Vertex> uuidVertexMap = vr.getUuidVertexMap();
+        for (String itemUuid : previousArrayItemsUuids) {
+        	itemUuid = ArrayHelper.unquoteString(itemUuid);
 			if (!updatedUuids.contains(itemUuid)) {
 				// delete this item
 				registryDao.deleteEntity(uuidVertexMap.get(ArrayHelper.unquoteString(itemUuid)));
 			}
-		}
-	}
+        }
+    }
 
     private void doUpdate(Shard shard, Graph graph, IRegistryDao registryDao, VertexReader vr, JsonNode userInputNode) throws Exception {
         HashMap<String, Vertex> uuidVertexMap = vr.getUuidVertexMap();

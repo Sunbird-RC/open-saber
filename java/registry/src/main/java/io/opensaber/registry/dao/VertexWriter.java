@@ -242,14 +242,17 @@ public class VertexWriter {
         return rootOsid;
     }
     
-    /** Updates the existing element of an array and add the item if it is a new element
-     *  @param vertex
-     *  @param entryKey
-     *  @param arrayNode
-     *  @param existingArrayItemMap
-     *  
-     *  @return List of Uuids
-     */
+    /**
+	 * Updates the existing element of an array and add the item if it is a new
+	 * element
+	 * 
+	 * @param vertex
+	 * @param entryKey
+	 * @param arrayNode
+	 * @param existingArrayItemMap
+	 * 
+	 * @return List of Uuids
+	 */
 	public List<Object> updateArrayNode(Vertex parentVertex, String entryKey, ArrayNode arrayNode,
 			Map<String, Vertex> existingArrayItemsMap) {
 		List<Object> uidList = new ArrayList<>();
