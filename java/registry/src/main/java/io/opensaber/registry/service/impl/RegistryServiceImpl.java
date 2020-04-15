@@ -318,8 +318,8 @@ public class RegistryServiceImpl implements RegistryService {
 		Set<String> previousArrayItemsUuids = vr.getArrayItemUuids(blankArrVertex);
 
 		VertexWriter vertexWrter = new VertexWriter(graph, shard.getDatabaseProvider(), uuidPropertyName);
-		List<Object> updatedUuids = vertexWrter.updateArrayNode(blankArrVertex,vr.getInternalType(blankArrVertex),
-				                    arrayNode, uuidVertexMap);
+        List<Object> updatedUuids = vertexWrter.updateArrayNode(blankArrVertex,vr.getInternalType(blankArrVertex),
+        		                    arrayNode, uuidVertexMap);
 
 		doDelete(registryDao, vr, previousArrayItemsUuids, new HashSet<Object>(updatedUuids));
 
