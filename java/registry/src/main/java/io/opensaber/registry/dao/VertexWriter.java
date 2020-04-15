@@ -262,23 +262,24 @@ public class VertexWriter {
 		String label;
 
 		for (JsonNode jsonNode : arrayNode) {
-		  if (isArrayItemObject) {
+		  
 			if (jsonNode.isObject()) {
-              if (jsonNode.get(uuidPropertyName) != null) {
+				if (jsonNode.get(uuidPropertyName) != null) {
 				ObjectNode objectNode = (ObjectNode) jsonNode;
 				uidList.add(jsonNode.get(uuidPropertyName).asText());
 				Vertex vertex = existingArrayItemsMap.get(jsonNode.get(uuidPropertyName).asText());
-				objectNode.fields().forEachRemaining(field -> {
-				   JsonNode fieldValue = field.getValue();
-		           String fieldKey = field.getKey();
-                   if (!fieldKey.equals(uuidPropertyName) && fieldValue.isValueNode()
-					  && !fieldKey.equals(Constants.TYPE_STR_JSON_LD)) {
-					    vertex.property(fieldKey, ValueType.getValue(fieldValue));
-					} else {
-							logger.debug("Not updating non-value object types here");
-						}
-					});
-
+				if(vertex != null) {
+					objectNode.fields().forEachRemaining(field -> {
+					   JsonNode fieldValue = field.getValue();
+	                   String fieldKey = field.getKey();
+	                    if (!fieldKey.equals(uuidPropertyName) && fieldValue.isValueNode()
+						  && !fieldKey.equals(Constants.TYPE_STR_JSON_LD)) {
+						    vertex.property(fieldKey, ValueType.getValue(fieldValue));
+						} else {
+								logger.debug("Not updating non-value object types here");
+							}
+						});
+				 }
 				} else {
 					Vertex createdV = processNode(entryKey, jsonNode);
 					ObjectNode objectNode = (ObjectNode) jsonNode;
@@ -288,7 +289,7 @@ public class VertexWriter {
 
 					if (isSignature) {
 						Edge e = addEdge(Constants.SIGNATURE_FOR + Constants.ARRAY_ITEM, blankNode, createdV);
-						e.property(Constants.SIGNATURE_FOR, jsonNode.get(Constants.SIGNATURE_FOR).textValue());
+						e.property(Constants.SIGNATURE_FOR,jsonNode.get(Constants.SIGNATURE_FOR).textValue());
 					} else {
 						addEdge(entryKey + Constants.ARRAY_ITEM, blankNode, createdV);
 					}
@@ -297,7 +298,7 @@ public class VertexWriter {
 			} else {
 				uidList.add(ValueType.getValue(jsonNode));
 			}
-		}
+		
 	}
 
 		// Set up references on a blank node.
