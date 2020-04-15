@@ -12,12 +12,24 @@ var path = require("path");
 var csvjson = require('csvjson');
 var _ = require('lodash');
 
+var token = ""
+
+// The URL where the service is running
+var baseUrl = "http://localhost:9081"
+
+// Whether you want to run in dryRun mode
+// true - API will not be invoked.
+// false - API will be invoked.
+var dryRun = true
+
+var g_inputFileName = 'data.csv'
+
 var invoke_add = function (nIter, payload, callback) {
     var addSuffix = "seed/users"
     var url = baseUrl + "/" + addSuffix
     var headerVars = {
         "Content-Type": "application/json",
-        // "Authorization": "Bearer ",
+        "Authorization": "Bearer " + token,
         "x-authenticated-user-token": ""
     }
 
@@ -268,21 +280,13 @@ var entityType = "Employee"
 addApiPayload.request[entityType] = {}
 
 
-// The URL where the registry is running
-var baseUrl = "http://localhost:9081"
-
-// Whether you want to run in dryRun mode
-// true - API will not be invoked.
-// false - API will be invoked.
-var dryRun = true
-
 var PARALLEL_LIMIT = 1;
 var dataEntities = {}
 
 
 function populateData(cb) {
     var data_tasks = [];
-    var dataCSV = csvToJson('data.csv')
+    var dataCSV = csvToJson(g_inputFileName)
     populate_add_tasks(data_tasks, entityType, addApiPayload, dataCSV)
     console.log("Total number of data records = " + data_tasks.length)
     execute_tasks(data_tasks, "data.json", cb)
@@ -297,4 +301,5 @@ populateData(function (err, result) {
     console.log("Finished successfully");
     return result;
 })
+
 
