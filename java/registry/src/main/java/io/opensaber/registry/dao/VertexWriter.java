@@ -270,8 +270,8 @@ public class VertexWriter {
 				Vertex vertex = existingArrayItemsMap.get(jsonNode.get(uuidPropertyName).asText());
 				if(vertex != null) {
 					objectNode.fields().forEachRemaining(field -> {
-					   JsonNode fieldValue = field.getValue();
-	                   String fieldKey = field.getKey();
+						JsonNode fieldValue = field.getValue();
+						String fieldKey = field.getKey();
 	                    if (!fieldKey.equals(uuidPropertyName) && fieldValue.isValueNode()
 						  && !fieldKey.equals(Constants.TYPE_STR_JSON_LD)) {
 						    vertex.property(fieldKey, ValueType.getValue(fieldValue));
