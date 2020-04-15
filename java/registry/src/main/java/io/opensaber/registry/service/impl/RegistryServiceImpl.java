@@ -313,13 +313,13 @@ public class RegistryServiceImpl implements RegistryService {
         }
     }
 
-    private void doUpdateArray(Shard shard, Graph graph, IRegistryDao registryDao, VertexReader vr,
+	private void doUpdateArray(Shard shard, Graph graph, IRegistryDao registryDao, VertexReader vr,
 			Vertex blankArrVertex, ArrayNode arrayNode) {
 		HashMap<String, Vertex> uuidVertexMap = vr.getUuidVertexMap();
 		Set<String> previousArrayItemsUuids = vr.getArrayItemUuids(blankArrVertex);
 		VertexWriter vertexWrter = new VertexWriter(graph, shard.getDatabaseProvider(), uuidPropertyName);
 		List<Object> updatedUuids = vertexWrter.updateArrayNode(blankArrVertex, vr.getInternalType(blankArrVertex),
-				arrayNode, uuidVertexMap);
+									arrayNode, uuidVertexMap);
 
 		doDelete(registryDao, vr, previousArrayItemsUuids, new HashSet<Object>(updatedUuids));
 	}

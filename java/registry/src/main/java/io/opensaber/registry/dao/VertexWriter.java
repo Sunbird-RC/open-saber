@@ -250,7 +250,7 @@ public class VertexWriter {
      *  
      *  @return List of Uuids
      */
-    public List<Object> updateArrayNode(Vertex parentVertex, String entryKey, ArrayNode arrayNode,
+	public List<Object> updateArrayNode(Vertex parentVertex, String entryKey, ArrayNode arrayNode,
 			Map<String, Vertex> existingArrayItemsMap) {
 		List<Object> uidList = new ArrayList<>();
 		boolean isArrayItemObject = (arrayNode != null && arrayNode.size() > 0 && arrayNode.get(0).isObject());
