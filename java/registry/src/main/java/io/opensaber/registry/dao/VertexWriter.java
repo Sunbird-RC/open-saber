@@ -25,223 +25,232 @@ import java.util.Map;
  * Helps in writing a vertex, edge into the database
  */
 public class VertexWriter {
-	private String uuidPropertyName;
-	private Graph graph;
-	private DatabaseProvider databaseProvider;
-	private String parentOSid;
-	private static final String EMPTY_STR = "";
+    private String uuidPropertyName;
+    private Graph graph;
+    private DatabaseProvider databaseProvider;
+    private String parentOSid;
+    private static final String EMPTY_STR = "";
 
-	private Logger logger = LoggerFactory.getLogger(VertexWriter.class);
+    private Logger logger = LoggerFactory.getLogger(VertexWriter.class);
 
-	public VertexWriter(Graph graph, DatabaseProvider databaseProvider, String uuidPropertyName) {
-		this.graph = graph;
-		this.databaseProvider = databaseProvider;
-		this.uuidPropertyName = uuidPropertyName;
-	}
+    public VertexWriter(Graph graph, DatabaseProvider databaseProvider, String uuidPropertyName) {
+        this.graph = graph;
+        this.databaseProvider = databaseProvider;
+        this.uuidPropertyName = uuidPropertyName;
+    }
 
-	/**
-	 * Ensures a parent vertex existence at the exit of this function
-	 *
-	 * @param parentLabel
-	 * @return
-	 */
-	public Vertex ensureParentVertex(String parentLabel) {
-		Vertex parentVertex = null;
-		P<String> lblPredicate = P.eq(parentLabel);
+    /**
+     * Ensures a parent vertex existence at the exit of this function
+     *
+     * @param parentLabel
+     * @return
+     */
+    public Vertex ensureParentVertex(String parentLabel) {
+        Vertex parentVertex = null;
+        P<String> lblPredicate = P.eq(parentLabel);
 
-		GraphTraversalSource gtRootTraversal = graph.traversal().clone();
-		Iterator<Vertex> iterVertex = gtRootTraversal.V().hasLabel(lblPredicate);
-		if (!iterVertex.hasNext()) {
-			parentVertex = createVertex(parentLabel);
+        GraphTraversalSource gtRootTraversal = graph.traversal().clone();
+        Iterator<Vertex> iterVertex = gtRootTraversal.V().hasLabel(lblPredicate);
+        if (!iterVertex.hasNext()) {
+            parentVertex = createVertex(parentLabel);
 
-			// added a property to track vertices belong to parent are indexed
-			parentVertex.property(Constants.INDEX_FIELDS, EMPTY_STR);
-			parentVertex.property(Constants.UNIQUE_INDEX_FIELDS, EMPTY_STR);
-			logger.info("Parent label {} created {}", parentLabel, parentVertex.id().toString());
-		} else {
-			parentVertex = iterVertex.next();
-			logger.info("Parent label {} already existing {}", parentLabel, databaseProvider.getId(parentVertex));
-		}
+            //added a property to track vertices belong to parent are indexed
+            parentVertex.property(Constants.INDEX_FIELDS, EMPTY_STR);
+            parentVertex.property(Constants.UNIQUE_INDEX_FIELDS, EMPTY_STR);
+            logger.info("Parent label {} created {}", parentLabel, parentVertex.id().toString());
+        } else {
+            parentVertex = iterVertex.next();
+            logger.info("Parent label {} already existing {}", parentLabel, databaseProvider.getId(parentVertex));
+        }
 
-		return parentVertex;
-	}
+        return parentVertex;
+    }
 
-	/**
-	 * Creates a vertex - each vertex would have a @type and uuidPropertyName
-	 * attribute
-	 * 
-	 * @param label - the string you want the vertex to be labelled
-	 * @return
-	 */
-	public Vertex createVertex(String label) {
-		Vertex vertex = graph.addVertex(label);
 
-		vertex.property(TypePropertyHelper.getTypeName(), label);
-		vertex.property(uuidPropertyName, databaseProvider.generateId(vertex));
+    /**
+     * Creates a vertex - each vertex would have a @type and uuidPropertyName attribute
+     * @param label - the string you want the vertex to be labelled
+     * @return
+     */
+    public Vertex createVertex(String label) {
+        Vertex vertex = graph.addVertex(label);
 
-		return vertex;
-	}
+        vertex.property(TypePropertyHelper.getTypeName(), label);
+        vertex.property(uuidPropertyName, databaseProvider.generateId(vertex));
 
-	/**
-	 * Updates index fields property of parent vertex for a given propertyName
-	 * 
-	 * @param parentVertex
-	 * @param propertyName
-	 * @param indexFields
-	 */
-	public void updateParentIndexProperty(Vertex parentVertex, String propertyName, List<String> indexFields) {
-		if (indexFields.size() > 0) {
-			StringBuilder properties = new StringBuilder(String.join(",", indexFields));
-			parentVertex.property(propertyName, properties.toString());
-			logger.info("parent vertex property {}:{}", propertyName, properties);
+        return vertex;
+    }
+    
+    /**
+     * Updates index fields property of parent vertex for a given propertyName
+     * 
+     * @param parentVertex
+     * @param propertyName
+     * @param indexFields
+     */
+    public void updateParentIndexProperty(Vertex parentVertex, String propertyName, List<String> indexFields){
+        if (indexFields.size() > 0) {
+            StringBuilder properties = new StringBuilder(String.join(",", indexFields));        
+            parentVertex.property(propertyName, properties.toString());
+            logger.info("parent vertex property {}:{}", propertyName, properties);
 
-		}
-	}
+        }            
+    }
 
-	/**
-	 * Writes an array into the database. For each array item, if it is an object
-	 * creates/populates a new vertex/table and stores the reference
-	 *
-	 * @param vertex
-	 * @param entryKey
-	 * @param arrayNode
-	 */
-	private void writeArrayNode(Vertex vertex, String entryKey, ArrayNode arrayNode, boolean isUpdate) {
-		List<Object> uidList = new ArrayList<>();
-		boolean isArrayItemObject = (arrayNode != null && arrayNode.size() > 0 && arrayNode.get(0).isObject());
-		boolean isSignature = entryKey.equals(Constants.SIGNATURES_STR);
-		Vertex blankNode = vertex;
-		String label;
+    /**
+     * Writes an array into the database. For each array item, if it is an
+     * object creates/populates a new vertex/table and stores the reference
+     *
+     * @param vertex
+     * @param entryKey
+     * @param arrayNode
+     */
+    private void writeArrayNode(Vertex vertex, String entryKey, ArrayNode arrayNode, boolean isUpdate) {
+        List<Object> uidList = new ArrayList<>();
+        boolean isArrayItemObject = (arrayNode !=null && arrayNode.size() > 0 && arrayNode.get(0).isObject());
+        boolean isSignature = entryKey.equals(Constants.SIGNATURES_STR);
+        Vertex blankNode = vertex;
+        String label;
 
-		identifyParentOSid(vertex);
+        identifyParentOSid(vertex);
 
-		if (isArrayItemObject) {
-			label = RefLabelHelper.getArrayLabel(entryKey, uuidPropertyName);
+        if (isArrayItemObject) {
+            label = RefLabelHelper.getArrayLabel(entryKey, uuidPropertyName);
 
-			// Create a label with array_node_keyword
-			blankNode = createVertex(Constants.ARRAY_NODE_KEYWORD);
+            // Create a label with array_node_keyword
+            blankNode = createVertex(Constants.ARRAY_NODE_KEYWORD);
 
-			if (isSignature) {
-				addEdge(entryKey, blankNode, vertex);
-			} else {
-				addEdge(entryKey, vertex, blankNode);
-			}
-			vertex.property(label, databaseProvider.getId(blankNode));
-			blankNode.property(Constants.INTERNAL_TYPE_KEYWORD, entryKey);
-			blankNode.property(Constants.ROOT_KEYWORD, parentOSid);
-		}
+            if (isSignature) {
+                addEdge(entryKey, blankNode, vertex);
+            } else {
+                addEdge(entryKey, vertex, blankNode);
+            }
+            vertex.property(label, databaseProvider.getId(blankNode));
+            blankNode.property(Constants.INTERNAL_TYPE_KEYWORD, entryKey);
+            blankNode.property(Constants.ROOT_KEYWORD, parentOSid);
+        }
 
-		for (JsonNode jsonNode : arrayNode) {
-			if (jsonNode.isObject()) {
-				Vertex createdV = processNode(entryKey, jsonNode);
-				ObjectNode objectNode = (ObjectNode) jsonNode;
-				objectNode.put(uuidPropertyName, databaseProvider.getId(createdV));
-				createdV.property(Constants.ROOT_KEYWORD, parentOSid);
-				uidList.add(databaseProvider.getId(createdV));
-				if (isSignature) {
-					Edge e = addEdge(Constants.SIGNATURE_FOR + Constants.ARRAY_ITEM, blankNode, createdV);
-					e.property(Constants.SIGNATURE_FOR, jsonNode.get(Constants.SIGNATURE_FOR).textValue());
-				} else {
-					addEdge(entryKey + Constants.ARRAY_ITEM, blankNode, createdV);
-				}
-			} else {
-				uidList.add(ValueType.getValue(jsonNode));
-			}
-		}
+        for (JsonNode jsonNode : arrayNode) {
+            if (jsonNode.isObject()) {
+                Vertex createdV = processNode(entryKey, jsonNode);
+                ObjectNode objectNode = (ObjectNode) jsonNode;
+                objectNode.put(uuidPropertyName,databaseProvider.getId(createdV));
+                createdV.property(Constants.ROOT_KEYWORD, parentOSid);
+                uidList.add(databaseProvider.getId(createdV));
+                if (isSignature) {
+                    Edge e = addEdge(Constants.SIGNATURE_FOR+Constants.ARRAY_ITEM, blankNode, createdV);
+                    e.property(Constants.SIGNATURE_FOR, jsonNode.get(Constants.SIGNATURE_FOR).textValue());
+                } else {
+                    addEdge(entryKey + Constants.ARRAY_ITEM, blankNode, createdV);
+                }
+            } else {
+                uidList.add(ValueType.getValue(jsonNode));
+            }
+        }
 
-		// Set up references on a blank node.
-		label = RefLabelHelper.getLabel(entryKey, uuidPropertyName);
-		if (isArrayItemObject) {
-			blankNode.property(label, ArrayHelper.formatToString(uidList));
-		} else {
-			blankNode.property(entryKey, ArrayHelper.formatToString(uidList));
-		}
-	}
+        // Set up references on a blank node.
+        label = RefLabelHelper.getLabel(entryKey, uuidPropertyName);
+        if (isArrayItemObject) {
+            blankNode.property(label, ArrayHelper.formatToString(uidList));
+        } else {
+            blankNode.property(entryKey, ArrayHelper.formatToString(uidList));
+        }
+    }
 
-	public void createArrayNode(Vertex vertex, String entryKey, ArrayNode arrayNode) {
-		writeArrayNode(vertex, entryKey, arrayNode, false);
-	}
+    public void createArrayNode(Vertex vertex, String entryKey, ArrayNode arrayNode) {
+        writeArrayNode(vertex, entryKey, arrayNode, false);
+    }
 
-	public void writeSingleNode(Vertex parentVertex, String label, JsonNode entryValue) {
-		Vertex v = processNode(label, entryValue);
-		ObjectNode object = (ObjectNode) entryValue;
-		addEdge(label, parentVertex, v);
+    public void writeSingleNode(Vertex parentVertex, String label, JsonNode entryValue) {
+        Vertex v = processNode(label, entryValue);
+        ObjectNode object = (ObjectNode) entryValue;
+        addEdge(label, parentVertex, v);
 
-		String idToSet = databaseProvider.getId(v);
-		object.put(uuidPropertyName, idToSet);
-		parentVertex.property(RefLabelHelper.getLabel(label, uuidPropertyName), idToSet);
+        String idToSet = databaseProvider.getId(v);
+        object.put(uuidPropertyName,idToSet);
+        parentVertex.property(RefLabelHelper.getLabel(label, uuidPropertyName), idToSet);
 
-		identifyParentOSid(parentVertex);
-		v.property(Constants.ROOT_KEYWORD, parentOSid);
+        identifyParentOSid(parentVertex);
+        v.property(Constants.ROOT_KEYWORD, parentOSid);
 
-		logger.debug("Added edge between {} and {}", parentVertex.label(), v.label());
-	}
+        logger.debug("Added edge between {} and {}", parentVertex.label(), v.label());
+    }
 
-	private void identifyParentOSid(Vertex vertex) {
-		// This attribute will help identify the root from any child
-		if (parentOSid == null || parentOSid.isEmpty()) {
-			parentOSid = databaseProvider.getId(vertex);
-		}
-	}
+    private void identifyParentOSid(Vertex vertex) {
+        // This attribute will help identify the root from any child
+        if (parentOSid == null || parentOSid.isEmpty()) {
+            parentOSid = databaseProvider.getId(vertex);
+        }
+    }
 
-	private Vertex processNode(String label, JsonNode jsonObject) {
-		Vertex vertex = createVertex(label);
-		identifyParentOSid(vertex);
+    private Vertex processNode(String label, JsonNode jsonObject) {
+        Vertex vertex = createVertex(label);
+        identifyParentOSid(vertex);
 
-		jsonObject.fields().forEachRemaining(entry -> {
-			JsonNode entryValue = entry.getValue();
-			logger.debug("Processing {} -> {}", entry.getKey(), entry.getValue());
+        jsonObject.fields().forEachRemaining(entry -> {
+            JsonNode entryValue = entry.getValue();
+            logger.debug("Processing {} -> {}", entry.getKey(), entry.getValue());
 
-			if (entryValue.isValueNode()) {
-				// Directly add under the vertex as a property
-				vertex.property(entry.getKey(), ValueType.getValue(entryValue));
-			} else if (entryValue.isObject()) {
-				// Recursive calls
-				writeSingleNode(vertex, entry.getKey(), entryValue);
-			} else if (entryValue.isArray()) {
-				createArrayNode(vertex, entry.getKey(), (ArrayNode) entry.getValue());
-			}
-		});
-		return vertex;
-	}
+            if (entryValue.isValueNode()) {
+                // Directly add under the vertex as a property
+                vertex.property(entry.getKey(), ValueType.getValue(entryValue));
+            } else if (entryValue.isObject()) {
+                // Recursive calls
+                writeSingleNode(vertex, entry.getKey(), entryValue);
+            } else if (entryValue.isArray()) {
+                createArrayNode(vertex, entry.getKey(), (ArrayNode) entry.getValue());
+            }
+        });
+        return vertex;
+    }
 
-	/**
-	 * Adds an edge between two vertices
-	 *
-	 * @param label
-	 * @param v1    the source
-	 * @param v2    the target
-	 * @return
-	 */
-	public Edge addEdge(String label, Vertex v1, Vertex v2) {
-		return v1.addEdge(label, v2);
-	}
+    /**
+     * Adds an edge between two vertices
+     *
+     * @param label
+     * @param v1
+     *            the source
+     * @param v2
+     *            the target
+     * @return
+     */
+    public Edge addEdge(String label, Vertex v1, Vertex v2) {
+        return v1.addEdge(label, v2);
+    }
 
-	/**
-	 * Writes the node entity into the database.
-	 *
-	 * @param node
-	 * @return
-	 */
-	public String writeNodeEntity(JsonNode node) {
-		Vertex resultVertex = null;
-		String rootOsid = null;
-		Iterator<Map.Entry<String, JsonNode>> entryIterator = node.fields();
-		while (entryIterator.hasNext()) {
-			Map.Entry<String, JsonNode> entry = entryIterator.next();
-			ObjectNode entryObject = (ObjectNode) entry.getValue();
-			// It is expected that node is wrapped under a root, which is the
-			// parent name/definition
-			if (entry.getValue().isObject()) {
-				resultVertex = processNode(entry.getKey(), entry.getValue());
-				rootOsid = databaseProvider.getId(resultVertex);
-				entryObject.put(uuidPropertyName, rootOsid);
-			}
-		}
-		return rootOsid;
-	}
-
-	public List<Object> updateArrayNode(Vertex parentVertex, String entryKey, ArrayNode arrayNode,
+    /**
+     * Writes the node entity into the database.
+     *
+     * @param node
+     * @return
+     */
+    public String writeNodeEntity(JsonNode node) {
+        Vertex resultVertex = null;
+        String rootOsid = null;
+        Iterator<Map.Entry<String, JsonNode>> entryIterator = node.fields();
+        while (entryIterator.hasNext()) {
+            Map.Entry<String, JsonNode> entry = entryIterator.next();
+            ObjectNode entryObject = (ObjectNode) entry.getValue();
+            // It is expected that node is wrapped under a root, which is the
+            // parent name/definition
+            if (entry.getValue().isObject()) {
+                resultVertex = processNode(entry.getKey(), entry.getValue());
+                rootOsid = databaseProvider.getId(resultVertex);
+                entryObject.put(uuidPropertyName,rootOsid);
+            }
+        }
+        return rootOsid;
+    }
+    
+    /** Updates the existing element of an array and add the item if it is a new element
+     *  @param vertex
+     *  @param entryKey
+     *  @param arrayNode
+     *  @param existingArrayItemMap
+     *  
+     *  @return List of Uuids
+     */
+    public List<Object> updateArrayNode(Vertex parentVertex, String entryKey, ArrayNode arrayNode,
 			Map<String, Vertex> existingArrayItemsMap) {
 		List<Object> uidList = new ArrayList<>();
 		boolean isArrayItemObject = (arrayNode != null && arrayNode.size() > 0 && arrayNode.get(0).isObject());
