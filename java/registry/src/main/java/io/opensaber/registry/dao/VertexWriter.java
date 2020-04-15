@@ -275,10 +275,10 @@ public class VertexWriter {
 	                    if (!fieldKey.equals(uuidPropertyName) && fieldValue.isValueNode()
 						  && !fieldKey.equals(Constants.TYPE_STR_JSON_LD)) {
 						    vertex.property(fieldKey, ValueType.getValue(fieldValue));
-						} else {
-								logger.debug("Not updating non-value object types here");
-							}
-						});
+						}else {
+							logger.debug("Not updating non-value object types here");
+						}
+					});
 				 }
 				} else {
 					Vertex createdV = processNode(entryKey, jsonNode);
@@ -286,7 +286,6 @@ public class VertexWriter {
 					objectNode.put(uuidPropertyName, databaseProvider.getId(createdV));
 					createdV.property(Constants.ROOT_KEYWORD, parentOSid);
 					uidList.add(databaseProvider.getId(createdV));
-
 					if (isSignature) {
 						Edge e = addEdge(Constants.SIGNATURE_FOR + Constants.ARRAY_ITEM, blankNode, createdV);
 						e.property(Constants.SIGNATURE_FOR,jsonNode.get(Constants.SIGNATURE_FOR).textValue());
