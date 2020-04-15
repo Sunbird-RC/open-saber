@@ -272,7 +272,7 @@ public class VertexWriter {
 					objectNode.fields().forEachRemaining(field -> {
 						JsonNode fieldValue = field.getValue();
 						String fieldKey = field.getKey();
-	                    if (!fieldKey.equals(uuidPropertyName) && fieldValue.isValueNode()
+						if (!fieldKey.equals(uuidPropertyName) && fieldValue.isValueNode()
 						  && !fieldKey.equals(Constants.TYPE_STR_JSON_LD)) {
 						    vertex.property(fieldKey, ValueType.getValue(fieldValue));
 						}else {
@@ -286,7 +286,7 @@ public class VertexWriter {
 					objectNode.put(uuidPropertyName, databaseProvider.getId(createdV));
 					createdV.property(Constants.ROOT_KEYWORD, parentOSid);
 					uidList.add(databaseProvider.getId(createdV));
-					if (isSignature) {
+					if(isSignature) {
 						Edge e = addEdge(Constants.SIGNATURE_FOR + Constants.ARRAY_ITEM, blankNode, createdV);
 						e.property(Constants.SIGNATURE_FOR,jsonNode.get(Constants.SIGNATURE_FOR).textValue());
 					} else {
