@@ -217,6 +217,11 @@ const createUser = (req, seedMode, callback) => {
 
     tasks.push(function (token, callback) {
         req.headers['Authorization'] = token;
+        if (!seedMode) {
+            logger.info("seed mode is false, user registration is intiated by admin or partner admin")
+            req.body.request[entityType]['isActive'] = true
+            req.body.request[entityType]['isOnboarded'] = false
+        }
         req.body.request[entityType]['emailVerified'] = seedMode
 
         if (req.body.request[entityType].isActive) {
