@@ -334,16 +334,14 @@ public class RegistryServiceImpl implements RegistryService {
                     }
                 } else {
                     // New item got added.
-                    Vertex newItem = vertexWriter.writeSingleEntityNode(blankArrVertex, vr.getInternalType(blankArrVertex), item);
+                    Vertex newItem = vertexWriter.writeSingleNode(blankArrVertex, vr.getInternalType(blankArrVertex), item);
                     updatedUuids.add(shard.getDatabaseProvider().getId(newItem));
                 }
             }
         }
         
-        //Update the array_node with list of update uuids
-        vertexWriter = new VertexWriter(graph, shard.getDatabaseProvider() , uuidPropertyName);
-        String propertyName = RefLabelHelper.getLabel(vr.getInternalType(blankArrVertex), uuidPropertyName);
-        vertexWriter.updateVertexProperty(blankArrVertex, propertyName,ArrayHelper.formatToString(new ArrayList<>(updatedUuids))); 
+        //Update the array_node with list of updated uuids
+        vertexWriter.updateArrayNode(blankArrVertex, vr.getInternalType(blankArrVertex), new ArrayList<Object>(updatedUuids));
         
         doDelete(registryDao, vr, previousArrayItemsUuids, updatedUuids);
 

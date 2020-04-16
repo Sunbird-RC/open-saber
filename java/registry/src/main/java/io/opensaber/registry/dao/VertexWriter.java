@@ -98,15 +98,16 @@ public class VertexWriter {
     }
     
     /**
-     * Update single property of the vertex
+     * Update array node
      * 
      * @param vertex
-     * @param propertyName
-     * @param value
+     * @param label
+     * @param updatedUuids
      */
     
-    public void updateVertexProperty(Vertex vertex, String propertyName, String value) {
-    	vertex.property(propertyName, value);
+    public void updateArrayNode(Vertex vertex,String label, List<Object> updatedUuids) {
+    	String propertyName = RefLabelHelper.getLabel(label, uuidPropertyName);
+    	vertex.property(propertyName,ArrayHelper.formatToString(updatedUuids));
     }
 
     /**
@@ -173,34 +174,23 @@ public class VertexWriter {
         writeArrayNode(vertex, entryKey, arrayNode, false);
     }
 
-    public void writeSingleNode(Vertex parentVertex, String label, JsonNode entryValue) {
-    	writeSingleEntityNode(parentVertex,label,entryValue);
+    public Vertex writeSingleNode(Vertex parentVertex, String label, JsonNode entryValue) {
+    	Vertex v = processNode(label, entryValue);
+        ObjectNode object = (ObjectNode) entryValue;
+        addEdge(label, parentVertex, v);
+
+        String idToSet = databaseProvider.getId(v);
+        object.put(uuidPropertyName,idToSet);
+        parentVertex.property(RefLabelHelper.getLabel(label, uuidPropertyName), idToSet);
+
+        identifyParentOSid(parentVertex);
+        v.property(Constants.ROOT_KEYWORD, parentOSid);
+
+        logger.debug("Added edge between {} and {}", parentVertex.label(), v.label());
+        return v;
     }
     
-    /**
-     *  Add single entity node to the database
-     *  
-     * @param vertex
-     * @param label
-     * @param entryValue
-     * @return 
-     */
-    public Vertex writeSingleEntityNode(Vertex vertex, String label, JsonNode entryValue) {
-    	  Vertex v = processNode(label, entryValue);
-          ObjectNode object = (ObjectNode) entryValue;
-          addEdge(label, vertex, v);
-
-          String idToSet = databaseProvider.getId(v);
-          object.put(uuidPropertyName,idToSet);
-          vertex.property(RefLabelHelper.getLabel(label, uuidPropertyName), idToSet);
-
-          identifyParentOSid(vertex);
-          v.property(Constants.ROOT_KEYWORD, parentOSid);
-
-          logger.debug("Added edge between {} and {}", vertex.label(), v.label());
-          return v;
-    }
-
+   
     private void identifyParentOSid(Vertex vertex) {
         // This attribute will help identify the root from any child
         if (parentOSid == null || parentOSid.isEmpty()) {
