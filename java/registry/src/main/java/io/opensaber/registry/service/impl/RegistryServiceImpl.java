@@ -340,6 +340,7 @@ public class RegistryServiceImpl implements RegistryService {
             }
         }
         
+        //Update the array_node with list of update uuids
         vertexWriter = new VertexWriter(graph, shard.getDatabaseProvider() , uuidPropertyName);
         String propertyName = RefLabelHelper.getLabel(vr.getInternalType(blankArrVertex), uuidPropertyName);
         vertexWriter.updateVertexProperty(blankArrVertex, propertyName,ArrayHelper.formatToString(new ArrayList<>(updatedUuids))); 
