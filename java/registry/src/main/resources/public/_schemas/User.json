@@ -19,6 +19,7 @@
         "firstName",
         "userId"
       ],
+      "additionalProperties": false, 
       "properties": {
         "firstName": {
           "$id": "#/properties/firstName",
@@ -108,7 +109,18 @@
           "$id": "#/properties/totalAcceptedContent",
           "type": "integer",
           "title": "Total  content accepted by an User"
+        },
+        "createdBy": {
+          "$id": "#/properties/createdBy",
+          "type": "string",
+          "title":"User Id"         
+        },
+         "updatedBy": {
+          "$id": "#/properties/updateBy",
+          "type": "string",
+          "title":"User Id"         
         }
+             
       }
     }
   },
@@ -123,7 +135,7 @@
     "privateFields": [],
     "signedFields": [],
     "indexFields": ["userId"],
-    "uniqueIndexFields": [],
-    "systemFields": ["createdAt", "updatedAt"]
+    "uniqueIndexFields": ["userId"],
+    "systemFields": ["osCreatedAt", "osUpdatedAt"]
   }
 }

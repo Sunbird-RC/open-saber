@@ -93,8 +93,12 @@
         "createdBy": {
           "$id": "#/properties/createdBy",
           "type": "string",
-          "title":"User Id"
-         
+          "title":"User Id"         
+        },
+         "updatedBy": {
+          "$id": "#/properties/updateBy",
+          "type": "string",
+          "title":"User Id"         
         }
       }
     }
@@ -108,7 +112,7 @@
                                            
          "privateFields": [],
          "signedFields": [],
-         "systemFields": ["osCreatedAt", "osUpdatedAt"]
-         
+   		 "systemFields": ["osCreatedAt","osUpdatedAt"]
+        
   } 
 }
