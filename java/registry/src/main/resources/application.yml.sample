@@ -83,7 +83,7 @@ database:
       # Example of a record identifier: 1-60f76147-0acd-4dff-b75a-2d811787d04d
       # Note '1' is the label used for record identifier
       # shardLabel is not stored in the database
-      shardLabel: 1
+      shardLabel: ${connectionInfo_shardLabel:}
 
       # The format of the URI can be learnt from the following links -
       #     * 1. Graph database (Neo4J)
