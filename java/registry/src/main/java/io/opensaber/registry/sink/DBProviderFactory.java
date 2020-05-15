@@ -25,7 +25,7 @@ public class DBProviderFactory {
 		DatabaseProvider provider = null;
 		String dbProvider = environment.getProperty(Constants.DATABASE_PROVIDER);
 		String uuidPropertyName = dbConnectionInfoMgr.getUuidPropertyName();
-
+		int maxPoolSize = dbConnectionInfoMgr.getMaxPoolSize();
 		// In tests, we use TinkerGraph presently.
 		if (!dbProvider.equalsIgnoreCase(Constants.GraphDatabaseProvider.TINKERGRAPH.getName()) &&
 				dbProviderInstances.containsKey(connectionInfo.getShardId())) {
@@ -37,7 +37,7 @@ public class DBProviderFactory {
 			} else if (dbProvider.equalsIgnoreCase(Constants.GraphDatabaseProvider.NEO4J.getName())) {
 				provider = new Neo4jGraphProvider(connectionInfo, uuidPropertyName);
 			} else if (dbProvider.equalsIgnoreCase(Constants.GraphDatabaseProvider.SQLG.getName())) {
-				provider = new SqlgProvider(connectionInfo, uuidPropertyName);
+				provider = new SqlgProvider(connectionInfo, uuidPropertyName,maxPoolSize);
 				provider.initializeGlobalGraphConfiguration();
 			} else if (dbProvider.equalsIgnoreCase(Constants.GraphDatabaseProvider.TINKERGRAPH.getName())) {
 				provider = new TinkerGraphProvider(environment);

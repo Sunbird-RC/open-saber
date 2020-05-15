@@ -60,6 +60,11 @@ database:
   # Providers available are NEO4J, SQLG, CASSANDRA, ORIENTDB, TINKERGRAPH (in-memory).
   # NOTE: Values given against 'shardId' must be unique
   provider: ${database_provider:NEO4J}
+  
+  
+    #maxDB Connection Pool Size
+  maxPoolSize: ${database_maxPoolSize:150}
+  
 
   # Choose "none" as the propertyName if you don't want any shards. Otherwise
   # implement IShardAdvisor interface in your own ways. An example, SerialNumShardAdvisor

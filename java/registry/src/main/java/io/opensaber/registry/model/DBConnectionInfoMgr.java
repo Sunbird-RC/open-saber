@@ -32,6 +32,13 @@ public class DBConnectionInfoMgr {
 	 * Only one property is allowed.
 	 */
 	private String shardProperty;
+	
+	/*
+	 * Only one maxConnection allowed
+	 */
+	private int maxPoolSize;
+
+	
 
 	/**
 	 * Each DBConnectionInfo is a shard connection information.
@@ -107,5 +114,13 @@ public class DBConnectionInfoMgr {
 
 	public String getShardId(String shardLabel) {
 		return shardLabelIdMap.getOrDefault(shardLabel, null);
+	}
+	
+	public int getMaxPoolSize() {
+		return maxPoolSize;
+	}
+
+	public void setMaxPoolSize(int maxPoolSize) {
+		this.maxPoolSize = maxPoolSize;
 	}
 }
