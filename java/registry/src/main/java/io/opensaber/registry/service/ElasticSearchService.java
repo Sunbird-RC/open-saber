@@ -47,6 +47,12 @@ public class ElasticSearchService implements ISearchService {
     @Value("${database.uuidPropertyName}")
     private String uuidPropertyName;
 
+    @Value("${audit.enabled}")
+    private boolean auditEnabled;
+    
+    @Value("${audit.frame.suffix}")
+    private String auditSuffix;
+
     @Override
     public JsonNode search(JsonNode inputQueryNode) throws IOException {
         logger.debug("search request body = " + inputQueryNode);
@@ -75,10 +81,8 @@ public class ElasticSearchService implements ISearchService {
             }
         }
         
-        auditService.auditElasticSearch( 
-        		new AuditRecord()
-        		.setUserId(apiMessage.getUserID()),
-        		searchQuery.getEntityTypes(), inputQueryNode);
+        auditService.auditElasticSearch( new AuditRecord().setUserId(apiMessage.getUserID()),
+        		searchQuery.getEntityTypes(), inputQueryNode);    
  
         return resultNode;
 

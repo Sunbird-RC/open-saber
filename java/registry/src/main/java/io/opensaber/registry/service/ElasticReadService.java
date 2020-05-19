@@ -71,8 +71,9 @@ public class ElasticReadService implements IReadService {
         if (!configurator.isIncludeSignatures()) {
             JSONUtil.removeNode((ObjectNode) result, Constants.SIGNATURES_STR);
         }
-
+        
         auditService.auditRead(auditService.createAuditRecord(userId, id, entityType), shard);
+
 
         ObjectNode resultNode = JsonNodeFactory.instance.objectNode();
         resultNode.set(entityType, result);
