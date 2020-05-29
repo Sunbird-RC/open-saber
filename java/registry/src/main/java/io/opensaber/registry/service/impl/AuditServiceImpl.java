@@ -113,10 +113,7 @@ public class AuditServiceImpl implements IAuditService {
     
     public void sendAuditToESActor(JsonNode inputNode, String entityType, String entityId) throws JsonProcessingException{
     	boolean elasticSearchEnabled = ("io.opensaber.registry.service.ElasticSearchService".equals(searchProvider));
-		/*
-		 * JsonNode tempNode = null; if (inputNode != null) { tempNode =
-		 * inputNode.get(entityType); }
-		 */
+		
         MessageProtos.Message message = MessageFactory.instance().createOSActorMessage(elasticSearchEnabled, "ADD",
                 entityType.toLowerCase(), entityId, inputNode.get(entityType), null);
         ActorCache.instance().get(Router.ROUTER_NAME).tell(message, null);

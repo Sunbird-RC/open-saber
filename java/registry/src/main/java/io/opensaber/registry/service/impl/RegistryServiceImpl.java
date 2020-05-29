@@ -319,10 +319,10 @@ public class RegistryServiceImpl implements RegistryService {
    @Async("taskExecutor")	
    public void callESActors(JsonNode rootNode, String operation, String parentEntityType, String entityRootId, Transaction tx) throws JsonProcessingException {			      
 			logger.debug("callESActors started");       
-			
+			rootNode = rootNode != null ? rootNode.get(parentEntityType): rootNode;
 			boolean elasticSearchEnabled = (searchProvider.equals("io.opensaber.registry.service.ElasticSearchService"));	
 			MessageProtos.Message message = MessageFactory.instance().createOSActorMessage(elasticSearchEnabled, operation,	
-			        parentEntityType.toLowerCase(), entityRootId, rootNode.get(parentEntityType),null);	
+			        parentEntityType.toLowerCase(), entityRootId, rootNode,null);	
 			ActorCache.instance().get(Router.ROUTER_NAME).tell(message, null);	
 			logger.debug("callESActors ends");	
     }
