@@ -28,12 +28,15 @@ public class SqlgProvider extends DatabaseProvider {
     private SqlgGraph graph;
     private OSGraph customGraph;
 
-    public SqlgProvider(DBConnectionInfo connectionInfo, String uuidPropertyName, int maxPoolSize) {
+    public SqlgProvider(DBConnectionInfo connectionInfo, String uuidPropertyName, int maxPoolSize,boolean distributed) {
         Configuration config = new BaseConfiguration();
         config.setProperty("jdbc.url", connectionInfo.getUri());
         config.setProperty("jdbc.username", connectionInfo.getUsername());
         config.setProperty("jdbc.password", connectionInfo.getPassword());
         config.setProperty("maxPoolSize", maxPoolSize);
+        if(distributed) {
+        	config.setProperty("distributed", distributed);
+        }
         setProvider(Constants.GraphDatabaseProvider.SQLG);
         setUuidPropertyName(uuidPropertyName);
         graph = SqlgGraph.open(config);
