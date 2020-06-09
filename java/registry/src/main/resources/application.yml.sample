@@ -64,6 +64,8 @@ database:
   
     #maxDB Connection Pool Size
   maxPoolSize: ${database_maxPoolSize:150}
+   
+  distributed: ${database_distributed:true}
   
 
   # Choose "none" as the propertyName if you don't want any shards. Otherwise

@@ -39,6 +39,17 @@ public class DBConnectionInfoMgr {
 	private int maxPoolSize;
 
 	
+	private boolean distributed;
+
+	
+
+	public Map<String, String> getShardLabelIdMap() {
+		return shardLabelIdMap;
+	}
+
+	public void setShardLabelIdMap(Map<String, String> shardLabelIdMap) {
+		this.shardLabelIdMap = shardLabelIdMap;
+	}
 
 	/**
 	 * Each DBConnectionInfo is a shard connection information.
@@ -122,5 +133,13 @@ public class DBConnectionInfoMgr {
 
 	public void setMaxPoolSize(int maxPoolSize) {
 		this.maxPoolSize = maxPoolSize;
+	}
+	
+	public boolean isDistributed() {
+		return distributed;
+	}
+
+	public void setDistributed(boolean distributed) {
+		this.distributed = distributed;
 	}
 }
