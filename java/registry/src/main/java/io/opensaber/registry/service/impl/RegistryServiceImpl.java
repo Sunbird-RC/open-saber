@@ -433,11 +433,10 @@ public class RegistryServiceImpl implements RegistryService {
                         registryDao.updateVertex(graph, existingVertex, userInputNode);
                     }
                 } else if (oneElementNode.isObject()) {
-//                    ObjectNode newObject = JsonNodeFactory.instance.objectNode();
-//                    newObject.set(objectName, oneElementNode);
-//                    logger.info("Object node {}", oneElement.toString());
-//                    doUpdate(shard, graph, registryDao, vr, newObject);
-                        doUpdate(shard, graph, registryDao, vr, oneElementNode);
+                    ObjectNode newObject = JsonNodeFactory.instance.objectNode();
+                    newObject.set(objectName, oneElementNode);
+                    logger.info("Object node {}", oneElement.toString());
+                    doUpdate(shard, graph, registryDao, vr, newObject);
                 }
             }
         } else {
