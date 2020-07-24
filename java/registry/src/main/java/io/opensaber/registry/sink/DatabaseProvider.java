@@ -67,7 +67,7 @@ public abstract class DatabaseProvider {
         }
     }
 
-    private boolean supportsTransaction(Graph graph) {
+    protected boolean supportsTransaction(Graph graph) {
         if(!supportsTransaction.isPresent()){
             supportsTransaction = Optional.ofNullable(graph.features().graph().supportsTransactions());
         }

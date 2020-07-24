@@ -32,7 +32,7 @@ public class SqlgProvider extends DatabaseProvider {
         setProvider(Constants.GraphDatabaseProvider.SQLG);
         setUuidPropertyName(uuidPropertyName);
         graph = SqlgGraph.open(config);
-        customGraph = new OSGraph(graph, false);
+        customGraph = new OSGraph(graph, false, supportsTransaction(graph));
     }
 
     @PostConstruct

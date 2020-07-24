@@ -16,6 +16,12 @@ public class OSGraph implements AutoCloseable {
         closeRequired = close;
     }
 
+    public OSGraph (Graph g, boolean close, boolean supportTxn) {
+        graph = g;
+        closeRequired = close;
+        supportsTransaction = supportTxn;
+    }
+
     public void close() throws Exception {
         if (graph != null && supportsTransaction && graph.tx().isOpen()) {
             graph.tx().close();

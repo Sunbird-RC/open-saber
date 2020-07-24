@@ -12,6 +12,7 @@ import java.util.Set;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -402,6 +403,7 @@ public class RegistryServiceImpl implements RegistryService {
             Iterator<Map.Entry<String, JsonNode>> fieldsItr = userInputNode.fields();
             while (fieldsItr.hasNext()) {
                 Map.Entry<String, JsonNode> oneElement = fieldsItr.next();
+                String objectName = oneElement.getKey();
                 JsonNode oneElementNode = oneElement.getValue();
                 if (!oneElement.getKey().equals(uuidPropertyName) &&
                         oneElementNode.isValueNode() || oneElementNode.isArray()) {
@@ -431,8 +433,11 @@ public class RegistryServiceImpl implements RegistryService {
                         registryDao.updateVertex(graph, existingVertex, userInputNode);
                     }
                 } else if (oneElementNode.isObject()) {
-                    logger.info("Object node {}", oneElement.toString());
-                    doUpdate(shard, graph, registryDao, vr, oneElementNode);
+//                    ObjectNode newObject = JsonNodeFactory.instance.objectNode();
+//                    newObject.set(objectName, oneElementNode);
+//                    logger.info("Object node {}", oneElement.toString());
+//                    doUpdate(shard, graph, registryDao, vr, newObject);
+                        doUpdate(shard, graph, registryDao, vr, oneElementNode);
                 }
             }
         } else {
