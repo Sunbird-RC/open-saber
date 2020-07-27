@@ -99,6 +99,10 @@
           "$id": "#/properties/updateBy",
           "type": "string",
           "title":"User Id"         
+        },
+        "type":{
+          "$id": "#/properties/type",
+          "$ref": "Common.json#/definitions/Type"
         }
       }
     }
