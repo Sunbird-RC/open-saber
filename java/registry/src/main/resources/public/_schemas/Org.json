@@ -103,6 +103,11 @@
         "type":{
           "$id": "#/properties/type",
           "$ref": "Common.json#/definitions/Type"
+        },
+        "orgId":{
+          "$id": "#/properties/orgId",
+          "type": "string",
+          "title":"Org Id"        
         }
       }
     }
