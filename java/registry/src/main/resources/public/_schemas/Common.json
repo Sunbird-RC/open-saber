@@ -161,7 +161,16 @@
       "type": "string",
       "enum": [
         "admin",
-        "user"
+        "user",
+        "sourcing_reviewer",
+        "sourcing_admin"
+      ]
+    },
+     "Type": {
+      "type": "string",
+      "enum": [
+        "contribute",
+        "sourcing"
       ]
     }
   }
