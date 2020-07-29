@@ -102,7 +102,10 @@
         },
         "type":{
           "$id": "#/properties/type",
-          "$ref": "Common.json#/definitions/Type"
+          "type": "array",
+		  "items": {
+			"$ref": "Common.json#/definitions/Type"
+		   }
         },
         "orgId":{
           "$id": "#/properties/orgId",
