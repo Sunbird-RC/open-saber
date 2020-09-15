@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opensaber.registry.middleware.util.Constants;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,7 +33,7 @@ public class DefinitionsManager {
      */
     @PostConstruct
     public void loadDefinition() throws Exception {
-        
+
         final ObjectMapper mapper = new ObjectMapper();
         osResourceLoader = new OSResourceLoader(resourceLoader);
         osResourceLoader.loadResource(Constants.RESOURCE_LOCATION);
@@ -44,7 +45,18 @@ public class DefinitionsManager {
                     + definition.getOsSchemaConfiguration().getPrivateFields().size() + " & signed fields size:"
                     + definition.getOsSchemaConfiguration().getSignedFields().size());
             definitionMap.putIfAbsent(definition.getTitle(), definition);
-        }        
+        }
+
+        Set<Definition> loadedDefinitionsSet = new HashSet<>();
+        loadedDefinitionsSet.addAll(definitionMap.values());
+
+        // CAVEAT: attribute names must be distinct to not cause definition collisions.
+        loadedDefinitionsSet.forEach(def -> {
+            def.getSubSchemaNames().forEach((fieldName, defnName) -> {
+                definitionMap.putIfAbsent(fieldName, definitionMap.get(defnName));
+            });
+        });
+
         logger.info("loaded schema resource(s): " + definitionMap.size());
     }
 
