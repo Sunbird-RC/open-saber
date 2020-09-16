@@ -53,24 +53,28 @@ public class Definition {
         }
 
         // Iterate over all properties in the current definition
-        JsonNode properties = schemaNode.get(DEFINITIONS).get(title).get(PROPERTIES);
-        properties.fields().forEachRemaining(field -> {
-            JsonNode typeTextNode = field.getValue().get(TYPE);
-            boolean isArrayType = typeTextNode != null && typeTextNode.asText().equals("array");
+        JsonNode defnTitle = schemaNode.get(DEFINITIONS).get(title);
+        JsonNode properties = null;
+        if (null != defnTitle) {
+            properties = defnTitle.get(PROPERTIES);
+            properties.fields().forEachRemaining(field -> {
+                JsonNode typeTextNode = field.getValue().get(TYPE);
+                boolean isArrayType = typeTextNode != null && typeTextNode.asText().equals("array");
 
-            JsonNode refTextNode = field.getValue().get(REF);
-            if (isArrayType) {
-                refTextNode = field.getValue().get("items").get(REF);
-            }
+                JsonNode refTextNode = field.getValue().get(REF);
+                if (isArrayType) {
+                    refTextNode = field.getValue().get("items").get(REF);
+                }
 
-            boolean isRefValid = isRefNode(refTextNode);
-            if (isRefValid) {
-                String refVal = refTextNode.asText();
-                logger.debug("{}.{} is a ref field with value {}", title, field.getKey(), refVal);
-                addFieldSchema(field.getKey(),
-                        refVal.substring(refVal.lastIndexOf("/") + 1));
-            }
-        });
+                boolean isRefValid = isRefNode(refTextNode);
+                if (isRefValid) {
+                    String refVal = refTextNode.asText();
+                    logger.debug("{}.{} is a ref field with value {}", title, field.getKey(), refVal);
+                    addFieldSchema(field.getKey(),
+                            refVal.substring(refVal.lastIndexOf("/") + 1));
+                }
+            });
+        }
     }
 
 
