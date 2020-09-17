@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.opensaber.registry.exception.EncryptionException;
+import io.opensaber.registry.middleware.util.Constants;
 import io.opensaber.registry.service.EncryptionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,8 +71,12 @@ public class PrivateField {
         Definition definition = definitionsManager.getDefinition(rootDefinitionName);;
         if (null != childFieldName) {
             String defnName = definition.getDefinitionNameForField(childFieldName);
-            definition = definitionsManager.getDefinition(defnName);
-            logger.debug("Got child name definition");
+            Definition childDefinition = definitionsManager.getDefinition(defnName);
+            if (null == childDefinition) {
+                logger.error("Cannot get child name definition {}", childFieldName);
+                return element;
+            }
+            definition = childDefinition;
         }
 
         List<String> privatePropertyLst = definition.getOsSchemaConfiguration().getPrivateFields();
@@ -111,11 +116,12 @@ public class PrivateField {
                 Map.Entry<String, JsonNode> entry = fieldsItr.next();
                 JsonNode entryValue = entry.getValue();
                 logger.debug("Processing {}.{} -> {}", tempFieldName, entry.getKey(), entry.getValue());
+                boolean isNotSignatures = !Constants.SIGNATURES_STR.equals(entry.getKey());
 
-                if (entryValue.isObject()) {
+                if (isNotSignatures && entryValue.isObject()) {
                     // Recursive calls
                     process(entryValue, tempFieldName, entry.getKey());
-                } else if (entryValue.isArray()) {
+                } else if (isNotSignatures && entryValue.isArray()) {
                     processArray((ArrayNode) entryValue, tempFieldName, entry.getKey());
                 }
             } catch (EncryptionException e) {

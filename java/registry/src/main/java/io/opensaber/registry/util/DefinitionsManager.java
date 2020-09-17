@@ -41,13 +41,16 @@ public class DefinitionsManager {
         osResourceLoader = new OSResourceLoader(resourceLoader);
         osResourceLoader.loadResource(Constants.RESOURCE_LOCATION);
 
-        for(Entry<String, String> entry : osResourceLoader.getNameContent().entrySet()){
+        for(Entry<String, String> entry : osResourceLoader.getNameContent().entrySet()) {
+            String filename = entry.getKey();
+            String filenameWithoutExtn = filename.substring(0, filename.indexOf('.'));
             JsonNode jsonNode = mapper.readTree(entry.getValue());
             Definition definition = new Definition(jsonNode);
             logger.info("loading resource:" + entry.getKey() + " with private field size:"
                     + definition.getOsSchemaConfiguration().getPrivateFields().size() + " & signed fields size:"
                     + definition.getOsSchemaConfiguration().getSignedFields().size());
             definitionMap.putIfAbsent(definition.getTitle(), definition);
+            definitionMap.putIfAbsent(filenameWithoutExtn, definition);
         }
 
         derivedDefinitionMap.putAll(definitionMap);
@@ -57,7 +60,12 @@ public class DefinitionsManager {
         // CAVEAT: attribute names must be distinct to not cause definition collisions.
         loadedDefinitionsSet.forEach(def -> {
             def.getSubSchemaNames().forEach((fieldName, defnName) -> {
-                derivedDefinitionMap.putIfAbsent(fieldName, definitionMap.get(defnName));
+                Definition definition = definitionMap.getOrDefault(defnName, null);
+                if (null != definition) {
+                    derivedDefinitionMap.putIfAbsent(fieldName, definitionMap.get(defnName));
+                } else {
+                    logger.warn("{} definition not found for field {}", defnName, fieldName);
+                }
             });
         });
 
