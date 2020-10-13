@@ -15,7 +15,7 @@
 
     <properties>
         <jacoco.version>0.8.1</jacoco.version>
-        <junit.version>4.12</junit.version>
+        <junit.version>4.13.1</junit.version>
     </properties>
 
     <dependencies>
