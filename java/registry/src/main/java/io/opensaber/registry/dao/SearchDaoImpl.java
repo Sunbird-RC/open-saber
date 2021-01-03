@@ -17,6 +17,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.umlg.sqlg.structure.RecordId;
 
 public class SearchDaoImpl implements SearchDao {
     private IRegistryDao registryDao;
@@ -32,11 +33,11 @@ public class SearchDaoImpl implements SearchDao {
         int offset = searchQuery.getOffset();
         ObjectNode resultNode = JsonNodeFactory.instance.objectNode();
         for (String entity : searchQuery.getEntityTypes()) {
-            GraphTraversal<Vertex, Vertex> resultGraphTraversal = dbGraphTraversalSource.clone().V().hasLabel(entity)
-                    .range(offset, offset + searchQuery.getLimit()).limit(searchQuery.getLimit());
+            GraphTraversal<Vertex, Vertex> resultGraphTraversal = dbGraphTraversalSource.clone().V().hasLabel(entity);
             GraphTraversal<Vertex, Vertex> parentTraversal = resultGraphTraversal.asAdmin().clone();
 
             resultGraphTraversal = getFilteredResultTraversal(resultGraphTraversal, filterList);
+            resultGraphTraversal = resultGraphTraversal.range(offset, offset + searchQuery.getLimit()).limit(searchQuery.getLimit());
             JsonNode result = getResult(graphFromStore, resultGraphTraversal, parentTraversal);
             resultNode.set(entity, result);
         }
