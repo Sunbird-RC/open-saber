@@ -289,7 +289,9 @@ public class VertexReader {
      */
     private ArrayNode expandChildObject(ObjectNode entityNode, List<String> processedUUIDs) {
         ArrayNode resultArr = JsonNodeFactory.instance.arrayNode();
-
+        if (entityNode == null) {
+            return resultArr;
+        }
         List<String> fieldNames = new ArrayList<String>();
         entityNode.fieldNames().forEachRemaining(fieldName -> {
             fieldNames.add(fieldName);
