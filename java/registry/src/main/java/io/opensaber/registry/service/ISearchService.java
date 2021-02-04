@@ -58,8 +58,10 @@ public interface ISearchService {
         }
 
         try {
-            searchQuery.setLimit(inputQueryNode.get("limit").asInt());
-            searchQuery.setOffset(inputQueryNode.get("offset").asInt());
+            if (inputQueryNode.get("limit") != null )
+                searchQuery.setLimit(inputQueryNode.get("limit").asInt());
+            if (inputQueryNode.get("offset") != null)
+                searchQuery.setOffset(inputQueryNode.get("offset").asInt());
         } catch (Exception e) {
             logger.error("Populates SearchQuery for limit/offset(optional): {}", e.getMessage());
         }
