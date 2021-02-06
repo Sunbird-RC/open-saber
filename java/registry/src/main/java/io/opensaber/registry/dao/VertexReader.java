@@ -339,7 +339,12 @@ public class VertexReader {
                             Map.Entry<String, JsonNode> item = entryIterator.next();
                             JsonNode ar = item.getValue();
                             for (JsonNode node : ar) {
-                                String osidVal = ArrayHelper.unquoteString(node.get(uuidPropertyName).asText());
+                                String osidVal;
+                                if(node.isObject()) {
+                                    osidVal = ArrayHelper.unquoteString(node.get(uuidPropertyName).asText());
+                                } else {
+                                    osidVal = ArrayHelper.unquoteString(node.asText());
+                                }
                                 ObjectNode ovalue = uuidNodeMap.getOrDefault(osidVal, null);
                                 expandChildObject(ovalue);
                                 if (ovalue != null) {
@@ -450,7 +455,7 @@ public class VertexReader {
         return readInternal(rootVertex);
     }
 
-    private JsonNode readInternal(Vertex rootVertex) throws Exception {
+    JsonNode readInternal(Vertex rootVertex) throws Exception {
         if (null == rootVertex) {
             throw new Exception("Invalid id");
         }
