@@ -114,6 +114,7 @@ public class VertexWriter {
     private void removeExistingDefaultProperty(Vertex vertex, String entryKey){
         VertexProperty<Object> existingProperty = vertex.property(entryKey);
         if (existingProperty.isPresent()) {
+            logger.info("Removing existing emtpy property: {}", entryKey);
             existingProperty.remove();
         }
     }
