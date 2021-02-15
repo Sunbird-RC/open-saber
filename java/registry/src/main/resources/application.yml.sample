@@ -32,6 +32,8 @@ registry:
     base: ${registry_system_base:http://localhost:8080/opensaber/}
   rootEntity:
         type: ${registry_rootentity_type:Teacher}
+  schema:
+    url: http://localhost:8081/_schemas
 
 # This property is to be used for search request/query
 # offset: search result starts from value provided as default
@@ -40,7 +42,7 @@ search:
   offset: ${search_offset:0}
   limit: ${search_limit:2000}
   # The search mechanism to use. Values could be either NativeSearchService or ElasticSearchService
-  #   If NativeSearchService, then every search API uses the same database as the writes. May
+  #   If NativeSearchService, then every search API uses the same database as the writes. May 
   # not offer high speed reads. This is the default search service, if this config is not provided.
   #   If ElasticSearchService, then Elastic search is used.
   providerName: io.opensaber.registry.service.NativeSearchService
@@ -66,7 +68,7 @@ database:
   # has been provided for reference. If you'd like to use it, set value "serialNum" here.
   # Note that "serialNum" must then be part of the payload.
   shardProperty: ${database_shardProperty:none}
-
+  
   # This property is instruction to use the shard advisor.
   # Values could be io.opensaber.registry.sink.shard.DefaultShardAdvisor, OR
   # io.opensaber.registry.sink.shard.SerialNumberShardAdvisor OR
@@ -78,12 +80,12 @@ database:
     -
       # shardId, shardlabel must be a unique identifier to each connection.
       shardId: shard1
-
+      
       # shardLabel is used as prefix for a uuid. Could be any alpha numeric string
       # Example of a record identifier: 1-60f76147-0acd-4dff-b75a-2d811787d04d
       # Note '1' is the label used for record identifier
       # shardLabel is not stored in the database
-      shardLabel: 1
+      shardLabel: 1      
 
       # The format of the URI can be learnt from the following links -
       #     * 1. Graph database (Neo4J)
@@ -121,7 +123,7 @@ cassandra:
     index:
       storage.backend: ${cassandr_index_storage:elasticsearch}
       hostname: ${cassandra_index_hostname:localhost}
-
+    
 # File for framing the entity while reading
 frame:
   file: ${frame_file:frame.json}
@@ -153,7 +155,7 @@ signature:
 #  data_store can have following values
 #   * FILE     : Store the audit log in files.
 #   * DATABASE : Store the audit log in primary database configured in database properties.
-#   * ELASTIC  : Store the audit log in elastic search configured in elastic properties. 
+#   * ELASTIC  : Store the audit log in elastic search configured in elastic properties.
 #  Note : Database Stores the created audit schema in audit_schema folder.
 audit:
   enabled: ${audit_enabled:false}
@@ -215,9 +217,9 @@ auditTaskExecutor:
   # Set the ThreadPoolExecutor's core pool size.
   corePoolSize: ${auditTaskExecutor_corePoolSize:2}
   # Set the ThreadPoolExecutor's maximum pool size.
-  maxPoolSize: ${auditTaskExecutor_maxPoolSize:2}
+  maxPoolSize: ${auditTaskExecutor_maxPoolSize:10}
   # Set the capacity for the ThreadPoolExecutor's BlockingQueue.
-  queueCapacity: ${auditTaskExecutor_queueCapacity:3}
+  queueCapacity: ${auditTaskExecutor_queueCapacity:50000}
 
 # elastic-search configuration details
 elastic:
@@ -311,7 +313,7 @@ audit:
     store: ${audit_frame_store:DATABASE}
     suffix: ${audit_suffix:Audit}
     suffixSeparator: ${audit_suffixSeparator:_}
-      
+
 authentication:
   enabled: ${authentication_enabled:true}
   publicKey:  ${authentication_publickey:MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqe1lVD9jnQWQce62e2Q44tACqBIt5UZyGzCegxax2gddj4xotY5BDxaxuJRGKDLRpm8lPNHxX8dce8SUVAMBfk85rL+Bxv1mjspKo7Q5qsFm9TGcvE4e/4xhgpMjw6dCFt8+S87jvRjmDHjakGMooOls1kjppQiklSEZ0lW3Crqet4RNjb1FNJ+2Jg26frm8i2cpb2wRnmLDuQ9sAnHCxAD2rGxSGLXhKABptbMeTVx25eh+PVISjc78uOhAnMwOHKApVBGnVCfcUoVYqfkX8XcPQU9ybmAi27vp9xZqMfh6I56Tl4fsWYBgf8ZMl0UWyRR3PNmo/0kxon1d3zqFnwIDAQAB}

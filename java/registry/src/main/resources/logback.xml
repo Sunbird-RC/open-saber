@@ -48,7 +48,7 @@
             <!-- Adopter's specific tags: maxHistory, totalSizeCap disabled by default -->            
             <!-- <maxHistory>10</maxHistory> -->
             <!-- <totalSizeCap>5GB</totalSizeCap> -->
-            <maxFileSize>30MB</maxFileSize>
+            <maxFileSize>30MB</maxFileSize>            
         </rollingPolicy>
         <encoder>
             <pattern>%msg%n</pattern>
@@ -69,16 +69,17 @@
     <logger name="org.springframework" level="ERROR"/>
 
     <!-- OpenSABER specific loggers. Turn these to INFO in production -->
-    <logger name="io.opensaber.registry.service" level="DEBUG"/>
-    <logger name="com.steelbridgelabs.oss.neo4j.structure.Neo4JSession" level="DEBUG"/>
-    <logger name="io.opensaber.registry.dao.RegistryDaoImpl" level="DEBUG"/>
-    <logger name="com.mchange.v2.c3p0.impl.NewProxyPreparedStatement" level="INFO"/>
+    <logger name="io.opensaber.registry.service" level="ERROR"/>
+    <logger name="org.springframework.web" level="ERROR"/>
+    <logger name="com.steelbridgelabs.oss.neo4j.structure.Neo4JSession" level="ERROR"/>
+    <logger name="io.opensaber.registry.dao.RegistryDaoImpl" level="ERROR"/>
+    <logger name="com.mchange.v2.c3p0.impl.NewProxyPreparedStatement" level="ERROR"/>
 
-    <logger name="io.opensaber.registry.util.AuditFileWriter" level="DEBUG" additivity="FALSE">
+    <logger name="io.opensaber.audit.AuditServiceImpl" level="ERROR" additivity="ERROR">
         <appender-ref ref="AuditFileAppender"/>
     </logger>
 
-    <root level="DEBUG" additivity="FALSE">
+    <root level="ERROR" additivity="FALSE">
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="FILE"/>
     </root>

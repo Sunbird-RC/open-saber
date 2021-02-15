@@ -83,6 +83,9 @@ public class RegistryServiceImpl implements RegistryService {
     @Value("${persistence.enabled:true}")
     private boolean persistenceEnabled;
 
+    @Value("${registry.perRequest.indexCreation.enabled:false}")
+    private boolean perRequestIndexCreation;
+
     @Value("${persistence.commit.enabled:true}")
     private boolean commitEnabled;
 
@@ -153,12 +156,12 @@ public class RegistryServiceImpl implements RegistryService {
                 registryDao.deleteEntity(vertex);
                 databaseProvider.commitTransaction(graph, tx);
                 String index = vertex.property(Constants.TYPE_STR_JSON_LD).isPresent() ? (String) vertex.property(Constants.TYPE_STR_JSON_LD).value() : null;
-                
+
                 //if Audit enabled in configuration yml file
                 if(auditEnabled) {
 	                List<Integer> transactionId = new LinkedList<>(Arrays.asList(tx.hashCode()));
 	                List<String> entityTypes = new LinkedList<>(Arrays.asList(index));
-	                
+
 			        AuditRecord auditRecord = auditService.createAuditRecord(userId, Constants.AUDIT_ACTION_DELETE, uuid, transactionId);
 			        auditRecord.setAuditInfo(auditService.createAuditInfo(Constants.AUDIT_ACTION_DELETE_OP, Constants.AUDIT_ACTION_DELETE, null, null, entityTypes));
 	                auditService.doAudit(auditRecord, null, entityTypes, uuid, shard);
@@ -203,15 +206,18 @@ public class RegistryServiceImpl implements RegistryService {
             } finally {
                 tx.close();
             }
+
             // Add indices: executes only once.
-            String shardId = shard.getShardId();
-            Vertex parentVertex = entityParenter.getKnownParentVertex(vertexLabel, shardId);
-            Definition definition = definitionsManager.getDefinition(vertexLabel);
-            entityParenter.ensureIndexExists(dbProvider, parentVertex, definition, shardId);
-            
+            if (perRequestIndexCreation) {
+                String shardId = shard.getShardId();
+                Vertex parentVertex = entityParenter.getKnownParentVertex(vertexLabel, shardId);
+                Definition definition = definitionsManager.getDefinition(vertexLabel);
+                entityParenter.ensureIndexExists(dbProvider, parentVertex, definition, shardId);
+            }
+
             List<Integer> transactionId = new LinkedList<>(Arrays.asList(tx.hashCode()));
             List<String> entityTypes = new LinkedList<>(Arrays.asList(vertexLabel));
-            
+
             //if Audit enabled in configuration yml file
             if(auditEnabled) {
 		        AuditRecord auditRecord = auditService.createAuditRecord(userId, Constants.AUDIT_ACTION_ADD, entityId, transactionId);
@@ -219,7 +225,7 @@ public class RegistryServiceImpl implements RegistryService {
 
             	auditService.doAudit(auditRecord, rootNode, entityTypes, entityId, shard);
             }
-     
+
         }
         return entityId;
     }
@@ -300,12 +306,12 @@ public class RegistryServiceImpl implements RegistryService {
             doUpdate(shard, graph, registryDao, vr, inputNode.get(entityType));
 
             databaseProvider.commitTransaction(graph, tx);
-            
+
             //if Audit enabled in configuration yml file
             if(auditEnabled) {
 	            List<Integer> transactionId = new LinkedList<>(Arrays.asList(tx.hashCode()));
 	            List<String> entityTypes = new LinkedList<>(Arrays.asList(entityType));
-	            
+
 		        AuditRecord auditRecord = auditService.createAuditRecord(userId, Constants.AUDIT_ACTION_UPDATE, id, transactionId);
 		        auditRecord.setAuditInfo(auditService.createAuditInfo(Constants.AUDIT_ACTION_UPDATE_OP, Constants.AUDIT_ACTION_UPDATE, readNode, mergedNode, entityTypes));
 		        auditService.doAudit(auditRecord, mergedNode, entityTypes, rootId, shard);
@@ -317,9 +323,9 @@ public class RegistryServiceImpl implements RegistryService {
         HashMap<String, Vertex> uuidVertexMap = vr.getUuidVertexMap();
         Set<Object> updatedUuids = new HashSet<Object>();
         Set<String> previousArrayItemsUuids = vr.getArrayItemUuids(blankArrVertex);
-        
+
         VertexWriter vertexWriter = new VertexWriter(graph, shard.getDatabaseProvider() , uuidPropertyName);
-        
+
         for (JsonNode item : arrayNode) {
             if (item.isObject()) {
                 if (item.get(uuidPropertyName) != null) {
@@ -339,16 +345,16 @@ public class RegistryServiceImpl implements RegistryService {
                 }
             }
         }
-        
+
         //Update the array_node with list of updated uuids
         vertexWriter.updateArrayNode(blankArrVertex, vr.getInternalType(blankArrVertex), new ArrayList<Object>(updatedUuids));
-        
+
         doDelete(registryDao, vr, previousArrayItemsUuids, updatedUuids);
 
     }
 
     /**Delete the previous array items Uuids which are not updated
-     * 
+     *
      * @param registryDao
      * @param vr
      * @param previousArrayItemsUuids
