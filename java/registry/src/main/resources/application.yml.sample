@@ -33,7 +33,7 @@ registry:
   rootEntity:
         type: ${registry_rootentity_type:Teacher}
   schema:
-    url: http://localhost:8081/_schemas
+    url: http://localhost:8080/_schemas/
 
 # This property is to be used for search request/query
 # offset: search result starts from value provided as default
