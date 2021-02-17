@@ -6,10 +6,18 @@ cp java/registry/src/main/resources/frame.json.sample java/registry/src/main/res
 default_schema=true
 schema_dir='java/registry/src/main/resources/public/_schemas'
 
-for file in "$schema_dir"/*; do
-   new_file=$(basename "$file")
-   new_file=${new_file%.sample}
-   cp $file "$schema_dir""/""$new_file"
-done
+if $defaul_schema
+then
+  for file in "$schema_dir"/*; do
+    old_file="$(basename "$file")"
+    
+    new_file="${old_file%.sample}"
+
+    if [ "$new_file" != "$old_file" ]
+    then
+      cp $file "$schema_dir""/""$new_file"
+    fi
+  done
+fi
 
 echo "Configuration of dependencies completed"
