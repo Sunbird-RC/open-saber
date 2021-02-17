@@ -9,11 +9,13 @@ then
 else
  default_schema=false
 fi
+
 schema_dir='java/registry/src/main/resources/public/_schemas'
+schema_sample_dir='java/registry/src/main/resources/public/_schemas_sample'
 
 if $defaul_schema
 then
-  for file in "$schema_dir"/*; do
+  for file in "$schema_sample_dir"/*; do
     old_file="$(basename "$file")"
     
     new_file="${old_file%.sample}"
