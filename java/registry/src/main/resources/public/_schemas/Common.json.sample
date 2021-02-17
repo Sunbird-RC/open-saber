@@ -22,8 +22,8 @@
     },
     "Date": {
       "type": "string",
-      "format": "date",
-      "$comment": "YYYY-MM-DD format",
+      "format": "date-time",
+      "$comment": "YYYY-MM-DDTHH:MM:SSZ format",
       "examples": [
         "1990-12-01"
       ]
