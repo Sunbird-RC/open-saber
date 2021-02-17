@@ -3,7 +3,12 @@ echo "Configuring dependencies before build"
 cp java/registry/src/main/resources/application.yml.sample java/registry/src/main/resources/application.yml
 cp java/registry/src/main/resources/frame.json.sample java/registry/src/main/resources/frame.json
 
-default_schema=true
+if "$1" == "true":
+then
+ default_schema=true
+else
+ default_schema=false
+fi
 schema_dir='java/registry/src/main/resources/public/_schemas'
 
 if $defaul_schema
