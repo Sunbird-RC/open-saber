@@ -246,7 +246,10 @@ public class ElasticServiceImpl implements IElasticService {
     public JsonNode search(String index, SearchQuery searchQuery) throws IOException {
         BoolQueryBuilder query = buildQuery(searchQuery);
 
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder().query(query);
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
+                .query(query)
+                .size(searchQuery.getLimit())
+                .from(searchQuery.getOffset());
         SearchRequest searchRequest = new SearchRequest(index).source(sourceBuilder);
         ArrayNode resultArray = JsonNodeFactory.instance.arrayNode();
         ObjectMapper mapper = new ObjectMapper();
