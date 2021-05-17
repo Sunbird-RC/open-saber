@@ -294,8 +294,8 @@ public class RegistryController {
         JsonNode rootNode = apiMessage.getRequest().getRequestMapNode();
 
         try {
-            String entitySubject = validationService.getEntitySubject(entityType, rootNode);
-            String userID = keycloakAdminUtil.createUser(entitySubject, "facility admin");
+            String entitySubject = rootNode.findPath(definitionsManager.getSubjectPath(entityType)).asText();
+            String userID = keycloakAdminUtil.createUser(entitySubject);
             logger.info("Owner user_id : " + userID);
             String label = registryHelper.inviteEntity(rootNode, apiMessage.getUserID(), userID);
             Map resultMap = new HashMap();

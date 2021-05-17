@@ -73,14 +73,4 @@ public class JsonValidationServiceImpl implements IValidate {
     public void addDefinitions(String definitionTitle, String definitionContent) {
         definitionMap.put(definitionTitle, definitionContent);
     }
-
-
-    public String getEntitySubject(String entityType, JsonNode entity) throws Exception {
-    	String subjectJsonPath = new ObjectMapper()
-				.readTree(definitionMap.get(entityType))
-				.findPath("subjectJsonPath").textValue();
-    	return entity.findPath(subjectJsonPath).textValue();
-	}
-
-
 }

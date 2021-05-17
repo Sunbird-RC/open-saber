@@ -53,13 +53,11 @@ public class KeycloakAdminUtil {
                 .build();
     }
 
-    public String createUser(String mobileNumber, String role) {
+    public String createUser(String mobileNumber) {
         logger.info("Checking if user already exists");
         Optional<UserRepresentation> user = getUserByUsername(mobileNumber);
         if (user.isPresent()) {
             UserRepresentation existingUser = user.get();
-            logger.info("UserID: {} exists. Joining: {}", existingUser.getId(), role);
-            addUserToGroup(role, existingUser);
             return existingUser.getId();
         }
 
@@ -71,7 +69,6 @@ public class KeycloakAdminUtil {
             Collections.singletonMap("mobile_number",
             Collections.singletonList(mobileNumber))
         );
-        newUser.setGroups(Collections.singletonList(role));
         UsersResource usersResource = keycloak.realm(realm).users();
         Response response = usersResource.create(newUser);
         logger.info("Response |  Status: {} | Status Info: {}", response.getStatus(), response.getStatusInfo());

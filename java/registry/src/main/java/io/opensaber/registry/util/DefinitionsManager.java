@@ -1,5 +1,6 @@
 package io.opensaber.registry.util;
 
+import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opensaber.registry.middleware.util.Constants;
@@ -125,4 +126,8 @@ public class DefinitionsManager {
         }
         return result;
     };
+
+    public String getSubjectPath(String title) {
+        return definitionMap.get(title).getOsSchemaConfiguration().getSubjectJsonPath();
+    }
 }
