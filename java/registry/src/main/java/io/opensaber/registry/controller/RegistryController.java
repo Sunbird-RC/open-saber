@@ -545,13 +545,14 @@ public class RegistryController {
     public ResponseEntity<Object> getEntity(
             @PathVariable String entityName,
             @PathVariable String entityId,
-            @RequestHeader HttpHeaders header) {
+            @RequestHeader HttpHeaders header,
+            Principal principal) {
         boolean requireLDResponse = header.getAccept().contains(Constants.LD_JSON_MEDIA_TYPE);
 
         ResponseParams responseParams = new ResponseParams();
         Response response = new Response(Response.API_ID.READ, "OK", responseParams);
         try {
-            JsonNode resultNode = registryHelper.readEntity("", entityName, entityId, false, null, false);
+            JsonNode resultNode = registryHelper.readEntity(principal.getName(), entityName, entityId, false, null, false);
             // Transformation based on the mediaType
             Data<Object> data = new Data<>(resultNode);
             Configuration config = configurationHelper.getResponseConfiguration(requireLDResponse);
