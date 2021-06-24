@@ -5,31 +5,34 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import com.flipkart.zjsonpatch.JsonPatch;
 import io.opensaber.pojos.OpenSaberInstrumentation;
+import io.opensaber.registry.middleware.MiddlewareHaltException;
 import io.opensaber.registry.middleware.util.JSONUtil;
 import io.opensaber.registry.middleware.util.OSSystemFields;
 import io.opensaber.registry.model.DBConnectionInfoMgr;
-import io.opensaber.registry.service.DecryptionHelper;
-import io.opensaber.registry.service.IReadService;
-import io.opensaber.registry.service.ISearchService;
-import io.opensaber.registry.service.RegistryService;
+import io.opensaber.registry.service.*;
 import io.opensaber.registry.sink.shard.Shard;
 import io.opensaber.registry.sink.shard.ShardManager;
 import io.opensaber.registry.util.*;
+import io.opensaber.validators.IValidate;
+import io.opensaber.validators.ValidationException;
 import io.opensaber.views.ViewTemplate;
 import io.opensaber.views.ViewTransformer;
 
+import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.*;
 
 /**
  * This is helper class, user-service calls this class in-order to access registry functionality
@@ -49,10 +52,22 @@ public class RegistryHelper {
     IReadService readService;
 
     @Autowired
+    IValidate validationService;
+
+    @Autowired
     private ISearchService searchService;
 
     @Autowired
     private ViewTemplateManager viewTemplateManager;
+
+    @Autowired
+    EntityStateHelper entityStateHelper;
+
+    @Autowired
+    private KeycloakAdminUtil keycloakAdminUtil;
+
+    @Autowired
+    private DefinitionsManager definitionsManager;
 
     @Autowired
     private DBConnectionInfoMgr dbConnectionInfoMgr;
@@ -87,12 +102,28 @@ public class RegistryHelper {
      * @throws Exception
      */
     public String addEntity(JsonNode inputJson, String userId) throws Exception {
-        return addEntity(inputJson, userId, inputJson.fields().next().getKey());
+        String entityType = inputJson.fields().next().getKey();
+        validationService.validate(entityType, objectMapper.writeValueAsString(inputJson));
+        ObjectNode existingNode = objectMapper.createObjectNode();
+        existingNode.set(entityType, objectMapper.createObjectNode());
+        entityStateHelper.changeStateAfterUpdate(existingNode, inputJson);
+        return addEntity(inputJson, userId, entityType);
     }
 
-    public String inviteEntity(JsonNode inputJson, String userId, String owner) throws Exception {
+    public String inviteEntity(JsonNode inputJson, String userId) throws Exception {
         String entityType = inputJson.fields().next().getKey();
+        validationService.validateIgnoreRequired(entityType, objectMapper.writeValueAsString(inputJson));
+
+        String entitySubjectPath = definitionsManager.getSubjectPath(entityType);
+        JsonNode entitySubjectNode = inputJson.get(entityType).findPath(entitySubjectPath);
+        if (entitySubjectNode.isMissingNode()) {
+            throw new ValidationException("Missing required field for invitation: " + entitySubjectPath);
+        }
+
+        String entitySubject = entitySubjectNode.asText();
+        String owner = keycloakAdminUtil.createUser(entitySubject, entityType);
         OSSystemFields.osOwner.setOsOwner(inputJson.get(entityType), owner);
+
         return addEntity(inputJson, userId, entityType);
     }
 
@@ -144,8 +175,9 @@ public class RegistryHelper {
         }
         configurator.setIncludeEncryptedProp(includePrivateFields);
         resultNode =  readService.getEntity(shard, userId, recordId.getUuid(), entityType, configurator);
-        if (!isAuthorized(resultNode.get(entityType), userId)) {
-            throw new Exception("Unauthorized");
+        if (!isOwner(resultNode.get(entityType), userId)) {
+//            throw new Exception("Unauthorized");
+            //TODO: return public fields
         }
         if (viewTemplate != null) {
             ViewTransformer vTransformer = new ViewTransformer();
@@ -156,7 +188,7 @@ public class RegistryHelper {
         return resultNode;
     }
 
-    private boolean isAuthorized(JsonNode entity, String userId) {
+    private boolean isOwner(JsonNode entity, String userId) {
         String osOwner = OSSystemFields.osOwner.toString();
         return !entity.has(osOwner) || entity.get(osOwner).asText().equals(userId);
     }
@@ -216,10 +248,11 @@ public class RegistryHelper {
      * @return
      * @throws Exception
      */
-    public String updateEntity(JsonNode inputJson, String userId) throws Exception {
+    private String updateEntityNoStateChange(JsonNode inputJson, String userId) throws Exception {
         logger.debug("updateEntity starts");
         String entityType = inputJson.fields().next().getKey();
         String jsonString = objectMapper.writeValueAsString(inputJson);
+        validationService.validateIgnoreRequired(entityType, jsonString);
         Shard shard = shardManager.getShard(inputJson.get(entityType).get(shardManager.getShardProperty()));
         String label = inputJson.get(entityType).get(dbConnectionInfoMgr.getUuidPropertyName()).asText();
         RecordIdentifier recordId = RecordIdentifier.parse(label);
@@ -229,10 +262,79 @@ public class RegistryHelper {
         return "SUCCESS";
     }
 
+    public String updateEntity(JsonNode inputJson, String userId) throws Exception {
+        JsonNode existingNode = readEntity(inputJson, userId);
+        return updateEntityAndState(existingNode, inputJson, userId);
+    }
+
+    private String updateEntityAndState(JsonNode existingNode, JsonNode updatedNode, String userId) throws Exception {
+        entityStateHelper.changeStateAfterUpdate(existingNode, updatedNode);
+        return updateEntityNoStateChange(updatedNode, userId);
+    }
+
+    public void addEntityProperty(String entityName, String entityId, String propertyName, JsonNode inputJson) throws Exception {
+        String userId = "";
+        JsonNode existingNode = readEntity("", entityName, entityId, false, null, false);
+        JsonNode updateNode = existingNode.deepCopy();
+        JsonNode propertyNode = updateNode.get(entityName).get(propertyName);
+        if (propertyNode != null && !propertyNode.isMissingNode()) {
+            if (propertyNode.isArray()){
+                ((ArrayNode)propertyNode).add(inputJson);
+            } else {
+                ((ObjectNode)updateNode).set(propertyName, inputJson);
+            }
+        } else {
+            // if array property
+            JsonNode newPropertyNode = objectMapper.createArrayNode();
+            ((ArrayNode)newPropertyNode).add(inputJson);
+            ((ObjectNode)updateNode.get(entityName)).set(propertyName, newPropertyNode);
+            try {
+                validationService.validate(entityName, objectMapper.writeValueAsString(updateNode));
+            } catch (MiddlewareHaltException me) {
+                // try a field node since array validation failed
+                newPropertyNode = objectMapper.createObjectNode();
+                ((ObjectNode) updateNode).set(propertyName, newPropertyNode);
+            }
+        }
+        updateEntityAndState(existingNode, updateNode, "");
+    }
+
+    public void updateEntityProperty(String entityName, String entityId, String propertyName, String propertyId, JsonNode inputJson) throws Exception {
+        String userId = "";
+        JsonNode existingNode = readEntity("", entityName, entityId, false, null, false);
+
+        JsonNode updateNode = existingNode.deepCopy();
+        ArrayNode propertyArrayNode = (ArrayNode) updateNode.get(entityName).get(propertyName);
+        boolean found = false;
+        for (JsonNode propertyNode : propertyArrayNode) {
+            if (propertyNode.get(uuidPropertyName).asText().equals(propertyId)) {
+                found = true;
+                inputJson.fields().forEachRemaining(f -> {
+                    ((ObjectNode)propertyNode).set(f.getKey(), f.getValue());
+                });
+                break;
+            }
+        }
+        if (!found) throw new Exception("No property with given id");
+        updateEntityAndState(existingNode, updateNode, "");
+    }
+
     public void attestEntity(String entityName, JsonNode node, String[] jsonPaths, String userId) throws Exception {
         String patch = String.format("[{\"op\":\"add\", \"path\": \"attested\", \"value\": {\"attestation\":{\"id\":\"%s\"}, \"path\": \"%s\"}}]", userId, jsonPaths[0]);
         JsonPatch.applyInPlace(objectMapper.readTree(patch), node.get(entityName));
-        updateEntity(node, userId);
+        updateEntityNoStateChange(node, userId);
+    }
+
+    public void sendForAttestation(String entityName, String entityId, String uuidPath) throws Exception {
+        JsonNode entityNode = readEntity("", entityName, entityId, false, null, false);
+        JsonNode updatedNode = entityStateHelper.sendForAttestation(entityNode, uuidPath);
+        updateEntityNoStateChange(updatedNode, "");
+    }
+
+    public void attest(String entityName, String entityId, String uuidPath, boolean isGranted) throws Exception {
+        JsonNode entityNode = readEntity("", entityName, entityId, false, null, false);
+        JsonNode updatedNode = entityStateHelper.attestClaim(entityNode, uuidPath);
+        updateEntityNoStateChange(updatedNode, "");
     }
 
     /**
@@ -266,7 +368,37 @@ public class RegistryHelper {
 
     }
 
-	
+    public String getKeycloakUserId(HttpServletRequest request) throws Exception {
+        KeycloakAuthenticationToken principal = (KeycloakAuthenticationToken) request.getUserPrincipal();
+        if (principal != null) {
+            return principal.getAccount().getPrincipal().getName();
+        }
+        throw new Exception("Forbidden");
+    }
 
+    public JsonNode getRequestedUserDetails(HttpServletRequest request, String entityName) throws Exception {
+        KeycloakAuthenticationToken principal = (KeycloakAuthenticationToken) request.getUserPrincipal();
+        if (principal != null) {
+            String userId = principal.getAccount().getPrincipal().getName();
+            ObjectNode payload = JsonNodeFactory.instance.objectNode();
+            payload.set("entityType", JsonNodeFactory.instance.arrayNode().add(entityName));
+            ObjectNode filters = JsonNodeFactory.instance.objectNode();
+            filters.set(OSSystemFields.osOwner.toString(), JsonNodeFactory.instance.objectNode().put("eq", userId));
+            payload.set("filters", filters);
+
+            watch.start("RegistryController.searchEntity");
+            JsonNode result = searchEntity(payload);
+            watch.stop("RegistryController.searchEntity");
+            return result;
+        }
+        throw new Exception("Forbidden");
+    }
+
+    public void authorize(String entityName, String entityId, HttpServletRequest request) throws Exception {
+        String userId = getKeycloakUserId(request);
+        JsonNode resultNode = readEntity(userId, entityName, entityId, false, null, false);
+        if(!isOwner(resultNode.get(entityName), userId)) {
+            throw new Exception("User is trying to update someone's data");
+        }
+    }
 }
-

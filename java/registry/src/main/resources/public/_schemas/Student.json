@@ -25,7 +25,7 @@
         "contactDetails": {
           "$ref": "Common.json/#/definitions/ContactDetails"
         },
-        "education": {
+        "educationDetails": {
           "type": "array",
           "items": {
             "$ref": "Common.json/#/definitions/EducationType"
@@ -47,12 +47,26 @@
     "signedFields": [],
     "indexFields": ["studentName"],
     "uniqueIndexFields": ["identityValue"],
-    "systemFields": ["osCreatedAt", "osUpdatedAt", "osCreatedBy", "osUpdatedBy"],
-    "attestations": [
+    "systemFields": [
+      "_osCreatedAt",
+      "_osUpdatedAt",
+      "_osCreatedBy",
+      "_osUpdatedBy",
+      "_osAttestedData",
+      "_osClaimId",
+      "_osState"
+    ],
+    "attestationAttributes": [
+      "educationDetails",
+      "nationalIdentifier"
+    ],
+    "attestationPolicies": [
       {
-        "paths": ["education"],
-        "role": "bo",
-        "constraint": "same_block"
+        "property": "educationDetails/[]",
+        "paths": ["$.educationDetails[?(@.osid == 'PROPERTY_ID')]['institute', 'program', 'graduationYear', 'marks']", "$.identityDetails['fullName']"],
+        "type": "MANUAL",
+        "attestorEntity": "Teacher",
+        "conditions": "(ATTESTOR#$.experience.[*].institute#.contains(REQUESTER#$.institute#)) && ATTESTOR#$.experience[?(@.institute == REQUESTER#$.institute#)]['_osState']#.contains('PUBLISHED')"
       }
     ],
     "subjectJsonPath": "mobile"

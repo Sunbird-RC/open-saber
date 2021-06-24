@@ -25,10 +25,10 @@
         "contactDetails": {
           "$ref": "Common.json/#/definitions/ContactDetails"
         },
-        "education": {
+        "academicQualifications": {
           "type": "array",
           "items": {
-            "$ref": "Common.json/#/definitions/EducationType"
+            "$ref": "Common.json/#/definitions/AcademicQualification"
           },
           "title": "Education Details"
         },
@@ -65,13 +65,14 @@
       "osCreatedBy",
       "osUpdatedBy"
     ],
-    "attestations": [
+    "attestationPolicies": [
       {
+        "property": "experience/[]",
         "paths": [
-          "education"
+          "experience"
         ],
-        "role": "bo",
-        "constraint": "same_block"
+        "attestorEntity": "Institute",
+        "conditions": "Institute"
       }
     ],
     "subjectJsonPath": "mobile"

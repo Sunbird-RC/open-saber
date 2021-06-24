@@ -15,9 +15,7 @@
       "$id": "#/properties/Institute",
       "type": "object",
       "title": "The Institute Schema",
-      "required": [
-        "instituteName"
-      ],
+      "required": [],
       "properties": {
         "instituteName": {
           "$id": "#/properties/instituteName",
@@ -25,7 +23,7 @@
           "title": "Institute Name"
         },
         "address": {
-          "$ref": "#/definitions/Address",
+          "$ref": "Common.json/#/definitions/Address",
           "title": "Address"
         },
         "establishmentYear": {
@@ -139,46 +137,6 @@
           "title": "Classes / Grades"
         }
       }
-    },
-    "Address": {
-      "type": "object",
-      "required": [
-
-      ],
-      "properties": {
-        "plot": {
-          "type": "string",
-          "title": "Plot"
-        },
-        "street": {
-          "type": "string",
-          "title": "Street"
-        },
-        "landmark": {
-          "type": "string",
-          "title": "Landmark"
-        },
-        "locality": {
-          "type": "string",
-          "title": "Locality"
-        },
-        "state": {
-          "type": "string",
-          "title": "State"
-        },
-        "district": {
-          "type": "string",
-          "title": "District"
-        },
-        "village": {
-          "type": "string",
-          "title": "Village/Town/City"
-        },
-        "pincode": {
-          "type": "string",
-          "title": "Pincode"
-        }
-      }
     }
   },
   "_osConfig": {
@@ -200,13 +158,13 @@
       "osCreatedBy",
       "osUpdatedBy"
     ],
-    "attestations": [
+    "attestationPolicies": [
       {
         "paths": [
           "affiliation"
         ],
-        "role": "board_admin",
-        "constraint": "same_block"
+        "constraint": "Board",
+        "attestorEntity": "Board"
       }
     ],
     "subjectJsonPath": "email"

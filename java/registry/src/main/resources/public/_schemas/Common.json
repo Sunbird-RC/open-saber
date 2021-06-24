@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
-  "title": "common",
+  "title": "Common",
   "definitions": {
     "IdentityDetails": {
       "type": "object",
@@ -61,18 +61,23 @@
         },
         "address": {
           "$id": "#/properties/address",
-          "type": "string",
+          "$ref": "#/definitions/Address",
           "title": "Address"
         }
       }
     },
-    "EducationType": {
+    "AcademicQualification": {
       "type": "object",
       "properties": {
         "institute": {
           "$id": "#/properties/institute",
           "type": "string",
           "title": "Institute Full Name"
+        },
+        "qualification": {
+          "$id": "#/properties/qualification",
+          "type": "string",
+          "title": "Qualification"
         },
         "program": {
           "$id": "#/properties/program",
@@ -149,6 +154,31 @@
         }
       }
     },
+    "EducationType": {
+      "type": "object",
+      "properties": {
+        "institute": {
+          "$id": "#/properties/institute",
+          "type": "string",
+          "title": "Institute Name"
+        },
+        "board": {
+          "$id": "#/properties/board",
+          "type": "string",
+          "title": "Board of Education"
+        },
+        "medium": {
+          "$id": "#/properties/program",
+          "type": "string",
+          "title": "Medium of Education"
+        },
+        "class": {
+          "$id": "#/properties/graduationYear",
+          "type": "string",
+          "title": "Current Enrollment Class / Std."
+        }
+      }
+    },
     "CertificationType": {
       "type": "object",
       "properties": {
@@ -162,6 +192,46 @@
         "end": {
           "type": "string",
           "format": "date"
+        }
+      }
+    },
+    "Address": {
+      "type": "object",
+      "required": [
+
+      ],
+      "properties": {
+        "plot": {
+          "type": "string",
+          "title": "Plot"
+        },
+        "street": {
+          "type": "string",
+          "title": "Street"
+        },
+        "landmark": {
+          "type": "string",
+          "title": "Landmark"
+        },
+        "locality": {
+          "type": "string",
+          "title": "Locality"
+        },
+        "state": {
+          "type": "string",
+          "title": "State"
+        },
+        "district": {
+          "type": "string",
+          "title": "District"
+        },
+        "village": {
+          "type": "string",
+          "title": "Village/Town/City"
+        },
+        "pincode": {
+          "type": "string",
+          "title": "Pincode"
         }
       }
     }

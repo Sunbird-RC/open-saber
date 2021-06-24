@@ -1,7 +1,7 @@
 package io.opensaber.registry.util;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import io.opensaber.registry.model.attestation.AttestationPolicy;
+import io.opensaber.pojos.attestation.AttestationPolicy;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -130,4 +130,17 @@ public class OSSchemaConfiguration {
         this.attestationPolicies = attestationPolicies;
     }
 
+    public String getConditions(String property) {
+        return getAttestationPolicy(property).getConditions();
+    }
+
+    private AttestationPolicy getAttestationPolicy(String property) {
+        return attestationPolicies.stream()
+                .filter(policy -> policy.hasProperty(property))
+                .findFirst().orElse(new AttestationPolicy());
+    }
+
+    public String getAttestorEntity(String property) {
+        return getAttestationPolicy(property).getAttestorEntity();
+    }
 }

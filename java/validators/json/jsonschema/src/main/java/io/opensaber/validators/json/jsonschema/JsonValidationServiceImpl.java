@@ -12,11 +12,15 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class JsonValidationServiceImpl implements IValidate {
 	private static Logger logger = LoggerFactory.getLogger(JsonValidationServiceImpl.class);
+	private final String REQUIRED_KEYWORD = "required";
 
 	private Map<String, Schema> entitySchemaMap = new HashMap<>();
 	private Map<String, String> definitionMap = new HashMap<>();;
@@ -27,19 +31,22 @@ public class JsonValidationServiceImpl implements IValidate {
 	}
 
 	private Schema getEntitySchema(String entityType) throws MiddlewareHaltException {
-
 		if (entitySchemaMap.containsKey(entityType)) {
 			return entitySchemaMap.get(entityType);
 		} else {
 			Schema schema;
 			try {
 				String definitionContent = definitionMap.get(entityType);
-                JSONObject rawSchema = new JSONObject(definitionContent);
+				if (definitionContent != null) {
+					JSONObject rawSchema = new JSONObject(definitionContent);
 
-				SchemaLoader schemaLoader = SchemaLoader.builder().schemaJson(rawSchema).draftV7Support()
-						.resolutionScope(schemaUrl).build();
-				schema = schemaLoader.load().build();
-				entitySchemaMap.put(entityType, schema);
+					SchemaLoader schemaLoader = SchemaLoader.builder().schemaJson(rawSchema).draftV7Support()
+							.resolutionScope(schemaUrl).build();
+					schema = schemaLoader.load().build();
+					entitySchemaMap.put(entityType, schema);
+				} else {
+					return null;
+				}
 			} catch (Exception ioe) {
 			    ioe.printStackTrace();
 				throw new MiddlewareHaltException("can't validate, "+ entityType + ": schema has a problem!");
@@ -49,28 +56,47 @@ public class JsonValidationServiceImpl implements IValidate {
 	}
 
 	@Override
-	public boolean validate(String entityType, String objString) throws MiddlewareHaltException {
-		boolean result = false;
-		Schema schema = getEntitySchema(entityType);
-		JSONObject obj = new JSONObject(objString);
-		try {
-			schema.validate(obj); // throws a ValidationException if this object is invalid
-			result = true;
-		} catch (ValidationException e) {
-			logger.error(e.getMessage() + " : " + e.getErrorMessage());
-			e.getCausingExceptions().stream()
-					.map(ValidationException::getMessage)
-					.forEach(logger::error);
-            logger.error(e.toJSON().toString());
-			throw new MiddlewareHaltException("Validation exception\n" + Strings.join(e.getCausingExceptions().stream()
-					.map(ValidationException::getMessage).iterator(), '\n'));
-		}
-		return result;
+	public void validate(String entityType, String objString) throws MiddlewareHaltException {
+		validate(entityType, objString, false);
 	}
-    /**
+
+	@Override
+	public void validateIgnoreRequired(String entityType, String payload) throws MiddlewareHaltException {
+		validate(entityType, payload, true);
+	}
+
+	private void validate(String entityType, String objString, boolean ignoreRequired) throws MiddlewareHaltException {
+		Schema schema = getEntitySchema(entityType);
+		if (schema != null) {
+			JSONObject obj = new JSONObject(objString);
+			try {
+				schema.validate(obj); // throws a ValidationException if this object is invalid
+			} catch (ValidationException e) {
+				logger.error("Validation Exception : " + e.getAllMessages());
+				if (ignoreRequired) {
+					List<ValidationException> flattenedExceptions = flattenException(e).stream()
+							.filter(ve -> !ve.getKeyword().equals(REQUIRED_KEYWORD))
+							.collect(Collectors.toList());
+
+					if (!flattenedExceptions.isEmpty()) {
+						String errMsg = flattenedExceptions.stream()
+								.map(ve -> String.format("%s : %s", e.getPointerToViolation(), e.getMessage()))
+								.collect(Collectors.joining("; "));
+						throw new MiddlewareHaltException("Validation Exception : " + errMsg);
+					}
+				} else {
+					throw new MiddlewareHaltException("Validation Exception : " + String.join("; ", e.getAllMessages()));
+				}
+			}
+		} else {
+			logger.warn("{} schema not found for validation", entityType);
+		}
+	}
+
+	/**
      * Store all list of known definitions as definitionMap.
      * Must get populated before creating the schema.
-     * 
+     *
      * @param definitionTitle
      * @param definitionContent
      */
@@ -79,13 +105,15 @@ public class JsonValidationServiceImpl implements IValidate {
         definitionMap.put(definitionTitle, definitionContent);
     }
 
-
-    public String getEntitySubject(String entityType, JsonNode entity) throws Exception {
-    	String subjectJsonPath = new ObjectMapper()
-				.readTree(definitionMap.get(entityType))
-				.findPath("subjectJsonPath").textValue();
-    	return entity.findPath(subjectJsonPath).textValue();
+	private List<ValidationException> flattenException(ValidationException e) {
+		List<ValidationException> flattenedValidationExceptions = new ArrayList<>();
+		if (!e.getCausingExceptions().isEmpty()) {
+			for (ValidationException ve : e.getCausingExceptions()) {
+				flattenedValidationExceptions.addAll(flattenException(ve));
+			}
+		} else {
+			flattenedValidationExceptions.add(e);
+		}
+		return flattenedValidationExceptions;
 	}
-
-
 }
