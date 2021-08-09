@@ -12,7 +12,7 @@
     </parent>
 
     <properties>
-        <elastic.search.version>6.6.0</elastic.search.version>
+        <elastic.search.version>6.8.17</elastic.search.version>
     </properties>
 
     <dependencies>
