@@ -26,8 +26,9 @@ node('build-slave') {
             stage('Build') {
                 env.NODE_ENV = "build"
                 print "Environment will be : ${env.NODE_ENV}"
+                creation_portal_branch=params.creation_portal_branch
 		sh("./configure-dependencies.sh")
-		sh('''git clone https://github.com/Sunbird-Ed/creation-portal.git -b ${params.creation_portal_branch}
+		sh('''git clone https://github.com/Sunbird-Ed/creation-portal.git -b $creation_portal_branch
 		      rm -rf java/registry/src/main/resources/public/_schemas/*
 		      cp -r creation-portal/opensaber_schemas/* java/registry/src/main/resources/public/_schemas/
 		      cd java && mvn clean install -DksipTests=true
