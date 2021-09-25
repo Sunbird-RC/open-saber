@@ -7,4 +7,4 @@ Open Software Archetype for Building Electronic Registries, shortly called OpenS
 
 Registry is a shared digital infrastructure which enables authorized data repositories to publish appropriate data and metadata about a user/entity along with the link to the repository in a digitally signed form and allows data owners to provide authorized access to other users/entities in controlled manner for digital verification and usage.
 
-See [documentation here](https://docs.sunbirdrc.dev/) and [Wiki](https://github.com/project-sunbird/open-saber/wiki) for more details.
+See [documentation here](https://sunbirdrc.dev/) and [Wiki](https://github.com/project-sunbird/open-saber/wiki) for more details.
